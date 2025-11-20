@@ -47,10 +47,28 @@
         }
 
         #dialog-box {
-            width: 100%; min-height: 140px; background: #0000a0; 
+            width: 100%; min-height: 140px; background: #0000a0;
             border: 4px solid #fff; border-radius: 8px; display: none;
             flex-direction: row; padding: 16px; box-sizing: border-box;
-            box-shadow: 6px 6px 0px rgba(0,0,0,0.5); pointer-events: auto; 
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.5); pointer-events: auto;
+        }
+
+        #ops-banter {
+            width: 100%; min-height: 60px; background: #0a0a0a;
+            border: 3px solid #fff; border-radius: 8px; display: none;
+            flex-direction: row; padding: 12px; box-sizing: border-box;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.6);
+            align-items: center; gap: 12px; pointer-events: none;
+        }
+
+        #ops-banter-label {
+            padding: 6px 8px; background: #b91c1c; border: 2px solid #fff;
+            color: #fff; font-size: 10px; text-shadow: 1px 1px #000;
+        }
+
+        #ops-banter-text {
+            font-size: 12px; color: #fff; text-shadow: 2px 2px #000;
+            flex: 1; line-height: 1.4;
         }
 
         #portrait {
@@ -106,16 +124,21 @@
     <div id="vignette"></div>
     
     <div id="ui-overlay">
-        <div id="slogan-display"></div> 
-        
+        <div id="slogan-display"></div>
+
         <div class="hud-text" id="hud-layer" style="display:none;">
             <div style="color:#ff4444; margin-bottom:5px;">LIFE <span id="life-val">❤️❤️❤️❤️❤️</span></div>
             <div style="color:#44ff44;">HAZARDS: <span id="score-val">0/5</span></div>
         </div>
-        
+
         <div id="boss-hud">
             <div class="boss-name" id="boss-name-el">BOSS NAME</div>
             <div class="boss-bar-bg"><div class="boss-bar-fill" id="boss-health-el"></div></div>
+        </div>
+
+        <div id="ops-banter" aria-live="polite">
+            <div id="ops-banter-label">OPS</div>
+            <div id="ops-banter-text"></div>
         </div>
 
         <div id="dialog-box">
@@ -427,10 +450,12 @@ const GAME = {
 };
 
 const SAFETY_ISSUES = [
-    { name: "Chem Spill", type: "spill" }, { name: "Bad Pallet", type: "box" }, { name: "Trash", type: "box" }, 
+    { name: "Chem Spill", type: "spill" }, { name: "Bad Pallet", type: "box" }, { name: "Trash", type: "box" },
     { name: "Cable Trip", type: "spill" }, { name: "Broken Glass", type: "spill" }, { name: "Unlabeled Chem", type: "drum" },
     { name: "Pallet Debris", type: "debris" }, { name: "Unstable Stack", type: "tall_pallet" }, { name: "Blocked Extinguisher", type: "box" }
 ];
+
+let opsBanterTimeout = null;
 
 // --- INPUT ---
 const KEYS = { up: false, down: false, left: false, right: false, action: false };
@@ -482,10 +507,11 @@ function handleAction() {
         GAME.nextState = 'BOSS'; // FIX: Explicitly set next state to BOSS
         updateMusicForState();
     }
-    else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') { 
+    else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') {
         document.getElementById('boss-hud').style.display = 'none';
         document.getElementById('slogan-display').style.display = 'none';
-        GAME.state = 'TITLE'; 
+        hideOpsBanter();
+        GAME.state = 'TITLE';
         updateMusicForState();
     }
     else if (GAME.state === 'PLAY' || GAME.state === 'BOSS') {
@@ -518,18 +544,19 @@ function resetGame() {
     GAME.entities = []; GAME.projectiles = []; GAME.particles = [];
     GAME.activeIssues = []; GAME.clutter = [];
     GAME.issuesFixed = 0; GAME.lives = 5; GAME.simonHits = 0; GAME.boss = null;
-    GAME.nextState = 'PLAY'; 
-    
+    GAME.nextState = 'PLAY';
+
     // Stats Reset
     GAME.startTime = Date.now();
     GAME.booksFired = 0;
     GAME.opsPushed = 0;
-    
+
     generateMap();
     GAME.entities.push({ type: 'simon', x: 100, y: 80, w: 16, h: 16 });
     document.getElementById('hud-layer').style.display = 'block';
     document.getElementById('boss-hud').style.display = 'none';
-    
+    hideOpsBanter();
+
     const sloganEl = document.getElementById('slogan-display');
     sloganEl.style.display = 'block';
     sloganEl.innerText = "✨ SAFETY SYSTEM LOADING...";
@@ -1261,6 +1288,24 @@ function updateCamera() {
 function updateHud() {
     document.getElementById('life-val').innerText = "❤️".repeat(Math.max(0, GAME.lives));
     document.getElementById('score-val').innerText = GAME.issuesFixed + "/5";
+}
+
+function showOpsBanter(text) {
+    const box = document.getElementById('ops-banter');
+    const textEl = document.getElementById('ops-banter-text');
+    if (!box || !textEl) return;
+
+    textEl.innerText = text;
+    box.style.display = 'flex';
+
+    if (opsBanterTimeout) clearTimeout(opsBanterTimeout);
+    opsBanterTimeout = setTimeout(() => hideOpsBanter(), 3500);
+}
+
+function hideOpsBanter() {
+    const box = document.getElementById('ops-banter');
+    if (box) box.style.display = 'none';
+    if (opsBanterTimeout) { clearTimeout(opsBanterTimeout); opsBanterTimeout = null; }
 }
 
 function showDialog(text, speaker, portrait, isAI = false) {
