@@ -133,7 +133,8 @@
 <script type="module">
 // --- CONFIG ---
 // PASTE YOUR API KEY HERE vvv
-const apiKey = "AIzaSyB90VrCAZnivfnl-D5K_3I8EIrks5gqSkY"; 
+const apiKey = "AIzaSyB90VrCAZnivfnl-D5K_3I8EIrks5gqSkY";
+const MODEL_NAME = "gemini-2.5-flash-live";
 
 // --- CHARACTER DATA ---
 const CHAR_DATA = {
@@ -219,8 +220,8 @@ async function callGemini(prompt, category = 'generic', context = {}) {
         return getRandomFallback(prompt, category, context);
     }
 
-    // Using standard stable model
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // Using live flash model per latest instructions
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
     const payload = { 
         contents: [{ 
             parts: [{ text: prompt }] 
@@ -252,7 +253,7 @@ async function callGemini(prompt, category = 'generic', context = {}) {
         const data = await response.json();
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
         if (text) {
-            setAIStatus('AI online (Gemini)', 'info');
+            setAIStatus(`AI online (${MODEL_NAME})`, 'info');
             return text.trim();
         }
         setAIStatus('AI returned empty text, using fallback.', 'error');
