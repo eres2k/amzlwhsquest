@@ -4,6 +4,9 @@
   # No build command needed - static HTML/JS project
   publish = "."
 
+[functions]
+  directory = "netlify/functions"
+
 [[redirects]]
   from = "/"
   to = "/LandingPage.html"

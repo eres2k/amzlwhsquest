@@ -132,8 +132,9 @@
 
 <script type="module">
 // --- CONFIG ---
-// PASTE YOUR API KEY HERE vvv
-const apiKey = "AIzaSyB90VrCAZnivfnl-D5K_3I8EIrks5gqSkY";
+// Gemini API key is fetched at runtime from Netlify Functions
+let apiKey = null;
+let apiKeyPromise = null;
 const MODEL_NAME = "gemini-2.5-flash-lite";
 
 // --- CHARACTER DATA ---
@@ -212,16 +213,40 @@ function setAIStatus(message, level = 'info') {
 }
 setAIStatus('AI: Waiting for first prompt...', 'info');
 
+async function fetchApiKeyFromNetlify() {
+    try {
+        setAIStatus('AI: Fetching key from Netlify...', 'info');
+        const res = await fetch('/.netlify/functions/get-gemini-key', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`Netlify key endpoint returned ${res.status}`);
+        const data = await res.json();
+        const key = (data && data.apiKey ? String(data.apiKey) : '').trim();
+        if (!key) throw new Error('No apiKey field in Netlify response');
+        apiKey = key;
+        setAIStatus('AI key loaded from Netlify.', 'info');
+        return apiKey;
+    } catch (err) {
+        setAIStatus(`AI key fetch failed: ${err.message || err}`, 'error');
+        return null;
+    }
+}
+
+async function ensureApiKey() {
+    if (apiKey) return apiKey;
+    if (!apiKeyPromise) apiKeyPromise = fetchApiKeyFromNetlify();
+    return apiKeyPromise;
+}
+
 // --- GEMINI API ---
 async function callGemini(prompt, category = 'generic', context = {}) {
-    if (!apiKey || apiKey === "YOUR_API_KEY_HERE") {
+    const activeKey = await ensureApiKey();
+    if (!activeKey) {
         console.log("No valid API Key, using fallback.");
         setAIStatus('AI: Missing API key, using fallback.', 'error');
         return getRandomFallback(prompt, category, context);
     }
 
     // Using flash-lite model per latest instructions
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${activeKey}`;
     const payload = { 
         contents: [{ 
             parts: [{ text: prompt }] 
