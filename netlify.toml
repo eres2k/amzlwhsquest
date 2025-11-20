@@ -1,0 +1,28 @@
+# Netlify configuration for AMZL WHS Quest
+
+[build]
+  # No build command needed - static HTML/JS project
+  publish = "."
+
+[[redirects]]
+  from = "/"
+  to = "/LandingPage.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer-when-downgrade"
+
+[[headers]]
+  for = "/*.mp3"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, immutable"
+    Content-Type = "audio/mpeg"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
