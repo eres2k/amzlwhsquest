@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMZL WHS QUEST - DVI1 Portal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+        :root {
+            --neon-green: #00ff00;
+            --neon-pink: #ff00ff;
+            --warning-yellow: #eab308;
+            --corp-blue: #0000a0;
+            --bg-dark: #050505;
+            --glass: rgba(0, 20, 0, 0.75);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-dark);
+            font-family: 'VT323', monospace;
+            color: #eee;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- BACKGROUND CANVAS --- */
+        #bg-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none; opacity: 0.4;
+        }
+
+        /* --- CRT EFFECTS --- */
+        body::after {
+            content: " "; display: block; position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px; z-index: 999; pointer-events: none;
+        }
+
+        /* --- TURN ON ANIMATION --- */
+        .crt-turn-on {
+            animation: turn-on 2s ease-out forwards;
+        }
+        @keyframes turn-on {
+            0% { transform: scale(1, 0.002); opacity: 0; filter: brightness(30); }
+            20% { transform: scale(1, 0.002); opacity: 1; }
+            50% { transform: scale(1, 1.1); filter: brightness(5); }
+            100% { transform: scale(1, 1); filter: brightness(1); }
+        }
+
+        .container {
+            max-width: 1000px; margin: 0 auto; padding: 20px;
+            position: relative; z-index: 1; width: 100%;
+        }
+
+        /* --- HEADER --- */
+        header {
+            text-align: center; margin-bottom: 20px;
+            border-bottom: 4px solid var(--neon-green); padding-bottom: 20px;
+        }
+
+        h1 {
+            font-family: 'Press Start 2P', cursive; color: var(--warning-yellow);
+            font-size: clamp(1.5rem, 4vw, 3rem);
+            text-shadow: 4px 4px var(--corp-blue); margin: 0; line-height: 1.5;
+            position: relative;
+        }
+
+        /* GLITCH EFFECT */
+        .glitch { position: relative; display: inline-block; }
+        .glitch::before, .glitch::after {
+            content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        }
+        .glitch::before { left: 2px; text-shadow: -1px 0 red; clip: rect(44px, 450px, 56px, 0); animation: glitch-anim 5s infinite linear alternate-reverse; }
+        .glitch::after { left: -2px; text-shadow: -1px 0 blue; clip: rect(44px, 450px, 56px, 0); animation: glitch-anim2 5s infinite linear alternate-reverse; }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(10px, 9999px, 30px, 0); } 20% { clip: rect(80px, 9999px, 100px, 0); }
+            40% { clip: rect(40px, 9999px, 60px, 0); } 60% { clip: rect(20px, 9999px, 10px, 0); }
+            80% { clip: rect(60px, 9999px, 50px, 0); } 100% { clip: rect(90px, 9999px, 90px, 0); }
+        }
+        @keyframes glitch-anim2 {
+            0% { clip: rect(50px, 9999px, 10px, 0); } 20% { clip: rect(20px, 9999px, 80px, 0); }
+            40% { clip: rect(90px, 9999px, 20px, 0); } 60% { clip: rect(10px, 9999px, 50px, 0); }
+            80% { clip: rect(30px, 9999px, 70px, 0); } 100% { clip: rect(60px, 9999px, 40px, 0); }
+        }
+
+        .subtitle {
+            color: var(--neon-green); font-size: 1.5rem; letter-spacing: 2px;
+            text-transform: uppercase; animation: blink 1s infinite;
+        }
+
+        /* --- GEMINI LIVE FEED --- */
+        #live-feed {
+            background: rgba(0,0,0,0.8); border: 1px solid var(--neon-green);
+            padding: 10px; margin-bottom: 20px; font-family: 'VT323', monospace;
+            color: var(--neon-green); box-shadow: 0 0 10px var(--neon-green);
+            min-height: 60px; display: flex; align-items: center; justify-content: center;
+            text-align: center; font-size: 1.2rem;
+        }
+        
+        .loading-dots:after { content: '.'; animation: dots 1s steps(5, end) infinite; }
+        @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60% { content: '...'; } 80%, 100% { content: ''; } }
+
+        section {
+            background: var(--glass); border: 2px solid #333; margin-bottom: 30px;
+            padding: 20px; box-shadow: 8px 8px 0px black; backdrop-filter: blur(2px);
+            transition: transform 0.2s;
+        }
+        section:hover { transform: translate(-2px, -2px); box-shadow: 10px 10px 0px var(--neon-green); border-color: var(--neon-green); }
+
+        h2 { font-family: 'Press Start 2P', cursive; font-size: 1.2rem; color: var(--neon-pink); border-bottom: 2px dashed #555; padding-bottom: 10px; margin-top: 0; }
+
+        p { font-size: 1.1rem; line-height: 1.6; margin-bottom: 15px; }
+        strong { color: var(--warning-yellow); }
+
+        .char-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .char-card { background: rgba(0,0,0,0.8); border: 1px solid #444; padding: 15px; text-align: center; display: flex; flex-direction: column; }
+        .char-card h3 { color: var(--warning-yellow); margin: 0 0 5px 0; font-family: 'Press Start 2P'; font-size: 0.9rem;}
+        .char-role { color: #00ffff; font-size: 1rem; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .char-desc { font-size: 0.9rem; color: #ccc; line-height: 1.4; flex-grow: 1;}
+        .char-stat { margin-top: 10px; font-size: 0.8rem; color: #aaa; font-style: italic; }
+
+        .play-btn {
+            background: red; color: white; font-family: 'Press Start 2P';
+            font-size: 1.5rem; padding: 25px 50px; text-decoration: none;
+            border: 4px solid white; box-shadow: 0 0 20px red;
+            display: inline-block; animation: pulse 1.5s infinite;
+            cursor: pointer; text-transform: uppercase; position: relative;
+            overflow: hidden;
+        }
+        .play-btn:hover { background: #ff4444; transform: scale(1.1); box-shadow: 0 0 40px red; }
+        
+        /* Shine effect on button */
+        .play-btn::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shine 3s infinite;
+        }
+        @keyframes shine { 0% { left: -100%; } 20% { left: 100%; } 100% { left: 100%; } }
+
+        @keyframes blink { 50% { opacity: 0; } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 0, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); } }
+    </style>
+</head>
+<body class="crt-turn-on">
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="container">
+    <header>
+        <h1><span class="glitch" data-text="AMZL WHS QUEST">AMZL WHS QUEST</span><br><span style="font-size:0.5em; color:#fff;">v12.2.5 - DVI1 EDITION</span></h1>
+        <div class="subtitle">> WHS COORDINATOR TERMINAL_</div>
+    </header>
+
+    <div id="live-feed">
+        <span id="feed-content">CONNECTING TO HQ<span class="loading-dots"></span></span>
+    </div>
+
+    <div style="text-align: center; margin: 60px 0;">
+        <a href="game.html" class="play-btn">▶ START SHIFT</a>
+        <p style="color: #aaa; font-size: 0.8rem; margin-top: 15px;">(INPUT: KEYBOARD | REWARD: PIZZA PARTY)</p>
+    </div>
+
+    <main>
+        <section>
+            <h2>> MISSION BRIEFING</h2>
+            <p><strong>IDENTITY:</strong> Tier 1 WHS Coordinator</p>
+            <p><strong>LOCATION:</strong> Delivery Station DVI1 (Vienna)</p>
+            <p><strong>STATUS:</strong> Caffeinated but Panicked</p>
+            <p>Welcome to DVI1. Your mission, should you choose to accept it (you have no choice, you signed the contract), is to survive a standard shift. The floor is a minefield of unblocked exits, rogue pallet jacks, and Associates who believe safety shoes are "optional fashion statements".</p>
+            <p>The Ops Managers are obsessed with TPH (Throughput Per Hour). They will throw crazy production requests at you. <strong>Do not fold.</strong> Find the 5 hazardous crimes against safety, audit the floor, and defeat the Boss before the VOA board catches fire.</p>
+        </section>
+
+        <section>
+            <h2>> THE SQUAD</h2>
+            <div class="char-grid">
+                <div class="char-card">
+                    <h3>CARRIE</h3>
+                    <div class="char-role">The 5S Monk</div>
+                    <div class="char-desc">Can detect a piece of floor tape misaligned by 1mm from across the cluster. Uses meditation to tolerate Ops meetings.</div>
+                    <div class="char-stat">Weapon: The Label Maker</div>
+                </div>
+                <div class="char-card">
+                    <h3>NEVENA</h3>
+                    <div class="char-role">The Worrier</div>
+                    <div class="char-desc">The Safety Oracle. She predicts accidents before they happen. Always carries emergency Palatschinken for stress eating.</div>
+                    <div class="char-stat">Weapon: The Clipboard of Doom</div>
+                </div>
+                <div class="char-card">
+                    <h3>JOAO</h3>
+                    <div class="char-role">The Siren</div>
+                    <div class="char-desc">His voice is louder than the fire alarm. Associates hear his safety warnings in their dreams. Runs on pure espresso.</div>
+                    <div class="char-stat">Weapon: Sonic Shout</div>
+                </div>
+                <div class="char-card">
+                    <h3>ROMAN</h3>
+                    <div class="char-role">The Ghost</div>
+                    <div class="char-desc">He is everywhere and nowhere. Hazards seem to fix themselves out of fear when he enters the room.</div>
+                    <div class="char-stat">Weapon: Stealth Audit</div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>> THREAT DATABASE (BOSSES)</h2>
+            <div class="char-grid">
+                <div class="char-card" style="border-color: #ff4444;">
+                    <h3 style="color: #ff4444;">INSPECTOR</h3>
+                    <div class="char-role" style="color: #ff4444;">External Auditor</div>
+                    <div class="char-desc">Has no soul, only a checklist. Will find the one fire extinguisher you forgot to sign in 2023.</div>
+                </div>
+                <div class="char-card" style="border-color: #ff4444;">
+                    <h3 style="color: #ff4444;">COMPLIANCE</h3>
+                    <div class="char-role" style="color: #ff4444;">The Auditor</div>
+                    <div class="char-desc">Checks every SOP version. If you are using v1.2 instead of v1.3, you are doomed.</div>
+                </div>
+                <div class="char-card" style="border-color: #ff4444;">
+                    <h3 style="color: #ff4444;">SEBASTIAN</h3>
+                    <div class="char-role" style="color: #ff4444;">Station Commander</div>
+                    <div class="char-desc">Obsessed with rates. Believes "Safety Stops" are a myth invented to lower volume.</div>
+                </div>
+                <div class="char-card" style="border-color: #ff4444;">
+                    <h3 style="color: #ff4444;">REGIONAL MGR</h3>
+                    <div class="char-role" style="color: #ff4444;">The Executive</div>
+                    <div class="char-desc">Only appears when things are bad. Speaks in acronyms you don't understand.</div>
+                </div>
+                <div class="char-card" style="border-color: #ff4444;">
+                    <h3 style="color: #ff4444;">AVETTA AI</h3>
+                    <div class="char-role" style="color: #ff4444;">The Algorithm</div>
+                    <div class="char-desc">A sentient cloud platform. It knows you forgot your gloves. It is watching.</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 ERWIN ESENER PRODUCTIONS // DVI1 VIENNA // POWERED BY GEMINI AI</p>
+    </footer>
+</div>
+
+<script>
+    // --- 1. RETRO GRID BACKGROUND ANIMATION ---
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let offset = 0;
+    function animateGrid() {
+        ctx.fillStyle = '#050505';
+        ctx.fillRect(0, 0, width, height);
+        
+        // Horizon line
+        const horizon = height * 0.4;
+        
+        // Vertical lines (Perspective)
+        ctx.strokeStyle = 'rgba(0, 255, 0, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        const cx = width / 2;
+        for(let i = -20; i <= 20; i++) {
+            const x = cx + (i * 100); // Spread at bottom
+            ctx.moveTo(cx, horizon); // Converge at horizon (vanishing point)
+            ctx.lineTo(x * 4, height); // Spread out
+        }
+        ctx.stroke();
+
+        // Horizontal lines (Moving towards viewer)
+        offset = (offset + 0.5) % 20;
+        for(let i = 0; i < 40; i++) {
+            let y = horizon + Math.pow(i, 2.5) + offset; // Exponential spacing for depth
+            if (y > height) continue;
+            
+            let alpha = (y - horizon) / (height - horizon); // Fade in near horizon
+            ctx.strokeStyle = `rgba(0, 255, 0, ${alpha * 0.3})`;
+            
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+        }
+        
+        requestAnimationFrame(animateGrid);
+    }
+    animateGrid();
+
+    // --- 2. GEMINI API INTEGRATION (Announcement) ---
+    const apiKey = ""; // System provides key at runtime usually
+    
+    async function fetchAnnouncement() {
+        const feed = document.getElementById('feed-content');
+        if (!apiKey) {
+            // Simulated if no key
+            setTimeout(() => {
+                const msgs = [
+                    "REMINDER: CRYING IS ONLY PERMITTED IN THE BREAK ROOM.",
+                    "SAFETY TIP: IF YOU CAN'T SEE THE FLOOR, THE FLOOR CAN'T SEE YOU.",
+                    "AUDIT ALERT: LOOK BUSY, THE REGIONALS ARE WATCHING.",
+                    "TPH IS DOWN. PANIC ACCORDINGLY.",
+                    "PLEASE DO NOT FEED THE OPS MANAGERS."
+                ];
+                feed.innerText = "📢 HQ: " + msgs[Math.floor(Math.random()*msgs.length)];
+            }, 2000);
+            return;
+        }
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        const prompt = "Write a single, short (max 15 words), cynical, dystopic corporate announcement for a warehouse worker starting their shift. Use ALL CAPS. Start with 'ATTENTION DVI1:'.";
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            const data = await response.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if(text) feed.innerText = "📢 " + text;
+            else throw new Error("No text");
+        } catch (e) {
+            feed.innerText = "📢 SYSTEM ERROR: COFFEE SUPPLIES CRITICAL.";
+        }
+    }
+    
+    fetchAnnouncement();
+</script>
+</body>
+</html>
