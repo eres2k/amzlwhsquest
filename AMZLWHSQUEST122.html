@@ -244,9 +244,22 @@ async function callGemini(prompt, category = 'generic', context = {}) {
             return getRandomFallback(prompt, category, context);
         }
         if (!response.ok) {
-            const errText = await response.text().catch(() => '');
+            let errText = '';
+            try {
+                const errJson = await response.clone().json();
+                errText = errJson?.error?.message || '';
+            } catch (err) {
+                errText = await response.text().catch(() => '');
+            }
+
+            const normalized = errText.toLowerCase();
+            const leakedKey = response.status === 403 && normalized.includes('reported as leaked');
+            const userMessage = leakedKey
+                ? 'AI blocked: API key was reported leaked — replace with a fresh server-side key.'
+                : `AI error ${response.status}: ${errText || 'see console'}`;
+
             console.log("Gemini Error:", response.status, errText);
-            setAIStatus(`AI error ${response.status}: ${errText || 'see console'}`, 'error');
+            setAIStatus(userMessage, 'error');
             return getRandomFallback(prompt, category, context);
         }
         
