@@ -873,28 +873,28 @@ function updateProjectiles() {
 
             let hit = false;
             GAME.entities.forEach(e => {
-                    if (e.type === 'ops' && Math.hypot(p.x-e.x, p.y-e.y) < 12) {
-                        e.type = 'assoc';
-                        AudioSys.sfx.hit();
-                        spawnParticle(e.x, e.y, '#fff', -2);
-                        GAME.opsPushed++; // Stat
+                if (e.type === 'ops' && Math.hypot(p.x-e.x, p.y-e.y) < 12) {
+                    e.type = 'assoc';
+                    AudioSys.sfx.hit();
+                    spawnParticle(e.x, e.y, '#fff', -2);
+                    GAME.opsPushed++; // Stat
 
-                        const opsBannerEl = document.getElementById('ops-banter');
-                        const bannerVisible = opsBannerEl && opsBannerEl.style.display !== 'none';
-                        const banterChance = bannerVisible ? 0.2 : 0.1;
-                        if (opsBannerEl && Math.random() < banterChance) {
-                            const currentGen = GAME.genId;
-                            callGemini("Generate snarky OPS banter after being pushed back. Max 12 words. Keep it dramatic.", "banter").then(line => {
-                                if (GAME.state === 'PLAY' && GAME.genId === currentGen) {
-                                    showOpsBanter("OPS: " + line);
-                                }
-                            });
-                        }
-
-                        hit = true;
+                    const opsBannerEl = document.getElementById('slogan-display');
+                    const bannerVisible = opsBannerEl && opsBannerEl.style.display !== 'none';
+                    const banterChance = bannerVisible ? 0.2 : 0.1;
+                    if (opsBannerEl && Math.random() < banterChance) {
+                        const currentGen = GAME.genId;
+                        callGemini("Generate snarky OPS banter after being pushed back. Max 12 words. Keep it dramatic.", "banter").then(line => {
+                            if (GAME.state === 'PLAY' && GAME.genId === currentGen) {
+                                opsBannerEl.innerText = "OPS: " + line;
+                            }
+                        });
                     }
-                });
-                if (hit) GAME.projectiles.splice(i,1);
+
+                    hit = true;
+                }
+            });
+            if (hit) GAME.projectiles.splice(i,1);
         }
     }
 }
