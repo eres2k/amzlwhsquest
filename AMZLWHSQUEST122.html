@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMZL WHS Coordinator Quest v15.1 (Boss Arena Fix)</title>
+    <title>AMZL WHS Coordinator Quest v16.1 (Syntax Fix)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -26,7 +26,7 @@
 
         #crt-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
                         linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
             background-size: 100% 4px, 3px 100%; pointer-events: none; z-index: 900;
             animation: flicker 0.15s infinite;
@@ -47,10 +47,10 @@
         }
 
         #dialog-box {
-            width: 100%; min-height: 130px; background: #0000a0;
+            width: 100%; min-height: 140px; background: #0000a0; 
             border: 4px solid #fff; border-radius: 8px; display: none;
             flex-direction: row; padding: 16px; box-sizing: border-box;
-            box-shadow: 6px 6px 0px rgba(0,0,0,0.5); pointer-events: auto;
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.5); pointer-events: auto; 
         }
 
         #portrait {
@@ -67,12 +67,12 @@
             font-size: 10px; color: #ffff00; margin-top: 10px;
             animation: blink 1s infinite; display: block;
         }
-
+        
         .gemini-badge {
             font-size: 10px; color: #00ffff; margin-bottom: 8px; display: none;
             text-transform: uppercase; text-shadow: 0 0 5px #00ffff;
         }
-
+        
         @keyframes blink { 50% { opacity: 0; } }
 
         .hud-text {
@@ -80,19 +80,19 @@
             text-align: right; text-shadow: 2px 2px black; font-size: 12px;
             background: rgba(0,0,0,0.5); padding: 10px; border: 2px solid white;
         }
-
+        
         #slogan-display {
             position: absolute; top: 20px; left: 20px; color: #ffff00;
             text-shadow: 2px 2px black; font-size: 12px; max-width: 350px;
             background: rgba(0,0,0,0.6); padding: 5px; border-left: 3px solid #eab308;
             display: none;
         }
-
+        
         #boss-hud {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             width: 60%; display: none;
         }
-
+        
         .boss-bar-bg { width: 100%; height: 10px; background: #333; border: 2px solid white; }
         .boss-bar-fill { width: 100%; height: 100%; background: #ff0000; transition: width 0.2s; }
         .boss-name { color: #ff0000; text-align: center; font-size: 10px; margin-bottom: 4px; text-shadow: 1px 1px black; }
@@ -104,15 +104,15 @@
     <canvas id="gameCanvas" width="256" height="224"></canvas>
     <div id="crt-overlay"></div>
     <div id="vignette"></div>
-
+    
     <div id="ui-overlay">
-        <div id="slogan-display"></div>
-
+        <div id="slogan-display"></div> 
+        
         <div class="hud-text" id="hud-layer" style="display:none;">
             <div style="color:#ff4444; margin-bottom:5px;">LIFE <span id="life-val">❤️❤️❤️❤️❤️</span></div>
             <div style="color:#44ff44;">HAZARDS: <span id="score-val">0/5</span></div>
         </div>
-
+        
         <div id="boss-hud">
             <div class="boss-name" id="boss-name-el">BOSS NAME</div>
             <div class="boss-bar-bg"><div class="boss-bar-fill" id="boss-health-el"></div></div>
@@ -131,7 +131,7 @@
 
 <script type="module">
 // --- CONFIG ---
-const apiKey = "AIzaSyB90VrCAZnivfnl-D5K_3I8EIrks5gqSkY";
+const apiKey = "AIzaSyB90VrCAZnivfnl-D5K_3I8EIrks5gqSkY"; 
 
 // --- CHARACTER DATA ---
 const CHAR_DATA = {
@@ -143,18 +143,62 @@ const CHAR_DATA = {
 
 // --- SIMULATED AI DATABASE ---
 const SIMULATED_AI = {
-    slogans: ["GRAVITY: IT'S THE LAW.", "YOUR PPE MISSES YOU.", "SPEED IS FLEETING.", "I AM WATCHING.", "TODAY IS A GOOD DAY TO COMPLY.", "SAFETY: BECAUSE PAPERWORK IS BORING."],
-    tips: ["Blocked exit? Move it. Now.", "Chemicals on floor. Bad. Clean it.", "Debris detected. Clean it up.", "Trip hazard. Think of the floor.", "Unstable stack. Fix it.", "Fire equipment blocked."],
-    runners: ["Halt! Walk, or I start typing.", "Running? Unacceptable.", "If you run, you trip.", "We are not training for Olympics.", "Slow down."],
-    taunts: ["My spreadsheet says you don't exist!", "Your rates are dropping!", "I will write you up!", "Compliance is mandatory!", "Resistance is a safety violation."],
-    simon_taunts: ["I AM THE SAFETY STANDARD!", "YOU CANNOT ESCAPE THE AUDIT!", "ENTROPY COMES FOR US ALL!", "YOUR PPE IS INSUFFICIENT!", "I WILL CORRECT YOUR EXISTENCE!"],
-    reviews_win: ["Performance: ADEQUATE. Stats acceptable.", "You survived. The warehouse survived. Good job.", "Compliance achieved. I may smile today.", "You fixed the hazards. You may keep your job."],
-    reviews_loss: ["Performance: ABYSMAL. The clipboard is weeping.", "You let the Ops Managers win. Disappointed.", "I have run out of red ink.", "Safety rating: -500. Return your vest."]
+    slogans: [
+        "ENTROPY IS THE ENEMY. ORDER IS THE ONLY SURVIVAL STRATEGY.",
+        "YOUR SKELETON PREFERS TO STAY INSIDE YOUR BODY. ASSIST IT.",
+        "ACCIDENTS ARE JUST PHYSICS TAKING REVENGE ON YOUR INCOMPETENCE.",
+        "COMPLIANCE IS THE ONLY SHIELD AGAINST THE HEAT DEATH OF THE UNIVERSE.",
+        "SAFETY REGULATIONS ARE WRITTEN IN BLOOD. DO NOT ADD A NEW CHAPTER."
+    ],
+    tips: [
+        "A blocked exit? In a fire, that box becomes your tombstone. The fire marshal will not be amused by your charred remains. Move it immediately.",
+        "Chemical spill. Entropy is leaking. If you step in it, you will dissolve, and I will have to fill out form 7B-9. Contain it before it spreads.",
+        "Debris detected. Chaos on the floor leads to chaos in the metrics. If I trip on this, I will haunt you from the afterlife. Clean it up.",
+        "Trip hazard. Gravity does not care about your excuses or your tenure. It pulls us all down equally. Tape that cable.",
+        "Unstable stack. Isaac Newton is rolling in his grave looking at this abomination. The center of gravity is a suggestion to you? Fix it.",
+        "Fire equipment blocked. Do you plan to fight the inferno with your bare hands and optimism? Clear the path or prepare to roast."
+    ],
+    runners: [
+        "Halt! Your kinetic energy increases with the square of velocity. If you collide with a rack, the physics calculation will end in your termination.",
+        "You are not a photon. You have mass. When you run, you invite disaster. Do not invite disaster into my warehouse; he is a terrible guest.",
+        "Running? I've seen glaciers move with more urgency. And significantly more safety. Slow down before you become a statistic.",
+        "We are fighting the inevitable decay of order, not the clock. Walk with purpose, not haste. My blood pressure cannot handle your velocity."
+    ],
+    taunts: [
+        "My spreadsheet predicts your failure with 99% accuracy!",
+        "You cannot audit the inevitable heat death of this facility!",
+        "I am the final regulation! I am the red tape!",
+        "Your compliance score is dropping faster than your will to live!",
+        "Resistance is a safety violation! Prepare for a write-up!"
+    ],
+    simon_taunts: [
+        "I AM THE SAFETY STANDARD! KNEEL BEFORE PROTOCOL!",
+        "YOU CANNOT ESCAPE THE AUDIT! I SEE ALL!",
+        "ENTROPY COMES FOR US ALL, BUT I COME FOR YOU FIRST!",
+        "YOUR PPE IS INSUFFICIENT TO PROTECT YOU FROM ME!"
+    ],
+    banter: [
+        "Coord: 'Safety First!' / Ops: 'But my rates will plummet!'",
+        "Coord: 'Read the manual!' / Ops: 'I can't read!'",
+        "Coord: 'Stop running!' / Ops: 'The packages need me!'",
+        "Coord: 'That's a hazard!' / Ops: 'It's a feature!'"
+    ],
+    reviews_win: [
+        "Performance: STATISTICALLY IMPROBABLE. You survived against overwhelming odds. The warehouse stands. The metrics align. I am... adequately pleased.",
+        "You fought chaos and won. For today. Tomorrow, entropy returns, but for now, you may rest. Good job not dying.",
+        "Adequate. You respected the laws of physics and the laws of Amazon. I have nothing to write up. This feels... strange."
+    ],
+    reviews_loss: [
+        "Performance: CATASTROPHIC. Entropy has won. The warehouse is lost to chaos. As predicted by my models.",
+        "You failed. Gravity, inertia, and stupidity have combined to destroy us all. My report will be scathing.",
+        "Safety is binary. You are a zero. The metrics weep for what you have done today. Return your vest."
+    ]
 };
 
 // --- GEMINI API ---
 async function callGemini(prompt) {
     if (!apiKey) return getRandomFallback(prompt);
+
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
     const payload = { contents: [{ parts: [{ text: prompt }] }] };
     const timeout = new Promise((r) => setTimeout(() => r("TIMEOUT"), 2500));
@@ -171,6 +215,7 @@ async function callGemini(prompt) {
 function getRandomFallback(prompt) {
     if(prompt.includes("slogan")) return SIMULATED_AI.slogans[Math.floor(Math.random()*SIMULATED_AI.slogans.length)];
     if(prompt.includes("running")) return SIMULATED_AI.runners[Math.floor(Math.random()*SIMULATED_AI.runners.length)];
+    if(prompt.includes("banter")) return SIMULATED_AI.banter[Math.floor(Math.random()*SIMULATED_AI.banter.length)];
     if(prompt.includes("taunt")) {
          if(prompt.includes("Simon")) return SIMULATED_AI.simon_taunts[Math.floor(Math.random()*SIMULATED_AI.simon_taunts.length)];
          return SIMULATED_AI.taunts[Math.floor(Math.random()*SIMULATED_AI.taunts.length)];
@@ -237,7 +282,7 @@ const AudioSys = {
         start: () => { [440,440,440,660].forEach((f,i)=>setTimeout(()=>AudioSys.playTone(f,'square',0.2,0.2), i*150)); },
         angry: () => AudioSys.playTone(150, 'square', 0.5, 0.2),
         select: () => AudioSys.playTone(550, 'square', 0.1, 0.1),
-        bossIntro: () => {
+        bossIntro: () => { 
             AudioSys.playTone(100, 'sawtooth', 1.0, 0.3);
             setTimeout(() => AudioSys.playTone(80, 'sawtooth', 1.0, 0.3), 200);
         },
@@ -248,6 +293,51 @@ const AudioSys = {
     }
 };
 
+const MusicSys = {
+    tracks: {
+        title: new Audio('Pixel Reverie.mp3'),
+        menu: new Audio('Game Over But Not Really.mp3'),
+        ingame: new Audio('Pixel Warehouse Crawl.mp3'),
+        boss: new Audio('Pixel Panic.mp3')
+    },
+    currentName: null,
+    init() {
+        Object.values(this.tracks).forEach(a => {
+            a.loop = true;
+            a.volume = 0.35;
+            a.preload = 'auto';
+        });
+    },
+    play(name) {
+        const track = this.tracks[name];
+        if (!track) return;
+        if (this.currentName && this.currentName !== name) {
+            this.stop();
+        }
+        this.currentName = name;
+        const promise = track.play();
+        if (promise) promise.catch(() => {});
+    },
+    stop() {
+        if (this.currentName && this.tracks[this.currentName]) {
+            const current = this.tracks[this.currentName];
+            current.pause();
+            current.currentTime = 0;
+        }
+        this.currentName = null;
+    },
+    resume() {
+        if (this.currentName && this.tracks[this.currentName]?.paused) {
+            const promise = this.tracks[this.currentName].play();
+            if (promise) promise.catch(() => {});
+        }
+    },
+    stopAll() {
+        Object.values(this.tracks).forEach(a => { a.pause(); a.currentTime = 0; });
+        this.currentName = null;
+    }
+};
+
 // --- ASSETS ---
 const GFX = {};
 function generateAssets() {
@@ -255,16 +345,16 @@ function generateAssets() {
 
     GFX.logo = c(40, 40, ctx => { ctx.fillStyle = '#eab308'; ctx.fillRect(0, 0, 40, 40); ctx.fillStyle = '#fff'; ctx.font = '24px monospace'; ctx.fillText("EE", 5, 28); });
     const createPlayer = (hairColor, hairStyle) => c(16,16, ctx => {
-        ctx.fillStyle = hairColor;
+        ctx.fillStyle = hairColor; 
         if (hairStyle === 'long') ctx.fillRect(4,1,8,6); if (hairStyle === 'short') ctx.fillRect(4,1,8,4); if (hairStyle === 'spiky') { ctx.fillRect(4,1,8,4); ctx.fillRect(6,0,4,1); }
         ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,4); ctx.fillStyle = '#2563eb'; ctx.fillRect(3,9,10,6); ctx.fillStyle = '#60a5fa'; ctx.fillRect(4,10,1,4); ctx.fillRect(11,10,1,4); ctx.fillStyle = '#1e3a8a'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
     });
     GFX.chars = { "Carrie": createPlayer('#fcd34d', 'long'), "Nevena": createPlayer('#27272a', 'long'), "Joao": createPlayer('#3f3f46', 'short'), "Roman": createPlayer('#a1a1aa', 'spiky') };
     GFX.simon = c(16,16, ctx => { ctx.fillStyle = '#222'; ctx.fillRect(4,1,8,5); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,4); ctx.fillStyle = '#000'; ctx.fillRect(4,7,8,1); ctx.fillStyle = '#aaddff'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); ctx.fillStyle = '#eab308'; ctx.fillRect(3,9,10,6); ctx.fillStyle = '#fff'; ctx.fillRect(6,11,4,4); });
     GFX.simonFace = c(32,32, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simon,0,0,16,16,0,0,32,32); });
-
+    
     // SUPER SIMON BOSS SPRITE
-    GFX.simonBoss = c(32,32, ctx => {
+    GFX.simonBoss = c(32,32, ctx => { 
         ctx.fillStyle = '#222'; ctx.fillRect(8,2,16,10); // Big Hair
         ctx.fillStyle = '#ffcc99'; ctx.fillRect(8,12,16,8); // Head
         ctx.fillStyle = '#000'; ctx.fillRect(8,14,16,2); // Shades
@@ -292,9 +382,9 @@ function generateAssets() {
 
 // --- GAME STATE ---
 const GAME = {
-    state: 'LOGO',
-    stateTimer: 0,
-    nextState: 'PLAY',
+    state: 'LOGO', 
+    stateTimer: 0, 
+    nextState: 'PLAY', 
     ticks: 0,
     player: null,
     selectedChar: "Carrie",
@@ -303,12 +393,12 @@ const GAME = {
     camera: { x: 0, y: 0 },
     map: [], clutter: [], entities: [], projectiles: [], particles: [], activeIssues: [],
     issuesFixed: 0, lives: 5, genId: 0, gameOverTriggered: false, simonHits: 0, boss: null,
-    shake: 0, flash: 0,
-
+    shake: 0, flash: 0, 
+    
     dialogText: "",
     dialogVisible: "",
     dialogTimer: 0,
-
+    
     // STATS
     startTime: 0,
     booksFired: 0,
@@ -324,7 +414,7 @@ const GAME = {
 };
 
 const SAFETY_ISSUES = [
-    { name: "Chem Spill", type: "spill" }, { name: "Bad Pallet", type: "box" }, { name: "Trash", type: "box" },
+    { name: "Chem Spill", type: "spill" }, { name: "Bad Pallet", type: "box" }, { name: "Trash", type: "box" }, 
     { name: "Cable Trip", type: "spill" }, { name: "Broken Glass", type: "spill" }, { name: "Unlabeled Chem", type: "drum" },
     { name: "Pallet Debris", type: "debris" }, { name: "Unstable Stack", type: "tall_pallet" }, { name: "Blocked Extinguisher", type: "box" }
 ];
@@ -350,15 +440,20 @@ function handleAction() {
     // Ensure Audio is active on first interaction
     AudioSys.init();
     AudioSys.resume();
+    MusicSys.init();
+    MusicSys.resume();
+    updateMusicForState();
 
     // Intro Logic: ONLY Logo advances automatically. Others need space.
     if (GAME.state === 'LOGO') { advanceState(); }
     else if (['INTRO', 'STORY'].includes(GAME.state)) { AudioSys.sfx.start(); advanceState(); }
-    else if (['TITLE', 'HOWTO'].includes(GAME.state)) {
-        GAME.state = (GAME.state==='TITLE')?'HOWTO':'SELECT'; AudioSys.sfx.select();
+    else if (['TITLE', 'HOWTO'].includes(GAME.state)) { 
+        GAME.state = (GAME.state==='TITLE')?'HOWTO':'SELECT'; 
+        AudioSys.sfx.select(); 
+        updateMusicForState();
     }
-    else if (GAME.state === 'SELECT') {
-        AudioSys.sfx.select(); GAME.selectedChar = GAME.charList[GAME.charIndex]; resetGame();
+    else if (GAME.state === 'SELECT') { 
+        AudioSys.sfx.select(); GAME.selectedChar = GAME.charList[GAME.charIndex]; resetGame(); 
     }
     else if (GAME.state === 'DIALOG') {
         // Fast forward text or close
@@ -372,11 +467,13 @@ function handleAction() {
     else if (GAME.state === 'BOSS_INTRO') {
         GAME.state = 'BOSS';
         GAME.nextState = 'BOSS'; // FIX: Explicitly set next state to BOSS
+        updateMusicForState();
     }
-    else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') {
+    else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') { 
         document.getElementById('boss-hud').style.display = 'none';
         document.getElementById('slogan-display').style.display = 'none';
-        GAME.state = 'TITLE';
+        GAME.state = 'TITLE'; 
+        updateMusicForState();
     }
     else if (GAME.state === 'PLAY' || GAME.state === 'BOSS') {
         if (GAME.state === 'PLAY' && tryInteract()) return;
@@ -387,6 +484,7 @@ function handleAction() {
 function init() {
     generateAssets();
     GAME.state = 'LOGO';
+    updateMusicForState();
     requestAnimationFrame(loop);
 }
 
@@ -395,7 +493,8 @@ function advanceState() {
     if (GAME.state === 'LOGO') GAME.state = 'INTRO';
     else if (GAME.state === 'INTRO') GAME.state = 'STORY';
     else if (GAME.state === 'STORY') GAME.state = 'TITLE';
-    else if (GAME.state === 'TITLE') GAME.state = 'HOWTO';
+    else if (GAME.state === 'TITLE') GAME.state = 'HOWTO'; 
+    updateMusicForState();
 }
 
 function resetGame() {
@@ -406,27 +505,28 @@ function resetGame() {
     GAME.entities = []; GAME.projectiles = []; GAME.particles = [];
     GAME.activeIssues = []; GAME.clutter = [];
     GAME.issuesFixed = 0; GAME.lives = 5; GAME.simonHits = 0; GAME.boss = null;
-    GAME.nextState = 'PLAY';
-
+    GAME.nextState = 'PLAY'; 
+    
     // Stats Reset
     GAME.startTime = Date.now();
     GAME.booksFired = 0;
     GAME.opsPushed = 0;
-
+    
     generateMap();
     GAME.entities.push({ type: 'simon', x: 100, y: 80, w: 16, h: 16 });
     document.getElementById('hud-layer').style.display = 'block';
     document.getElementById('boss-hud').style.display = 'none';
-
+    
     const sloganEl = document.getElementById('slogan-display');
     sloganEl.style.display = 'block';
     sloganEl.innerText = "✨ SAFETY SYSTEM LOADING...";
-
-    callGemini("You are Simon Unglaube, WHS Manager. Write a short, funny, cynical corporate safety slogan for the start of the shift. ALL CAPS. Max 6 words.", "slogans").then(text => {
+    
+    callGemini("You are Simon Unglaube, WHS Manager. Write a short, dark, dry, cynical corporate safety slogan for the start of the shift. ALL CAPS. Max 6 words.", "slogans").then(text => {
         if (GAME.state === 'PLAY') sloganEl.innerText = "✨ " + text;
     });
 
     showDialog(`Coordinator ${GAME.selectedChar}! Hazards detected!\nFind 5 Hazards immediately!`, "Simon Unglaube", GFX.simonFace, false);
+    updateMusicForState();
 }
 
 function generateMap() {
@@ -445,7 +545,7 @@ function generateMap() {
             }
         }
     }
-
+    
     // Clear Central Arena for Boss (Fix for boss projectiles hitting walls instantly)
     for(let y=15; y<25; y++) {
         for(let x=25; x<35; x++) {
@@ -453,13 +553,13 @@ function generateMap() {
         }
     }
 
-    let dx = 30, dy = 0; GAME.map[dy][dx] = 3;
+    let dx = 30, dy = 0; GAME.map[dy][dx] = 3; 
     GAME.activeIssues.push({ x: dx*TILE_SIZE, y: (dy+1)*TILE_SIZE, data: {name: "Blocked Exit", type: "box"}, fixed: false });
 
     spawnEntity('runner'); spawnEntity('runner');
 
     let count = 0;
-    while(count < 3) {
+    while(count < 3) { 
         let tx = Math.floor(Math.random()*(MAP_W-2))+1; let ty = Math.floor(Math.random()*(MAP_H-2))+1;
         if (GAME.map[ty][tx] === 0) {
             let rHazard = SAFETY_ISSUES[Math.floor(Math.random() * SAFETY_ISSUES.length)];
@@ -483,49 +583,54 @@ function initSimonBoss() {
     GAME.boss = {
         name: "SIMON UNGLAUBE",
         sprite: "simonBoss",
-        hp: 25,
-        speed: 1.5,
-        attackDelay: 30,
+        hp: 25, 
+        speed: 1.5, 
+        attackDelay: 30, 
         title: "THE WHS FINAL BOSS",
         desc: "He has seen your file. He is not impressed.",
         attackName: "TERMINATION PROTOCOL",
         tauntsTriggered: [],
         tauntThresholds: [0.75, 0.5, 0.25],
         maxHp: 25,
-        x: MAP_W * TILE_SIZE / 2,
-        y: MAP_H * TILE_SIZE / 2
+        x: MAP_W * TILE_SIZE / 2, 
+        y: MAP_H * TILE_SIZE / 2,
+        timer: 0 // FIX: Init timer
     };
+    
+    // Clear old stuff
     GAME.entities = [];
     GAME.projectiles = [];
+    updateMusicForState();
 }
 
 function initBossEncounter() {
     GAME.state = 'BOSS_INTRO';
-    AudioSys.sfx.bossIntro();
+    AudioSys.sfx.bossIntro(); 
     const bossData = GAME.bossTypes[Math.floor(Math.random() * GAME.bossTypes.length)];
-    GAME.boss = {
-        ...bossData,
-        x: MAP_W * TILE_SIZE / 2,
-        y: MAP_H * TILE_SIZE / 2,
-        w: 32, h: 32,
-        maxHp: bossData.hp,
+    GAME.boss = { 
+        ...bossData, 
+        x: MAP_W * TILE_SIZE / 2, 
+        y: MAP_H * TILE_SIZE / 2, 
+        w: 32, h: 32, 
+        maxHp: bossData.hp, 
         timer: 0,
         tauntsTriggered: [],
         tauntThresholds: [0.75, 0.5, 0.25]
     };
     GAME.entities = []; GAME.projectiles = [];
+    updateMusicForState();
 }
 
 function update() {
     GAME.ticks++;
     GAME.stateTimer++;
-
+    
     if (GAME.shake > 0) GAME.shake--;
     if (GAME.flash > 0) GAME.flash--;
 
     // Auto-Advance ONLY for Logo
     if (GAME.state === 'LOGO' && GAME.stateTimer > 240) advanceState();
-
+    
     if (GAME.state === 'SELECT') {
         if (KEYS.left && GAME.ticks % 10 === 0) { GAME.charIndex--; AudioSys.sfx.step(); }
         if (KEYS.right && GAME.ticks % 10 === 0) { GAME.charIndex++; AudioSys.sfx.step(); }
@@ -562,7 +667,7 @@ function updatePlayer() {
     const p = GAME.player;
     if (p.iframe>0) p.iframe--;
     if (p.cooldown>0) p.cooldown--;
-
+    
     let dx=0, dy=0;
     if (KEYS.up) dy = -p.speed;
     if (KEYS.down) dy = p.speed;
@@ -598,11 +703,11 @@ function updateEntities() {
         }
         if (e.type === 'runner') {
             if (Math.random() < 0.05) e.dir = Math.floor(Math.random()*4);
-            let s = 0.8;
+            let s = 0.8; 
             let nx = e.x, ny = e.y;
             if (e.dir===0) ny-=s; else if(e.dir===1) ny+=s; else if(e.dir===2) nx-=s; else nx+=s;
             if (!checkCol(nx, ny)) { e.x = nx; e.y = ny; }
-            else e.dir = Math.floor(Math.random()*4);
+            else e.dir = Math.floor(Math.random()*4); 
         }
     });
 }
@@ -610,7 +715,7 @@ function updateEntities() {
 function updateBoss() {
     const b = GAME.boss;
     const p = GAME.player;
-
+    
     document.getElementById('boss-hud').style.display = 'block';
     document.getElementById('boss-name-el').innerText = b.name;
     updateBossHud();
@@ -618,9 +723,10 @@ function updateBoss() {
     // Dynamic Taunt Logic
     let hpPct = b.hp / b.maxHp;
     if (b.tauntThresholds.length > 0 && hpPct < b.tauntThresholds[0]) {
-         b.tauntThresholds.shift();
+         b.tauntThresholds.shift(); 
          const currentGen = GAME.genId;
-         let prompt = b.name === "SIMON UNGLAUBE" ?
+         // Custom prompt for Simon vs others
+         let prompt = b.name === "SIMON UNGLAUBE" ? 
              "You are Simon Unglaube, turning into a super boss. Threaten the player with termination and entropy. Max 6 words." :
              `Generate a 5-word taunt from a video game boss named ${b.name}. Warehouse themed.`;
 
@@ -632,13 +738,21 @@ function updateBoss() {
         });
     }
 
+    // FIX: Check if b.x and b.y are valid
     if (isNaN(b.x) || isNaN(b.y)) return;
 
+    // Collision check for Boss to prevent wall clipping
+    let dx = 0, dy = 0;
     let dist = Math.hypot(p.x - b.x, p.y - b.y);
+    
     if (dist > 50) {
         let angle = Math.atan2(p.y - b.y, p.x - b.x);
-        b.x += Math.cos(angle) * b.speed;
-        b.y += Math.sin(angle) * b.speed;
+        dx = Math.cos(angle) * b.speed;
+        dy = Math.sin(angle) * b.speed;
+        
+        // Wall Collision Check for Boss
+        if (!checkCol(b.x + dx, b.y)) b.x += dx;
+        if (!checkCol(b.x, b.y + dy)) b.y += dy;
     }
 
     b.timer++;
@@ -646,10 +760,20 @@ function updateBoss() {
         b.timer = 0;
         for (let i = -1; i <= 1; i++) {
             let angle = Math.atan2(p.y - b.y, p.x - b.x) + (i * 0.3);
-            GAME.projectiles.push({ type: 'req', x: b.x+16, y: b.y+16, vx: Math.cos(angle)*2.5, vy: Math.sin(angle)*2.5, life: 100, boss: true });
+            // Spawn projectile slightly offset to avoid instant self-collision if near wall
+            GAME.projectiles.push({ 
+                type: 'req', 
+                x: b.x + 16 + Math.cos(angle)*10, 
+                y: b.y + 16 + Math.sin(angle)*10, 
+                vx: Math.cos(angle)*2.5, 
+                vy: Math.sin(angle)*2.5, 
+                life: 100, 
+                boss: true,
+                grace: 10 // Ignore walls for 10 frames
+            });
         }
         AudioSys.sfx.alert();
-        GAME.shake = 5; // Screen Shake on attack
+        GAME.shake = 5; 
     }
 }
 
@@ -657,19 +781,23 @@ function updateProjectiles() {
     for(let i=GAME.projectiles.length-1; i>=0; i--) {
         let p = GAME.projectiles[i];
         p.x += p.vx; p.y += p.vy; p.life--;
-
-        if (checkCol(p.x, p.y) || p.life<=0) { GAME.projectiles.splice(i,1); continue; }
-
+        if(p.grace > 0) p.grace--; // Decrement grace period
+        
+        // Only check wall collision if grace period is over
+        if (p.grace <= 0 && checkCol(p.x, p.y)) { GAME.projectiles.splice(i,1); continue; }
+        
+        if (p.life <= 0) { GAME.projectiles.splice(i,1); continue; }
+        
         // Player Hit
         if ((p.type === 'req') && Math.hypot(p.x-GAME.player.x, p.y-GAME.player.y) < 10) {
             if (GAME.player.iframe<=0) {
                 GAME.lives--;
-                GAME.player.iframe = 120;
+                GAME.player.iframe = 120; 
                 GAME.shake = 10; // Violent Shake
                 GAME.flash = 10; // Flash
                 AudioSys.sfx.hurt();
                 updateHud();
-                if (GAME.lives<=0 && !GAME.gameOverTriggered) {
+                if (GAME.lives<=0 && !GAME.gameOverTriggered) { 
                     triggerGameOver("OVERWHELMED!");
                 }
             }
@@ -706,7 +834,7 @@ function updateProjectiles() {
             let hit = false;
             GAME.entities.forEach(e => {
                 if (e.type === 'ops' && Math.hypot(p.x-e.x, p.y-e.y) < 12) {
-                    e.type = 'assoc';
+                    e.type = 'assoc'; 
                     AudioSys.sfx.hit();
                     spawnParticle(e.x, e.y, '#fff', -2);
                     GAME.opsPushed++; // Stat
@@ -725,31 +853,31 @@ function updateParticles() {
         p.x += p.vx;
         p.y += p.vy;
         p.vy += 0.2; // Gravity
-
+        
         // Bounce Floor (Mock floor at p.y original + 5)
         if (p.y > p.groundY) {
             p.y = p.groundY;
             p.vy *= -0.6; // Bounce
         }
-
+        
         if (p.life <= 0) GAME.particles.splice(i,1);
     }
 }
 
-function spawnParticle(x, y, color, forceY = 0) {
+function spawnParticle(x, y, color, forceY = 0) { 
     // Spawn debris with physics
     GAME.particles.push({
-        x:x, y:y, color:color, life:40,
+        x:x, y:y, color:color, life:40, 
         vx: (Math.random() - 0.5) * 2,
         vy: forceY || (Math.random() * -2),
         groundY: y + 5
-    });
+    }); 
 }
 
 function throwBook() {
     const p = GAME.player;
     if (p.cooldown > 0) return;
-    p.cooldown = 120;
+    p.cooldown = 120; 
     GAME.booksFired++; // Stat
 
     let vx=0, vy=0;
@@ -780,9 +908,9 @@ function tryInteract() {
     for (let i=0; i<GAME.entities.length; i++) {
         let e = GAME.entities[i];
         if (e.type === 'runner' && Math.hypot(p.x-e.x, p.y-e.y) < 20) {
-             e.type = 'assoc';
+             e.type = 'assoc'; 
              GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
-             if (GAME.issuesFixed >= 5) { initBossEncounter(); }
+             if (GAME.issuesFixed >= 5) { initBossEncounter(); } 
              else {
                  showDialog("✨ Analyzing Runner...", "System", null, true);
                  const currentGen = GAME.genId;
@@ -797,7 +925,7 @@ function tryInteract() {
         if (!h.fixed && Math.hypot(p.x-h.x, p.y-h.y) < 20) {
             h.fixed = true;
             GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
-            if (GAME.issuesFixed >= 5) { initBossEncounter(); }
+            if (GAME.issuesFixed >= 5) { initBossEncounter(); } 
             else {
                 showDialog(`✨ Analyzing ${h.data.name}...`, "System", null, true);
                 const currentGen = GAME.genId;
@@ -815,16 +943,16 @@ function triggerGameOver(reason) {
     GAME.gameOverTriggered = true;
     GAME.nextState = 'TITLE';
     document.getElementById('boss-hud').style.display = 'none';
-
+    
     const time = Math.floor((Date.now() - GAME.startTime)/1000);
-
+    
     if (reason === "FIRED!") {
         showDialog("YOU ARE FIRED!\nSimon has had enough of your unsafe behavior.\n\n(Press Space)", "HR", null, false);
     } else {
         showDialog("OVERWHELMED!\nSimon is writing up your review...", "Simon Unglaube", GFX.simonFace, false);
         const currentGen = GAME.genId;
         const prompt = `You are Simon Unglaube. Write a detailed performance review (max 50 words) for a coordinator who failed after ${time}s, threw ${GAME.booksFired} books, and pushed back ${GAME.opsPushed} Ops. Tone: Dark, cynical, disappointed father.`;
-
+        
         callGemini(prompt, "reviews_loss").then(review => {
              if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
                  showDialog(`AUDIT FAILED\n\n"${review}"\n\nStats:\nTime: ${time}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
@@ -871,11 +999,11 @@ function draw() {
         dxShake = (Math.random() - 0.5) * GAME.shake;
         dyShake = (Math.random() - 0.5) * GAME.shake;
     }
-
+    
     ctx.save();
     ctx.translate(dxShake, dyShake);
 
-    if (GAME.state === 'LOGO') {
+    if (GAME.state === 'LOGO') { 
         let alpha = 1.0;
         if(GAME.stateTimer < 30) alpha = GAME.stateTimer / 30;
         if(GAME.stateTimer > 200) alpha = (240 - GAME.stateTimer) / 40;
@@ -888,11 +1016,11 @@ function draw() {
         }
         if(GAME.stateTimer > 60 && GAME.stateTimer < 65) { ctx.fillStyle='white'; ctx.fillRect(0,0,256,224); }
         ctx.restore();
-        return;
+        return; 
     }
-
-    if (GAME.state === 'INTRO') {
-        ctx.fillStyle='#eab308'; ctx.fillText("THE WAREHOUSE...", 20, 60);
+    
+    if (GAME.state === 'INTRO') { 
+        ctx.fillStyle='#eab308'; ctx.fillText("THE WAREHOUSE...", 20, 60); 
         ctx.fillStyle='#fff';
         ctx.fillText("Ops Managers obsess over rates.", 20, 90);
         ctx.fillText("They throw Crazy Requests.", 20, 110);
@@ -900,11 +1028,11 @@ function draw() {
         ctx.fillText("Stop runners. Fix hazards.", 20, 150);
         ctx.fillStyle='#888'; ctx.fillText("[SPACE TO SKIP]", 80, 200);
         ctx.restore();
-        return;
+        return; 
     }
-
+    
     if (GAME.state === 'STORY') {
-        ctx.fillStyle='#eab308'; ctx.font='10px monospace';
+        ctx.fillStyle='#eab308'; ctx.font='10px monospace'; 
         ctx.fillText("MISSION BRIEFING", 20, 40);
         ctx.fillStyle='#fff';
         ctx.fillText("Simon Unglaube asks you to:", 20, 70);
@@ -916,7 +1044,7 @@ function draw() {
         ctx.restore();
         return;
     }
-
+    
     if (GAME.state === 'TITLE') {
         // SCROLLING GRID
         let offset = (Date.now() / 20) % 256;
@@ -925,14 +1053,14 @@ function draw() {
             ctx.beginPath(); ctx.moveTo(0, i*20 + (offset%20)); ctx.lineTo(256, i*20 + (offset%20)); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(i*20, 0); ctx.lineTo(i*20, 224); ctx.stroke();
         }
-
-        ctx.fillStyle='#eab308'; ctx.font='20px monospace'; ctx.fillText("AMZL WHS QUEST", 40, 60);
-        ctx.font='10px monospace'; ctx.fillStyle='#fff'; ctx.fillText("PRESS SPACE TO START", 60, 120);
-        ctx.fillStyle='#888'; ctx.fillText("Code by Erwin", 85, 200);
+        
+        ctx.fillStyle='#eab308'; ctx.font='20px monospace'; ctx.fillText("AMZL WHS QUEST", 40, 60); 
+        ctx.font='10px monospace'; ctx.fillStyle='#fff'; ctx.fillText("PRESS SPACE TO START", 60, 120); 
+        ctx.fillStyle='#888'; ctx.fillText("Code by Erwin", 85, 200); 
         ctx.restore();
-        return;
+        return; 
     }
-
+    
     if (GAME.state === 'HOWTO') {
         ctx.fillStyle='#fff'; ctx.font='12px monospace';
         ctx.fillText("HOW TO PLAY", 80, 30);
@@ -948,29 +1076,29 @@ function draw() {
         return;
     }
 
-    if (GAME.state === 'SELECT') {
-        ctx.fillStyle='#fff'; ctx.fillText("CHOOSE COORDINATOR", 40, 40);
-        let name = GAME.charList[GAME.charIndex];
+    if (GAME.state === 'SELECT') { 
+        ctx.fillStyle='#fff'; ctx.fillText("CHOOSE COORDINATOR", 40, 40); 
+        let name = GAME.charList[GAME.charIndex]; 
         let data = CHAR_DATA[name];
-
-        ctx.drawImage(GFX.chars[name], 120, 80);
-
-        ctx.fillStyle='#eab308'; ctx.font='12px monospace'; ctx.fillText("< " + name + " >", 80, 120);
-
+        
+        ctx.drawImage(GFX.chars[name], 120, 80); 
+        
+        ctx.fillStyle='#eab308'; ctx.font='12px monospace'; ctx.fillText("< " + name + " >", 80, 120); 
+        
         ctx.font='8px monospace';
         ctx.fillStyle='#00ffff'; ctx.fillText("ROLE: " + data.role, 40, 140);
-
+        
         // Scrolling text logic
-        let scrollText = data.backstory + "          ";
+        let scrollText = data.backstory + "          "; 
         let charOffset = Math.floor(GAME.ticks / 10) % scrollText.length;
-        let displayStr = (scrollText + scrollText).substring(charOffset, charOffset + 28);
+        let displayStr = (scrollText + scrollText).substring(charOffset, charOffset + 28); 
         ctx.fillStyle='#fff'; ctx.fillText(displayStr, 20, 160);
 
         ctx.fillStyle='#ff00ff'; ctx.fillText("ATTACK: " + data.attack, 40, 180);
-
-        ctx.fillStyle='#888'; ctx.font='10px monospace'; ctx.fillText("PRESS SPACE", 90, 210);
+        
+        ctx.fillStyle='#888'; ctx.font='10px monospace'; ctx.fillText("PRESS SPACE", 90, 210); 
         ctx.restore();
-        return;
+        return; 
     }
 
     // BOSS INTRO CUTSCENE
@@ -978,17 +1106,17 @@ function draw() {
         ctx.fillStyle = '#222'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#eab308'; ctx.font = '16px monospace';
         ctx.fillText("WARNING", 80, 50);
-
+        
         ctx.fillStyle = '#ff0000'; ctx.font = '12px monospace';
         ctx.fillText(GAME.boss.name.toUpperCase(), 20, 90);
-
+        
         ctx.fillStyle = '#fff'; ctx.font = '8px monospace';
         ctx.fillText(GAME.boss.title, 20, 110);
         ctx.fillStyle = '#888';
         ctx.fillText(GAME.boss.desc, 20, 130);
-
+        
         ctx.fillStyle = '#eab308'; ctx.fillText("ATTACK: " + GAME.boss.attackName, 20, 160);
-
+        
         ctx.fillStyle = '#fff'; ctx.fillText("[PRESS SPACE TO FIGHT]", 50, 200);
         ctx.restore();
         return;
@@ -1024,20 +1152,20 @@ function draw() {
 
     let renderList = [GAME.player, ...GAME.entities, ...GAME.projectiles];
     if (GAME.state === 'BOSS' && GAME.boss) renderList.push(GAME.boss);
-
+    
     renderList.sort((a,b) => a.y - b.y);
 
     renderList.forEach(e => {
         let dx = Math.floor(e.x - cx);
         let dy = Math.floor(e.y - cy);
-
+        
         if (e.maxHp) { // Boss
             let img = e.name === "SIMON UNGLAUBE" ? GFX.simonBoss : GFX.boss_manager;
             // Special check for specific bosses
             if (e.name.includes("Sebastian")) img = GFX.boss_sebastian;
             if (e.name.includes("Avetta")) img = GFX.boss_avetta;
             if (e.name.includes("Bot")) img = GFX.boss_bot;
-
+            
             ctx.drawImage(img, dx, dy, 32, 32);
         } else {
             ctx.fillStyle = 'rgba(0,0,0,0.4)';
@@ -1073,7 +1201,7 @@ function draw() {
         ctx.fillStyle = 'white'; ctx.fillRect(0,0,canvas.width, canvas.height);
         ctx.globalAlpha = 1.0;
     }
-
+    
     ctx.restore();
 }
 
@@ -1091,22 +1219,22 @@ function showDialog(text, speaker, portrait, isAI = false) {
     GAME.state = 'DIALOG';
     GAME.dialogText = (speaker ? speaker + ":\n" : "") + text;
     GAME.dialogVisible = "";
-
+    
     const box = document.getElementById('dialog-box');
     const badge = document.getElementById('gemini-badge');
     const port = document.getElementById('portrait');
     const pCtx = port.getContext('2d');
-
+    
     box.style.display = 'flex';
     document.getElementById('text-content').innerText = ""; // Clear
-
+    
     if (isAI) badge.style.display = 'block';
     else badge.style.display = 'none';
-
+    
     pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,32,32);
-    if (portrait) pCtx.drawImage(portrait, 0, 0);
+    if (portrait) pCtx.drawImage(portrait, 0, 0); 
     else { pCtx.fillStyle='#fff'; pCtx.fillText("!", 10, 20); }
-
+    
     AudioSys.sfx.text();
 }
 
@@ -1117,6 +1245,19 @@ function closeDialog() {
     if (GAME.state === 'PLAY' && GAME.issuesFixed >= 5 && !GAME.boss) {
          // Redundant check to ensure we don't get stuck if logic fails
          initBossEncounter();
+    }
+    updateMusicForState();
+}
+
+function updateMusicForState() {
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE'].includes(GAME.state)) {
+        MusicSys.play('title');
+    } else if (['HOWTO', 'SELECT'].includes(GAME.state)) {
+        MusicSys.play('menu');
+    } else if (GAME.state === 'PLAY') {
+        MusicSys.play('ingame');
+    } else if (GAME.state === 'BOSS' || GAME.state === 'BOSS_INTRO') {
+        MusicSys.play('boss');
     }
 }
 
