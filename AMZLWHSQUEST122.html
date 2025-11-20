@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMZL WHS Coordinator Quest v16.1 (Syntax Fix)</title>
+    <title>AMZL WHS Coordinator Quest (Gemini AI Enabled)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -107,6 +107,7 @@
     
     <div id="ui-overlay">
         <div id="slogan-display"></div> 
+        <div id="ai-status" class="hud-text" style="left:20px; right:auto; top:80px; display:none;">AI: Initializing...</div>
         
         <div class="hud-text" id="hud-layer" style="display:none;">
             <div style="color:#ff4444; margin-bottom:5px;">LIFE <span id="life-val">❤️❤️❤️❤️❤️</span></div>
@@ -131,7 +132,10 @@
 
 <script type="module">
 // --- CONFIG ---
-const apiKey = "AIzaSyB90VrCAZnivfnl-D5K_3I8EIrks5gqSkY"; 
+// Gemini API key is fetched at runtime from Netlify Functions
+let apiKey = null;
+let apiKeyPromise = null;
+const MODEL_NAME = "gemini-2.5-flash-lite";
 
 // --- CHARACTER DATA ---
 const CHAR_DATA = {
@@ -141,7 +145,7 @@ const CHAR_DATA = {
     "Roman": { role: "Silent Warrior", backstory: "A man of few words but many audits. He moves like a shadow and fixes hazards before they exist.", attack: "Stealth Audit" }
 };
 
-// --- SIMULATED AI DATABASE ---
+// --- SIMULATED AI DATABASE (FALLBACKS) ---
 const SIMULATED_AI = {
     slogans: [
         "ENTROPY IS THE ENEMY. ORDER IS THE ONLY SURVIVAL STRATEGY.",
@@ -195,21 +199,109 @@ const SIMULATED_AI = {
     ]
 };
 
+// --- AI STATUS HELPERS ---
+const aiStatusEl = document.getElementById('ai-status');
+let aiStatus = "init";
+
+function setAIStatus(message, level = 'info') {
+    aiStatus = level;
+    if (!aiStatusEl) return;
+    aiStatusEl.style.display = 'block';
+    aiStatusEl.style.borderColor = level === 'error' ? '#f00' : '#fff';
+    aiStatusEl.style.color = level === 'error' ? '#ffaaaa' : '#00ffff';
+    aiStatusEl.innerText = message;
+}
+setAIStatus('AI: Waiting for first prompt...', 'info');
+
+async function fetchApiKeyFromNetlify() {
+    try {
+        setAIStatus('AI: Fetching key from Netlify...', 'info');
+        const res = await fetch('/.netlify/functions/get-gemini-key', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`Netlify key endpoint returned ${res.status}`);
+        const data = await res.json();
+        const key = (data && data.apiKey ? String(data.apiKey) : '').trim();
+        if (!key) throw new Error('No apiKey field in Netlify response');
+        apiKey = key;
+        setAIStatus('AI key loaded from Netlify.', 'info');
+        return apiKey;
+    } catch (err) {
+        setAIStatus(`AI key fetch failed: ${err.message || err}`, 'error');
+        return null;
+    }
+}
+
+async function ensureApiKey() {
+    if (apiKey) return apiKey;
+    if (!apiKeyPromise) apiKeyPromise = fetchApiKeyFromNetlify();
+    return apiKeyPromise;
+}
+
 // --- GEMINI API ---
 async function callGemini(prompt, category = 'generic', context = {}) {
-    if (!apiKey) return getRandomFallback(prompt, category, context);
+    const activeKey = await ensureApiKey();
+    if (!activeKey) {
+        console.log("No valid API Key, using fallback.");
+        setAIStatus('AI: Missing API key, using fallback.', 'error');
+        return getRandomFallback(prompt, category, context);
+    }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-    const payload = { contents: [{ parts: [{ text: prompt }] }] };
-    const timeout = new Promise((r) => setTimeout(() => r("TIMEOUT"), 2500));
+    // Using flash-lite model per latest instructions
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${activeKey}`;
+    const payload = { 
+        contents: [{ 
+            parts: [{ text: prompt }] 
+        }] 
+    };
+    const timeout = new Promise((r) => setTimeout(() => r("TIMEOUT"), 10000));
 
     try {
-        const fetchPromise = fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        setAIStatus('AI: Contacting Gemini...', 'info');
+        const fetchPromise = fetch(url, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(payload) 
+        });
         const response = await Promise.race([fetchPromise, timeout]);
-        if (response === "TIMEOUT" || !response.ok) return getRandomFallback(prompt, category, context);
+        
+        if (response === "TIMEOUT") {
+            console.log("Gemini Timed Out");
+            setAIStatus('AI timeout — using fallback lines.', 'error');
+            return getRandomFallback(prompt, category, context);
+        }
+        if (!response.ok) {
+            let errText = '';
+            try {
+                const errJson = await response.clone().json();
+                errText = errJson?.error?.message || '';
+            } catch (err) {
+                errText = await response.text().catch(() => '');
+            }
+
+            const normalized = errText.toLowerCase();
+            const leakedKey = response.status === 403 && normalized.includes('reported as leaked');
+            const userMessage = leakedKey
+                ? 'AI blocked: API key was reported leaked — replace with a fresh server-side key.'
+                : `AI error ${response.status}: ${errText || 'see console'}`;
+
+            console.log("Gemini Error:", response.status, errText);
+            setAIStatus(userMessage, 'error');
+            return getRandomFallback(prompt, category, context);
+        }
+        
         const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || getRandomFallback(prompt, category, context);
-    } catch (e) { return getRandomFallback(prompt, category, context); }
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+            setAIStatus(`AI online (${MODEL_NAME})`, 'info');
+            return text.trim();
+        }
+        setAIStatus('AI returned empty text, using fallback.', 'error');
+        return getRandomFallback(prompt, category, context);
+
+    } catch (e) { 
+        console.error(e);
+        setAIStatus(`AI request failed: ${e.message || e}`, 'error');
+        return getRandomFallback(prompt, category, context); 
+    }
 }
 
 function getRandomFallback(prompt, category = 'generic', context = {}) {
