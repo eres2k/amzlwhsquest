@@ -100,6 +100,11 @@
 </head>
 <body>
 
+<audio id="bgm-menu" src="Pixel Reverie.mp3" loop></audio>
+<audio id="bgm-gameplay" src="Pixel Warehouse Crawl.mp3" loop></audio>
+<audio id="bgm-boss" src="Pixel Panic.mp3" loop></audio>
+<audio id="bgm-endscreen" src="Game Over But Not Really.mp3" loop></audio>
+
 <div id="game-wrapper">
     <canvas id="gameCanvas" width="256" height="224"></canvas>
     <div id="crt-overlay"></div>
@@ -266,6 +271,60 @@ const AudioSys = {
             AudioSys.playTone(100, 'sawtooth', 1.0, 0.3);
             setTimeout(() => AudioSys.playTone(80, 'sawtooth', 1.0, 0.3), 200);
         }
+    }
+};
+
+// --- BACKGROUND MUSIC MANAGER ---
+const BGM = {
+    tracks: {},
+    currentTrack: null,
+    volume: 0.3,
+
+    init: function() {
+        this.tracks = {
+            menu: document.getElementById('bgm-menu'),
+            gameplay: document.getElementById('bgm-gameplay'),
+            boss: document.getElementById('bgm-boss'),
+            endscreen: document.getElementById('bgm-endscreen')
+        };
+
+        Object.values(this.tracks).forEach(track => {
+            track.volume = this.volume;
+        });
+    },
+
+    play: function(trackName) {
+        if (!this.tracks[trackName]) return;
+        if (this.currentTrack === trackName) return;
+
+        // Stop all other tracks
+        Object.entries(this.tracks).forEach(([name, track]) => {
+            if (name !== trackName) {
+                track.pause();
+                track.currentTime = 0;
+            }
+        });
+
+        // Play the new track
+        const newTrack = this.tracks[trackName];
+        newTrack.currentTime = 0;
+        newTrack.play().catch(e => console.log('Audio play failed:', e));
+        this.currentTrack = trackName;
+    },
+
+    stop: function() {
+        Object.values(this.tracks).forEach(track => {
+            track.pause();
+            track.currentTime = 0;
+        });
+        this.currentTrack = null;
+    },
+
+    setVolume: function(vol) {
+        this.volume = Math.max(0, Math.min(1, vol));
+        Object.values(this.tracks).forEach(track => {
+            track.volume = this.volume;
+        });
     }
 };
 
@@ -443,10 +502,11 @@ function handleAction() {
     else if (GAME.state === 'BOSS_INTRO') {
         GAME.state = 'BOSS'; // Start Fight
     }
-    else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') { 
+    else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') {
         document.getElementById('boss-hud').style.display = 'none';
         document.getElementById('slogan-display').style.display = 'none';
-        GAME.state = 'TITLE'; 
+        BGM.play('menu');
+        GAME.state = 'TITLE';
     }
     else if (GAME.state === 'PLAY' || GAME.state === 'BOSS') {
         if (GAME.state === 'PLAY' && tryInteract()) return;
@@ -456,6 +516,8 @@ function handleAction() {
 
 function init() {
     generateAssets();
+    BGM.init();
+    BGM.play('menu');
     requestAnimationFrame(loop);
 }
 
@@ -471,14 +533,17 @@ function resetGame() {
     GAME.clutter = [];
     GAME.issuesFixed = 0;
     GAME.lives = 5;
-    GAME.simonHits = 0; 
+    GAME.simonHits = 0;
     GAME.boss = null;
-    GAME.nextState = 'PLAY'; 
-    
+    GAME.nextState = 'PLAY';
+
     // Stats Reset
     GAME.startTime = Date.now();
     GAME.booksFired = 0;
     GAME.opsPushed = 0;
+
+    // Start gameplay music
+    BGM.play('gameplay');
     
     generateMap();
     GAME.entities.push({ type: 'simon', x: 100, y: 80, w: 16, h: 16 });
@@ -540,8 +605,9 @@ function spawnEntity(type) {
 
 function initBossEncounter() {
     GAME.state = 'BOSS_INTRO';
-    AudioSys.sfx.bossIntro(); 
-    
+    AudioSys.sfx.bossIntro();
+    BGM.play('boss');
+
     const bossData = GAME.bossTypes[Math.floor(Math.random() * GAME.bossTypes.length)];
     
     GAME.boss = {
@@ -794,6 +860,7 @@ function triggerGameOver(reason) {
     GAME.gameOverTriggered = true;
     GAME.nextState = 'TITLE';
     document.getElementById('boss-hud').style.display = 'none';
+    BGM.play('endscreen');
     
     const time = Math.floor((Date.now() - GAME.startTime)/1000);
     
@@ -816,6 +883,7 @@ function winGame() {
     AudioSys.sfx.start();
     GAME.nextState = 'TITLE';
     document.getElementById('boss-hud').style.display = 'none';
+    BGM.play('endscreen');
     showDialog("BOSS DEFEATED!\nCalculating Safety Score...", "System", null, true);
     const currentGen = GAME.genId;
     const time = Math.floor((Date.now() - GAME.startTime)/1000);
