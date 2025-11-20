@@ -134,7 +134,7 @@
 // --- CONFIG ---
 // PASTE YOUR API KEY HERE vvv
 const apiKey = "AIzaSyB90VrCAZnivfnl-D5K_3I8EIrks5gqSkY";
-const MODEL_NAME = "gemini-2.5-flash-live";
+const MODEL_NAME = "gemini-2.5-flash-lite";
 
 // --- CHARACTER DATA ---
 const CHAR_DATA = {
@@ -220,7 +220,7 @@ async function callGemini(prompt, category = 'generic', context = {}) {
         return getRandomFallback(prompt, category, context);
     }
 
-    // Using live flash model per latest instructions
+    // Using flash-lite model per latest instructions
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
     const payload = { 
         contents: [{ 
