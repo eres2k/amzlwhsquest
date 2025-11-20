@@ -107,6 +107,7 @@
     
     <div id="ui-overlay">
         <div id="slogan-display"></div> 
+        <div id="ai-status" class="hud-text" style="left:20px; right:auto; top:80px; display:none;">AI: Initializing...</div>
         
         <div class="hud-text" id="hud-layer" style="display:none;">
             <div style="color:#ff4444; margin-bottom:5px;">LIFE <span id="life-val">❤️❤️❤️❤️❤️</span></div>
@@ -196,23 +197,39 @@ const SIMULATED_AI = {
     ]
 };
 
+// --- AI STATUS HELPERS ---
+const aiStatusEl = document.getElementById('ai-status');
+let aiStatus = "init";
+
+function setAIStatus(message, level = 'info') {
+    aiStatus = level;
+    if (!aiStatusEl) return;
+    aiStatusEl.style.display = 'block';
+    aiStatusEl.style.borderColor = level === 'error' ? '#f00' : '#fff';
+    aiStatusEl.style.color = level === 'error' ? '#ffaaaa' : '#00ffff';
+    aiStatusEl.innerText = message;
+}
+setAIStatus('AI: Waiting for first prompt...', 'info');
+
 // --- GEMINI API ---
 async function callGemini(prompt, category = 'generic', context = {}) {
     if (!apiKey || apiKey === "YOUR_API_KEY_HERE") {
         console.log("No valid API Key, using fallback.");
+        setAIStatus('AI: Missing API key, using fallback.', 'error');
         return getRandomFallback(prompt, category, context);
     }
 
     // Using standard stable model
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
     const payload = { 
         contents: [{ 
             parts: [{ text: prompt }] 
         }] 
     };
-    const timeout = new Promise((r) => setTimeout(() => r("TIMEOUT"), 3000));
+    const timeout = new Promise((r) => setTimeout(() => r("TIMEOUT"), 10000));
 
     try {
+        setAIStatus('AI: Contacting Gemini...', 'info');
         const fetchPromise = fetch(url, { 
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' }, 
@@ -222,20 +239,28 @@ async function callGemini(prompt, category = 'generic', context = {}) {
         
         if (response === "TIMEOUT") {
             console.log("Gemini Timed Out");
+            setAIStatus('AI timeout — using fallback lines.', 'error');
             return getRandomFallback(prompt, category, context);
         }
         if (!response.ok) {
-            console.log("Gemini Error:", response.status);
+            const errText = await response.text().catch(() => '');
+            console.log("Gemini Error:", response.status, errText);
+            setAIStatus(`AI error ${response.status}: ${errText || 'see console'}`, 'error');
             return getRandomFallback(prompt, category, context);
         }
         
         const data = await response.json();
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) return text.trim();
+        if (text) {
+            setAIStatus('AI online (Gemini)', 'info');
+            return text.trim();
+        }
+        setAIStatus('AI returned empty text, using fallback.', 'error');
         return getRandomFallback(prompt, category, context);
 
     } catch (e) { 
         console.error(e);
+        setAIStatus(`AI request failed: ${e.message || e}`, 'error');
         return getRandomFallback(prompt, category, context); 
     }
 }
