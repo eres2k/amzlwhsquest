@@ -47,10 +47,28 @@
         }
 
         #dialog-box {
-            width: 100%; min-height: 140px; background: #0000a0; 
+            width: 100%; min-height: 140px; background: #0000a0;
             border: 4px solid #fff; border-radius: 8px; display: none;
             flex-direction: row; padding: 16px; box-sizing: border-box;
-            box-shadow: 6px 6px 0px rgba(0,0,0,0.5); pointer-events: auto; 
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.5); pointer-events: auto;
+        }
+
+        #ops-banter {
+            width: 100%; min-height: 60px; background: #0a0a0a;
+            border: 3px solid #fff; border-radius: 8px; display: none;
+            flex-direction: row; padding: 12px; box-sizing: border-box;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.6);
+            align-items: center; gap: 12px; pointer-events: none;
+        }
+
+        #ops-banter-label {
+            padding: 6px 8px; background: #b91c1c; border: 2px solid #fff;
+            color: #fff; font-size: 10px; text-shadow: 1px 1px #000;
+        }
+
+        #ops-banter-text {
+            font-size: 12px; color: #fff; text-shadow: 2px 2px #000;
+            flex: 1; line-height: 1.4;
         }
 
         #portrait {
@@ -106,16 +124,21 @@
     <div id="vignette"></div>
     
     <div id="ui-overlay">
-        <div id="slogan-display"></div> 
-        
+        <div id="slogan-display"></div>
+
         <div class="hud-text" id="hud-layer" style="display:none;">
             <div style="color:#ff4444; margin-bottom:5px;">LIFE <span id="life-val">❤️❤️❤️❤️❤️</span></div>
             <div style="color:#44ff44;">HAZARDS: <span id="score-val">0/5</span></div>
         </div>
-        
+
         <div id="boss-hud">
             <div class="boss-name" id="boss-name-el">BOSS NAME</div>
             <div class="boss-bar-bg"><div class="boss-bar-fill" id="boss-health-el"></div></div>
+        </div>
+
+        <div id="ops-banter" aria-live="polite">
+            <div id="ops-banter-label">OPS</div>
+            <div id="ops-banter-text"></div>
         </div>
 
         <div id="dialog-box">
@@ -196,8 +219,8 @@ const SIMULATED_AI = {
 };
 
 // --- GEMINI API ---
-async function callGemini(prompt) {
-    if (!apiKey) return getRandomFallback(prompt);
+async function callGemini(prompt, category = 'generic', context = {}) {
+    if (!apiKey) return getRandomFallback(prompt, category, context);
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
     const payload = { contents: [{ parts: [{ text: prompt }] }] };
@@ -206,22 +229,35 @@ async function callGemini(prompt) {
     try {
         const fetchPromise = fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         const response = await Promise.race([fetchPromise, timeout]);
-        if (response === "TIMEOUT" || !response.ok) return getRandomFallback(prompt);
+        if (response === "TIMEOUT" || !response.ok) return getRandomFallback(prompt, category, context);
         const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || getRandomFallback(prompt);
-    } catch (e) { return getRandomFallback(prompt); }
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || getRandomFallback(prompt, category, context);
+    } catch (e) { return getRandomFallback(prompt, category, context); }
 }
 
-function getRandomFallback(prompt) {
-    if(prompt.includes("slogan")) return SIMULATED_AI.slogans[Math.floor(Math.random()*SIMULATED_AI.slogans.length)];
-    if(prompt.includes("running")) return SIMULATED_AI.runners[Math.floor(Math.random()*SIMULATED_AI.runners.length)];
-    if(prompt.includes("banter")) return SIMULATED_AI.banter[Math.floor(Math.random()*SIMULATED_AI.banter.length)];
-    if(prompt.includes("taunt")) {
-         if(prompt.includes("Simon")) return SIMULATED_AI.simon_taunts[Math.floor(Math.random()*SIMULATED_AI.simon_taunts.length)];
-         return SIMULATED_AI.taunts[Math.floor(Math.random()*SIMULATED_AI.taunts.length)];
+function getRandomFallback(prompt, category = 'generic', context = {}) {
+    const hazardName = context.hazardName;
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const is = (key) => category === key || prompt.includes(key);
+
+    if (is("slogans")) return pick(SIMULATED_AI.slogans);
+    if (is("runners")) return pick(SIMULATED_AI.runners);
+    if (is("banter")) return pick(SIMULATED_AI.banter);
+    if (is("taunt")) {
+         if(prompt.includes("Simon")) return pick(SIMULATED_AI.simon_taunts);
+         return pick(SIMULATED_AI.taunts);
     }
-    if(prompt.includes("review")) return prompt.includes("failed") ? SIMULATED_AI.reviews_loss[Math.floor(Math.random()*SIMULATED_AI.reviews_loss.length)] : SIMULATED_AI.reviews_win[Math.floor(Math.random()*SIMULATED_AI.reviews_win.length)];
-    return SIMULATED_AI.tips[Math.floor(Math.random()*SIMULATED_AI.tips.length)];
+    if (is("reviews_loss")) return pick(SIMULATED_AI.reviews_loss);
+    if (is("reviews_win")) return pick(SIMULATED_AI.reviews_win);
+
+    if (is("hazard") || is("tips")) {
+        if (hazardName) {
+            return `Hazard "${hazardName}" cleared. Paperwork avoided, entropy delayed.`;
+        }
+        return pick(SIMULATED_AI.tips);
+    }
+
+    return pick(SIMULATED_AI.tips);
 }
 
 const canvas = document.getElementById('gameCanvas');
@@ -414,10 +450,12 @@ const GAME = {
 };
 
 const SAFETY_ISSUES = [
-    { name: "Chem Spill", type: "spill" }, { name: "Bad Pallet", type: "box" }, { name: "Trash", type: "box" }, 
+    { name: "Chem Spill", type: "spill" }, { name: "Bad Pallet", type: "box" }, { name: "Trash", type: "box" },
     { name: "Cable Trip", type: "spill" }, { name: "Broken Glass", type: "spill" }, { name: "Unlabeled Chem", type: "drum" },
     { name: "Pallet Debris", type: "debris" }, { name: "Unstable Stack", type: "tall_pallet" }, { name: "Blocked Extinguisher", type: "box" }
 ];
+
+let opsBanterTimeout = null;
 
 // --- INPUT ---
 const KEYS = { up: false, down: false, left: false, right: false, action: false };
@@ -469,10 +507,11 @@ function handleAction() {
         GAME.nextState = 'BOSS'; // FIX: Explicitly set next state to BOSS
         updateMusicForState();
     }
-    else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') { 
+    else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') {
         document.getElementById('boss-hud').style.display = 'none';
         document.getElementById('slogan-display').style.display = 'none';
-        GAME.state = 'TITLE'; 
+        hideOpsBanter();
+        GAME.state = 'TITLE';
         updateMusicForState();
     }
     else if (GAME.state === 'PLAY' || GAME.state === 'BOSS') {
@@ -505,18 +544,19 @@ function resetGame() {
     GAME.entities = []; GAME.projectiles = []; GAME.particles = [];
     GAME.activeIssues = []; GAME.clutter = [];
     GAME.issuesFixed = 0; GAME.lives = 5; GAME.simonHits = 0; GAME.boss = null;
-    GAME.nextState = 'PLAY'; 
-    
+    GAME.nextState = 'PLAY';
+
     // Stats Reset
     GAME.startTime = Date.now();
     GAME.booksFired = 0;
     GAME.opsPushed = 0;
-    
+
     generateMap();
     GAME.entities.push({ type: 'simon', x: 100, y: 80, w: 16, h: 16 });
     document.getElementById('hud-layer').style.display = 'block';
     document.getElementById('boss-hud').style.display = 'none';
-    
+    hideOpsBanter();
+
     const sloganEl = document.getElementById('slogan-display');
     sloganEl.style.display = 'block';
     sloganEl.innerText = "✨ SAFETY SYSTEM LOADING...";
@@ -833,15 +873,28 @@ function updateProjectiles() {
 
             let hit = false;
             GAME.entities.forEach(e => {
-                if (e.type === 'ops' && Math.hypot(p.x-e.x, p.y-e.y) < 12) {
-                    e.type = 'assoc'; 
-                    AudioSys.sfx.hit();
-                    spawnParticle(e.x, e.y, '#fff', -2);
-                    GAME.opsPushed++; // Stat
-                    hit = true;
-                }
-            });
-            if (hit) GAME.projectiles.splice(i,1);
+                    if (e.type === 'ops' && Math.hypot(p.x-e.x, p.y-e.y) < 12) {
+                        e.type = 'assoc';
+                        AudioSys.sfx.hit();
+                        spawnParticle(e.x, e.y, '#fff', -2);
+                        GAME.opsPushed++; // Stat
+
+                        const opsBannerEl = document.getElementById('ops-banter');
+                        const bannerVisible = opsBannerEl && opsBannerEl.style.display !== 'none';
+                        const banterChance = bannerVisible ? 0.2 : 0.1;
+                        if (opsBannerEl && Math.random() < banterChance) {
+                            const currentGen = GAME.genId;
+                            callGemini("Generate snarky OPS banter after being pushed back. Max 12 words. Keep it dramatic.", "banter").then(line => {
+                                if (GAME.state === 'PLAY' && GAME.genId === currentGen) {
+                                    showOpsBanter("OPS: " + line);
+                                }
+                            });
+                        }
+
+                        hit = true;
+                    }
+                });
+                if (hit) GAME.projectiles.splice(i,1);
         }
     }
 }
@@ -929,7 +982,7 @@ function tryInteract() {
             else {
                 showDialog(`✨ Analyzing ${h.data.name}...`, "System", null, true);
                 const currentGen = GAME.genId;
-                callGemini(`You are Simon Unglaube. A coordinator fixed a "${h.data.name}". Give a dry, witty safety compliment. Mention avoiding lawsuits, physics, or paperwork. Max 20 words.`, "tips").then(tip => {
+                callGemini(`You are Simon Unglaube. A coordinator fixed a "${h.data.name}". Give a dry, witty safety compliment. Mention avoiding lawsuits, physics, or paperwork. Max 20 words.`, "hazard", { hazardName: h.data.name }).then(tip => {
                     if (GAME.state === 'DIALOG' && GAME.genId === currentGen) showDialog(`Fixed: ${h.data.name}!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
                 });
             }
@@ -1076,29 +1129,51 @@ function draw() {
         return;
     }
 
-    if (GAME.state === 'SELECT') { 
-        ctx.fillStyle='#fff'; ctx.fillText("CHOOSE COORDINATOR", 40, 40); 
-        let name = GAME.charList[GAME.charIndex]; 
-        let data = CHAR_DATA[name];
-        
-        ctx.drawImage(GFX.chars[name], 120, 80); 
-        
-        ctx.fillStyle='#eab308'; ctx.font='12px monospace'; ctx.fillText("< " + name + " >", 80, 120); 
-        
-        ctx.font='8px monospace';
-        ctx.fillStyle='#00ffff'; ctx.fillText("ROLE: " + data.role, 40, 140);
-        
-        // Scrolling text logic
-        let scrollText = data.backstory + "          "; 
-        let charOffset = Math.floor(GAME.ticks / 10) % scrollText.length;
-        let displayStr = (scrollText + scrollText).substring(charOffset, charOffset + 28); 
-        ctx.fillStyle='#fff'; ctx.fillText(displayStr, 20, 160);
+    if (GAME.state === 'SELECT') {
+        ctx.fillStyle = '#0a0a0a'; ctx.fillRect(12, 20, 232, 50);
+        ctx.fillStyle = '#111'; ctx.fillRect(12, 80, 232, 120);
 
-        ctx.fillStyle='#ff00ff'; ctx.fillText("ATTACK: " + data.attack, 40, 180);
-        
-        ctx.fillStyle='#888'; ctx.font='10px monospace'; ctx.fillText("PRESS SPACE", 90, 210); 
+        ctx.fillStyle='#eab308'; ctx.font='12px monospace'; ctx.fillText("CHOOSE COORDINATOR", 40, 50);
+        ctx.fillStyle='#888'; ctx.font='8px monospace'; ctx.fillText("ARROWS TO BROWSE | SPACE TO START", 26, 64);
+
+        let name = GAME.charList[GAME.charIndex];
+        let data = CHAR_DATA[name];
+
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(GFX.chars[name], 34, 104, 48, 48);
         ctx.restore();
-        return; 
+
+        ctx.fillStyle='#eab308'; ctx.font='12px monospace'; ctx.fillText("< " + name + " >", 100, 108);
+        ctx.font='8px monospace';
+        ctx.fillStyle='#00ffff'; ctx.fillText("ROLE: " + data.role, 100, 124);
+
+        const wrapText = (text, maxChars = 28) => {
+            const words = text.split(' ');
+            const lines = [];
+            let line = '';
+            words.forEach(word => {
+                const candidate = line.length ? line + ' ' + word : word;
+                if (candidate.length > maxChars) {
+                    lines.push(line);
+                    line = word;
+                } else {
+                    line = candidate;
+                }
+            });
+            if (line) lines.push(line);
+            return lines;
+        };
+
+        const backstoryLines = wrapText(data.backstory, 32).slice(0, 3);
+        ctx.fillStyle='#fff';
+        backstoryLines.forEach((l, idx) => ctx.fillText(l, 24, 150 + idx * 12));
+
+        ctx.fillStyle='#ff00ff'; ctx.fillText("ATTACK: " + data.attack, 24, 192);
+
+        ctx.fillStyle='#888'; ctx.font='10px monospace'; ctx.fillText("PRESS SPACE", 92, 210);
+        ctx.restore();
+        return;
     }
 
     // BOSS INTRO CUTSCENE
@@ -1213,6 +1288,24 @@ function updateCamera() {
 function updateHud() {
     document.getElementById('life-val').innerText = "❤️".repeat(Math.max(0, GAME.lives));
     document.getElementById('score-val').innerText = GAME.issuesFixed + "/5";
+}
+
+function showOpsBanter(text) {
+    const box = document.getElementById('ops-banter');
+    const textEl = document.getElementById('ops-banter-text');
+    if (!box || !textEl) return;
+
+    textEl.innerText = text;
+    box.style.display = 'flex';
+
+    if (opsBanterTimeout) clearTimeout(opsBanterTimeout);
+    opsBanterTimeout = setTimeout(() => hideOpsBanter(), 3500);
+}
+
+function hideOpsBanter() {
+    const box = document.getElementById('ops-banter');
+    if (box) box.style.display = 'none';
+    if (opsBanterTimeout) { clearTimeout(opsBanterTimeout); opsBanterTimeout = null; }
 }
 
 function showDialog(text, speaker, portrait, isAI = false) {
