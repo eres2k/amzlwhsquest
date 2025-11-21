@@ -1070,10 +1070,10 @@ function triggerGameOver(reason) {
         showDialog("OVERWHELMED!\nSimon is writing up your review...", "Simon Unglaube", GFX.simonFace, false);
         const currentGen = GAME.genId;
         const prompt = `You are Simon Unglaube. Write a detailed performance review (max 50 words) for a coordinator who failed after ${time}s, threw ${GAME.booksFired} books, and pushed back ${GAME.opsPushed} Ops. Tone: Dark, cynical, disappointed father.`;
-        
+
         callGemini(prompt, "reviews_loss").then(review => {
              if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
-                 showDialog(`AUDIT FAILED\n\n"${review}"\n\nStats:\nTime: ${time}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
+                 showDialog(`SIMON'S PERFORMANCE REVIEW\n\n${review}\n\nStats:\nTime: ${time}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
              }
         });
     }
@@ -1137,16 +1137,18 @@ function draw() {
         return; 
     }
     
-    if (GAME.state === 'INTRO') { 
-        ctx.fillStyle='#eab308'; ctx.fillText("THE WAREHOUSE...", 20, 60); 
+    if (GAME.state === 'INTRO') {
+        ctx.fillStyle='#eab308'; ctx.fillText("THE WAREHOUSE...", 20, 60);
         ctx.fillStyle='#fff';
         ctx.fillText("Ops Managers obsess over rates.", 20, 90);
         ctx.fillText("They throw Crazy Requests.", 20, 110);
         ctx.fillText("You must protect Safety.", 20, 130);
         ctx.fillText("Stop runners. Fix hazards.", 20, 150);
+        ctx.fillText("Ops will argue. Policies won't.", 20, 170);
+        ctx.fillText("Hold the line until reinforcements arrive.", 20, 190);
         ctx.fillStyle='#888'; ctx.fillText("[SPACE TO SKIP]", 80, 200);
         ctx.restore();
-        return; 
+        return;
     }
     
     if (GAME.state === 'STORY') {
