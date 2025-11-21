@@ -98,9 +98,11 @@
         .boss-name { color: #ff0000; text-align: center; font-size: 10px; margin-bottom: 4px; text-shadow: 1px 1px black; }
         
         #ai-status {
+            /* HIDDEN PER REQUEST */
+            display: none !important; 
             position: absolute; top: 10px; left: 10px; font-size: 10px; color: #00ffff;
             background: rgba(0,0,0,0.8); padding: 4px; border: 1px solid #00ffff; pointer-events: none;
-            z-index: 2000; display: none;
+            z-index: 2000; 
         }
     </style>
 </head>
@@ -206,18 +208,15 @@ const SIMULATED_AI = {
 };
 
 // --- AI STATUS HELPERS ---
+// Modified to be invisible per user request, but keep logging for debugging
 const aiStatusEl = document.getElementById('ai-status');
 let aiStatus = "init";
 
 function setAIStatus(message, level = 'info') {
     aiStatus = level;
-    if (!aiStatusEl) return;
-    aiStatusEl.style.display = 'block';
-    aiStatusEl.style.borderColor = level === 'error' ? '#f00' : '#fff';
-    aiStatusEl.style.color = level === 'error' ? '#ffaaaa' : '#00ffff';
-    aiStatusEl.innerText = message;
+    // Console log instead of UI update
+    console.log(`[AI STATUS ${level}]: ${message}`);
 }
-setAIStatus('AI: Waiting for first prompt...', 'info');
 
 async function fetchApiKeyFromNetlify() {
     try {
@@ -610,7 +609,11 @@ function handleAction() {
         updateMusicForState();
     }
     else if (GAME.state === 'SELECT') { 
-        AudioSys.sfx.select(); GAME.selectedChar = GAME.charList[GAME.charIndex]; resetGame(); 
+        AudioSys.sfx.select(); 
+        GAME.selectedChar = GAME.charList[GAME.charIndex]; 
+        // FEATURE: Say the name of the coordinator when selected
+        TTSSys.speak(GAME.selectedChar);
+        resetGame(); 
     }
     else if (GAME.state === 'DIALOG') {
         // Fast forward text or close
@@ -678,14 +681,14 @@ function resetGame() {
     sloganEl.style.display = 'block';
     sloganEl.innerText = "✨ SAFETY SYSTEM LOADING...";
     
-    callGemini("You are Simon Unglaube. Write a chaotic, intense, and slightly unhinged safety slogan. ALL CAPS. Max 6 words. No paperwork mentions.", "slogans").then(text => {
+    callGemini("You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU (DE, AT NL). You take safety seriously and have dry humor. Write a corporate safety slogan. ALL CAPS. Max 6 words. No paperwork mentions.", "slogans").then(text => {
         if (GAME.state === 'PLAY') sloganEl.innerText = "✨ " + text;
     });
 
     // AI Start Message
     showDialog("Analyzing coordinator lethargy levels...", "Simon Unglaube", GFX.simonFace, true);
     const currentGen = GAME.genId;
-    callGemini(`You are Simon Unglaube. The game just started. Yell at the Coordinator (${GAME.selectedChar}) to start working. Be dramatic, funny, and obsessed with entropy or chaos. Do NOT mention fines or paperwork. Max 15 words.`, "intro").then(text => {
+    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU (DE, AT NL). The game just started. Address the Coordinator (${GAME.selectedChar}) with dry, professional humor. Encourage them to work but note that you are watching for compliance errors. Max 15 words.`, "intro").then(text => {
         if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
              showDialog(text, "Simon Unglaube", GFX.simonFace, true);
         }
@@ -892,7 +895,7 @@ function updateBoss() {
          const currentGen = GAME.genId;
          // Custom prompt for Simon vs others
          let prompt = b.name === "SIMON UNGLAUBE" ? 
-             "You are Simon Unglaube, turning into a super boss. Threaten the player with termination and entropy. Max 6 words." :
+             "You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. The player is fighting you. Threaten them with a final audit. Be professional but scary. Max 8 words." :
              `Generate a 5-word taunt from a video game boss named ${b.name}. Warehouse themed.`;
 
          callGemini(prompt, "taunt").then(text => {
@@ -1001,13 +1004,13 @@ function updateProjectiles() {
                  if (GAME.simonHits === 1) {
                      // AI REACTION 1
                      showDialog("...", "Simon Unglaube", GFX.simonFace, true); 
-                     callGemini("You are Simon. A subordinate just threw a book at you. Express shock and rage. Max 10 words.", "ouch")
+                     callGemini("You are Simon Unglaube, WHS Senior Regional Manager. A subordinate just threw a book at you. Express dry, professional shock. Max 10 words.", "ouch")
                         .then(t => showDialog(t, "Simon Unglaube", GFX.simonFace, true));
                  }
                  else if (GAME.simonHits === 2) {
                      // AI REACTION 2
                      showDialog("...", "Simon Unglaube", GFX.simonFace, true); 
-                     callGemini("You are Simon. You got hit AGAIN. Threaten to delete the universe or the player. Be unhinged. Max 10 words.", "ouch")
+                     callGemini("You are Simon Unglaube. You got hit AGAIN. Threaten to report them to the board. Be dry and cynical. Max 10 words.", "ouch")
                         .then(t => showDialog(t, "Simon Unglaube", GFX.simonFace, true));
                  }
                  else if (GAME.simonHits >= 3) {
@@ -1113,7 +1116,7 @@ function tryInteract() {
                  showDialog("✨ Analyzing Runner...", "System", null, true);
                  const currentGen = GAME.genId;
                  callGemini(
-                     "You are Simon Unglaube. You stopped a runner. Mock them for trying to break the sound barrier or defying physics. Be sarcastic and funny. Max 15 words.", 
+                     "You are Simon Unglaube, WHS Senior Regional Manager. You stopped a runner. Mock them with dry humor about physics and standard work. Max 15 words.", 
                      "runners"
                  ).then(tip => {
                     if (GAME.state === 'DIALOG' && GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
@@ -1131,7 +1134,7 @@ function tryInteract() {
                 showDialog(`✨ Analyzing ${h.data.name}...`, "System", null, true);
                 const currentGen = GAME.genId;
                 callGemini(
-                    `You are Simon Unglaube. A hazard "${h.data.name}" was fixed. Praise the player sarcastically. Mention avoiding explosions, black holes, or chaos. Max 15 words.`, 
+                    `You are Simon Unglaube, WHS Senior Regional Manager. A hazard "${h.data.name}" was fixed. Praise the player with dry, professional humor. Max 15 words.`, 
                     "hazard", 
                     { hazardName: h.data.name }
                 ).then(tip => {
@@ -1156,8 +1159,8 @@ function triggerGameOver(reason) {
     } else {
         showDialog("OVERWHELMED!\nSimon is judging your soul...", "Simon Unglaube", GFX.simonFace, true);
         const currentGen = GAME.genId;
-        // UPDATED PROMPT: Darker, funnier
-        const prompt = `You are Simon Unglaube. Write a scathing, sarcastic review (max 40 words) for a coordinator who failed after ${time}s. Be disappointed in their lack of survival instinct.`;
+        // UPDATED PROMPT: Simon personality
+        const prompt = `You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Write a scathing, dry, professional review (max 40 words) for a coordinator who failed after ${time}s. Be disappointed in their lack of safety instinct.`;
         
         callGemini(prompt, "reviews_loss").then(review => {
              if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
@@ -1174,7 +1177,7 @@ function winGame() {
     showDialog("BOSS DEFEATED!\nCalculating Safety Score...", "System", null, true);
     const currentGen = GAME.genId;
     const time = Math.floor((Date.now() - GAME.startTime)/1000);
-    const prompt = `You are Simon Unglaube. Write a detailed performance review (max 50 words) for a coordinator who survived ${time}s, threw ${GAME.booksFired} safety books, and pushed back ${GAME.opsPushed} Ops managers. Tone: Proud but dark and bureaucratic.`;
+    const prompt = `You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Write a detailed performance review (max 50 words) for a coordinator who survived ${time}s, threw ${GAME.booksFired} safety books, and pushed back ${GAME.opsPushed} Ops managers. Tone: Professional, dry, expert praise.`;
 
     callGemini(prompt, "reviews_win").then(praise => {
         if (GAME.state === 'DIALOG' && GAME.genId === currentGen) showDialog(`OUTSTANDING!\n"${praise}"\n\nStats:\nTime: ${time}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
