@@ -1177,13 +1177,14 @@ function tryInteract() {
              GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
              if (GAME.issuesFixed >= 5) { initBossEncounter(); } 
              else {
-                 showDialog("✨ Analyzing Runner...", "System", null, true);
+                 // NO PRE-DIALOG HERE to avoid flash
                  const currentGen = GAME.genId;
                  callGemini(
                      "You are Simon Unglaube, WHS Senior Regional Manager. You stopped a runner.  Praise the player with dry, professional humor. Give a related Safety tipp. Max 15 words.", 
                      "runners"
                  ).then(tip => {
-                    if (GAME.state === 'DIALOG' && GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
+                    // Allow dialog to pop even if state is PLAY
+                    if (GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
                  });
              }
              return true;
@@ -1195,14 +1196,15 @@ function tryInteract() {
             GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
             if (GAME.issuesFixed >= 5) { initBossEncounter(); } 
             else {
-                showDialog(`✨ Analyzing ${h.data.name}...`, "System", null, true);
+                // NO PRE-DIALOG HERE to avoid flash
                 const currentGen = GAME.genId;
                 callGemini(
                     `You are Simon Unglaube, WHS Senior Regional Manager. A hazard "${h.data.name}" was fixed. Praise the player for finding he issue with dry, professional humor. Give a related Safety tipp. Max 30 words.`, 
                     "hazard", 
                     { hazardName: h.data.name }
                 ).then(tip => {
-                    if (GAME.state === 'DIALOG' && GAME.genId === currentGen) showDialog(`Fixed: ${h.data.name}!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
+                    // Allow dialog to pop even if state is PLAY
+                    if (GAME.genId === currentGen) showDialog(`Fixed: ${h.data.name}!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
                 });
             }
             return true;
@@ -1269,7 +1271,7 @@ function winGame() {
              if (document.getElementById('dialog-box').style.display !== 'none') {
                  const finalText = praise.replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
                                          .replace(/\[.*?\]/g, GAME.selectedChar);
-                 showDialog(`OUTSTANDING!\n"${finalText}"\n\nStats:\nTime: ${time}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
+                 showDialog(`OUTSTANDING!\n"${finalText}"\n\nStats:\nTime spent: ${time}seconds\nSafety rules useds: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
              }
         }
     });
