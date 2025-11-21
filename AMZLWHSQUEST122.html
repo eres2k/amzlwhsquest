@@ -508,12 +508,46 @@ function generateAssets() {
     const c = (w,h,f) => { const c=document.createElement('canvas');c.width=w;c.height=h;f(c.getContext('2d'));return c;};
 
     GFX.logo = c(40, 40, ctx => { ctx.fillStyle = '#eab308'; ctx.fillRect(0, 0, 40, 40); ctx.fillStyle = '#fff'; ctx.font = '24px monospace'; ctx.fillText("EE", 5, 28); });
-    const createPlayer = (hairColor, hairStyle) => c(16,16, ctx => {
-        ctx.fillStyle = hairColor; 
-        if (hairStyle === 'long') ctx.fillRect(4,1,8,6); if (hairStyle === 'short') ctx.fillRect(4,1,8,4); if (hairStyle === 'spiky') { ctx.fillRect(4,1,8,4); ctx.fillRect(6,0,4,1); }
-        ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,4); ctx.fillStyle = '#2563eb'; ctx.fillRect(3,9,10,6); ctx.fillStyle = '#60a5fa'; ctx.fillRect(4,10,1,4); ctx.fillRect(11,10,1,4); ctx.fillStyle = '#1e3a8a'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
-    });
-    GFX.chars = { "Carrie": createPlayer('#fcd34d', 'long'), "Nevena": createPlayer('#27272a', 'long'), "Joao": createPlayer('#3f3f46', 'short'), "Roman": createPlayer('#a1a1aa', 'spiky') };
+
+    // Distinct player sprites
+    GFX.chars = {
+        "Carrie": c(16,16, ctx => {
+            ctx.fillStyle = '#fcd34d'; ctx.fillRect(3,1,10,4); ctx.fillRect(2,3,2,8); // hair
+            ctx.fillStyle = '#38bdf8'; ctx.fillRect(4,2,8,2); // headband
+            ctx.fillStyle = '#ffcc99'; ctx.fillRect(5,5,6,5); // face
+            ctx.fillStyle = '#000'; ctx.fillRect(6,7,1,1); ctx.fillRect(9,7,1,1); // eyes
+            ctx.fillStyle = '#a855f7'; ctx.fillRect(3,10,10,6); // purple vest
+            ctx.fillStyle = '#facc15'; ctx.fillRect(7,12,2,2); // belt
+            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // boots
+        }),
+        "Nevena": c(16,16, ctx => {
+            ctx.fillStyle = '#1f2937'; ctx.fillRect(3,2,10,4); ctx.fillRect(2,4,2,6); // dark hair
+            ctx.fillStyle = '#14b8a6'; ctx.fillRect(4,3,8,2); // teal scarf
+            ctx.fillStyle = '#f5c89a'; ctx.fillRect(5,6,6,5); // face
+            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); // eyes
+            ctx.fillStyle = '#7f1d1d'; ctx.fillRect(3,11,10,5); // maroon coat
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); // clipboard corners
+            ctx.fillStyle = '#334155'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // shoes
+        }),
+        "Joao": c(16,16, ctx => {
+            ctx.fillStyle = '#166534'; ctx.fillRect(4,1,8,3); ctx.fillRect(6,0,4,1); // green cap
+            ctx.fillStyle = '#f0a16b'; ctx.fillRect(5,4,6,5); // face
+            ctx.fillStyle = '#6b7280'; ctx.fillRect(4,9,8,1); // beard stubble
+            ctx.fillStyle = '#000'; ctx.fillRect(6,6,1,1); ctx.fillRect(9,6,1,1); // eyes
+            ctx.fillStyle = '#fb923c'; ctx.fillRect(3,10,10,6); // orange vest
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); // safety straps
+            ctx.fillStyle = '#7c2d12'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // boots
+        }),
+        "Roman": c(16,16, ctx => {
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(3,1,10,4); ctx.fillRect(2,3,2,5); // silver hair
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(4,3,8,3); // hood trim
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,6,6,5); // face
+            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); // eyes
+            ctx.fillStyle = '#1e293b'; ctx.fillRect(3,11,10,5); // navy hoodie
+            ctx.fillStyle = '#e5e7eb'; ctx.fillRect(7,12,2,2); // badge
+            ctx.fillStyle = '#0b1224'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // dark boots
+        })
+    };
     GFX.simon = c(16,16, ctx => { ctx.fillStyle = '#222'; ctx.fillRect(4,1,8,5); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,4); ctx.fillStyle = '#000'; ctx.fillRect(4,7,8,1); ctx.fillStyle = '#aaddff'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); ctx.fillStyle = '#eab308'; ctx.fillRect(3,9,10,6); ctx.fillStyle = '#fff'; ctx.fillRect(6,11,4,4); });
     GFX.simonFace = c(32,32, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simon,0,0,16,16,0,0,32,32); });
     
@@ -527,17 +561,68 @@ function generateAssets() {
     });
 
     GFX.ops = c(16,16, ctx => { ctx.fillStyle = '#333'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#dc2626'; ctx.fillRect(3,10,10,5); ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); });
-    GFX.boss_manager = c(16,16, ctx => { ctx.fillStyle = '#000'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,2,8,6); ctx.fillStyle = '#f00'; ctx.fillRect(6,4,2,1); ctx.fillRect(10,4,2,1); });
-    GFX.boss_sebastian = c(16,16, ctx => { ctx.fillStyle = '#222'; ctx.fillRect(4,1,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,4); ctx.fillStyle = '#000080'; ctx.fillRect(2,9,12,6); ctx.fillStyle = '#000'; ctx.fillRect(5,6,2,1); ctx.fillRect(9,6,2,1); });
-    GFX.boss_jelly = c(16,16, ctx => {
-        ctx.fillStyle = '#ff69b4'; ctx.fillRect(3,1,10,6); // Hair band
-        ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,5); // Face
-        ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); // Eyes
-        ctx.fillStyle = '#22c55e'; ctx.fillRect(3,10,10,6); // HR vest
-        ctx.fillStyle = '#fff'; ctx.fillRect(6,12,4,2); // Badge
+    GFX.boss_manager = c(16,16, ctx => {
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(2,1,12,5); // slick hair
+        ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,5); // stern face
+        ctx.fillStyle = '#111827'; ctx.fillRect(3,10,10,6); // black suit
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(7,11,2,3); // red tie
+        ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); // eyes
     });
-    GFX.boss_avetta = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(2,2,12,12); ctx.fillStyle = '#0f0'; ctx.fillRect(4,4,2,2); ctx.fillRect(4,8,2,2); ctx.fillStyle = '#f00'; ctx.fillRect(10,4,2,2); });
-    GFX.boss_bot = c(16,16, ctx => { ctx.fillStyle = '#555'; ctx.fillRect(2,2,12,12); ctx.fillStyle = '#0f0'; ctx.fillRect(4,6,8,2); });
+    GFX.boss_inspector = c(16,16, ctx => {
+        ctx.fillStyle = '#9ca3af'; ctx.fillRect(3,1,10,4); // grey cap
+        ctx.fillStyle = '#f5cba7'; ctx.fillRect(4,5,8,5); // focused face
+        ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); // keen eyes
+        ctx.fillStyle = '#facc15'; ctx.fillRect(3,10,10,6); // hi-vis vest
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,11,2,2); ctx.fillRect(10,11,2,2); // clipboards
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // boots
+    });
+    GFX.boss_compliance = c(16,16, ctx => {
+        ctx.fillStyle = '#0b162a'; ctx.fillRect(3,1,10,4); // navy hair wrap
+        ctx.fillStyle = '#ffcc99'; ctx.fillRect(5,5,6,5); // face
+        ctx.fillStyle = '#000'; ctx.fillRect(6,7,1,1); ctx.fillRect(9,7,1,1); // glasses
+        ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,10,10,6); // teal blazer
+        ctx.fillStyle = '#14b8a6'; ctx.fillRect(7,11,2,3); // SOP binder
+        ctx.fillStyle = '#c084fc'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // flats
+    });
+    GFX.boss_regional = c(16,16, ctx => {
+        ctx.fillStyle = '#312e81'; ctx.fillRect(2,1,12,5); // royal hair
+        ctx.fillStyle = '#f5d0a0'; ctx.fillRect(4,6,8,5); // calculating face
+        ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); // eyes
+        ctx.fillStyle = '#581c87'; ctx.fillRect(3,10,10,6); // deep purple suit
+        ctx.fillStyle = '#fbbf24'; ctx.fillRect(7,11,2,3); // gold tie
+        ctx.fillStyle = '#cbd5e1'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // polished shoes
+    });
+    GFX.boss_sebastian = c(16,16, ctx => {
+        ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,2,6,6); // face
+        ctx.fillStyle = '#1d4ed8'; ctx.fillRect(3,8,10,1); // headset band
+        ctx.fillStyle = '#2563eb'; ctx.fillRect(2,9,12,6); // navy jacket
+        ctx.fillStyle = '#f97316'; ctx.fillRect(7,11,2,2); // badge
+        ctx.fillStyle = '#000'; ctx.fillRect(6,4,1,1); ctx.fillRect(9,4,1,1); // eyes
+        ctx.fillStyle = '#eab308'; ctx.fillRect(3,1,10,2); // blond hair
+    });
+    GFX.boss_jelly = c(16,16, ctx => {
+        ctx.fillStyle = '#ec4899'; ctx.fillRect(3,1,10,5); // pink hair
+        ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,5); // face
+        ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); // eyes
+        ctx.fillStyle = '#22c55e'; ctx.fillRect(3,10,10,6); // HR vest
+        ctx.fillStyle = '#f5f5f5'; ctx.fillRect(6,12,4,2); // badge
+        ctx.fillStyle = '#10b981'; ctx.fillRect(2,9,2,2); // clipboard edge
+    });
+    GFX.boss_avetta = c(16,16, ctx => {
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(2,2,12,12); // frame
+        ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,3,10,10); // glass
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,5,6,2); ctx.fillRect(5,9,6,2); // scan lines
+        ctx.fillStyle = '#34d399'; ctx.fillRect(4,7,8,1); // pulse line
+        ctx.fillStyle = '#fcd34d'; ctx.fillRect(7,6,2,4); // core
+    });
+    GFX.boss_bot = c(16,16, ctx => {
+        ctx.fillStyle = '#475569'; ctx.fillRect(2,2,12,12); // chassis
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(3,3,10,2); // brow
+        ctx.fillStyle = '#7dd3fc'; ctx.fillRect(5,6,2,2); ctx.fillRect(9,6,2,2); // eyes
+        ctx.fillStyle = '#22c55e'; ctx.fillRect(4,10,8,3); // mouth bar
+        ctx.fillStyle = '#9ca3af'; ctx.fillRect(7,0,2,2); // antenna
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(7,12,2,2); // warning light
+    });
     GFX.assoc = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,5); });
     GFX.runner = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,5); ctx.fillStyle = '#fff'; ctx.fillRect(1, 12, 2, 1); ctx.fillRect(14, 10, 2, 1); });
     GFX.clutter = { cart: c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(2,6,12,8); ctx.fillStyle = '#8b4513'; ctx.fillRect(4,4,8,6); }), coffee: c(8,8, ctx => { ctx.fillStyle='#fff'; ctx.fillRect(2,2,4,5); }), paper: c(8,8, ctx => { ctx.fillStyle='#eee'; ctx.fillRect(1,3,6,4); }), tape: c(8,8, ctx => { ctx.fillStyle='#d97706'; ctx.beginPath(); ctx.arc(4,4,3,0,Math.PI*2); ctx.fill(); }) };
@@ -580,10 +665,10 @@ const GAME = {
     opsPushed: 0,
 
     bossTypes: [
-        { name: "Labour Inspector", sprite: "boss_manager", hp: 10, speed: 1.2, attackDelay: 50, title: "The Enforcer", desc: "Checks every corner.", attackName: "Citation Storm" },
-        { name: "Compliance Auditor", sprite: "boss_manager", hp: 12, speed: 0.8, attackDelay: 70, title: "The Watcher", desc: "Nothing escapes.", attackName: "Audit Trail" },
+        { name: "Labour Inspector", sprite: "boss_inspector", hp: 10, speed: 1.2, attackDelay: 50, title: "The Enforcer", desc: "Checks every corner.", attackName: "Citation Storm" },
+        { name: "Compliance Auditor", sprite: "boss_compliance", hp: 12, speed: 0.8, attackDelay: 70, title: "The Watcher", desc: "Nothing escapes.", attackName: "Audit Trail" },
         { name: "Sebastian Sprigade", sprite: "boss_sebastian", hp: 15, speed: 1.0, attackDelay: 60, title: "Delivery Station Mgr", desc: "Obsessed with TPH.", attackName: "Volume Spike" },
-        { name: "Senior Regional Mgr", sprite: "boss_manager", hp: 14, speed: 0.6, attackDelay: 90, title: "The Executive", desc: "Metrics first.", attackName: "Budget Cut" },
+        { name: "Regional MG3", sprite: "boss_regional", hp: 14, speed: 0.6, attackDelay: 90, title: "The Executive", desc: "Metrics first.", attackName: "Budget Cut" },
         { name: "Avetta Platform", sprite: "boss_avetta", hp: 18, speed: 0.4, attackDelay: 100, title: "Risk Mgmt AI", desc: "Judges all.", attackName: "Compliance Block" },
         { name: "Jelena \"Jelly\"", sprite: "boss_jelly", hp: 13, speed: 0.9, attackDelay: 65, title: "HR Guardian", desc: "HR legend who never forgets a policy.", attackName: "Policy Shock" }
     ]
@@ -1522,12 +1607,16 @@ function draw() {
         let dy = Math.floor(e.y - cy);
         
         if (e.maxHp) { // Boss
-            let img = e.name === "SIMON UNGLAUBE" ? GFX.simonBoss : GFX.boss_manager;
-            // Special check for specific bosses
-            if (e.name.includes("Sebastian")) img = GFX.boss_sebastian;
-            if (e.name.includes("Avetta")) img = GFX.boss_avetta;
-            if (e.name.includes("Bot")) img = GFX.boss_bot;
-            if (e.name.includes("Jelena")) img = GFX.boss_jelly;
+            let img = (e.sprite && GFX[e.sprite]) ? GFX[e.sprite] : GFX.boss_manager;
+            if (e.name === "SIMON UNGLAUBE") img = GFX.simonBoss;
+
+            // Name-based fallbacks if sprite wasn't provided
+            if (!e.sprite) {
+                if (e.name.includes("Sebastian")) img = GFX.boss_sebastian;
+                if (e.name.includes("Avetta")) img = GFX.boss_avetta;
+                if (e.name.includes("Bot")) img = GFX.boss_bot;
+                if (e.name.includes("Jelena")) img = GFX.boss_jelly;
+            }
 
             ctx.drawImage(img, dx, dy, 32, 32);
         } else {
