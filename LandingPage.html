@@ -120,12 +120,15 @@
         p { font-size: 1.1rem; line-height: 1.6; margin-bottom: 15px; }
         strong { color: var(--warning-yellow); }
 
-        .char-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-        .char-card { background: rgba(0,0,0,0.8); border: 1px solid #444; padding: 15px; text-align: center; display: flex; flex-direction: column; }
+        .char-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .char-card { background: rgba(0,0,0,0.8); border: 1px solid #444; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
         .char-card h3 { color: var(--warning-yellow); margin: 0 0 5px 0; font-family: 'Press Start 2P'; font-size: 0.9rem;}
-        .char-role { color: #00ffff; font-size: 1rem; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        .char-desc { font-size: 0.9rem; color: #ccc; line-height: 1.4; flex-grow: 1;}
-        .char-stat { margin-top: 10px; font-size: 0.8rem; color: #aaa; font-style: italic; }
+        .card-content { display: flex; align-items: center; gap: 12px; }
+        .card-content img, .card-content canvas { image-rendering: pixelated; width: 72px; height: 72px; border: 2px solid #222; background: #050505; }
+        .char-text { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        .char-role { color: #00ffff; font-size: 1rem; text-transform: uppercase; margin: 0; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .char-desc { font-size: 0.9rem; color: #ccc; line-height: 1.4; flex-grow: 1; margin: 0;}
+        .char-stat { margin: 0; font-size: 0.8rem; color: #aaa; font-style: italic; }
 
         .play-btn {
             background: red; color: white; font-family: 'Press Start 2P';
@@ -183,27 +186,47 @@
             <div class="char-grid">
                 <div class="char-card">
                     <h3>CARRIE</h3>
-                    <div class="char-role">The 5S Monk</div>
-                    <div class="char-desc">Can detect a piece of floor tape misaligned by 1mm from across the cluster. Uses meditation to tolerate Ops meetings.</div>
-                    <div class="char-stat">Weapon: The Label Maker</div>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="carrie"></div>
+                        <div class="char-text">
+                            <div class="char-role">The 5S Monk</div>
+                            <p class="char-desc">Can detect a piece of floor tape misaligned by 1mm from across the cluster. Uses meditation to tolerate Ops meetings.</p>
+                            <p class="char-stat">Weapon: The Label Maker</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="char-card">
                     <h3>NEVENA</h3>
-                    <div class="char-role">The Worrier</div>
-                    <div class="char-desc">The Safety Oracle. She predicts accidents before they happen. Always carries emergency Palatschinken for stress eating.</div>
-                    <div class="char-stat">Weapon: The Clipboard of Doom</div>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="nevena"></div>
+                        <div class="char-text">
+                            <div class="char-role">The Worrier</div>
+                            <p class="char-desc">The Safety Oracle. She predicts accidents before they happen. Always carries emergency Palatschinken for stress eating.</p>
+                            <p class="char-stat">Weapon: The Clipboard of Doom</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="char-card">
                     <h3>JOAO</h3>
-                    <div class="char-role">The Siren</div>
-                    <div class="char-desc">His voice is louder than the fire alarm. Associates hear his safety warnings in their dreams. Runs on pure espresso.</div>
-                    <div class="char-stat">Weapon: Sonic Shout</div>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="joao"></div>
+                        <div class="char-text">
+                            <div class="char-role">The Siren</div>
+                            <p class="char-desc">His voice is louder than the fire alarm. Associates hear his safety warnings in their dreams. Runs on pure espresso.</p>
+                            <p class="char-stat">Weapon: Sonic Shout</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="char-card">
                     <h3>ROMAN</h3>
-                    <div class="char-role">The Ghost</div>
-                    <div class="char-desc">He is everywhere and nowhere. Hazards seem to fix themselves out of fear when he enters the room.</div>
-                    <div class="char-stat">Weapon: Stealth Audit</div>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="roman"></div>
+                        <div class="char-text">
+                            <div class="char-role">The Ghost</div>
+                            <p class="char-desc">He is everywhere and nowhere. Hazards seem to fix themselves out of fear when he enters the room.</p>
+                            <p class="char-stat">Weapon: Stealth Audit</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -213,33 +236,63 @@
             <div class="char-grid">
                 <div class="char-card" style="border-color: #ff4444;">
                     <h3 style="color: #ff4444;">INSPECTOR</h3>
-                    <div class="char-role" style="color: #ff4444;">External Auditor</div>
-                    <div class="char-desc">Has no soul, only a checklist. Will find the one fire extinguisher you forgot to sign in 2023.</div>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="boss_inspector"></div>
+                        <div class="char-text">
+                            <div class="char-role" style="color: #ff4444;">External Auditor</div>
+                            <p class="char-desc">Hi-vis crusader with two clipboards. Signs nothing unless the exit lines are laser straight.</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="char-card" style="border-color: #ff4444;">
                     <h3 style="color: #ff4444;">COMPLIANCE</h3>
-                    <div class="char-role" style="color: #ff4444;">The Auditor</div>
-                    <div class="char-desc">Checks every SOP version. If you are using v1.2 instead of v1.3, you are doomed.</div>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="boss_compliance"></div>
+                        <div class="char-text">
+                            <div class="char-role" style="color: #ff4444;">The Auditor</div>
+                            <p class="char-desc">Teal suit, SOP binder, and endless patience. Will quote the correct version in her sleep.</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="char-card" style="border-color: #ff4444;">
                     <h3 style="color: #ff4444;">SEBASTIAN</h3>
-                    <div class="char-role" style="color: #ff4444;">Station Commander</div>
-                    <div class="char-desc">Obsessed with rates. Believes "Safety Stops" are a myth invented to lower volume.</div>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="boss_sebastian"></div>
+                        <div class="char-text">
+                            <div class="char-role" style="color: #ff4444;">Station Commander</div>
+                            <p class="char-desc">Obsessed with rates. Believes "Safety Stops" are a myth invented to lower volume.</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="char-card" style="border-color: #ff4444;">
-                    <h3 style="color: #ff4444;">REGIONAL MGR</h3>
-                    <div class="char-role" style="color: #ff4444;">The Executive</div>
-                    <div class="char-desc">Only appears when things are bad. Speaks in acronyms you don't understand.</div>
+                    <h3 style="color: #ff4444;">REGIONAL MG3</h3>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="boss_regional"></div>
+                        <div class="char-text">
+                            <div class="char-role" style="color: #ff4444;">The Executive</div>
+                            <p class="char-desc">Arrives with gold tie energy and KPI thunder. If rates dip, expect a full audit storm.</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="char-card" style="border-color: #ff4444;">
                     <h3 style="color: #ff4444;">AVETTA AI</h3>
-                    <div class="char-role" style="color: #ff4444;">The Algorithm</div>
-                    <div class="char-desc">A sentient cloud platform. It knows you forgot your gloves. It is watching.</div>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="boss_avetta"></div>
+                        <div class="char-text">
+                            <div class="char-role" style="color: #ff4444;">The Algorithm</div>
+                            <p class="char-desc">A sentient cloud platform. It knows you forgot your gloves. It is watching.</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="char-card" style="border-color: #ff4444;">
                     <h3 style="color: #ff4444;">JELENA "JELLY"</h3>
-                    <div class="char-role" style="color: #ff4444;">HR Sentinel</div>
-                    <div class="char-desc">From HR and always smiling, until policies are ignored. Remembers every infraction.</div>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="boss_jelly"></div>
+                        <div class="char-text">
+                            <div class="char-role" style="color: #ff4444;">HR Sentinel</div>
+                            <p class="char-desc">From HR and always smiling, until policies are ignored. Remembers every infraction.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -339,8 +392,117 @@
             feed.innerText = "📢 SYSTEM ERROR: COFFEE SUPPLIES CRITICAL.";
         }
     }
-    
+
+    // --- 3. PIXEL PORTRAITS FOR LANDING PAGE ---
+    const spritePainters = {
+        carrie: ctx => {
+            ctx.fillStyle = '#fcd34d'; ctx.fillRect(3,1,10,4); ctx.fillRect(2,3,2,8);
+            ctx.fillStyle = '#38bdf8'; ctx.fillRect(4,2,8,2);
+            ctx.fillStyle = '#ffcc99'; ctx.fillRect(5,5,6,5);
+            ctx.fillStyle = '#000'; ctx.fillRect(6,7,1,1); ctx.fillRect(9,7,1,1);
+            ctx.fillStyle = '#a855f7'; ctx.fillRect(3,10,10,6);
+            ctx.fillStyle = '#facc15'; ctx.fillRect(7,12,2,2);
+            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        },
+        nevena: ctx => {
+            ctx.fillStyle = '#1f2937'; ctx.fillRect(3,2,10,4); ctx.fillRect(2,4,2,6);
+            ctx.fillStyle = '#14b8a6'; ctx.fillRect(4,3,8,2);
+            ctx.fillStyle = '#f5c89a'; ctx.fillRect(5,6,6,5);
+            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1);
+            ctx.fillStyle = '#7f1d1d'; ctx.fillRect(3,11,10,5);
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2);
+            ctx.fillStyle = '#334155'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        },
+        joao: ctx => {
+            ctx.fillStyle = '#166534'; ctx.fillRect(4,1,8,3); ctx.fillRect(6,0,4,1);
+            ctx.fillStyle = '#f0a16b'; ctx.fillRect(5,4,6,5);
+            ctx.fillStyle = '#6b7280'; ctx.fillRect(4,9,8,1);
+            ctx.fillStyle = '#000'; ctx.fillRect(6,6,1,1); ctx.fillRect(9,6,1,1);
+            ctx.fillStyle = '#fb923c'; ctx.fillRect(3,10,10,6);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2);
+            ctx.fillStyle = '#7c2d12'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        },
+        roman: ctx => {
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(3,1,10,4); ctx.fillRect(2,3,2,5);
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(4,3,8,3);
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,6,6,5);
+            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1);
+            ctx.fillStyle = '#1e293b'; ctx.fillRect(3,11,10,5);
+            ctx.fillStyle = '#e5e7eb'; ctx.fillRect(7,12,2,2);
+            ctx.fillStyle = '#0b1224'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        },
+        boss_manager: ctx => {
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(2,1,12,5);
+            ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,5);
+            ctx.fillStyle = '#111827'; ctx.fillRect(3,10,10,6);
+            ctx.fillStyle = '#ef4444'; ctx.fillRect(7,11,2,3);
+            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1);
+        },
+        boss_inspector: ctx => {
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(3,1,10,4);
+            ctx.fillStyle = '#f5cba7'; ctx.fillRect(4,5,8,5);
+            ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1);
+            ctx.fillStyle = '#facc15'; ctx.fillRect(3,10,10,6);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,11,2,2); ctx.fillRect(10,11,2,2);
+            ctx.fillStyle = '#1f2937'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        },
+        boss_compliance: ctx => {
+            ctx.fillStyle = '#0b162a'; ctx.fillRect(3,1,10,4);
+            ctx.fillStyle = '#ffcc99'; ctx.fillRect(5,5,6,5);
+            ctx.fillStyle = '#000'; ctx.fillRect(6,7,1,1); ctx.fillRect(9,7,1,1);
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,10,10,6);
+            ctx.fillStyle = '#14b8a6'; ctx.fillRect(7,11,2,3);
+            ctx.fillStyle = '#c084fc'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        },
+        boss_regional: ctx => {
+            ctx.fillStyle = '#312e81'; ctx.fillRect(2,1,12,5);
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(4,6,8,5);
+            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1);
+            ctx.fillStyle = '#581c87'; ctx.fillRect(3,10,10,6);
+            ctx.fillStyle = '#fbbf24'; ctx.fillRect(7,11,2,3);
+            ctx.fillStyle = '#cbd5e1'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        },
+        boss_sebastian: ctx => {
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,2,6,6);
+            ctx.fillStyle = '#1d4ed8'; ctx.fillRect(3,8,10,1);
+            ctx.fillStyle = '#2563eb'; ctx.fillRect(2,9,12,6);
+            ctx.fillStyle = '#f97316'; ctx.fillRect(7,11,2,2);
+            ctx.fillStyle = '#000'; ctx.fillRect(6,4,1,1); ctx.fillRect(9,4,1,1);
+            ctx.fillStyle = '#eab308'; ctx.fillRect(3,1,10,2);
+        },
+        boss_jelly: ctx => {
+            ctx.fillStyle = '#ec4899'; ctx.fillRect(3,1,10,5);
+            ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,5);
+            ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1);
+            ctx.fillStyle = '#22c55e'; ctx.fillRect(3,10,10,6);
+            ctx.fillStyle = '#f5f5f5'; ctx.fillRect(6,12,4,2);
+            ctx.fillStyle = '#10b981'; ctx.fillRect(2,9,2,2);
+        },
+        boss_avetta: ctx => {
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(2,2,12,12);
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,3,10,10);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,5,6,2); ctx.fillRect(5,9,6,2);
+            ctx.fillStyle = '#34d399'; ctx.fillRect(4,7,8,1);
+            ctx.fillStyle = '#fcd34d'; ctx.fillRect(7,6,2,4);
+        }
+    };
+
+    function renderPortraits() {
+        document.querySelectorAll('.char-portrait').forEach(div => {
+            const painter = spritePainters[div.dataset.sprite];
+            if (!painter) return;
+            const spriteCanvas = document.createElement('canvas');
+            spriteCanvas.width = 64; spriteCanvas.height = 64;
+            const sCtx = spriteCanvas.getContext('2d');
+            sCtx.imageSmoothingEnabled = false;
+            sCtx.scale(4,4);
+            painter(sCtx);
+            div.appendChild(spriteCanvas);
+        });
+    }
+
     fetchAnnouncement();
+    renderPortraits();
 </script>
 </body>
 
