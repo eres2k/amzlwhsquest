@@ -1193,7 +1193,7 @@ function triggerGameOver(reason) {
                  // Clean any placeholders in Game Over screen
                  let cleanReview = review.replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
                                         .replace(/\[.*?\]/g, GAME.selectedChar);
-                 showDialog(`AUDIT FAILED\n\n"${cleanReview}"\n\nStats:\nTime: ${time}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
+                 showDialog(`AUDIT FAILED\n\n"${cleanReview}"\n\nStats:\nTime spent: ${time}seconds\nSafety Rules Fired: ${GAME.booksFired}\nNumber of OPS push-backs: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
              }
         });
     }
