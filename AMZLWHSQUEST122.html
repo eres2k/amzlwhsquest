@@ -840,7 +840,7 @@ function update() {
                                                  .replace(/\[.*?\]/g, GAME.selectedChar);
                 
                 let header = isWin ? `OUTSTANDING!\n"${finalText}"\n` : `AUDIT FAILED\n"${finalText}"\n`;
-                let stats = `\nStats:\nTime: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`;
+                let stats = `\nStats:\nTime spent: ${Math.floor((Date.now() - GAME.startTime)/1000)} seconds\nSafety rules used: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`;
                 
                 showDialog(header + stats, speaker, portrait, true);
                 GAME.state = 'DIALOG';
