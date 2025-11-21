@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMZL WHS Coordinator Quest</title>
+    <title>AMZL WHS Coordinator Quest (Gemini AI Enabled)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -461,7 +461,8 @@ const MusicSys = {
         title: new Audio('Pixel Reverie.mp3'),
         menu: new Audio('Game Over But Not Really.mp3'),
         ingame: new Audio('Pixel Warehouse Crawl.mp3'),
-        boss: new Audio('Pixel Panic.mp3')
+        boss: new Audio('Pixel Panic.mp3'),
+        victory: new Audio('Pixel Victory.mp3')
     },
     currentName: null,
     init() {
@@ -1182,18 +1183,17 @@ function triggerGameOver(reason) {
     if (reason === "FIRED!") {
         showDialog("YOU ARE FIRED!\nSimon has had enough of your unsafe behavior.\n\n(Press Space)", "HR", null, false);
     } else {
-        // Show a loading message first to avoid "overwrite" jar
-        showDialog("⚠️ CRITICAL FAILURE ⚠️\n\nCALCULATING SAFETY SCORE...", "System", null, true);
-        
+        showDialog("OVERWHELMED!\nSimon is judging your soul...", "Simon Unglaube", GFX.simonFace, true);
         const currentGen = GAME.genId;
+        // UPDATED PROMPT: Simon personality
         const prompt = `You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Write a scathing, dry, professional review (max 40 words) for a coordinator who failed after ${time}s. Be disappointed in their lack of safety instinct.`;
         
         callGemini(prompt, "reviews_loss").then(review => {
              if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
+                 // Clean any placeholders in Game Over screen
                  let cleanReview = review.replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
-                                         .replace(/\[.*?\]/g, GAME.selectedChar);
-                 // UPDATED STATS LABELS
-                 showDialog(`AUDIT FAILED\n\n"${cleanReview}"\n\nStats:\nTime Spent: ${time}s\nSafety Rules Deployed: ${GAME.booksFired}\nOPS Pushed Back: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
+                                        .replace(/\[.*?\]/g, GAME.selectedChar);
+                 showDialog(`AUDIT FAILED\n\n"${cleanReview}"\n\nStats:\nTime: ${time}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
              }
         });
     }
@@ -1201,21 +1201,19 @@ function triggerGameOver(reason) {
 
 function winGame() {
     AudioSys.sfx.start();
+    MusicSys.play('victory');
     GAME.nextState = 'TITLE';
     document.getElementById('boss-hud').style.display = 'none';
-    
-    // Show a loading message first to avoid "overwrite" jar
-    showDialog("✅ THREAT NEUTRALIZED ✅\n\nCOMPILING REPORT...", "System", null, true);
-    
+    showDialog("BOSS DEFEATED!\nCalculating Safety Score...", "System", null, true);
     const currentGen = GAME.genId;
     const time = Math.floor((Date.now() - GAME.startTime)/1000);
     const prompt = `You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Write a detailed performance review (max 50 words) for a coordinator who survived ${time}s, threw ${GAME.booksFired} safety books, and pushed back ${GAME.opsPushed} Ops managers. Tone: Professional, dry, expert praise.`;
 
     callGemini(prompt, "reviews_win").then(praise => {
+        // Clean any placeholders in Win screen
         let cleanPraise = praise.replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
                                 .replace(/\[.*?\]/g, GAME.selectedChar);
-        // UPDATED STATS LABELS
-        if (GAME.state === 'DIALOG' && GAME.genId === currentGen) showDialog(`OUTSTANDING!\n"${cleanPraise}"\n\nStats:\nTime Spent: ${time}s\nSafety Rules Deployed: ${GAME.booksFired}\nOPS Pushed Back: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
+        if (GAME.state === 'DIALOG' && GAME.genId === currentGen) showDialog(`OUTSTANDING!\n"${cleanPraise}"\n\nStats:\nTime: ${time}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
     });
 }
 
@@ -1507,9 +1505,7 @@ function showDialog(text, speaker, portrait, isAI = false) {
     // --- TTS IMPLEMENTATION FOR ALL CHARACTERS ---
     // Remove speaker name and newlines for cleaner speech
     if (speaker) {
-        let speechText = text.replace(speaker + ":\n", "").replace(/\n/g, ' ');
-        // NEW: Convert "115s" to "115 seconds" for speech
-        speechText = speechText.replace(/(\d+)s\b/g, "$1 seconds");
+        const speechText = text.replace(speaker + ":\n", "").replace(/\n/g, ' ');
         TTSSys.speak(speechText, speaker);
     }
 }
