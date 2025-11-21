@@ -208,7 +208,6 @@ const SIMULATED_AI = {
 };
 
 // --- AI STATUS HELPERS ---
-// Modified to be invisible per user request, but keep logging for debugging
 const aiStatusEl = document.getElementById('ai-status');
 let aiStatus = "init";
 
@@ -344,30 +343,46 @@ const MAP_H = 40;
 const TTSSys = {
     synth: window.speechSynthesis,
     voice: null,
+    voices: [],
     init: function() {
-        // Try to find a suitable male/computer voice
-        const loadVoice = () => {
-            const voices = this.synth.getVoices();
-            // Prefer Google US English or similar robot-like voices
-            this.voice = voices.find(v => v.name.includes('Google US English')) || 
-                         voices.find(v => v.name.toLowerCase().includes('male')) || 
-                         voices[0];
+        const loadVoices = () => {
+            this.voices = this.synth.getVoices();
+            // Prioritize "Male" voices (Google UK English Male, Microsoft David, etc.)
+            // Or look for specific known male names in voice lists
+            this.voice = this.voices.find(v => v.name.includes("Google US English")) || 
+                         this.voices.find(v => v.name.includes("Google UK English Male")) ||
+                         this.voices.find(v => v.name.includes("David")) || 
+                         this.voices.find(v => v.name.includes("Daniel")) || // Mac
+                         this.voices.find(v => v.name.toLowerCase().includes("male")) ||
+                         this.voices[0];
         };
         
         if (this.synth.onvoiceschanged !== undefined) {
-            this.synth.onvoiceschanged = loadVoice;
+            this.synth.onvoiceschanged = loadVoices;
         }
-        loadVoice();
+        loadVoices();
     },
-    speak: function(text) {
+    speak: function(text, speakerName = "System") {
         if (!this.synth || !text) return;
-        this.synth.cancel(); // Stop any current speech
+        this.synth.cancel(); 
+
         const utterance = new SpeechSynthesisUtterance(text);
-        if (this.voice) {
-            utterance.voice = this.voice;
+        if (this.voice) utterance.voice = this.voice;
+
+        // Dynamic Voice Personality
+        if (speakerName.includes("Simon") || speakerName.includes("SIMON")) {
+            utterance.pitch = 0.6; // Deep / Authoritative
+            utterance.rate = 0.85; 
+        } 
+        else if (["Carrie", "Nevena", "Jelly", "Jelena"].some(n => speakerName.includes(n))) {
+            utterance.pitch = 1.2; // Higher pitch for female chars
+            utterance.rate = 1.0;
         }
-        utterance.rate = 0.9; // Slightly slower for authority
-        utterance.pitch = 0.7; // Lower pitch for Simon's persona
+        else {
+            utterance.pitch = 0.9; // Standard Ops/Boss
+            utterance.rate = 1.0;
+        }
+
         this.synth.speak(utterance);
     },
     cancel: function() {
@@ -690,7 +705,10 @@ function resetGame() {
     callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU (DE, AT NL). The game just started. Address the Coordinator by their name: ${GAME.selectedChar} with dry, professional humor. Encourage them to work but note that you are watching for compliance errors. Use the name ${GAME.selectedChar} explicitly in the response. Max 15 words.`, "intro").then(text => {
         if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
              // Fallback/Safety replacement to ensure the name is used if AI hallucinates a placeholder
-             let finalText = text.replace(/\[Player Name\]/gi, GAME.selectedChar).replace(/\[Coordinator\]/gi, GAME.selectedChar);
+             let finalText = text.replace(/\[Player Name\]/gi, GAME.selectedChar)
+                                 .replace(/\[Coordinator\]/gi, GAME.selectedChar)
+                                 .replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
+                                 .replace(/\[.*?\]/g, GAME.selectedChar); // Catch-all for any other brackets
              showDialog(finalText, "Simon Unglaube", GFX.simonFace, true);
         }
     });
@@ -809,7 +827,7 @@ function update() {
             if (GAME.charIndex < 0) GAME.charIndex = GAME.charList.length - 1;
             if (GAME.charIndex >= GAME.charList.length) GAME.charIndex = 0;
             // TTS Triggered here on selection change via arrows
-            TTSSys.speak(GAME.charList[GAME.charIndex]);
+            TTSSys.speak(GAME.charList[GAME.charIndex], "System");
         }
         return;
     }
@@ -902,8 +920,8 @@ function updateBoss() {
          const currentGen = GAME.genId;
          // Custom prompt for Simon vs others
          let prompt = b.name === "SIMON UNGLAUBE" ? 
-             "You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. The player is fighting you. Threaten them with a final audit. Be professional but scary. Max 8 words." :
-             `Generate a 5-word taunt from a video game boss named ${b.name}. Warehouse themed.`;
+             "You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. The player is fighting you. Threaten them with a final audit. Be professional but scary. Max 25 words." :
+             `Generate a taunt from a video game boss named ${b.name} (${b.desc}). The tone should be specific to their role. Max 25 words.`;
 
          callGemini(prompt, "taunt").then(text => {
             if (GAME.state === 'BOSS' && GAME.genId === currentGen) {
@@ -1171,7 +1189,10 @@ function triggerGameOver(reason) {
         
         callGemini(prompt, "reviews_loss").then(review => {
              if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
-                 showDialog(`AUDIT FAILED\n\n"${review}"\n\nStats:\nTime: ${time}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
+                 // Clean any placeholders in Game Over screen
+                 let cleanReview = review.replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
+                                        .replace(/\[.*?\]/g, GAME.selectedChar);
+                 showDialog(`AUDIT FAILED\n\n"${cleanReview}"\n\nStats:\nTime: ${time}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
              }
         });
     }
@@ -1187,7 +1208,10 @@ function winGame() {
     const prompt = `You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Write a detailed performance review (max 50 words) for a coordinator who survived ${time}s, threw ${GAME.booksFired} safety books, and pushed back ${GAME.opsPushed} Ops managers. Tone: Professional, dry, expert praise.`;
 
     callGemini(prompt, "reviews_win").then(praise => {
-        if (GAME.state === 'DIALOG' && GAME.genId === currentGen) showDialog(`OUTSTANDING!\n"${praise}"\n\nStats:\nTime: ${time}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
+        // Clean any placeholders in Win screen
+        let cleanPraise = praise.replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
+                                .replace(/\[.*?\]/g, GAME.selectedChar);
+        if (GAME.state === 'DIALOG' && GAME.genId === currentGen) showDialog(`OUTSTANDING!\n"${cleanPraise}"\n\nStats:\nTime: ${time}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
     });
 }
 
@@ -1476,11 +1500,11 @@ function showDialog(text, speaker, portrait, isAI = false) {
     
     AudioSys.sfx.text();
 
-    // --- TTS IMPLEMENTATION FOR SIMON ---
-    if (speaker && (speaker.includes("Simon") || speaker.includes("SIMON"))) {
-        // Remove speaker name and newlines for cleaner speech
+    // --- TTS IMPLEMENTATION FOR ALL CHARACTERS ---
+    // Remove speaker name and newlines for cleaner speech
+    if (speaker) {
         const speechText = text.replace(speaker + ":\n", "").replace(/\n/g, ' ');
-        TTSSys.speak(speechText);
+        TTSSys.speak(speechText, speaker);
     }
 }
 
