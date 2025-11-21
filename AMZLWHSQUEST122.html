@@ -96,11 +96,18 @@
         .boss-bar-bg { width: 100%; height: 10px; background: #333; border: 2px solid white; }
         .boss-bar-fill { width: 100%; height: 100%; background: #ff0000; transition: width 0.2s; }
         .boss-name { color: #ff0000; text-align: center; font-size: 10px; margin-bottom: 4px; text-shadow: 1px 1px black; }
+        
+        #ai-status {
+            position: absolute; top: 10px; left: 10px; font-size: 10px; color: #00ffff;
+            background: rgba(0,0,0,0.8); padding: 4px; border: 1px solid #00ffff; pointer-events: none;
+            z-index: 2000; display: none;
+        }
     </style>
 </head>
 <body>
 
     <div id="game-wrapper">
+        <div id="ai-status">AI Status: Init</div>
         <canvas id="gameCanvas" width="256" height="224"></canvas>
         <div id="crt-overlay"></div>
         <div id="vignette"></div>
@@ -148,54 +155,53 @@ const CHAR_DATA = {
 // --- SIMULATED AI DATABASE (FALLBACKS) ---
 const SIMULATED_AI = {
     slogans: [
-        "ENTROPY IS THE ENEMY. ORDER IS THE ONLY SURVIVAL STRATEGY.",
-        "YOUR SKELETON PREFERS TO STAY INSIDE YOUR BODY. ASSIST IT.",
-        "ACCIDENTS ARE JUST PHYSICS TAKING REVENGE ON YOUR INCOMPETENCE.",
-        "COMPLIANCE IS THE ONLY SHIELD AGAINST THE HEAT DEATH OF THE UNIVERSE.",
-        "SAFETY REGULATIONS ARE WRITTEN IN BLOOD. DO NOT ADD A NEW CHAPTER."
+        "ENTROPY IS THE ENEMY. CHAOS IS NOT AN OPTION.",
+        "YOUR SKELETON PREFERS TO STAY INSIDE YOUR BODY.",
+        "ACCIDENTS ARE JUST PHYSICS LAUGHING AT YOU.",
+        "COMPLIANCE IS THE ONLY SHIELD AGAINST DOOM.",
+        "SAFETY REGULATIONS ARE WRITTEN IN BLOOD."
     ],
     tips: [
-        "A blocked exit? In a fire, that box becomes your tombstone. The fire marshal will not be amused by your charred remains. Move it immediately.",
-        "Chemical spill. Entropy is leaking. If you step in it, you will dissolve, and I will have to fill out form 7B-9. Contain it before it spreads.",
-        "Debris detected. Chaos on the floor leads to chaos in the metrics. If I trip on this, I will haunt you from the afterlife. Clean it up.",
-        "Trip hazard. Gravity does not care about your excuses or your tenure. It pulls us all down equally. Tape that cable.",
-        "Unstable stack. Isaac Newton is rolling in his grave looking at this abomination. The center of gravity is a suggestion to you? Fix it.",
-        "Fire equipment blocked. Do you plan to fight the inferno with your bare hands and optimism? Clear the path or prepare to roast."
+        "Blocked exit? That box is your tombstone. Move it.",
+        "Chemical spill? Entropy leaking. Contain it before you dissolve.",
+        "Debris? Chaos on the floor leads to chaos in the soul. Clean it.",
+        "Trip hazard? Gravity does not care about your excuses.",
+        "Unstable stack? Newton is rolling in his grave. Fix it.",
+        "Fire equipment blocked? Do you plan to fight fire with optimism?"
     ],
     runners: [
-        "Halt! Your kinetic energy increases with the square of velocity. If you collide with a rack, the physics calculation will end in your termination.",
-        "You are not a photon. You have mass. When you run, you invite disaster. Do not invite disaster into my warehouse; he is a terrible guest.",
-        "Running? I've seen glaciers move with more urgency. And significantly more safety. Slow down before you become a statistic.",
-        "We are fighting the inevitable decay of order, not the clock. Walk with purpose, not haste. My blood pressure cannot handle your velocity."
+        "Halt! Kinetic energy is not your friend. Slow down.",
+        "You are not a photon. You have mass. Walk.",
+        "Running? I've seen glaciers move with more purpose.",
+        "We fight entropy, not the clock. Walk."
     ],
     taunts: [
-        "My spreadsheet predicts your failure with 99% accuracy!",
-        "You cannot audit the inevitable heat death of this facility!",
-        "I am the final regulation! I am the red tape!",
-        "Your compliance score is dropping faster than your will to live!",
-        "Resistance is a safety violation! Prepare for a write-up!"
+        "My spreadsheet predicts your failure!",
+        "You cannot audit the inevitable!",
+        "I am the final regulation!",
+        "Compliance dropping... Termination imminent!",
+        "Resistance is a safety violation!"
     ],
     simon_taunts: [
-        "I AM THE SAFETY STANDARD! KNEEL BEFORE PROTOCOL!",
-        "YOU CANNOT ESCAPE THE AUDIT! I SEE ALL!",
-        "ENTROPY COMES FOR US ALL, BUT I COME FOR YOU FIRST!",
-        "YOUR PPE IS INSUFFICIENT TO PROTECT YOU FROM ME!"
+        "I AM THE SAFETY STANDARD!",
+        "YOU CANNOT ESCAPE THE AUDIT!",
+        "ENTROPY COMES FOR US ALL!",
+        "YOUR PPE IS INSUFFICIENT!"
     ],
     banter: [
-        "Coord: 'Safety First!' / Ops: 'But my rates will plummet!'",
-        "Coord: 'Read the manual!' / Ops: 'I can't read!'",
-        "Coord: 'Stop running!' / Ops: 'The packages need me!'",
-        "Coord: 'That's a hazard!' / Ops: 'It's a feature!'"
+        "Coord: 'Safety First!' / Ops: 'But rates!'",
+        "Coord: 'Read manual!' / Ops: 'Can't read!'",
+        "Coord: 'Stop!' / Ops: 'Must run!'"
     ],
     reviews_win: [
-        "Performance: STATISTICALLY IMPROBABLE. You survived against overwhelming odds. The warehouse stands. The metrics align. I am... adequately pleased.",
-        "You fought chaos and won. For today. Tomorrow, entropy returns, but for now, you may rest. Good job not dying.",
-        "Adequate. You respected the laws of physics and the laws of Amazon. I have nothing to write up. This feels... strange."
+        "Performance: IMPROBABLE. You survived. I am... adequately pleased.",
+        "You fought chaos and won. For today.",
+        "Adequate. Nothing to write up. Feels strange."
     ],
     reviews_loss: [
-        "Performance: CATASTROPHIC. Entropy has won. The warehouse is lost to chaos. As predicted by my models.",
-        "You failed. Gravity, inertia, and stupidity have combined to destroy us all. My report will be scathing.",
-        "Safety is binary. You are a zero. The metrics weep for what you have done today. Return your vest."
+        "Performance: CATASTROPHIC. Entropy won.",
+        "You failed. Gravity and stupidity destroyed us.",
+        "Safety is binary. You are a zero."
     ]
 };
 
@@ -334,6 +340,44 @@ const ctx = canvas.getContext('2d');
 const TILE_SIZE = 16;
 const MAP_W = 60;
 const MAP_H = 40;
+
+// --- TTS SYSTEM (Gemini AI TTS Feature Implementation) ---
+const TTSSys = {
+    synth: window.speechSynthesis,
+    voice: null,
+    init: function() {
+        // Try to find a suitable male/computer voice
+        const loadVoice = () => {
+            const voices = this.synth.getVoices();
+            // Prefer Google US English or similar robot-like voices
+            this.voice = voices.find(v => v.name.includes('Google US English')) || 
+                         voices.find(v => v.name.toLowerCase().includes('male')) || 
+                         voices[0];
+        };
+        
+        if (this.synth.onvoiceschanged !== undefined) {
+            this.synth.onvoiceschanged = loadVoice;
+        }
+        loadVoice();
+    },
+    speak: function(text) {
+        if (!this.synth || !text) return;
+        this.synth.cancel(); // Stop any current speech
+        const utterance = new SpeechSynthesisUtterance(text);
+        if (this.voice) {
+            utterance.voice = this.voice;
+        }
+        utterance.rate = 0.9; // Slightly slower for authority
+        utterance.pitch = 0.7; // Lower pitch for Simon's persona
+        this.synth.speak(utterance);
+    },
+    cancel: function() {
+        if (this.synth) this.synth.cancel();
+    }
+};
+// Initialize TTS
+TTSSys.init();
+
 
 // --- AUDIO ---
 const AudioSys = {
@@ -634,11 +678,19 @@ function resetGame() {
     sloganEl.style.display = 'block';
     sloganEl.innerText = "✨ SAFETY SYSTEM LOADING...";
     
-    callGemini("You are Simon Unglaube, WHS Manager. Write a short, dark, dry, cynical corporate safety slogan for the start of the shift. ALL CAPS. Max 6 words.", "slogans").then(text => {
+    callGemini("You are Simon Unglaube. Write a chaotic, intense, and slightly unhinged safety slogan. ALL CAPS. Max 6 words. No paperwork mentions.", "slogans").then(text => {
         if (GAME.state === 'PLAY') sloganEl.innerText = "✨ " + text;
     });
 
-    showDialog(`Coordinator ${GAME.selectedChar}! Hazards detected!\nFind 5 Hazards immediately!`, "Simon Unglaube", GFX.simonFace, false);
+    // AI Start Message
+    showDialog("Analyzing coordinator lethargy levels...", "Simon Unglaube", GFX.simonFace, true);
+    const currentGen = GAME.genId;
+    callGemini(`You are Simon Unglaube. The game just started. Yell at the Coordinator (${GAME.selectedChar}) to start working. Be dramatic, funny, and obsessed with entropy or chaos. Do NOT mention fines or paperwork. Max 15 words.`, "intro").then(text => {
+        if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
+             showDialog(text, "Simon Unglaube", GFX.simonFace, true);
+        }
+    });
+
     updateMusicForState();
 }
 
@@ -939,13 +991,28 @@ function updateProjectiles() {
         // Ops/Simon Hit
         if (p.type === 'book' && GAME.state === 'PLAY') {
             let simon = GAME.entities.find(e => e.type === 'simon');
+            
+            // CHECK IF SIMON IS HIT
             if (simon && Math.hypot(p.x-simon.x, p.y-simon.y) < 12) {
                  GAME.simonHits++;
                  AudioSys.sfx.angry();
                  GAME.projectiles.splice(i,1);
-                 if (GAME.simonHits === 1) showDialog("Hey! Watch it! I write your paycheck.", "Simon Unglaube", GFX.simonFace);
-                 else if (GAME.simonHits === 2) showDialog("Strike two. Do not test my patience.", "Simon Unglaube", GFX.simonFace);
-                 else if (GAME.simonHits >= 3) initSimonBoss(); // TRIGGER SUPER SIMON BOSS
+                 
+                 if (GAME.simonHits === 1) {
+                     // AI REACTION 1
+                     showDialog("...", "Simon Unglaube", GFX.simonFace, true); 
+                     callGemini("You are Simon. A subordinate just threw a book at you. Express shock and rage. Max 10 words.", "ouch")
+                        .then(t => showDialog(t, "Simon Unglaube", GFX.simonFace, true));
+                 }
+                 else if (GAME.simonHits === 2) {
+                     // AI REACTION 2
+                     showDialog("...", "Simon Unglaube", GFX.simonFace, true); 
+                     callGemini("You are Simon. You got hit AGAIN. Threaten to delete the universe or the player. Be unhinged. Max 10 words.", "ouch")
+                        .then(t => showDialog(t, "Simon Unglaube", GFX.simonFace, true));
+                 }
+                 else if (GAME.simonHits >= 3) {
+                     initSimonBoss(); // TRIGGER SUPER SIMON BOSS
+                 }
                  continue;
             }
 
@@ -1045,7 +1112,10 @@ function tryInteract() {
              else {
                  showDialog("✨ Analyzing Runner...", "System", null, true);
                  const currentGen = GAME.genId;
-                 callGemini("You are Simon Unglaube, WHS Manager. You just caught someone running. Scold them with dry humor. Mention physics or forms. Max 20 words.", "runners").then(tip => {
+                 callGemini(
+                     "You are Simon Unglaube. You stopped a runner. Mock them for trying to break the sound barrier or defying physics. Be sarcastic and funny. Max 15 words.", 
+                     "runners"
+                 ).then(tip => {
                     if (GAME.state === 'DIALOG' && GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
                  });
              }
@@ -1060,7 +1130,11 @@ function tryInteract() {
             else {
                 showDialog(`✨ Analyzing ${h.data.name}...`, "System", null, true);
                 const currentGen = GAME.genId;
-                callGemini(`You are Simon Unglaube. A coordinator fixed a "${h.data.name}". Give a dry, witty safety compliment. Mention avoiding lawsuits, physics, or paperwork. Max 20 words.`, "hazard", { hazardName: h.data.name }).then(tip => {
+                callGemini(
+                    `You are Simon Unglaube. A hazard "${h.data.name}" was fixed. Praise the player sarcastically. Mention avoiding explosions, black holes, or chaos. Max 15 words.`, 
+                    "hazard", 
+                    { hazardName: h.data.name }
+                ).then(tip => {
                     if (GAME.state === 'DIALOG' && GAME.genId === currentGen) showDialog(`Fixed: ${h.data.name}!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
                 });
             }
@@ -1080,9 +1154,10 @@ function triggerGameOver(reason) {
     if (reason === "FIRED!") {
         showDialog("YOU ARE FIRED!\nSimon has had enough of your unsafe behavior.\n\n(Press Space)", "HR", null, false);
     } else {
-        showDialog("OVERWHELMED!\nSimon is writing up your review...", "Simon Unglaube", GFX.simonFace, false);
+        showDialog("OVERWHELMED!\nSimon is judging your soul...", "Simon Unglaube", GFX.simonFace, true);
         const currentGen = GAME.genId;
-        const prompt = `You are Simon Unglaube. Write a detailed performance review (max 50 words) for a coordinator who failed after ${time}s, threw ${GAME.booksFired} books, and pushed back ${GAME.opsPushed} Ops. Tone: Dark, cynical, disappointed father.`;
+        // UPDATED PROMPT: Darker, funnier
+        const prompt = `You are Simon Unglaube. Write a scathing, sarcastic review (max 40 words) for a coordinator who failed after ${time}s. Be disappointed in their lack of survival instinct.`;
         
         callGemini(prompt, "reviews_loss").then(review => {
              if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
@@ -1390,9 +1465,17 @@ function showDialog(text, speaker, portrait, isAI = false) {
     else { pCtx.fillStyle='#fff'; pCtx.fillText("!", 10, 20); }
     
     AudioSys.sfx.text();
+
+    // --- TTS IMPLEMENTATION FOR SIMON ---
+    if (speaker && (speaker.includes("Simon") || speaker.includes("SIMON"))) {
+        // Remove speaker name and newlines for cleaner speech
+        const speechText = text.replace(speaker + ":\n", "").replace(/\n/g, ' ');
+        TTSSys.speak(speechText);
+    }
 }
 
 function closeDialog() {
+    TTSSys.cancel(); // Stop speech when closing dialog
     AudioSys.sfx.step();
     document.getElementById('dialog-box').style.display = 'none';
     GAME.state = GAME.nextState;
