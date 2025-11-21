@@ -367,7 +367,7 @@ const TTSSys = {
             utterance.voice = this.voice;
         }
         utterance.rate = 0.9; // Slightly slower for authority
-        utterance.pitch = 0.7; // Lower pitch for Simon's persona
+        utterance.pitch = 0.5; // Lower pitch for Simon's persona
         this.synth.speak(utterance);
     },
     cancel: function() {
