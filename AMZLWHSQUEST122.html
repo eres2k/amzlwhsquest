@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMZL WHS Coordinator Quest (Gemini AI Enabled)</title>
+    <title>AMZL WHS Coordinator Quest</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -570,6 +570,10 @@ const GAME = {
     dialogVisible: "",
     dialogTimer: 0,
     
+    // NEW SPLASH VARS
+    splashTimer: 0,
+    aiResultText: null,
+    
     // STATS
     startTime: 0,
     booksFired: 0,
@@ -615,6 +619,9 @@ function handleAction() {
     MusicSys.init();
     MusicSys.resume();
     updateMusicForState();
+
+    // Block input during splash screens to prevent skipping the build-up
+    if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') return;
 
     // Intro Logic: ONLY Logo advances automatically. Others need space.
     if (GAME.state === 'LOGO') { advanceState(); }
@@ -681,6 +688,7 @@ function resetGame() {
     GAME.activeIssues = []; GAME.clutter = [];
     GAME.issuesFixed = 0; GAME.lives = 5; GAME.simonHits = 0; GAME.boss = null;
     GAME.nextState = 'PLAY'; 
+    GAME.aiResultText = null; // Clear AI result
     
     // Stats Reset
     GAME.startTime = Date.now();
@@ -815,6 +823,36 @@ function update() {
     
     if (GAME.shake > 0) GAME.shake--;
     if (GAME.flash > 0) GAME.flash--;
+
+    // Handle Splash Screens (Wait for timer or API)
+    if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') {
+        GAME.splashTimer--;
+        if (GAME.splashTimer <= 0) {
+            // Time to transition to dialog
+            if (GAME.aiResultText) {
+                // If API is already done, show result immediately (No "Calculating..." flash)
+                const isWin = GAME.state === 'WIN_SPLASH';
+                const speaker = isWin ? "Simon Unglaube" : "Simon Unglaube"; // Can be HR for lose
+                const portrait = GFX.simonFace;
+                
+                // Format text based on outcome state
+                let finalText = GAME.aiResultText.replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
+                                                 .replace(/\[.*?\]/g, GAME.selectedChar);
+                
+                let header = isWin ? `OUTSTANDING!\n"${finalText}"\n` : `AUDIT FAILED\n"${finalText}"\n`;
+                let stats = `\nStats:\nTime: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`;
+                
+                showDialog(header + stats, speaker, portrait, true);
+                GAME.state = 'DIALOG';
+                GAME.nextState = 'TITLE';
+            } else {
+                // API still working, show waiting dialog
+                showDialog("Calculating Safety Score...\n(Please wait for Simon's verdict)", "System", null, true);
+                // Note: The API callback will handle updating this dialog when it finishes
+            }
+        }
+        return;
+    }
 
     // Auto-Advance ONLY for Logo
     if (GAME.state === 'LOGO' && GAME.stateTimer > 240) advanceState();
@@ -1176,24 +1214,33 @@ function tryInteract() {
 function triggerGameOver(reason) {
     GAME.gameOverTriggered = true;
     GAME.nextState = 'TITLE';
+    GAME.state = 'LOSE_SPLASH'; // Set Splash State
+    GAME.splashTimer = 180;      // 3 Seconds (60fps)
+    GAME.aiResultText = null;    // Clear previous
+    
     document.getElementById('boss-hud').style.display = 'none';
+    document.getElementById('dialog-box').style.display = 'none'; // Ensure dialog is hidden during splash
     
     const time = Math.floor((Date.now() - GAME.startTime)/1000);
+    const currentGen = GAME.genId;
     
     if (reason === "FIRED!") {
-        showDialog("YOU ARE FIRED!\nSimon has had enough of your unsafe behavior.\n\n(Press Space)", "HR", null, false);
+        // Static fail, no AI needed
+        GAME.aiResultText = "You have been terminated for unsafe behavior.";
     } else {
-        showDialog("OVERWHELMED!\nSimon is judging your soul...", "Simon Unglaube", GFX.simonFace, true);
-        const currentGen = GAME.genId;
-        // UPDATED PROMPT: Simon personality
+        // AI fail
         const prompt = `You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Write a scathing, dry, professional review (max 40 words) for a coordinator who failed after ${time}s. Be disappointed in their lack of safety instinct.`;
         
         callGemini(prompt, "reviews_loss").then(review => {
-             if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
-                 // Clean any placeholders in Game Over screen
-                 let cleanReview = review.replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
-                                        .replace(/\[.*?\]/g, GAME.selectedChar);
-                 showDialog(`AUDIT FAILED\n\n"${cleanReview}"\n\nStats:\nTime spent: ${time}seconds\nSafety Rules Fired: ${GAME.booksFired}\nNumber of OPS push-backs: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
+             if (GAME.genId === currentGen) {
+                 GAME.aiResultText = review;
+                 // If we are currently showing "Calculating..." (timer finished), update it now
+                 if (document.getElementById('dialog-box').style.display !== 'none') {
+                     // Force dialog update
+                     const finalText = review.replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
+                                             .replace(/\[.*?\]/g, GAME.selectedChar);
+                     showDialog(`AUDIT FAILED\n"${finalText}"\n\nStats:\nTime spent: ${time}seconds\nSafety Rules Fired: ${GAME.booksFired}\nNumber of OPS push-backs: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
+                 }
              }
         });
     }
@@ -1202,18 +1249,29 @@ function triggerGameOver(reason) {
 function winGame() {
     AudioSys.sfx.start();
     MusicSys.play('victory');
+    
     GAME.nextState = 'TITLE';
+    GAME.state = 'WIN_SPLASH'; // Set Splash State
+    GAME.splashTimer = 180;    // 3 Seconds
+    GAME.aiResultText = null;
+
     document.getElementById('boss-hud').style.display = 'none';
-    showDialog("BOSS DEFEATED!\nCalculating Safety Score...", "System", null, true);
+    document.getElementById('dialog-box').style.display = 'none'; // Ensure dialog is hidden during splash
+
     const currentGen = GAME.genId;
     const time = Math.floor((Date.now() - GAME.startTime)/1000);
     const prompt = `You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Write a detailed performance review (max 50 words) for a coordinator who survived ${time}s, threw ${GAME.booksFired} safety books, and pushed back ${GAME.opsPushed} Ops managers. Tone: Professional, dry, expert praise.`;
 
     callGemini(prompt, "reviews_win").then(praise => {
-        // Clean any placeholders in Win screen
-        let cleanPraise = praise.replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
-                                .replace(/\[.*?\]/g, GAME.selectedChar);
-        if (GAME.state === 'DIALOG' && GAME.genId === currentGen) showDialog(`OUTSTANDING!\n"${cleanPraise}"\n\nStats:\nTime: ${time}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
+        if (GAME.genId === currentGen) {
+            GAME.aiResultText = praise;
+            // If we are currently showing "Calculating..." (timer finished), update it now
+             if (document.getElementById('dialog-box').style.display !== 'none') {
+                 const finalText = praise.replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
+                                         .replace(/\[.*?\]/g, GAME.selectedChar);
+                 showDialog(`OUTSTANDING!\n"${finalText}"\n\nStats:\nTime: ${time}s\nBooks: ${GAME.booksFired}\nOps: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
+             }
+        }
     });
 }
 
@@ -1233,6 +1291,44 @@ function checkCol(x, y) {
 
 // --- RENDER ---
 function draw() {
+    // Special Splash Screen Rendering
+    if (GAME.state === 'LOSE_SPLASH') {
+        ctx.fillStyle = '#500'; // Dark Red background
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Pulsating effect
+        const pulse = Math.sin(Date.now() / 100) * 0.2 + 0.8;
+        
+        ctx.fillStyle = `rgba(255, 0, 0, ${pulse})`;
+        ctx.font = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText("TERMINATED", canvas.width/2, canvas.height/2 - 20);
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = '10px monospace';
+        ctx.fillText("PREPARING EXIT INTERVIEW...", canvas.width/2, canvas.height/2 + 20);
+        
+        ctx.textAlign = 'start'; // Reset alignment
+        return;
+    }
+    
+    if (GAME.state === 'WIN_SPLASH') {
+        ctx.fillStyle = '#004'; // Dark Blue/Gold background
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#eab308'; // Gold
+        ctx.font = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText("COMPLIANT!", canvas.width/2, canvas.height/2 - 20);
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = '10px monospace';
+        ctx.fillText("CALCULATING SAFETY SCORE...", canvas.width/2, canvas.height/2 + 20);
+        
+        ctx.textAlign = 'start'; // Reset alignment
+        return;
+    }
+
     ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width, canvas.height);
 
     // Shake Effect
