@@ -145,13 +145,14 @@
 let apiKey = null;
 let apiKeyPromise = null;
 const MODEL_NAME = "gemini-2.5-flash-lite";
+const TTS_MODEL = "gemini-2.5-flash-preview-tts";
 
 // --- CHARACTER DATA ---
 const CHAR_DATA = {
-    "Carrie": { role: "Perfectionist Monk", backstory: "Meditates on 5S standards. Can spot a misaligned floor tape label from 50 meters away.", attack: "Zen Correction" },
-    "Nevena": { role: "The Worrier", backstory: "Always expects the worst case scenario. Makes legendary Palatschinken to calm her nerves.", attack: "Anxiety Blast" },
-    "Joao": { role: "Brazilian Fire", backstory: "Passionate, loud, and unstoppable. His safety shouts echo through the entire delivery station.", attack: "Samba Kick" },
-    "Roman": { role: "Silent Warrior", backstory: "A man of few words but many audits. He moves like a shadow and fixes hazards before they exist.", attack: "Stealth Audit" }
+    "Carrie": { role: "Perfectionist Monk", backstory: "Meditates on 5S standards. Can spot a misaligned floor tape label from 50 meters away.", attack: "Zen Correction", voice: "Leda" },
+    "Nevena": { role: "The Worrier", backstory: "Always expects the worst case scenario. Makes legendary Palatschinken to calm her nerves.", attack: "Anxiety Blast", voice: "Aoede" },
+    "Joao": { role: "Brazilian Fire", backstory: "Passionate, loud, and unstoppable. His safety shouts echo through the entire delivery station.", attack: "Samba Kick", voice: "Puck" },
+    "Roman": { role: "Silent Warrior", backstory: "A man of few words but many audits. He moves like a shadow and fixes hazards before they exist.", attack: "Stealth Audit", voice: "Charon" }
 };
 
 // --- SIMULATED AI DATABASE (FALLBACKS) ---
@@ -240,7 +241,7 @@ async function ensureApiKey() {
     return apiKeyPromise;
 }
 
-// --- GEMINI API ---
+// --- GEMINI API (TEXT) ---
 async function callGemini(prompt, category = 'generic', context = {}) {
     const activeKey = await ensureApiKey();
     if (!activeKey) {
@@ -308,6 +309,56 @@ async function callGemini(prompt, category = 'generic', context = {}) {
     }
 }
 
+// --- GEMINI API (TTS) ---
+async function callGeminiTTS(text, voiceName) {
+    const activeKey = await ensureApiKey();
+    if (!activeKey) return null;
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${TTS_MODEL}:generateContent?key=${activeKey}`;
+    
+    const payload = {
+        contents: [{ parts: [{ text: text }] }],
+        generationConfig: {
+            responseModalities: ["AUDIO"],
+            speechConfig: {
+                voiceConfig: {
+                    prebuiltVoiceConfig: { voiceName: voiceName }
+                }
+            }
+        }
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error(`TTS Error ${response.status}`);
+        
+        const data = await response.json();
+        const audioData = data.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+        
+        if (audioData) {
+            // Check mimeType for sample rate, default to 24000 if not found
+            // Format: "audio/L16; rate=24000"
+            let sampleRate = 24000;
+            if (audioData.mimeType && audioData.mimeType.includes("rate=")) {
+                const rateStr = audioData.mimeType.split("rate=")[1];
+                sampleRate = parseInt(rateStr);
+            }
+            return { base64: audioData.data, sampleRate: sampleRate };
+        }
+        return null;
+
+    } catch (e) {
+        console.warn("TTS Failed, falling back to browser voice:", e);
+        return null;
+    }
+}
+
+
 function getRandomFallback(prompt, category = 'generic', context = {}) {
     const hazardName = context.hazardName;
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -339,61 +390,7 @@ const TILE_SIZE = 16;
 const MAP_W = 60;
 const MAP_H = 40;
 
-// --- TTS SYSTEM (Gemini AI TTS Feature Implementation) ---
-const TTSSys = {
-    synth: window.speechSynthesis,
-    voice: null,
-    voices: [],
-    init: function() {
-        const loadVoices = () => {
-            this.voices = this.synth.getVoices();
-            // Prioritize "Male" voices (Google UK English Male, Microsoft David, etc.)
-            // Or look for specific known male names in voice lists
-            this.voice = this.voices.find(v => v.name.includes("Google US English")) || 
-                         this.voices.find(v => v.name.includes("Google UK English Male")) ||
-                         this.voices.find(v => v.name.includes("David")) || 
-                         this.voices.find(v => v.name.includes("Daniel")) || // Mac
-                         this.voices.find(v => v.name.toLowerCase().includes("male")) ||
-                         this.voices[0];
-        };
-        
-        if (this.synth.onvoiceschanged !== undefined) {
-            this.synth.onvoiceschanged = loadVoices;
-        }
-        loadVoices();
-    },
-    speak: function(text, speakerName = "System") {
-        if (!this.synth || !text) return;
-        this.synth.cancel(); 
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        if (this.voice) utterance.voice = this.voice;
-
-        // Dynamic Voice Personality
-        if (speakerName.includes("Simon") || speakerName.includes("SIMON")) {
-            utterance.pitch = 0.6; // Deep / Authoritative
-            utterance.rate = 0.85; 
-        } 
-        else if (["Carrie", "Nevena", "Jelly", "Jelena"].some(n => speakerName.includes(n))) {
-            utterance.pitch = 1.2; // Higher pitch for female chars
-            utterance.rate = 1.0;
-        }
-        else {
-            utterance.pitch = 0.9; // Standard Ops/Boss
-            utterance.rate = 1.0;
-        }
-
-        this.synth.speak(utterance);
-    },
-    cancel: function() {
-        if (this.synth) this.synth.cancel();
-    }
-};
-// Initialize TTS
-TTSSys.init();
-
-
-// --- AUDIO ---
+// --- AUDIO SYSTEM (Shared by SFX and TTS) ---
 const AudioSys = {
     ctx: null,
     init: function() {
@@ -433,6 +430,51 @@ const AudioSys = {
         gain.connect(this.ctx.destination);
         noise.start();
     },
+    // NEW: Play raw PCM from Gemini TTS
+    playPCM: function(base64Data, sampleRate) {
+        if (!this.ctx) this.init();
+        
+        try {
+            // 1. Decode Base64 to Binary
+            const binaryString = atob(base64Data);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            
+            // 2. Create Int16 View (L16 PCM format)
+            const int16Data = new Int16Array(bytes.buffer);
+            
+            // 3. Convert to Float32 (Normalized -1.0 to 1.0)
+            const float32Data = new Float32Array(int16Data.length);
+            for (let i = 0; i < int16Data.length; i++) {
+                float32Data[i] = int16Data[i] / 32768.0;
+            }
+
+            // 4. Create AudioBuffer
+            const audioBuffer = this.ctx.createBuffer(1, float32Data.length, sampleRate);
+            audioBuffer.getChannelData(0).set(float32Data);
+
+            // 5. Play
+            const source = this.ctx.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(this.ctx.destination);
+            source.start();
+            
+            // Store current speech source to allow cancellation
+            this.currentSpeech = source;
+            
+        } catch (e) {
+            console.error("Error playing PCM audio", e);
+        }
+    },
+    cancelSpeech: function() {
+        if (this.currentSpeech) {
+            try { this.currentSpeech.stop(); } catch(e){}
+            this.currentSpeech = null;
+        }
+    },
     sfx: {
         step: () => AudioSys.playNoise(0.05, 0.05),
         throw: () => AudioSys.playTone(400, 'square', 0.1, 0.1),
@@ -455,6 +497,79 @@ const AudioSys = {
         }
     }
 };
+
+// --- TTS SYSTEM (Gemini AI + Browser Fallback) ---
+const TTSSys = {
+    synth: window.speechSynthesis,
+    voice: null,
+    voices: [],
+    lastText: null,
+    init: function() {
+        const loadVoices = () => {
+            this.voices = this.synth.getVoices();
+            this.voice = this.voices.find(v => v.name.includes("Google US English")) || 
+                         this.voices.find(v => v.name.includes("David")) || 
+                         this.voices[0];
+        };
+        if (this.synth.onvoiceschanged !== undefined) {
+            this.synth.onvoiceschanged = loadVoices;
+        }
+        loadVoices();
+    },
+    
+    getGeminiVoice: function(speakerName) {
+        // Mapping Game Characters to Gemini Neural Voices
+        const map = {
+            "Simon": "Fenrir", // Deep, Authoritative
+            "Carrie": "Leda",  // Calm
+            "Nevena": "Aoede", // Expressive
+            "Joao": "Puck",    // Energetic
+            "Roman": "Charon", // Low, Steady
+            "System": "Kore"   // Neutral
+        };
+        
+        // Partial match
+        for (const key of Object.keys(map)) {
+            if (speakerName.includes(key)) return map[key];
+        }
+        return "Kore"; // Default
+    },
+
+    speak: async function(text, speakerName = "System") {
+        if (!text || text === this.lastText) return;
+        this.lastText = text;
+        this.cancel(); // Stop previous
+
+        // 1. TRY GEMINI AI TTS (REALISTIC)
+        if (apiKey) {
+            const aiVoice = this.getGeminiVoice(speakerName);
+            const audioResult = await callGeminiTTS(text, aiVoice);
+            
+            if (audioResult) {
+                AudioSys.playPCM(audioResult.base64, audioResult.sampleRate);
+                return; // Success, exit
+            }
+        }
+
+        // 2. FALLBACK TO BROWSER TTS (ROBOTIC)
+        if (!this.synth) return;
+        const utterance = new SpeechSynthesisUtterance(text);
+        if (this.voice) utterance.voice = this.voice;
+
+        if (speakerName.includes("Simon")) { utterance.pitch = 0.6; utterance.rate = 0.85; } 
+        else if (["Carrie", "Nevena", "Jelly"].some(n => speakerName.includes(n))) { utterance.pitch = 1.2; utterance.rate = 1.0; }
+        else { utterance.pitch = 0.9; utterance.rate = 1.0; }
+
+        this.synth.speak(utterance);
+    },
+    cancel: function() {
+        AudioSys.cancelSpeech(); // Stop Gemini Audio
+        if (this.synth) this.synth.cancel(); // Stop Browser Audio
+    }
+};
+// Initialize TTS
+TTSSys.init();
+
 
 const MusicSys = {
     tracks: {
