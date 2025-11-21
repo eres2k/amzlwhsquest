@@ -73,19 +73,17 @@
             text-transform: uppercase; text-shadow: 0 0 5px #00ffff;
         }
         
+        /* Banner hidden as requested */
+        #slogan-display {
+            display: none; 
+        }
+        
         @keyframes blink { 50% { opacity: 0; } }
 
         .hud-text {
             position: absolute; top: 20px; right: 20px; color: white;
             text-align: right; text-shadow: 2px 2px black; font-size: 12px;
             background: rgba(0,0,0,0.5); padding: 10px; border: 2px solid white;
-        }
-        
-        #slogan-display {
-            position: absolute; top: 20px; left: 20px; color: #ffff00;
-            text-shadow: 2px 2px black; font-size: 12px; max-width: 350px;
-            background: rgba(0,0,0,0.6); padding: 5px; border-left: 3px solid #eab308;
-            display: none;
         }
         
         #boss-hud {
@@ -98,7 +96,6 @@
         .boss-name { color: #ff0000; text-align: center; font-size: 10px; margin-bottom: 4px; text-shadow: 1px 1px black; }
         
         #ai-status {
-            /* HIDDEN PER REQUEST */
             display: none !important; 
             position: absolute; top: 10px; left: 10px; font-size: 10px; color: #00ffff;
             background: rgba(0,0,0,0.8); padding: 4px; border: 1px solid #00ffff; pointer-events: none;
@@ -141,10 +138,23 @@
 
 <script type="module">
 // --- CONFIG ---
-// Gemini API key is fetched at runtime from Netlify Functions
 let apiKey = null;
 let apiKeyPromise = null;
 const MODEL_NAME = "gemini-2.5-flash-lite";
+
+// --- BANTER DATA ---
+const BANTER_DB = {
+    ops: [
+        "TPH is down!", "Walk faster!", "No talking!", "VTO?", 
+        "Scan scan scan!", "Where's your vest?", "Audit panic!",
+        "My bonus!", "TOT!", "Bad rate!", "Let's go!"
+    ],
+    assoc: [
+        "My feet...", "Break time?", "Box heavy...", "Ugh...", 
+        "Safety shoes hurt", "Where's HR?", "Need coffee...",
+        "Too early...", "Night shift...", "Pizza party?"
+    ]
+};
 
 // --- CHARACTER DATA ---
 const CHAR_DATA = {
@@ -156,13 +166,6 @@ const CHAR_DATA = {
 
 // --- SIMULATED AI DATABASE (FALLBACKS) ---
 const SIMULATED_AI = {
-    slogans: [
-        "ENTROPY IS THE ENEMY. CHAOS IS NOT AN OPTION.",
-        "YOUR SKELETON PREFERS TO STAY INSIDE YOUR BODY.",
-        "ACCIDENTS ARE JUST PHYSICS LAUGHING AT YOU.",
-        "COMPLIANCE IS THE ONLY SHIELD AGAINST DOOM.",
-        "SAFETY REGULATIONS ARE WRITTEN IN BLOOD."
-    ],
     tips: [
         "Blocked exit? That box is your tombstone. Move it.",
         "Chemical spill? Entropy leaking. Contain it before you dissolve.",
@@ -190,11 +193,6 @@ const SIMULATED_AI = {
         "ENTROPY COMES FOR US ALL!",
         "YOUR PPE IS INSUFFICIENT!"
     ],
-    banter: [
-        "Coord: 'Safety First!' / Ops: 'But rates!'",
-        "Coord: 'Read manual!' / Ops: 'Can't read!'",
-        "Coord: 'Stop!' / Ops: 'Must run!'"
-    ],
     reviews_win: [
         "Performance: IMPROBABLE. You survived. I am... adequately pleased.",
         "You fought chaos and won. For today.",
@@ -213,23 +211,19 @@ let aiStatus = "init";
 
 function setAIStatus(message, level = 'info') {
     aiStatus = level;
-    // Console log instead of UI update
     console.log(`[AI STATUS ${level}]: ${message}`);
 }
 
 async function fetchApiKeyFromNetlify() {
     try {
-        setAIStatus('AI: Fetching key from Netlify...', 'info');
         const res = await fetch('/.netlify/functions/get-gemini-key', { cache: 'no-store' });
         if (!res.ok) throw new Error(`Netlify key endpoint returned ${res.status}`);
         const data = await res.json();
         const key = (data && data.apiKey ? String(data.apiKey) : '').trim();
         if (!key) throw new Error('No apiKey field in Netlify response');
         apiKey = key;
-        setAIStatus('AI key loaded from Netlify.', 'info');
         return apiKey;
     } catch (err) {
-        setAIStatus(`AI key fetch failed: ${err.message || err}`, 'error');
         return null;
     }
 }
@@ -244,12 +238,9 @@ async function ensureApiKey() {
 async function callGemini(prompt, category = 'generic', context = {}) {
     const activeKey = await ensureApiKey();
     if (!activeKey) {
-        console.log("No valid API Key, using fallback.");
-        setAIStatus('AI: Missing API key, using fallback.', 'error');
         return getRandomFallback(prompt, category, context);
     }
 
-    // Using flash-lite model per latest instructions
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${activeKey}`;
     const payload = { 
         contents: [{ 
@@ -259,7 +250,6 @@ async function callGemini(prompt, category = 'generic', context = {}) {
     const timeout = new Promise((r) => setTimeout(() => r("TIMEOUT"), 10000));
 
     try {
-        setAIStatus('AI: Contacting Gemini...', 'info');
         const fetchPromise = fetch(url, { 
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' }, 
@@ -267,43 +257,15 @@ async function callGemini(prompt, category = 'generic', context = {}) {
         });
         const response = await Promise.race([fetchPromise, timeout]);
         
-        if (response === "TIMEOUT") {
-            console.log("Gemini Timed Out");
-            setAIStatus('AI timeout — using fallback lines.', 'error');
-            return getRandomFallback(prompt, category, context);
-        }
-        if (!response.ok) {
-            let errText = '';
-            try {
-                const errJson = await response.clone().json();
-                errText = errJson?.error?.message || '';
-            } catch (err) {
-                errText = await response.text().catch(() => '');
-            }
-
-            const normalized = errText.toLowerCase();
-            const leakedKey = response.status === 403 && normalized.includes('reported as leaked');
-            const userMessage = leakedKey
-                ? 'AI blocked: API key was reported leaked — replace with a fresh server-side key.'
-                : `AI error ${response.status}: ${errText || 'see console'}`;
-
-            console.log("Gemini Error:", response.status, errText);
-            setAIStatus(userMessage, 'error');
-            return getRandomFallback(prompt, category, context);
-        }
+        if (response === "TIMEOUT") return getRandomFallback(prompt, category, context);
+        if (!response.ok) return getRandomFallback(prompt, category, context);
         
         const data = await response.json();
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-            setAIStatus(`AI online (${MODEL_NAME})`, 'info');
-            return text.trim();
-        }
-        setAIStatus('AI returned empty text, using fallback.', 'error');
+        if (text) return text.trim();
         return getRandomFallback(prompt, category, context);
 
     } catch (e) { 
-        console.error(e);
-        setAIStatus(`AI request failed: ${e.message || e}`, 'error');
         return getRandomFallback(prompt, category, context); 
     }
 }
@@ -313,22 +275,19 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const is = (key) => category === key || prompt.includes(key);
 
-    if (is("slogans")) return pick(SIMULATED_AI.slogans);
     if (is("runners")) return pick(SIMULATED_AI.runners);
-    if (is("banter")) return pick(SIMULATED_AI.banter);
     if (is("taunt")) {
          if(prompt.includes("Simon")) return pick(SIMULATED_AI.simon_taunts);
          return pick(SIMULATED_AI.taunts);
     }
     if (is("reviews_loss")) return pick(SIMULATED_AI.reviews_loss);
     if (is("reviews_win")) return pick(SIMULATED_AI.reviews_win);
-
     if (is("hazard") || is("tips")) {
-        if (hazardName) {
-            return `Hazard "${hazardName}" cleared. Paperwork avoided, entropy delayed.`;
-        }
+        if(hazardName) return `Hazard "${hazardName}" cleared. Paperwork avoided.`;
         return pick(SIMULATED_AI.tips);
     }
+    if (is("banter_ops")) return pick(BANTER_DB.ops);
+    if (is("banter_assoc")) return pick(BANTER_DB.assoc);
 
     return pick(SIMULATED_AI.tips);
 }
@@ -339,57 +298,32 @@ const TILE_SIZE = 16;
 const MAP_W = 60;
 const MAP_H = 40;
 
-// --- TTS SYSTEM (Gemini AI TTS Feature Implementation) ---
+// --- TTS SYSTEM ---
 const TTSSys = {
     synth: window.speechSynthesis,
     voice: null,
-    voices: [],
     init: function() {
         const loadVoices = () => {
-            this.voices = this.synth.getVoices();
-            // Prioritize "Male" voices (Google UK English Male, Microsoft David, etc.)
-            // Or look for specific known male names in voice lists
-            this.voice = this.voices.find(v => v.name.includes("Google US English")) || 
-                         this.voices.find(v => v.name.includes("Google UK English Male")) ||
-                         this.voices.find(v => v.name.includes("David")) || 
-                         this.voices.find(v => v.name.includes("Daniel")) || // Mac
-                         this.voices.find(v => v.name.toLowerCase().includes("male")) ||
-                         this.voices[0];
+            const voices = this.synth.getVoices();
+            this.voice = voices.find(v => v.name.includes("Google US English")) || voices[0];
         };
-        
-        if (this.synth.onvoiceschanged !== undefined) {
-            this.synth.onvoiceschanged = loadVoices;
-        }
+        if (this.synth.onvoiceschanged !== undefined) this.synth.onvoiceschanged = loadVoices;
         loadVoices();
     },
     speak: function(text, speakerName = "System") {
         if (!this.synth || !text) return;
         this.synth.cancel(); 
-
         const utterance = new SpeechSynthesisUtterance(text);
         if (this.voice) utterance.voice = this.voice;
-
-        // Dynamic Voice Personality
-        if (speakerName.includes("Simon") || speakerName.includes("SIMON")) {
-            utterance.pitch = 0.6; // Deep / Authoritative
-            utterance.rate = 0.85; 
-        } 
-        else if (["Carrie", "Nevena", "Jelly", "Jelena"].some(n => speakerName.includes(n))) {
-            utterance.pitch = 1.2; // Higher pitch for female chars
-            utterance.rate = 1.0;
-        }
-        else {
-            utterance.pitch = 0.9; // Standard Ops/Boss
-            utterance.rate = 1.0;
-        }
+        
+        if (speakerName.includes("Simon")) { utterance.pitch = 0.6; utterance.rate = 0.85; } 
+        else if (["Carrie", "Nevena"].some(n => speakerName.includes(n))) { utterance.pitch = 1.2; }
+        else { utterance.pitch = 0.9; }
 
         this.synth.speak(utterance);
     },
-    cancel: function() {
-        if (this.synth) this.synth.cancel();
-    }
+    cancel: function() { if (this.synth) this.synth.cancel(); }
 };
-// Initialize TTS
 TTSSys.init();
 
 
@@ -400,11 +334,7 @@ const AudioSys = {
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
         if(!this.ctx) this.ctx = new AudioContext();
     },
-    resume: function() {
-        if (this.ctx && this.ctx.state === 'suspended') {
-            this.ctx.resume();
-        }
-    },
+    resume: function() { if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); },
     playTone: function(freq, type, duration, vol=0.1) {
         if(!this.ctx) return;
         const osc = this.ctx.createOscillator();
@@ -449,10 +379,7 @@ const AudioSys = {
             AudioSys.playTone(100, 'sawtooth', 1.0, 0.3);
             setTimeout(() => AudioSys.playTone(80, 'sawtooth', 1.0, 0.3), 200);
         },
-        logo: () => {
-             AudioSys.playTone(440, 'triangle', 0.1, 0.2);
-             setTimeout(() => AudioSys.playTone(880, 'triangle', 0.4, 0.2), 100);
-        }
+        pop: () => AudioSys.playTone(1200, 'sine', 0.05, 0.1) // New pop sound for banter
     }
 };
 
@@ -467,38 +394,27 @@ const MusicSys = {
     currentName: null,
     init() {
         Object.values(this.tracks).forEach(a => {
-            a.loop = true;
-            a.volume = 0.35;
-            a.preload = 'auto';
+            a.loop = true; a.volume = 0.35; a.preload = 'auto';
         });
     },
     play(name) {
         const track = this.tracks[name];
         if (!track) return;
-        if (this.currentName && this.currentName !== name) {
-            this.stop();
-        }
+        if (this.currentName && this.currentName !== name) this.stop();
         this.currentName = name;
-        const promise = track.play();
-        if (promise) promise.catch(() => {});
+        track.play().catch(() => {});
     },
     stop() {
         if (this.currentName && this.tracks[this.currentName]) {
             const current = this.tracks[this.currentName];
-            current.pause();
-            current.currentTime = 0;
+            current.pause(); current.currentTime = 0;
         }
         this.currentName = null;
     },
     resume() {
         if (this.currentName && this.tracks[this.currentName]?.paused) {
-            const promise = this.tracks[this.currentName].play();
-            if (promise) promise.catch(() => {});
+            this.tracks[this.currentName].play().catch(() => {});
         }
-    },
-    stopAll() {
-        Object.values(this.tracks).forEach(a => { a.pause(); a.currentTime = 0; });
-        this.currentName = null;
     }
 };
 
@@ -509,122 +425,53 @@ function generateAssets() {
 
     GFX.logo = c(40, 40, ctx => { ctx.fillStyle = '#eab308'; ctx.fillRect(0, 0, 40, 40); ctx.fillStyle = '#fff'; ctx.font = '24px monospace'; ctx.fillText("EE", 5, 28); });
 
-    // Distinct player sprites
     GFX.chars = {
         "Carrie": c(16,16, ctx => {
-            ctx.fillStyle = '#fcd34d'; ctx.fillRect(3,1,10,4); ctx.fillRect(2,3,2,8); // hair
-            ctx.fillStyle = '#38bdf8'; ctx.fillRect(4,2,8,2); // headband
-            ctx.fillStyle = '#ffcc99'; ctx.fillRect(5,5,6,5); // face
-            ctx.fillStyle = '#000'; ctx.fillRect(6,7,1,1); ctx.fillRect(9,7,1,1); // eyes
-            ctx.fillStyle = '#a855f7'; ctx.fillRect(3,10,10,6); // purple vest
-            ctx.fillStyle = '#facc15'; ctx.fillRect(7,12,2,2); // belt
-            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // boots
+            ctx.fillStyle = '#fcd34d'; ctx.fillRect(3,1,10,4); ctx.fillRect(2,3,2,8);
+            ctx.fillStyle = '#38bdf8'; ctx.fillRect(4,2,8,2); ctx.fillStyle = '#ffcc99'; ctx.fillRect(5,5,6,5);
+            ctx.fillStyle = '#000'; ctx.fillRect(6,7,1,1); ctx.fillRect(9,7,1,1); ctx.fillStyle = '#a855f7'; ctx.fillRect(3,10,10,6);
+            ctx.fillStyle = '#facc15'; ctx.fillRect(7,12,2,2); ctx.fillStyle = '#1e3a8a'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
         }),
         "Nevena": c(16,16, ctx => {
-            ctx.fillStyle = '#1f2937'; ctx.fillRect(3,2,10,4); ctx.fillRect(2,4,2,6); // dark hair
-            ctx.fillStyle = '#14b8a6'; ctx.fillRect(4,3,8,2); // teal scarf
-            ctx.fillStyle = '#f5c89a'; ctx.fillRect(5,6,6,5); // face
-            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); // eyes
-            ctx.fillStyle = '#7f1d1d'; ctx.fillRect(3,11,10,5); // maroon coat
-            ctx.fillStyle = '#9ca3af'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); // clipboard corners
-            ctx.fillStyle = '#334155'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // shoes
+            ctx.fillStyle = '#1f2937'; ctx.fillRect(3,2,10,4); ctx.fillRect(2,4,2,6);
+            ctx.fillStyle = '#14b8a6'; ctx.fillRect(4,3,8,2); ctx.fillStyle = '#f5c89a'; ctx.fillRect(5,6,6,5);
+            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); ctx.fillStyle = '#7f1d1d'; ctx.fillRect(3,11,10,5);
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); ctx.fillStyle = '#334155'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
         }),
         "Joao": c(16,16, ctx => {
-            ctx.fillStyle = '#166534'; ctx.fillRect(4,1,8,3); ctx.fillRect(6,0,4,1); // green cap
-            ctx.fillStyle = '#f0a16b'; ctx.fillRect(5,4,6,5); // face
-            ctx.fillStyle = '#6b7280'; ctx.fillRect(4,9,8,1); // beard stubble
-            ctx.fillStyle = '#000'; ctx.fillRect(6,6,1,1); ctx.fillRect(9,6,1,1); // eyes
-            ctx.fillStyle = '#fb923c'; ctx.fillRect(3,10,10,6); // orange vest
-            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); // safety straps
-            ctx.fillStyle = '#7c2d12'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // boots
+            ctx.fillStyle = '#166534'; ctx.fillRect(4,1,8,3); ctx.fillRect(6,0,4,1);
+            ctx.fillStyle = '#f0a16b'; ctx.fillRect(5,4,6,5); ctx.fillStyle = '#6b7280'; ctx.fillRect(4,9,8,1);
+            ctx.fillStyle = '#000'; ctx.fillRect(6,6,1,1); ctx.fillRect(9,6,1,1); ctx.fillStyle = '#fb923c'; ctx.fillRect(3,10,10,6);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); ctx.fillStyle = '#7c2d12'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
         }),
         "Roman": c(16,16, ctx => {
-            ctx.fillStyle = '#9ca3af'; ctx.fillRect(3,1,10,4); ctx.fillRect(2,3,2,5); // silver hair
-            ctx.fillStyle = '#0f172a'; ctx.fillRect(4,3,8,3); // hood trim
-            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,6,6,5); // face
-            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); // eyes
-            ctx.fillStyle = '#1e293b'; ctx.fillRect(3,11,10,5); // navy hoodie
-            ctx.fillStyle = '#e5e7eb'; ctx.fillRect(7,12,2,2); // badge
-            ctx.fillStyle = '#0b1224'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // dark boots
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(3,1,10,4); ctx.fillRect(2,3,2,5);
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(4,3,8,3); ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,6,6,5);
+            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); ctx.fillStyle = '#1e293b'; ctx.fillRect(3,11,10,5);
+            ctx.fillStyle = '#e5e7eb'; ctx.fillRect(7,12,2,2); ctx.fillStyle = '#0b1224'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
         })
     };
     GFX.simon = c(16,16, ctx => { ctx.fillStyle = '#222'; ctx.fillRect(4,1,8,5); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,4); ctx.fillStyle = '#000'; ctx.fillRect(4,7,8,1); ctx.fillStyle = '#aaddff'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); ctx.fillStyle = '#eab308'; ctx.fillRect(3,9,10,6); ctx.fillStyle = '#fff'; ctx.fillRect(6,11,4,4); });
     GFX.simonFace = c(32,32, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simon,0,0,16,16,0,0,32,32); });
     
-    // SUPER SIMON BOSS SPRITE
     GFX.simonBoss = c(32,32, ctx => { 
-        ctx.fillStyle = '#222'; ctx.fillRect(8,2,16,10); // Big Hair
-        ctx.fillStyle = '#ffcc99'; ctx.fillRect(8,12,16,8); // Head
-        ctx.fillStyle = '#000'; ctx.fillRect(8,14,16,2); // Shades
-        ctx.fillStyle = '#ff0000'; ctx.fillRect(10,14,4,2); ctx.fillRect(18,14,4,2); // Glowing Eyes
-        ctx.fillStyle = '#eab308'; ctx.fillRect(6,20,20,12); // Big Vest
+        ctx.fillStyle = '#222'; ctx.fillRect(8,2,16,10); ctx.fillStyle = '#ffcc99'; ctx.fillRect(8,12,16,8);
+        ctx.fillStyle = '#000'; ctx.fillRect(8,14,16,2); ctx.fillStyle = '#ff0000'; ctx.fillRect(10,14,4,2); ctx.fillRect(18,14,4,2);
+        ctx.fillStyle = '#eab308'; ctx.fillRect(6,20,20,12);
     });
 
     GFX.ops = c(16,16, ctx => { ctx.fillStyle = '#333'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#dc2626'; ctx.fillRect(3,10,10,5); ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); });
-    GFX.boss_manager = c(16,16, ctx => {
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(2,1,12,5); // slick hair
-        ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,5); // stern face
-        ctx.fillStyle = '#111827'; ctx.fillRect(3,10,10,6); // black suit
-        ctx.fillStyle = '#ef4444'; ctx.fillRect(7,11,2,3); // red tie
-        ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); // eyes
-    });
-    GFX.boss_inspector = c(16,16, ctx => {
-        ctx.fillStyle = '#9ca3af'; ctx.fillRect(3,1,10,4); // grey cap
-        ctx.fillStyle = '#f5cba7'; ctx.fillRect(4,5,8,5); // focused face
-        ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); // keen eyes
-        ctx.fillStyle = '#facc15'; ctx.fillRect(3,10,10,6); // hi-vis vest
-        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,11,2,2); ctx.fillRect(10,11,2,2); // clipboards
-        ctx.fillStyle = '#1f2937'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // boots
-    });
-    GFX.boss_compliance = c(16,16, ctx => {
-        ctx.fillStyle = '#0b162a'; ctx.fillRect(3,1,10,4); // navy hair wrap
-        ctx.fillStyle = '#ffcc99'; ctx.fillRect(5,5,6,5); // face
-        ctx.fillStyle = '#000'; ctx.fillRect(6,7,1,1); ctx.fillRect(9,7,1,1); // glasses
-        ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,10,10,6); // teal blazer
-        ctx.fillStyle = '#14b8a6'; ctx.fillRect(7,11,2,3); // SOP binder
-        ctx.fillStyle = '#c084fc'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // flats
-    });
-    GFX.boss_regional = c(16,16, ctx => {
-        ctx.fillStyle = '#312e81'; ctx.fillRect(2,1,12,5); // royal hair
-        ctx.fillStyle = '#f5d0a0'; ctx.fillRect(4,6,8,5); // calculating face
-        ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); // eyes
-        ctx.fillStyle = '#581c87'; ctx.fillRect(3,10,10,6); // deep purple suit
-        ctx.fillStyle = '#fbbf24'; ctx.fillRect(7,11,2,3); // gold tie
-        ctx.fillStyle = '#cbd5e1'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // polished shoes
-    });
-    GFX.boss_sebastian = c(16,16, ctx => {
-        ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,2,6,6); // face
-        ctx.fillStyle = '#1d4ed8'; ctx.fillRect(3,8,10,1); // headset band
-        ctx.fillStyle = '#2563eb'; ctx.fillRect(2,9,12,6); // navy jacket
-        ctx.fillStyle = '#f97316'; ctx.fillRect(7,11,2,2); // badge
-        ctx.fillStyle = '#000'; ctx.fillRect(6,4,1,1); ctx.fillRect(9,4,1,1); // eyes
-        ctx.fillStyle = '#eab308'; ctx.fillRect(3,1,10,2); // blond hair
-    });
-    GFX.boss_jelly = c(16,16, ctx => {
-        ctx.fillStyle = '#ec4899'; ctx.fillRect(3,1,10,5); // pink hair
-        ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,5); // face
-        ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); // eyes
-        ctx.fillStyle = '#22c55e'; ctx.fillRect(3,10,10,6); // HR vest
-        ctx.fillStyle = '#f5f5f5'; ctx.fillRect(6,12,4,2); // badge
-        ctx.fillStyle = '#10b981'; ctx.fillRect(2,9,2,2); // clipboard edge
-    });
-    GFX.boss_avetta = c(16,16, ctx => {
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(2,2,12,12); // frame
-        ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,3,10,10); // glass
-        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,5,6,2); ctx.fillRect(5,9,6,2); // scan lines
-        ctx.fillStyle = '#34d399'; ctx.fillRect(4,7,8,1); // pulse line
-        ctx.fillStyle = '#fcd34d'; ctx.fillRect(7,6,2,4); // core
-    });
-    GFX.boss_bot = c(16,16, ctx => {
-        ctx.fillStyle = '#475569'; ctx.fillRect(2,2,12,12); // chassis
-        ctx.fillStyle = '#1e293b'; ctx.fillRect(3,3,10,2); // brow
-        ctx.fillStyle = '#7dd3fc'; ctx.fillRect(5,6,2,2); ctx.fillRect(9,6,2,2); // eyes
-        ctx.fillStyle = '#22c55e'; ctx.fillRect(4,10,8,3); // mouth bar
-        ctx.fillStyle = '#9ca3af'; ctx.fillRect(7,0,2,2); // antenna
-        ctx.fillStyle = '#ef4444'; ctx.fillRect(7,12,2,2); // warning light
-    });
+    GFX.boss_manager = c(16,16, ctx => { ctx.fillStyle = '#0f172a'; ctx.fillRect(2,1,12,5); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,5); ctx.fillStyle = '#111827'; ctx.fillRect(3,10,10,6); ctx.fillStyle = '#ef4444'; ctx.fillRect(7,11,2,3); ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); });
+    GFX.boss_inspector = c(16,16, ctx => { ctx.fillStyle = '#9ca3af'; ctx.fillRect(3,1,10,4); ctx.fillStyle = '#f5cba7'; ctx.fillRect(4,5,8,5); ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); ctx.fillStyle = '#facc15'; ctx.fillRect(3,10,10,6); ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,11,2,2); ctx.fillRect(10,11,2,2); ctx.fillStyle = '#1f2937'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); });
+    GFX.boss_compliance = c(16,16, ctx => { ctx.fillStyle = '#0b162a'; ctx.fillRect(3,1,10,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(5,5,6,5); ctx.fillStyle = '#000'; ctx.fillRect(6,7,1,1); ctx.fillRect(9,7,1,1); ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,10,10,6); ctx.fillStyle = '#14b8a6'; ctx.fillRect(7,11,2,3); ctx.fillStyle = '#c084fc'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); });
+    GFX.boss_regional = c(16,16, ctx => { ctx.fillStyle = '#312e81'; ctx.fillRect(2,1,12,5); ctx.fillStyle = '#f5d0a0'; ctx.fillRect(4,6,8,5); ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); ctx.fillStyle = '#581c87'; ctx.fillRect(3,10,10,6); ctx.fillStyle = '#fbbf24'; ctx.fillRect(7,11,2,3); ctx.fillStyle = '#cbd5e1'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); });
+    GFX.boss_sebastian = c(16,16, ctx => { ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,2,6,6); ctx.fillStyle = '#1d4ed8'; ctx.fillRect(3,8,10,1); ctx.fillStyle = '#2563eb'; ctx.fillRect(2,9,12,6); ctx.fillStyle = '#f97316'; ctx.fillRect(7,11,2,2); ctx.fillStyle = '#000'; ctx.fillRect(6,4,1,1); ctx.fillRect(9,4,1,1); ctx.fillStyle = '#eab308'; ctx.fillRect(3,1,10,2); });
+    GFX.boss_jelly = c(16,16, ctx => { ctx.fillStyle = '#ec4899'; ctx.fillRect(3,1,10,5); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,5); ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); ctx.fillStyle = '#22c55e'; ctx.fillRect(3,10,10,6); ctx.fillStyle = '#f5f5f5'; ctx.fillRect(6,12,4,2); ctx.fillStyle = '#10b981'; ctx.fillRect(2,9,2,2); });
+    GFX.boss_avetta = c(16,16, ctx => { ctx.fillStyle = '#0f172a'; ctx.fillRect(2,2,12,12); ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,3,10,10); ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,5,6,2); ctx.fillRect(5,9,6,2); ctx.fillStyle = '#34d399'; ctx.fillRect(4,7,8,1); ctx.fillStyle = '#fcd34d'; ctx.fillRect(7,6,2,4); });
+    GFX.boss_bot = c(16,16, ctx => { ctx.fillStyle = '#475569'; ctx.fillRect(2,2,12,12); ctx.fillStyle = '#1e293b'; ctx.fillRect(3,3,10,2); ctx.fillStyle = '#7dd3fc'; ctx.fillRect(5,6,2,2); ctx.fillRect(9,6,2,2); ctx.fillStyle = '#22c55e'; ctx.fillRect(4,10,8,3); ctx.fillStyle = '#9ca3af'; ctx.fillRect(7,0,2,2); ctx.fillStyle = '#ef4444'; ctx.fillRect(7,12,2,2); });
     GFX.assoc = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,5); });
     GFX.runner = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,5); ctx.fillStyle = '#fff'; ctx.fillRect(1, 12, 2, 1); ctx.fillRect(14, 10, 2, 1); });
+    
     GFX.clutter = { cart: c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(2,6,12,8); ctx.fillStyle = '#8b4513'; ctx.fillRect(4,4,8,6); }), coffee: c(8,8, ctx => { ctx.fillStyle='#fff'; ctx.fillRect(2,2,4,5); }), paper: c(8,8, ctx => { ctx.fillStyle='#eee'; ctx.fillRect(1,3,6,4); }), tape: c(8,8, ctx => { ctx.fillStyle='#d97706'; ctx.beginPath(); ctx.arc(4,4,3,0,Math.PI*2); ctx.fill(); }) };
     GFX.hazards = { spill: c(16,16, ctx => { ctx.fillStyle = '#4ade80aa'; ctx.beginPath(); ctx.arc(8,8,7,0,Math.PI*2); ctx.fill(); }), box: c(16,16, ctx => { ctx.fillStyle = '#8b4513'; ctx.fillRect(2,4,12,11); ctx.fillStyle = '#cd853f'; ctx.fillRect(4,6,8,7); }), drum: c(16,16, ctx => { ctx.fillStyle = '#1e3a8a'; ctx.fillRect(4,2,8,12); }), tall_pallet: c(16,16, ctx => { ctx.fillStyle = '#a855f7'; ctx.fillRect(3,2,10,12); }), debris: c(16,16, ctx => { ctx.fillStyle = '#8b4513'; ctx.translate(8,8); ctx.rotate(0.5); ctx.fillRect(-6,-2,12,4); }) };
     GFX.door = c(16,16, ctx => { ctx.fillStyle = '#16a34a'; ctx.fillRect(2,2,12,14); ctx.fillStyle='#fff'; ctx.fillRect(3,4,10,2); });
@@ -647,22 +494,14 @@ const GAME = {
     charList: ["Carrie", "Nevena", "Joao", "Roman"],
     charIndex: 0,
     camera: { x: 0, y: 0 },
-    map: [], clutter: [], entities: [], projectiles: [], particles: [], activeIssues: [],
+    map: [], clutter: [], entities: [], projectiles: [], particles: [], floatingTexts: [],
+    activeIssues: [],
     issuesFixed: 0, lives: 5, genId: 0, gameOverTriggered: false, simonHits: 0, boss: null,
     shake: 0, flash: 0, 
-    
-    dialogText: "",
-    dialogVisible: "",
-    dialogTimer: 0,
-    
-    // NEW SPLASH VARS
-    splashTimer: 0,
-    aiResultText: null,
-    
-    // STATS
-    startTime: 0,
-    booksFired: 0,
-    opsPushed: 0,
+    dialogText: "", dialogVisible: "", dialogTimer: 0,
+    splashTimer: 0, aiResultText: null,
+    startTime: 0, booksFired: 0, opsPushed: 0,
+    lastAIBanterTime: 0, // Throttle AI requests
 
     bossTypes: [
         { name: "Labour Inspector", sprite: "boss_inspector", hp: 10, speed: 1.2, attackDelay: 50, title: "The Enforcer", desc: "Checks every corner.", attackName: "Citation Storm" },
@@ -698,54 +537,24 @@ window.addEventListener('keyup', e => {
 });
 
 function handleAction() {
-    // Ensure Audio is active on first interaction
-    AudioSys.init();
-    AudioSys.resume();
-    MusicSys.init();
-    MusicSys.resume();
-    updateMusicForState();
-
-    // Block input during splash screens to prevent skipping the build-up
+    AudioSys.init(); AudioSys.resume(); MusicSys.init(); MusicSys.resume(); updateMusicForState();
     if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') return;
-
-    // Intro Logic: ONLY Logo advances automatically. Others need space.
     if (GAME.state === 'LOGO') { advanceState(); }
     else if (['INTRO', 'STORY'].includes(GAME.state)) { AudioSys.sfx.start(); advanceState(); }
     else if (['TITLE', 'HOWTO'].includes(GAME.state)) { 
-        GAME.state = (GAME.state==='TITLE')?'HOWTO':'SELECT'; 
-        AudioSys.sfx.select(); 
-        updateMusicForState();
+        GAME.state = (GAME.state==='TITLE')?'HOWTO':'SELECT'; AudioSys.sfx.select(); updateMusicForState();
     }
-    else if (GAME.state === 'SELECT') { 
-        AudioSys.sfx.select(); 
-        GAME.selectedChar = GAME.charList[GAME.charIndex]; 
-        // TTS Removed from here per user request, moved to update()
-        resetGame(); 
-    }
+    else if (GAME.state === 'SELECT') { AudioSys.sfx.select(); GAME.selectedChar = GAME.charList[GAME.charIndex]; resetGame(); }
     else if (GAME.state === 'DIALOG') {
-        // Fast forward text or close
         if (GAME.dialogVisible.length < GAME.dialogText.length) {
-            GAME.dialogVisible = GAME.dialogText;
-            document.getElementById('text-content').innerText = GAME.dialogVisible; // Sync DOM
-        } else {
-            closeDialog();
-        }
+            GAME.dialogVisible = GAME.dialogText; document.getElementById('text-content').innerText = GAME.dialogVisible;
+        } else { closeDialog(); }
     }
-    else if (GAME.state === 'BOSS_INTRO') {
-        GAME.state = 'BOSS';
-        GAME.nextState = 'BOSS'; // FIX: Explicitly set next state to BOSS
-        updateMusicForState();
-    }
+    else if (GAME.state === 'BOSS_INTRO') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
     else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') { 
-        document.getElementById('boss-hud').style.display = 'none';
-        document.getElementById('slogan-display').style.display = 'none';
-        GAME.state = 'TITLE'; 
-        updateMusicForState();
+        document.getElementById('boss-hud').style.display = 'none'; GAME.state = 'TITLE'; updateMusicForState();
     }
-    else if (GAME.state === 'PLAY' || GAME.state === 'BOSS') {
-        if (GAME.state === 'PLAY' && tryInteract()) return;
-        throwBook();
-    }
+    else if (GAME.state === 'PLAY' || GAME.state === 'BOSS') { if (GAME.state === 'PLAY' && tryInteract()) return; throwBook(); }
 }
 
 function init() {
@@ -769,44 +578,25 @@ function resetGame() {
     GAME.genId++;
     GAME.gameOverTriggered = false;
     GAME.player = { x: 100, y: 100, dir: 0, speed: 1.5, iframe: 0, cooldown: 0 };
-    GAME.entities = []; GAME.projectiles = []; GAME.particles = [];
+    GAME.entities = []; GAME.projectiles = []; GAME.particles = []; GAME.floatingTexts = [];
     GAME.activeIssues = []; GAME.clutter = [];
     GAME.issuesFixed = 0; GAME.lives = 5; GAME.simonHits = 0; GAME.boss = null;
-    GAME.nextState = 'PLAY'; 
-    GAME.aiResultText = null; // Clear AI result
-    
-    // Stats Reset
-    GAME.startTime = Date.now();
-    GAME.booksFired = 0;
-    GAME.opsPushed = 0;
+    GAME.nextState = 'PLAY'; GAME.aiResultText = null;
+    GAME.startTime = Date.now(); GAME.booksFired = 0; GAME.opsPushed = 0;
     
     generateMap();
     GAME.entities.push({ type: 'simon', x: 100, y: 80, w: 16, h: 16 });
     document.getElementById('hud-layer').style.display = 'block';
     document.getElementById('boss-hud').style.display = 'none';
     
-    const sloganEl = document.getElementById('slogan-display');
-    sloganEl.style.display = 'block';
-    sloganEl.innerText = "✨ SAFETY SYSTEM LOADING...";
-    
-    callGemini("You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU (DE, AT NL). You take safety seriously and have dry humor. Write a corporate safety slogan. ALL CAPS. Max 6 words. No paperwork mentions.", "slogans").then(text => {
-        if (GAME.state === 'PLAY') sloganEl.innerText = "✨ " + text;
-    });
-
-    // AI Start Message
     showDialog("Analyzing coordinator lethargy levels...", "Simon Unglaube", GFX.simonFace, true);
     const currentGen = GAME.genId;
-    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU (DE, AT NL). The game just started. Address the Coordinator by their name: ${GAME.selectedChar} with dry, professional humor. Encourage them to work but note that you are watching for compliance errors. Use the name ${GAME.selectedChar} explicitly in the response. Max 15 words.`, "intro").then(text => {
+    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Address ${GAME.selectedChar} with dry humor. Encouragement but warning about compliance. Max 15 words.`, "intro").then(text => {
         if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
-             // Fallback/Safety replacement to ensure the name is used if AI hallucinates a placeholder
-             let finalText = text.replace(/\[Player Name\]/gi, GAME.selectedChar)
-                                 .replace(/\[Coordinator\]/gi, GAME.selectedChar)
-                                 .replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
-                                 .replace(/\[.*?\]/g, GAME.selectedChar); // Catch-all for any other brackets
+             let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
              showDialog(finalText, "Simon Unglaube", GFX.simonFace, true);
         }
     });
-
     updateMusicForState();
 }
 
@@ -826,19 +616,12 @@ function generateMap() {
             }
         }
     }
-    
-    // Clear Central Arena for Boss (Fix for boss projectiles hitting walls instantly)
-    for(let y=15; y<25; y++) {
-        for(let x=25; x<35; x++) {
-            GAME.map[y][x] = 0;
-        }
-    }
+    for(let y=15; y<25; y++) for(let x=25; x<35; x++) GAME.map[y][x] = 0;
 
     let dx = 30, dy = 0; GAME.map[dy][dx] = 3; 
     GAME.activeIssues.push({ x: dx*TILE_SIZE, y: (dy+1)*TILE_SIZE, data: {name: "Blocked Exit", type: "box"}, fixed: false });
 
     spawnEntity('runner'); spawnEntity('runner');
-
     let count = 0;
     while(count < 3) { 
         let tx = Math.floor(Math.random()*(MAP_W-2))+1; let ty = Math.floor(Math.random()*(MAP_H-2))+1;
@@ -862,25 +645,12 @@ function initSimonBoss() {
     GAME.state = 'BOSS_INTRO';
     AudioSys.sfx.bossIntro();
     GAME.boss = {
-        name: "SIMON UNGLAUBE",
-        sprite: "simonBoss",
-        hp: 25, 
-        speed: 1.5, 
-        attackDelay: 30, 
-        title: "THE WHS FINAL BOSS",
-        desc: "He has seen your file. He is not impressed.",
-        attackName: "TERMINATION PROTOCOL",
-        tauntsTriggered: [],
-        tauntThresholds: [0.75, 0.5, 0.25],
-        maxHp: 25,
-        x: MAP_W * TILE_SIZE / 2, 
-        y: MAP_H * TILE_SIZE / 2,
-        timer: 0 // FIX: Init timer
+        name: "SIMON UNGLAUBE", sprite: "simonBoss", hp: 25, speed: 1.5, attackDelay: 30, 
+        title: "THE WHS FINAL BOSS", desc: "He has seen your file.", attackName: "TERMINATION PROTOCOL",
+        tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25], maxHp: 25,
+        x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, timer: 0 
     };
-    
-    // Clear old stuff
-    GAME.entities = [];
-    GAME.projectiles = [];
+    GAME.entities = []; GAME.projectiles = [];
     updateMusicForState();
 }
 
@@ -888,16 +658,7 @@ function initBossEncounter() {
     GAME.state = 'BOSS_INTRO';
     AudioSys.sfx.bossIntro(); 
     const bossData = GAME.bossTypes[Math.floor(Math.random() * GAME.bossTypes.length)];
-    GAME.boss = { 
-        ...bossData, 
-        x: MAP_W * TILE_SIZE / 2, 
-        y: MAP_H * TILE_SIZE / 2, 
-        w: 32, h: 32, 
-        maxHp: bossData.hp, 
-        timer: 0,
-        tauntsTriggered: [],
-        tauntThresholds: [0.75, 0.5, 0.25]
-    };
+    GAME.boss = { ...bossData, x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, w: 32, h: 32, maxHp: bossData.hp, timer: 0, tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25] };
     GAME.entities = []; GAME.projectiles = [];
     updateMusicForState();
 }
@@ -905,52 +666,36 @@ function initBossEncounter() {
 function update() {
     GAME.ticks++;
     GAME.stateTimer++;
-    
     if (GAME.shake > 0) GAME.shake--;
     if (GAME.flash > 0) GAME.flash--;
 
-    // Handle Splash Screens (Wait for timer or API)
     if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') {
         GAME.splashTimer--;
         if (GAME.splashTimer <= 0) {
-            // Time to transition to dialog
             if (GAME.aiResultText) {
-                // If API is already done, show result immediately (No "Calculating..." flash)
                 const isWin = GAME.state === 'WIN_SPLASH';
-                const speaker = isWin ? "Simon Unglaube" : "Simon Unglaube"; // Can be HR for lose
-                const portrait = GFX.simonFace;
-                
-                // Format text based on outcome state
-                let finalText = GAME.aiResultText.replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
-                                                 .replace(/\[.*?\]/g, GAME.selectedChar);
-                
+                const speaker = isWin ? "Simon Unglaube" : "Simon Unglaube";
+                let finalText = GAME.aiResultText.replace(/\[.*?\]/g, GAME.selectedChar);
                 let header = isWin ? `OUTSTANDING!\n"${finalText}"\n` : `AUDIT FAILED\n"${finalText}"\n`;
-                let stats = `\nStats:\nTime spent: ${Math.floor((Date.now() - GAME.startTime)/1000)} seconds\nSafety rules used: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`;
-                
-                showDialog(header + stats, speaker, portrait, true);
-                GAME.state = 'DIALOG';
-                GAME.nextState = 'TITLE';
+                let stats = `\nStats:\nTime: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nRules used: ${GAME.booksFired}\nOPS pushed: ${GAME.opsPushed}\n(Press Space)`;
+                showDialog(header + stats, speaker, GFX.simonFace, true);
+                GAME.state = 'DIALOG'; GAME.nextState = 'TITLE';
             } else {
-                // API still working, show waiting dialog
-                showDialog("Calculating Safety Score...\n(Please wait for Simon's verdict)", "System", null, true);
-                // Note: The API callback will handle updating this dialog when it finishes
+                showDialog("Calculating Safety Score...\n(Please wait)", "System", null, true);
             }
         }
         return;
     }
 
-    // Auto-Advance ONLY for Logo
     if (GAME.state === 'LOGO' && GAME.stateTimer > 240) advanceState();
     
     if (GAME.state === 'SELECT') {
         let changed = false;
         if (KEYS.left && GAME.ticks % 10 === 0) { GAME.charIndex--; AudioSys.sfx.step(); changed = true; }
         if (KEYS.right && GAME.ticks % 10 === 0) { GAME.charIndex++; AudioSys.sfx.step(); changed = true; }
-        
         if (changed) {
             if (GAME.charIndex < 0) GAME.charIndex = GAME.charList.length - 1;
             if (GAME.charIndex >= GAME.charList.length) GAME.charIndex = 0;
-            // TTS Triggered here on selection change via arrows
             TTSSys.speak(GAME.charList[GAME.charIndex], "System");
         }
         return;
@@ -958,22 +703,19 @@ function update() {
 
     if (GAME.state === 'DIALOG') {
         if (GAME.dialogVisible.length < GAME.dialogText.length) {
-            if (GAME.ticks % 2 === 0) { // Typing speed
+            if (GAME.ticks % 2 === 0) {
                 GAME.dialogVisible += GAME.dialogText[GAME.dialogVisible.length];
-                document.getElementById('text-content').innerText = GAME.dialogVisible; // Sync DOM
+                document.getElementById('text-content').innerText = GAME.dialogVisible;
                 AudioSys.sfx.text();
             }
         }
-        return; // Pause game
+        return;
     }
 
     if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO'].includes(GAME.state)) return;
 
     if (GAME.state === 'PLAY' || GAME.state === 'BOSS') {
-        updatePlayer();
-        updateProjectiles();
-        updateParticles();
-        updateCamera();
+        updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts(); updateCamera();
     }
 
     if (GAME.state === 'PLAY') updateEntities();
@@ -982,14 +724,9 @@ function update() {
 
 function updatePlayer() {
     const p = GAME.player;
-    if (p.iframe>0) p.iframe--;
-    if (p.cooldown>0) p.cooldown--;
-    
+    if (p.iframe>0) p.iframe--; if (p.cooldown>0) p.cooldown--;
     let dx=0, dy=0;
-    if (KEYS.up) dy = -p.speed;
-    if (KEYS.down) dy = p.speed;
-    if (KEYS.left) dx = -p.speed;
-    if (KEYS.right) dx = p.speed;
+    if (KEYS.up) dy = -p.speed; if (KEYS.down) dy = p.speed; if (KEYS.left) dx = -p.speed; if (KEYS.right) dx = p.speed;
     if (dx!==0 && dy!==0) { dx *= 0.707; dy *= 0.707; }
     if (dx!==0 || dy!==0) {
         if (!checkCol(p.x+dx, p.y)) p.x+=dx;
@@ -998,9 +735,50 @@ function updatePlayer() {
     }
 }
 
+// --- BANTER SYSTEM ---
+function spawnFloatingText(x, y, text, color='#fff') {
+    GAME.floatingTexts.push({
+        x: x + 8, y: y, 
+        text: text, color: color, 
+        life: 210, vy: -0.2 // Slower, longer life (3.5s)
+    });
+    AudioSys.sfx.pop();
+}
+
+function triggerBanter(entity) {
+    if (!entity || Math.random() > 0.8) return; // Don't trigger every time
+    
+    const now = Date.now();
+    const useAI = (now - GAME.lastAIBanterTime > 15000) && (Math.random() < 0.3); // 30% chance if cooldown over
+    const category = (entity.type === 'ops') ? 'banter_ops' : 'banter_assoc';
+    
+    if (useAI && apiKey) {
+        GAME.lastAIBanterTime = now;
+        let prompt = "";
+        if (entity.type === 'ops') prompt = "Short, funny bark (max 3 words) from an Amazon Warehouse Ops Manager yelling about productivity.";
+        else prompt = "Short, funny thought (max 3 words) from a tired Amazon Warehouse Associate.";
+
+        // ASYNC CALL - DOES NOT BLOCK GAME
+        callGemini(prompt, category).then(text => {
+            // Check if entity still alive/relevant, otherwise just spawn near player or drop
+            if (GAME.entities.includes(entity)) {
+                 spawnFloatingText(entity.x, entity.y, text, (entity.type==='ops'?'#ffcc00':'#ccc'));
+            }
+        });
+    } else {
+        // Hardcoded fallback
+        const text = getRandomFallback(category, category);
+        spawnFloatingText(entity.x, entity.y, text, (entity.type==='ops'?'#ffcc00':'#ccc'));
+    }
+}
+
 function updateEntities() {
     GAME.entities.forEach(e => {
         if (e.type === 'simon') return;
+        
+        // Banter Trigger (Random Chance)
+        if (Math.random() < 0.002) triggerBanter(e); // Low chance per tick
+
         if (e.type === 'ops') {
             let d = Math.hypot(GAME.player.x - e.x, GAME.player.y - e.y);
             if (d < 100) {
@@ -1023,171 +801,76 @@ function updateEntities() {
             let s = 0.8; 
             let nx = e.x, ny = e.y;
             if (e.dir===0) ny-=s; else if(e.dir===1) ny+=s; else if(e.dir===2) nx-=s; else nx+=s;
-            if (!checkCol(nx, ny)) { e.x = nx; e.y = ny; }
-            else e.dir = Math.floor(Math.random()*4); 
+            if (!checkCol(nx, ny)) { e.x = nx; e.y = ny; } else e.dir = Math.floor(Math.random()*4); 
         }
     });
 }
 
 function updateBoss() {
-    const b = GAME.boss;
-    const p = GAME.player;
+    const b = GAME.boss; const p = GAME.player;
+    document.getElementById('boss-hud').style.display = 'block'; document.getElementById('boss-name-el').innerText = b.name; updateBossHud();
     
-    document.getElementById('boss-hud').style.display = 'block';
-    document.getElementById('boss-name-el').innerText = b.name;
-    updateBossHud();
-
-    // Dynamic Taunt Logic
     let hpPct = b.hp / b.maxHp;
     if (b.tauntThresholds.length > 0 && hpPct < b.tauntThresholds[0]) {
-         b.tauntThresholds.shift(); 
-         const currentGen = GAME.genId;
-         // Custom prompt for Simon vs others
-         let prompt = b.name === "SIMON UNGLAUBE" ? 
-             "You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. The player is fighting you. Threaten them with a final audit. Be professional but scary. Max 25 words." :
-             `Generate a taunt from a video game boss named ${b.name} (${b.desc}). The tone should be specific to their role. Max 25 words.`;
-
+         b.tauntThresholds.shift(); const currentGen = GAME.genId;
+         let prompt = b.name === "SIMON UNGLAUBE" ? "Simon Unglaube final warning. Max 25 words." : `Taunt from boss ${b.name}. Max 25 words.`;
          callGemini(prompt, "taunt").then(text => {
             if (GAME.state === 'BOSS' && GAME.genId === currentGen) {
-                 // Pause game for taunt
-                 let portrait = b.name === "SIMON UNGLAUBE" ? GFX.simonBoss : GFX.boss_manager;
-                 if (b.name.includes("Sebastian")) portrait = GFX.boss_sebastian;
-                 if (b.name.includes("Avetta")) portrait = GFX.boss_avetta;
-                 if (b.name.includes("Bot")) portrait = GFX.boss_bot;
-                 if (b.name.includes("Jelena")) portrait = GFX.boss_jelly;
+                 let portrait = b.name.includes("Simon") ? GFX.simonBoss : GFX.boss_manager;
                  showDialog(text, b.name, portrait, true);
             }
         });
     }
-
-    // FIX: Check if b.x and b.y are valid
     if (isNaN(b.x) || isNaN(b.y)) return;
-
-    // Collision check for Boss to prevent wall clipping
-    let dx = 0, dy = 0;
-    let dist = Math.hypot(p.x - b.x, p.y - b.y);
-    
+    let dx = 0, dy = 0; let dist = Math.hypot(p.x - b.x, p.y - b.y);
     if (dist > 50) {
         let angle = Math.atan2(p.y - b.y, p.x - b.x);
-        dx = Math.cos(angle) * b.speed;
-        dy = Math.sin(angle) * b.speed;
-        
-        // Wall Collision Check for Boss
-        if (!checkCol(b.x + dx, b.y)) b.x += dx;
-        if (!checkCol(b.x, b.y + dy)) b.y += dy;
+        dx = Math.cos(angle) * b.speed; dy = Math.sin(angle) * b.speed;
+        if (!checkCol(b.x + dx, b.y)) b.x += dx; if (!checkCol(b.x, b.y + dy)) b.y += dy;
     }
-
     b.timer++;
     if (b.timer > b.attackDelay) {
         b.timer = 0;
         for (let i = -1; i <= 1; i++) {
             let angle = Math.atan2(p.y - b.y, p.x - b.x) + (i * 0.3);
-            // Spawn projectile slightly offset to avoid instant self-collision if near wall
-            GAME.projectiles.push({ 
-                type: 'req', 
-                x: b.x + 16 + Math.cos(angle)*10, 
-                y: b.y + 16 + Math.sin(angle)*10, 
-                vx: Math.cos(angle)*2.5, 
-                vy: Math.sin(angle)*2.5, 
-                life: 100, 
-                boss: true,
-                grace: 10 // Ignore walls for 10 frames
-            });
+            GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*10, y: b.y + 16 + Math.sin(angle)*10, vx: Math.cos(angle)*2.5, vy: Math.sin(angle)*2.5, life: 100, boss: true, grace: 10 });
         }
-        AudioSys.sfx.alert();
-        GAME.shake = 5; 
+        AudioSys.sfx.alert(); GAME.shake = 5; 
     }
 }
 
 function updateProjectiles() {
     for(let i=GAME.projectiles.length-1; i>=0; i--) {
         let p = GAME.projectiles[i];
-        p.x += p.vx; p.y += p.vy; p.life--;
-        if(p.grace > 0) p.grace--; // Decrement grace period
-        
-        // Only check wall collision if grace period is over
+        p.x += p.vx; p.y += p.vy; p.life--; if(p.grace > 0) p.grace--;
         if (p.grace <= 0 && checkCol(p.x, p.y)) { GAME.projectiles.splice(i,1); continue; }
-        
         if (p.life <= 0) { GAME.projectiles.splice(i,1); continue; }
-        
-        // Player Hit
         if ((p.type === 'req') && Math.hypot(p.x-GAME.player.x, p.y-GAME.player.y) < 10) {
             if (GAME.player.iframe<=0) {
-                GAME.lives--;
-                GAME.player.iframe = 120; 
-                GAME.shake = 10; // Violent Shake
-                GAME.flash = 10; // Flash
-                AudioSys.sfx.hurt();
-                updateHud();
-                if (GAME.lives<=0 && !GAME.gameOverTriggered) { 
-                    triggerGameOver("OVERWHELMED!");
-                }
+                GAME.lives--; GAME.player.iframe = 120; GAME.shake = 10; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
+                if (GAME.lives<=0 && !GAME.gameOverTriggered) triggerGameOver("OVERWHELMED!");
             }
             GAME.projectiles.splice(i,1);
         }
-
-        // Boss Hit
         if (p.type === 'book' && GAME.state === 'BOSS' && GAME.boss) {
              if (Math.hypot(p.x - (GAME.boss.x+16), p.y - (GAME.boss.y+16)) < 24) {
-                 GAME.boss.hp--;
-                 updateBossHud();
-                 AudioSys.sfx.bossHit();
-                 GAME.shake = 5;
-                 spawnParticle(p.x, p.y, '#ff0000', -2);
-                 GAME.projectiles.splice(i,1);
-                 if (GAME.boss.hp <= 0) winGame();
-                 continue;
+                 GAME.boss.hp--; updateBossHud(); AudioSys.sfx.bossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, '#ff0000', -2); GAME.projectiles.splice(i,1);
+                 if (GAME.boss.hp <= 0) winGame(); continue;
              }
         }
-
-        // Ops/Simon Hit
         if (p.type === 'book' && GAME.state === 'PLAY') {
             let simon = GAME.entities.find(e => e.type === 'simon');
-            
-            // CHECK IF SIMON IS HIT
             if (simon && Math.hypot(p.x-simon.x, p.y-simon.y) < 12) {
-                 GAME.simonHits++;
-                 AudioSys.sfx.angry();
-                 GAME.projectiles.splice(i,1);
-                 
-                 if (GAME.simonHits === 1) {
-                     // AI REACTION 1
-                     showDialog("...", "Simon Unglaube", GFX.simonFace, true); 
-                     callGemini("You are Simon Unglaube, WHS Senior Regional Manager. A subordinate just threw a book at you. Express dry, professional shock. Max 10 words.", "ouch")
-                        .then(t => showDialog(t, "Simon Unglaube", GFX.simonFace, true));
-                 }
-                 else if (GAME.simonHits === 2) {
-                     // AI REACTION 2
-                     showDialog("...", "Simon Unglaube", GFX.simonFace, true); 
-                     callGemini("You are Simon Unglaube. You got hit AGAIN. Threaten to report them to the board. Be dry and cynical. Max 10 words.", "ouch")
-                        .then(t => showDialog(t, "Simon Unglaube", GFX.simonFace, true));
-                 }
-                 else if (GAME.simonHits >= 3) {
-                     initSimonBoss(); // TRIGGER SUPER SIMON BOSS
-                 }
+                 GAME.simonHits++; AudioSys.sfx.angry(); GAME.projectiles.splice(i,1);
+                 if (GAME.simonHits === 1) showDialog("...", "Simon Unglaube", GFX.simonFace, true);
+                 else if (GAME.simonHits >= 3) initSimonBoss();
                  continue;
             }
-
             let hit = false;
             GAME.entities.forEach(e => {
                 if (e.type === 'ops' && Math.hypot(p.x-e.x, p.y-e.y) < 12) {
-                    e.type = 'assoc';
-                    AudioSys.sfx.hit();
-                    spawnParticle(e.x, e.y, '#fff', -2);
-                    GAME.opsPushed++; // Stat
-
-                    const opsBannerEl = document.getElementById('slogan-display');
-                    const bannerVisible = opsBannerEl && opsBannerEl.style.display !== 'none';
-                    const banterChance = bannerVisible ? 0.2 : 0.1;
-                    if (opsBannerEl && Math.random() < banterChance) {
-                        const currentGen = GAME.genId;
-                        callGemini("Generate snarky OPS banter after being pushed back. Max 12 words. Keep it dramatic.", "banter").then(line => {
-                            if (GAME.state === 'PLAY' && GAME.genId === currentGen) {
-                                opsBannerEl.innerText = "OPS: " + line;
-                            }
-                        });
-                    }
-
+                    e.type = 'assoc'; AudioSys.sfx.hit(); spawnParticle(e.x, e.y, '#fff', -2); GAME.opsPushed++;
+                    spawnFloatingText(e.x, e.y, "My Rates!", "#ff0000"); // Instant reaction
                     hit = true;
                 }
             });
@@ -1198,59 +881,36 @@ function updateProjectiles() {
 
 function updateParticles() {
     for(let i=GAME.particles.length-1; i>=0; i--) {
-        let p = GAME.particles[i];
-        p.life--;
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.2; // Gravity
-        
-        // Bounce Floor (Mock floor at p.y original + 5)
-        if (p.y > p.groundY) {
-            p.y = p.groundY;
-            p.vy *= -0.6; // Bounce
-        }
-        
+        let p = GAME.particles[i]; p.life--; p.x += p.vx; p.y += p.vy; p.vy += 0.2;
+        if (p.y > p.groundY) { p.y = p.groundY; p.vy *= -0.6; }
         if (p.life <= 0) GAME.particles.splice(i,1);
     }
 }
 
+function updateFloatingTexts() {
+    for(let i=GAME.floatingTexts.length-1; i>=0; i--) {
+        let t = GAME.floatingTexts[i];
+        t.y += t.vy; t.life--;
+        if (t.life <= 0) GAME.floatingTexts.splice(i,1);
+    }
+}
+
 function spawnParticle(x, y, color, forceY = 0) { 
-    // Spawn debris with physics
-    GAME.particles.push({
-        x:x, y:y, color:color, life:40, 
-        vx: (Math.random() - 0.5) * 2,
-        vy: forceY || (Math.random() * -2),
-        groundY: y + 5
-    }); 
+    GAME.particles.push({ x:x, y:y, color:color, life:40, vx: (Math.random() - 0.5) * 2, vy: forceY || (Math.random() * -2), groundY: y + 5 }); 
 }
 
 function throwBook() {
-    const p = GAME.player;
-    if (p.cooldown > 0) return;
-    p.cooldown = 120; 
-    GAME.booksFired++; // Stat
-
+    const p = GAME.player; if (p.cooldown > 0) return; p.cooldown = 120; GAME.booksFired++;
     let vx=0, vy=0;
     if (GAME.state === 'BOSS' && GAME.boss) {
-        let angle = Math.atan2((GAME.boss.y+16) - p.y, (GAME.boss.x+16) - p.x);
-        vx = Math.cos(angle) * 4; vy = Math.sin(angle) * 4;
+        let angle = Math.atan2((GAME.boss.y+16) - p.y, (GAME.boss.x+16) - p.x); vx = Math.cos(angle) * 4; vy = Math.sin(angle) * 4;
     } else {
         let target = null; let minDist = 200;
-        GAME.entities.forEach(e => {
-            if (e.type === 'ops') {
-                let d = Math.hypot(e.x - p.x, e.y - p.y);
-                if (d < minDist) { minDist = d; target = e; }
-            }
-        });
-        if (target) {
-            let angle = Math.atan2(target.y - p.y, target.x - p.x);
-            vx = Math.cos(angle) * 4; vy = Math.sin(angle) * 4;
-        } else {
-            if (KEYS.up) vy=-4; else if (KEYS.down) vy=4; else if (KEYS.left) vx=-4; else vx=4;
-        }
+        GAME.entities.forEach(e => { if (e.type === 'ops') { let d = Math.hypot(e.x - p.x, e.y - p.y); if (d < minDist) { minDist = d; target = e; } } });
+        if (target) { let angle = Math.atan2(target.y - p.y, target.x - p.x); vx = Math.cos(angle) * 4; vy = Math.sin(angle) * 4; } 
+        else { if (KEYS.up) vy=-4; else if (KEYS.down) vy=4; else if (KEYS.left) vx=-4; else vx=4; }
     }
-    GAME.projectiles.push({ type:'book', x:p.x+8, y:p.y+8, vx, vy, life:40 });
-    AudioSys.sfx.throw();
+    GAME.projectiles.push({ type:'book', x:p.x+8, y:p.y+8, vx, vy, life:40 }); AudioSys.sfx.throw();
 }
 
 function tryInteract() {
@@ -1258,40 +918,38 @@ function tryInteract() {
     for (let i=0; i<GAME.entities.length; i++) {
         let e = GAME.entities[i];
         if (e.type === 'runner' && Math.hypot(p.x-e.x, p.y-e.y) < 20) {
-             e.type = 'assoc'; 
-             GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
-             if (GAME.issuesFixed >= 5) { initBossEncounter(); } 
-             else {
-                 // NO PRE-DIALOG HERE to avoid flash
-                 const currentGen = GAME.genId;
-                 callGemini(
-                     "You are Simon Unglaube, WHS Senior Regional Manager. You stopped a runner.  Praise the player with dry, professional humor. Give a related Safety tipp. Max 15 words.", 
-                     "runners"
-                 ).then(tip => {
-                    // Allow dialog to pop even if state is PLAY
-                    if (GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
-                 });
-             }
+             e.type = 'assoc'; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
+             spawnFloatingText(e.x, e.y, "Safe!", "#00ff00");
+             
+             // SIMON COMMENTARY
+             const currentGen = GAME.genId;
+             callGemini(
+                 "You are Simon Unglaube, WHS Senior Regional Manager. You stopped a runner. Praise the player with dry, professional humor. Give a related Safety tipp. Max 15 words.", 
+                 "runners"
+             ).then(tip => {
+                if (GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
+             });
+
+             if (GAME.issuesFixed >= 5) initBossEncounter();
              return true;
         }
     }
     for(let h of GAME.activeIssues) {
         if (!h.fixed && Math.hypot(p.x-h.x, p.y-h.y) < 20) {
-            h.fixed = true;
-            GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
-            if (GAME.issuesFixed >= 5) { initBossEncounter(); } 
-            else {
-                // NO PRE-DIALOG HERE to avoid flash
-                const currentGen = GAME.genId;
-                callGemini(
-                    `You are Simon Unglaube, WHS Senior Regional Manager. A hazard "${h.data.name}" was fixed. Praise the player for finding he issue with dry, professional humor. Give a related Safety tipp. Max 30 words.`, 
-                    "hazard", 
-                    { hazardName: h.data.name }
-                ).then(tip => {
-                    // Allow dialog to pop even if state is PLAY
-                    if (GAME.genId === currentGen) showDialog(`Fixed: ${h.data.name}!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
-                });
-            }
+            h.fixed = true; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
+            spawnFloatingText(h.x, h.y, "Fixed!", "#00ff00");
+            
+            // SIMON COMMENTARY
+            const currentGen = GAME.genId;
+            callGemini(
+                `You are Simon Unglaube, WHS Senior Regional Manager. A hazard "${h.data.name}" was fixed. Praise the player with dry, professional humor. Max 30 words.`, 
+                "hazard", 
+                { hazardName: h.data.name }
+            ).then(tip => {
+                if (GAME.genId === currentGen) showDialog(`Fixed: ${h.data.name}!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
+            });
+
+            if (GAME.issuesFixed >= 5) initBossEncounter();
             return true;
         }
     }
@@ -1299,289 +957,147 @@ function tryInteract() {
 }
 
 function triggerGameOver(reason) {
-    GAME.gameOverTriggered = true;
-    GAME.nextState = 'TITLE';
-    GAME.state = 'LOSE_SPLASH'; // Set Splash State
-    GAME.splashTimer = 180;      // 3 Seconds (60fps)
-    GAME.aiResultText = null;    // Clear previous
-    
-    document.getElementById('boss-hud').style.display = 'none';
-    document.getElementById('dialog-box').style.display = 'none'; // Ensure dialog is hidden during splash
-    
-    const time = Math.floor((Date.now() - GAME.startTime)/1000);
-    const currentGen = GAME.genId;
-    
-    if (reason === "FIRED!") {
-        // Static fail, no AI needed
-        GAME.aiResultText = "You have been terminated for unsafe behavior.";
-    } else {
-        // AI fail
-        const prompt = `You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Write a scathing, dry, professional review (max 40 words) for a coordinator who failed after ${time}s. Be disappointed in their lack of safety instinct.`;
-        
-        callGemini(prompt, "reviews_loss").then(review => {
-             if (GAME.genId === currentGen) {
-                 GAME.aiResultText = review;
-                 // If we are currently showing "Calculating..." (timer finished), update it now
-                 if (document.getElementById('dialog-box').style.display !== 'none') {
-                     // Force dialog update
-                     const finalText = review.replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
-                                             .replace(/\[.*?\]/g, GAME.selectedChar);
-                     showDialog(`AUDIT FAILED\n"${finalText}"\n\nStats:\nTime spent: ${time}seconds\nSafety Rules Fired: ${GAME.booksFired}\nNumber of OPS push-backs: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
-                 }
-             }
+    GAME.gameOverTriggered = true; GAME.nextState = 'TITLE'; GAME.state = 'LOSE_SPLASH'; GAME.splashTimer = 180; GAME.aiResultText = null;
+    document.getElementById('boss-hud').style.display = 'none'; document.getElementById('dialog-box').style.display = 'none';
+    const time = Math.floor((Date.now() - GAME.startTime)/1000); const currentGen = GAME.genId;
+    if (reason === "FIRED!") { GAME.aiResultText = "Terminated for unsafe behavior."; } 
+    else {
+        callGemini(`Simon Unglaube review. Coordinator failed after ${time}s. Scathing. Max 40 words.`, "reviews_loss").then(review => {
+             if (GAME.genId === currentGen) { GAME.aiResultText = review; }
         });
     }
 }
 
 function winGame() {
-    AudioSys.sfx.start();
-    MusicSys.play('victory');
-    
-    GAME.nextState = 'TITLE';
-    GAME.state = 'WIN_SPLASH'; // Set Splash State
-    GAME.splashTimer = 180;    // 3 Seconds
-    GAME.aiResultText = null;
-
-    document.getElementById('boss-hud').style.display = 'none';
-    document.getElementById('dialog-box').style.display = 'none'; // Ensure dialog is hidden during splash
-
-    const currentGen = GAME.genId;
-    const time = Math.floor((Date.now() - GAME.startTime)/1000);
-    const prompt = `You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Write a detailed performance review (max 50 words) for a coordinator who survived ${time}s, threw ${GAME.booksFired} safety books, and pushed back ${GAME.opsPushed} Ops managers. Tone: Professional, dry, expert praise.`;
-
-    callGemini(prompt, "reviews_win").then(praise => {
-        if (GAME.genId === currentGen) {
-            GAME.aiResultText = praise;
-            // If we are currently showing "Calculating..." (timer finished), update it now
-             if (document.getElementById('dialog-box').style.display !== 'none') {
-                 const finalText = praise.replace(/\[Coordinator Name\]/gi, GAME.selectedChar)
-                                         .replace(/\[.*?\]/g, GAME.selectedChar);
-                 showDialog(`OUTSTANDING!\n"${finalText}"\n\nStats:\nTime spent: ${time}seconds\nSafety rules useds: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`, "Simon Unglaube", GFX.simonFace, true);
-             }
-        }
+    AudioSys.sfx.start(); MusicSys.play('victory'); GAME.nextState = 'TITLE'; GAME.state = 'WIN_SPLASH'; GAME.splashTimer = 180; GAME.aiResultText = null;
+    document.getElementById('boss-hud').style.display = 'none'; document.getElementById('dialog-box').style.display = 'none';
+    const currentGen = GAME.genId; const time = Math.floor((Date.now() - GAME.startTime)/1000);
+    callGemini(`Simon Unglaube review. Won in ${time}s. Professional praise. Max 50 words.`, "reviews_win").then(praise => {
+        if (GAME.genId === currentGen) GAME.aiResultText = praise;
     });
 }
 
-function updateBossHud() {
-    if(GAME.boss) {
-        const pct = Math.max(0, (GAME.boss.hp / GAME.boss.maxHp) * 100);
-        document.getElementById('boss-health-el').style.width = pct + '%';
-    }
-}
+function updateBossHud() { if(GAME.boss) document.getElementById('boss-health-el').style.width = Math.max(0, (GAME.boss.hp / GAME.boss.maxHp) * 100) + '%'; }
 
 function checkCol(x, y) {
-    let tx = Math.floor((x+8)/TILE_SIZE);
-    let ty = Math.floor((y+8)/TILE_SIZE);
+    let tx = Math.floor((x+8)/TILE_SIZE); let ty = Math.floor((y+8)/TILE_SIZE);
     if (tx<0||tx>=MAP_W||ty<0||ty>=MAP_H) return true;
     return GAME.map[ty][tx] !== 0;
 }
 
-// --- RENDER ---
+function updateHud() { document.getElementById('life-val').innerText = "❤️".repeat(Math.max(0, GAME.lives)); document.getElementById('score-val').innerText = GAME.issuesFixed + "/5"; }
+
+function showDialog(text, speaker, portrait, isAI = false) {
+    GAME.state = 'DIALOG'; GAME.dialogText = (speaker ? speaker + ":\n" : "") + text; GAME.dialogVisible = "";
+    const box = document.getElementById('dialog-box'); const badge = document.getElementById('gemini-badge'); const port = document.getElementById('portrait'); const pCtx = port.getContext('2d');
+    box.style.display = 'flex'; document.getElementById('text-content').innerText = ""; 
+    badge.style.display = isAI ? 'block' : 'none';
+    pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,32,32);
+    if (portrait) pCtx.drawImage(portrait, 0, 0); else { pCtx.fillStyle='#fff'; pCtx.fillText("!", 10, 20); }
+    AudioSys.sfx.text();
+    if (speaker) TTSSys.speak(text.replace(speaker + ":\n", "").replace(/\n/g, ' '), speaker);
+}
+
+function closeDialog() {
+    TTSSys.cancel(); AudioSys.sfx.step(); document.getElementById('dialog-box').style.display = 'none';
+    GAME.state = GAME.nextState; if (GAME.state === 'PLAY' && GAME.issuesFixed >= 5 && !GAME.boss) initBossEncounter();
+    updateMusicForState();
+}
+
+function updateMusicForState() {
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE'].includes(GAME.state)) MusicSys.play('title');
+    else if (['HOWTO', 'SELECT'].includes(GAME.state)) MusicSys.play('menu');
+    else if (GAME.state === 'PLAY') MusicSys.play('ingame');
+    else if (GAME.state === 'BOSS' || GAME.state === 'BOSS_INTRO') MusicSys.play('boss');
+}
+
 function draw() {
-    // Special Splash Screen Rendering
     if (GAME.state === 'LOSE_SPLASH') {
-        ctx.fillStyle = '#500'; // Dark Red background
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Pulsating effect
+        ctx.fillStyle = '#500'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         const pulse = Math.sin(Date.now() / 100) * 0.2 + 0.8;
-        
-        ctx.fillStyle = `rgba(255, 0, 0, ${pulse})`;
-        ctx.font = '20px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText("TERMINATED", canvas.width/2, canvas.height/2 - 20);
-        
-        ctx.fillStyle = '#fff';
-        ctx.font = '10px monospace';
-        ctx.fillText("PREPARING EXIT INTERVIEW...", canvas.width/2, canvas.height/2 + 20);
-        
-        ctx.textAlign = 'start'; // Reset alignment
-        return;
+        ctx.fillStyle = `rgba(255, 0, 0, ${pulse})`; ctx.font = '20px monospace'; ctx.textAlign = 'center'; ctx.fillText("TERMINATED", canvas.width/2, canvas.height/2 - 20);
+        ctx.fillStyle = '#fff'; ctx.font = '10px monospace'; ctx.fillText("PREPARING EXIT INTERVIEW...", canvas.width/2, canvas.height/2 + 20); ctx.textAlign = 'start'; return;
     }
-    
     if (GAME.state === 'WIN_SPLASH') {
-        ctx.fillStyle = '#004'; // Dark Blue/Gold background
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.fillStyle = '#eab308'; // Gold
-        ctx.font = '20px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText("COMPLIANT!", canvas.width/2, canvas.height/2 - 20);
-        
-        ctx.fillStyle = '#fff';
-        ctx.font = '10px monospace';
-        ctx.fillText("CALCULATING SAFETY SCORE...", canvas.width/2, canvas.height/2 + 20);
-        
-        ctx.textAlign = 'start'; // Reset alignment
-        return;
+        ctx.fillStyle = '#004'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#eab308'; ctx.font = '20px monospace'; ctx.textAlign = 'center'; ctx.fillText("COMPLIANT!", canvas.width/2, canvas.height/2 - 20);
+        ctx.fillStyle = '#fff'; ctx.font = '10px monospace'; ctx.fillText("CALCULATING SAFETY SCORE...", canvas.width/2, canvas.height/2 + 20); ctx.textAlign = 'start'; return;
     }
 
     ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width, canvas.height);
-
-    // Shake Effect
     let dxShake = 0, dyShake = 0;
-    if (GAME.shake > 0) {
-        dxShake = (Math.random() - 0.5) * GAME.shake;
-        dyShake = (Math.random() - 0.5) * GAME.shake;
-    }
-    
-    ctx.save();
-    ctx.translate(dxShake, dyShake);
+    if (GAME.shake > 0) { dxShake = (Math.random() - 0.5) * GAME.shake; dyShake = (Math.random() - 0.5) * GAME.shake; }
+    ctx.save(); ctx.translate(dxShake, dyShake);
 
     if (GAME.state === 'LOGO') { 
-        let alpha = 1.0;
-        if(GAME.stateTimer < 30) alpha = GAME.stateTimer / 30;
-        if(GAME.stateTimer > 200) alpha = (240 - GAME.stateTimer) / 40;
-        ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-        let offset = Math.max(0, 100 - GAME.stateTimer * 2);
+        let alpha = 1.0; if(GAME.stateTimer < 30) alpha = GAME.stateTimer / 30; if(GAME.stateTimer > 200) alpha = (240 - GAME.stateTimer) / 40;
+        ctx.globalAlpha = Math.max(0, Math.min(1, alpha)); let offset = Math.max(0, 100 - GAME.stateTimer * 2);
         ctx.drawImage(GFX.logo, 28 - offset, 90);
-        if (GAME.stateTimer > 80) {
-            ctx.fillStyle = '#fff'; ctx.font = '10px monospace'; ctx.fillText("ERWIN ESENER", 80, 105);
-            ctx.fillStyle = '#eab308'; ctx.font = '14px monospace'; ctx.fillText("PRODUCTIONS", 80, 125);
-        }
+        if (GAME.stateTimer > 80) { ctx.fillStyle = '#fff'; ctx.font = '10px monospace'; ctx.fillText("ERWIN ESENER", 80, 105); ctx.fillStyle = '#eab308'; ctx.font = '14px monospace'; ctx.fillText("PRODUCTIONS", 80, 125); }
         if(GAME.stateTimer > 60 && GAME.stateTimer < 65) { ctx.fillStyle='white'; ctx.fillRect(0,0,256,224); }
-        ctx.restore();
-        return; 
+        ctx.restore(); return; 
     }
-    
     if (GAME.state === 'INTRO') { 
-        ctx.fillStyle='#eab308'; ctx.fillText("THE WAREHOUSE...", 20, 60); 
-        ctx.fillStyle='#fff';
-        ctx.fillText("Ops Managers obsess over rates.", 20, 90);
-        ctx.fillText("They throw Crazy Requests.", 20, 110);
-        ctx.fillText("You must protect Safety.", 20, 130);
-        ctx.fillText("Stop runners. Fix hazards.", 20, 150);
-        ctx.fillStyle='#888'; ctx.fillText("[SPACE TO SKIP]", 80, 200);
-        ctx.restore();
-        return; 
+        ctx.fillStyle='#eab308'; ctx.fillText("THE WAREHOUSE...", 20, 60); ctx.fillStyle='#fff';
+        ctx.fillText("Ops Managers obsess over rates.", 20, 90); ctx.fillText("They throw Crazy Requests.", 20, 110);
+        ctx.fillText("You must protect Safety.", 20, 130); ctx.fillText("Stop runners. Fix hazards.", 20, 150);
+        ctx.fillStyle='#888'; ctx.fillText("[SPACE TO SKIP]", 80, 200); ctx.restore(); return; 
     }
-    
     if (GAME.state === 'STORY') {
-        ctx.fillStyle='#eab308'; ctx.font='10px monospace'; 
-        ctx.fillText("MISSION BRIEFING", 20, 40);
-        ctx.fillStyle='#fff';
-        ctx.fillText("Simon Unglaube asks you to:", 20, 70);
-        ctx.fillText("- Do the safety audit", 20, 90);
-        ctx.fillText("- Dodge crazy Ops requests", 20, 110);
-        ctx.fillText("- Push back with rules", 20, 130);
-        ctx.fillText("- Deal with 'visitors'", 20, 150);
-        ctx.fillStyle='#888'; ctx.fillText("[PRESS SPACE]", 80, 200);
-        ctx.restore();
-        return;
+        ctx.fillStyle='#eab308'; ctx.font='10px monospace'; ctx.fillText("MISSION BRIEFING", 20, 40); ctx.fillStyle='#fff';
+        ctx.fillText("Simon Unglaube asks you to:", 20, 70); ctx.fillText("- Do the safety audit", 20, 90);
+        ctx.fillText("- Dodge crazy Ops requests", 20, 110); ctx.fillText("- Push back with rules", 20, 130);
+        ctx.fillText("- Deal with 'visitors'", 20, 150); ctx.fillStyle='#888'; ctx.fillText("[PRESS SPACE]", 80, 200); ctx.restore(); return;
     }
-    
     if (GAME.state === 'TITLE') {
-        // SCROLLING GRID
-        let offset = (Date.now() / 20) % 256;
-        ctx.strokeStyle = '#004400'; ctx.lineWidth = 1;
-        for(let i=0; i<20; i++) {
-            ctx.beginPath(); ctx.moveTo(0, i*20 + (offset%20)); ctx.lineTo(256, i*20 + (offset%20)); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(i*20, 0); ctx.lineTo(i*20, 224); ctx.stroke();
-        }
-        
+        let offset = (Date.now() / 20) % 256; ctx.strokeStyle = '#004400'; ctx.lineWidth = 1;
+        for(let i=0; i<20; i++) { ctx.beginPath(); ctx.moveTo(0, i*20 + (offset%20)); ctx.lineTo(256, i*20 + (offset%20)); ctx.stroke(); ctx.beginPath(); ctx.moveTo(i*20, 0); ctx.lineTo(i*20, 224); ctx.stroke(); }
         ctx.fillStyle='#eab308'; ctx.font='20px monospace'; ctx.fillText("AMZL WHS QUEST", 40, 60); 
         ctx.font='10px monospace'; ctx.fillStyle='#fff'; ctx.fillText("PRESS SPACE TO START", 60, 120); 
-        ctx.fillStyle='#888'; ctx.fillText("Code by Erwin", 85, 200); 
-        ctx.restore();
-        return; 
+        ctx.fillStyle='#888'; ctx.fillText("Code by Erwin", 85, 200); ctx.restore(); return; 
     }
-    
     if (GAME.state === 'HOWTO') {
-        ctx.fillStyle='#fff'; ctx.font='12px monospace';
-        ctx.fillText("HOW TO PLAY", 80, 30);
-        ctx.font='10px monospace';
-        ctx.fillStyle='#eab308'; ctx.fillText("WASD / ARROWS : MOVE", 20, 60);
-        ctx.fillStyle='#aaa'; ctx.fillText("Navigate the warehouse.", 20, 75);
-        ctx.fillStyle='#eab308'; ctx.fillText("SPACE : INTERACT / SHOOT", 20, 100);
-        ctx.fillStyle='#aaa'; ctx.fillText("Fix hazards or throw rules.", 20, 115);
-        ctx.fillStyle='#eab308'; ctx.fillText("GOAL: FIND 5 HAZARDS", 20, 140);
-        ctx.fillStyle='#aaa'; ctx.fillText("Then defeat the boss!", 20, 155);
-        ctx.fillStyle='#fff'; ctx.fillText("[PRESS SPACE]", 80, 190);
-        ctx.restore();
-        return;
+        ctx.fillStyle='#fff'; ctx.font='12px monospace'; ctx.fillText("HOW TO PLAY", 80, 30); ctx.font='10px monospace';
+        ctx.fillStyle='#eab308'; ctx.fillText("WASD / ARROWS : MOVE", 20, 60); ctx.fillStyle='#aaa'; ctx.fillText("Navigate the warehouse.", 20, 75);
+        ctx.fillStyle='#eab308'; ctx.fillText("SPACE : INTERACT / SHOOT", 20, 100); ctx.fillStyle='#aaa'; ctx.fillText("Fix hazards or throw rules.", 20, 115);
+        ctx.fillStyle='#eab308'; ctx.fillText("GOAL: FIND 5 HAZARDS", 20, 140); ctx.fillStyle='#aaa'; ctx.fillText("Then defeat the boss!", 20, 155);
+        ctx.fillStyle='#fff'; ctx.fillText("[PRESS SPACE]", 80, 190); ctx.restore(); return;
     }
-
     if (GAME.state === 'SELECT') {
-        ctx.fillStyle = '#0a0a0a'; ctx.fillRect(12, 20, 232, 50);
-        ctx.fillStyle = '#111'; ctx.fillRect(12, 80, 232, 120);
-
+        ctx.fillStyle = '#0a0a0a'; ctx.fillRect(12, 20, 232, 50); ctx.fillStyle = '#111'; ctx.fillRect(12, 80, 232, 120);
         ctx.fillStyle='#eab308'; ctx.font='12px monospace'; ctx.fillText("CHOOSE COORDINATOR", 40, 50);
         ctx.fillStyle='#888'; ctx.font='8px monospace'; ctx.fillText("ARROWS TO BROWSE | SPACE TO START", 26, 64);
-
-        let name = GAME.charList[GAME.charIndex];
-        let data = CHAR_DATA[name];
-
-        ctx.save();
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(GFX.chars[name], 34, 104, 48, 48);
-        ctx.restore();
-
+        let name = GAME.charList[GAME.charIndex]; let data = CHAR_DATA[name];
+        ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(GFX.chars[name], 34, 104, 48, 48); ctx.restore();
         ctx.fillStyle='#eab308'; ctx.font='12px monospace'; ctx.fillText("< " + name + " >", 100, 108);
-        ctx.font='8px monospace';
-        ctx.fillStyle='#00ffff'; ctx.fillText("ROLE: " + data.role, 100, 124);
-
+        ctx.font='8px monospace'; ctx.fillStyle='#00ffff'; ctx.fillText("ROLE: " + data.role, 100, 124);
         const wrapText = (text, maxChars = 28) => {
-            const words = text.split(' ');
-            const lines = [];
-            let line = '';
-            words.forEach(word => {
-                const candidate = line.length ? line + ' ' + word : word;
-                if (candidate.length > maxChars) {
-                    lines.push(line);
-                    line = word;
-                } else {
-                    line = candidate;
-                }
-            });
-            if (line) lines.push(line);
-            return lines;
+            const words = text.split(' '); const lines = []; let line = '';
+            words.forEach(word => { const candidate = line.length ? line + ' ' + word : word; if (candidate.length > maxChars) { lines.push(line); line = word; } else { line = candidate; } });
+            if (line) lines.push(line); return lines;
         };
-
         const backstoryLines = wrapText(data.backstory, 32).slice(0, 3);
-        ctx.fillStyle='#fff';
-        backstoryLines.forEach((l, idx) => ctx.fillText(l, 24, 150 + idx * 12));
-
+        ctx.fillStyle='#fff'; backstoryLines.forEach((l, idx) => ctx.fillText(l, 24, 150 + idx * 12));
         ctx.fillStyle='#ff00ff'; ctx.fillText("ATTACK: " + data.attack, 24, 192);
-
-        ctx.fillStyle='#888'; ctx.font='10px monospace'; ctx.fillText("PRESS SPACE", 92, 210);
-        ctx.restore();
-        return;
+        ctx.fillStyle='#888'; ctx.font='10px monospace'; ctx.fillText("PRESS SPACE", 92, 210); ctx.restore(); return;
     }
-
-    // BOSS INTRO CUTSCENE
     if (GAME.state === 'BOSS_INTRO' && GAME.boss) {
         ctx.fillStyle = '#222'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#eab308'; ctx.font = '16px monospace';
-        ctx.fillText("WARNING", 80, 50);
-        
-        ctx.fillStyle = '#ff0000'; ctx.font = '12px monospace';
-        ctx.fillText(GAME.boss.name.toUpperCase(), 20, 90);
-        
-        ctx.fillStyle = '#fff'; ctx.font = '8px monospace';
-        ctx.fillText(GAME.boss.title, 20, 110);
-        ctx.fillStyle = '#888';
-        ctx.fillText(GAME.boss.desc, 20, 130);
-        
+        ctx.fillStyle = '#eab308'; ctx.font = '16px monospace'; ctx.fillText("WARNING", 80, 50);
+        ctx.fillStyle = '#ff0000'; ctx.font = '12px monospace'; ctx.fillText(GAME.boss.name.toUpperCase(), 20, 90);
+        ctx.fillStyle = '#fff'; ctx.font = '8px monospace'; ctx.fillText(GAME.boss.title, 20, 110);
+        ctx.fillStyle = '#888'; ctx.fillText(GAME.boss.desc, 20, 130);
         ctx.fillStyle = '#eab308'; ctx.fillText("ATTACK: " + GAME.boss.attackName, 20, 160);
-        
-        ctx.fillStyle = '#fff'; ctx.fillText("[PRESS SPACE TO FIGHT]", 50, 200);
-        ctx.restore();
-        return;
+        ctx.fillStyle = '#fff'; ctx.fillText("[PRESS SPACE TO FIGHT]", 50, 200); ctx.restore(); return;
     }
 
-    // GAMEPLAY DRAW
-    const cx = Math.floor(GAME.camera.x);
-    const cy = Math.floor(GAME.camera.y);
-
-    let sx = Math.floor(cx/TILE_SIZE); let ex = sx + 17;
-    let sy = Math.floor(cy/TILE_SIZE); let ey = sy + 15;
+    const cx = Math.floor(GAME.camera.x); const cy = Math.floor(GAME.camera.y);
+    let sx = Math.floor(cx/TILE_SIZE); let ex = sx + 17; let sy = Math.floor(cy/TILE_SIZE); let ey = sy + 15;
     for(let y=sy; y<=ey; y++) {
         for(let x=sx; x<=ex; x++) {
             if(x>=0 && x<MAP_W && y>=0 && y<MAP_H) {
-                let t = GAME.map[y][x];
-                let dx = x*TILE_SIZE - cx; let dy = y*TILE_SIZE - cy;
-                if (t===0) ctx.drawImage(GFX.floor, dx, dy);
-                if (t===1) ctx.drawImage(GFX.wall, dx, dy);
+                let t = GAME.map[y][x]; let dx = x*TILE_SIZE - cx; let dy = y*TILE_SIZE - cy;
+                if (t===0) ctx.drawImage(GFX.floor, dx, dy); if (t===1) ctx.drawImage(GFX.wall, dx, dy);
                 if (t===2) { ctx.drawImage(GFX.floor, dx, dy); ctx.drawImage(GFX.shelf, dx, dy); }
                 if (t===3) { ctx.drawImage(GFX.wall, dx, dy); ctx.drawImage(GFX.door, dx, dy); }
             }
@@ -1589,71 +1105,46 @@ function draw() {
     }
 
     GAME.clutter.forEach(c => { let img = GFX.clutter[c.type]; if(img) ctx.drawImage(img, c.x-cx, c.y-cy); });
-
-    GAME.activeIssues.forEach(h => {
-        if(!h.fixed) {
-            let img = GFX.hazards[h.data.type] || GFX.hazards.box;
-            ctx.drawImage(img, h.x-cx, h.y-cy);
-        }
-    });
+    GAME.activeIssues.forEach(h => { if(!h.fixed) { let img = GFX.hazards[h.data.type] || GFX.hazards.box; ctx.drawImage(img, h.x-cx, h.y-cy); } });
 
     let renderList = [GAME.player, ...GAME.entities, ...GAME.projectiles];
     if (GAME.state === 'BOSS' && GAME.boss) renderList.push(GAME.boss);
-    
     renderList.sort((a,b) => a.y - b.y);
 
     renderList.forEach(e => {
-        let dx = Math.floor(e.x - cx);
-        let dy = Math.floor(e.y - cy);
-        
-        if (e.maxHp) { // Boss
+        let dx = Math.floor(e.x - cx); let dy = Math.floor(e.y - cy);
+        if (e.maxHp) {
             let img = (e.sprite && GFX[e.sprite]) ? GFX[e.sprite] : GFX.boss_manager;
             if (e.name === "SIMON UNGLAUBE") img = GFX.simonBoss;
-
-            // Name-based fallbacks if sprite wasn't provided
-            if (!e.sprite) {
-                if (e.name.includes("Sebastian")) img = GFX.boss_sebastian;
-                if (e.name.includes("Avetta")) img = GFX.boss_avetta;
-                if (e.name.includes("Bot")) img = GFX.boss_bot;
-                if (e.name.includes("Jelena")) img = GFX.boss_jelly;
-            }
-
             ctx.drawImage(img, dx, dy, 32, 32);
         } else {
-            ctx.fillStyle = 'rgba(0,0,0,0.4)';
-            ctx.beginPath(); ctx.ellipse(dx+8, dy+14, 6, 3, 0, 0, Math.PI*2); ctx.fill();
-
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(dx+8, dy+14, 6, 3, 0, 0, Math.PI*2); ctx.fill();
             if (e.type === 'simon') ctx.drawImage(GFX.simon, dx, dy);
             else if (e.type === 'ops') ctx.drawImage(GFX.ops, dx, dy);
             else if (e.type === 'assoc') ctx.drawImage(GFX.assoc, dx, dy);
             else if (e.type === 'runner') ctx.drawImage(GFX.runner, dx, dy);
             else if (e === GAME.player) {
                 if (e.iframe%4 < 2) ctx.drawImage(GFX.chars[GAME.selectedChar], dx, dy);
-                // Cooldown Bar
-                if (e.cooldown > 0) {
-                    ctx.fillStyle = '#555'; ctx.fillRect(dx, dy-4, 16, 2);
-                    ctx.fillStyle = '#00ffff'; ctx.fillRect(dx, dy-4, 16 * (1 - e.cooldown/120), 2);
-                } else {
-                    ctx.fillStyle = '#00ff00'; ctx.fillRect(dx+6, dy-6, 4, 4); // Ready dot
-                }
+                if (e.cooldown > 0) { ctx.fillStyle = '#555'; ctx.fillRect(dx, dy-4, 16, 2); ctx.fillStyle = '#00ffff'; ctx.fillRect(dx, dy-4, 16 * (1 - e.cooldown/120), 2); } 
+                else { ctx.fillStyle = '#00ff00'; ctx.fillRect(dx+6, dy-6, 4, 4); }
             }
             else if (e.type === 'book') ctx.drawImage(GFX.book, dx, dy);
-            else if (e.type === 'req') {
-                 if (e.boss) ctx.drawImage(GFX.bossProj, dx, dy);
-                 else ctx.drawImage(GFX.req, dx, dy);
-            }
+            else if (e.type === 'req') { if (e.boss) ctx.drawImage(GFX.bossProj, dx, dy); else ctx.drawImage(GFX.req, dx, dy); }
         }
     });
 
     GAME.particles.forEach(p => { ctx.fillStyle = p.color; ctx.fillRect(p.x-cx, p.y-cy, 2, 2); });
 
-    // Flash Effect
-    if (GAME.flash > 0) {
-        ctx.globalAlpha = GAME.flash / 10;
-        ctx.fillStyle = 'white'; ctx.fillRect(0,0,canvas.width, canvas.height);
-        ctx.globalAlpha = 1.0;
-    }
-    
+    // Render Floating Text
+    ctx.font = '8px "Press Start 2P"'; ctx.textAlign = 'center';
+    GAME.floatingTexts.forEach(t => {
+        let dx = Math.floor(t.x - cx); let dy = Math.floor(t.y - cy);
+        ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.strokeText(t.text, dx, dy);
+        ctx.fillStyle = t.color; ctx.fillText(t.text, dx, dy);
+    });
+    ctx.textAlign = 'left'; // Reset
+
+    if (GAME.flash > 0) { ctx.globalAlpha = GAME.flash / 10; ctx.fillStyle = 'white'; ctx.fillRect(0,0,canvas.width, canvas.height); ctx.globalAlpha = 1.0; }
     ctx.restore();
 }
 
@@ -1662,71 +1153,7 @@ function updateCamera() {
     GAME.camera.y = Math.max(0, Math.min(GAME.player.y - 100, MAP_H*TILE_SIZE - 224));
 }
 
-function updateHud() {
-    document.getElementById('life-val').innerText = "❤️".repeat(Math.max(0, GAME.lives));
-    document.getElementById('score-val').innerText = GAME.issuesFixed + "/5";
-}
-
-function showDialog(text, speaker, portrait, isAI = false) {
-    GAME.state = 'DIALOG';
-    GAME.dialogText = (speaker ? speaker + ":\n" : "") + text;
-    GAME.dialogVisible = "";
-    
-    const box = document.getElementById('dialog-box');
-    const badge = document.getElementById('gemini-badge');
-    const port = document.getElementById('portrait');
-    const pCtx = port.getContext('2d');
-    
-    box.style.display = 'flex';
-    document.getElementById('text-content').innerText = ""; // Clear
-    
-    if (isAI) badge.style.display = 'block';
-    else badge.style.display = 'none';
-    
-    pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,32,32);
-    if (portrait) pCtx.drawImage(portrait, 0, 0); 
-    else { pCtx.fillStyle='#fff'; pCtx.fillText("!", 10, 20); }
-    
-    AudioSys.sfx.text();
-
-    // --- TTS IMPLEMENTATION FOR ALL CHARACTERS ---
-    // Remove speaker name and newlines for cleaner speech
-    if (speaker) {
-        const speechText = text.replace(speaker + ":\n", "").replace(/\n/g, ' ');
-        TTSSys.speak(speechText, speaker);
-    }
-}
-
-function closeDialog() {
-    TTSSys.cancel(); // Stop speech when closing dialog
-    AudioSys.sfx.step();
-    document.getElementById('dialog-box').style.display = 'none';
-    GAME.state = GAME.nextState;
-    if (GAME.state === 'PLAY' && GAME.issuesFixed >= 5 && !GAME.boss) {
-         // Redundant check to ensure we don't get stuck if logic fails
-         initBossEncounter();
-    }
-    updateMusicForState();
-}
-
-function updateMusicForState() {
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE'].includes(GAME.state)) {
-        MusicSys.play('title');
-    } else if (['HOWTO', 'SELECT'].includes(GAME.state)) {
-        MusicSys.play('menu');
-    } else if (GAME.state === 'PLAY') {
-        MusicSys.play('ingame');
-    } else if (GAME.state === 'BOSS' || GAME.state === 'BOSS_INTRO') {
-        MusicSys.play('boss');
-    }
-}
-
-function loop() {
-    update();
-    draw();
-    requestAnimationFrame(loop);
-}
-
+function loop() { update(); draw(); requestAnimationFrame(loop); }
 init();
 </script>
 </body>
