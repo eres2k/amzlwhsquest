@@ -677,7 +677,7 @@ function update() {
                 const speaker = isWin ? "Simon Unglaube" : "Simon Unglaube";
                 let finalText = GAME.aiResultText.replace(/\[.*?\]/g, GAME.selectedChar);
                 let header = isWin ? `OUTSTANDING!\n"${finalText}"\n` : `AUDIT FAILED\n"${finalText}"\n`;
-                let stats = `\nStats:\nTime: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nRules used: ${GAME.booksFired}\nOPS pushed: ${GAME.opsPushed}\n(Press Space)`;
+                let stats = `\nStats:\nTime Spent: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nSafety Rules used: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`;
                 showDialog(header + stats, speaker, GFX.simonFace, true);
                 GAME.state = 'DIALOG'; GAME.nextState = 'TITLE';
             } else {
@@ -921,6 +921,11 @@ function tryInteract() {
              e.type = 'assoc'; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
              spawnFloatingText(e.x, e.y, "Safe!", "#00ff00");
              
+             if (GAME.issuesFixed >= 5) {
+                 initBossEncounter();
+                 return true;
+             }
+
              // SIMON COMMENTARY
              const currentGen = GAME.genId;
              callGemini(
@@ -929,8 +934,6 @@ function tryInteract() {
              ).then(tip => {
                 if (GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
              });
-
-             if (GAME.issuesFixed >= 5) initBossEncounter();
              return true;
         }
     }
@@ -939,6 +942,11 @@ function tryInteract() {
             h.fixed = true; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
             spawnFloatingText(h.x, h.y, "Fixed!", "#00ff00");
             
+            if (GAME.issuesFixed >= 5) {
+                 initBossEncounter();
+                 return true;
+            }
+
             // SIMON COMMENTARY
             const currentGen = GAME.genId;
             callGemini(
@@ -948,8 +956,6 @@ function tryInteract() {
             ).then(tip => {
                 if (GAME.genId === currentGen) showDialog(`Fixed: ${h.data.name}!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
             });
-
-            if (GAME.issuesFixed >= 5) initBossEncounter();
             return true;
         }
     }
