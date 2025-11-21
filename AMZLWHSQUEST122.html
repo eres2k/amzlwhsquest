@@ -1134,7 +1134,7 @@ function tryInteract() {
                 showDialog(`✨ Analyzing ${h.data.name}...`, "System", null, true);
                 const currentGen = GAME.genId;
                 callGemini(
-                    `You are Simon Unglaube, WHS Senior Regional Manager. A hazard "${h.data.name}" was fixed. Praise the player with dry, professional humor. Give a related Safety tipp.`, 
+                    `You are Simon Unglaube, WHS Senior Regional Manager. A hazard "${h.data.name}" was fixed. Praise the player for finding he issue with dry, professional humor. Give a related Safety tipp. Max 30 words.`, 
                     "hazard", 
                     { hazardName: h.data.name }
                 ).then(tip => {
