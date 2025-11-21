@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMZL WHS Coordinator Quest (Gemini AI Enabled)</title>
+    <title>AMZL WHS Coordinator Quest</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -611,8 +611,7 @@ function handleAction() {
     else if (GAME.state === 'SELECT') { 
         AudioSys.sfx.select(); 
         GAME.selectedChar = GAME.charList[GAME.charIndex]; 
-        // FEATURE: Say the name of the coordinator when selected
-        TTSSys.speak(GAME.selectedChar);
+        // TTS Removed from here per user request, moved to update()
         resetGame(); 
     }
     else if (GAME.state === 'DIALOG') {
@@ -688,9 +687,11 @@ function resetGame() {
     // AI Start Message
     showDialog("Analyzing coordinator lethargy levels...", "Simon Unglaube", GFX.simonFace, true);
     const currentGen = GAME.genId;
-    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU (DE, AT NL). The game just started. Address the Coordinator (${GAME.selectedChar}) with dry, professional humor. Encourage them to work but note that you are watching for compliance errors. Max 15 words.`, "intro").then(text => {
+    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU (DE, AT NL). The game just started. Address the Coordinator by their name: ${GAME.selectedChar} with dry, professional humor. Encourage them to work but note that you are watching for compliance errors. Use the name ${GAME.selectedChar} explicitly in the response. Max 15 words.`, "intro").then(text => {
         if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
-             showDialog(text, "Simon Unglaube", GFX.simonFace, true);
+             // Fallback/Safety replacement to ensure the name is used if AI hallucinates a placeholder
+             let finalText = text.replace(/\[Player Name\]/gi, GAME.selectedChar).replace(/\[Coordinator\]/gi, GAME.selectedChar);
+             showDialog(finalText, "Simon Unglaube", GFX.simonFace, true);
         }
     });
 
@@ -800,10 +801,16 @@ function update() {
     if (GAME.state === 'LOGO' && GAME.stateTimer > 240) advanceState();
     
     if (GAME.state === 'SELECT') {
-        if (KEYS.left && GAME.ticks % 10 === 0) { GAME.charIndex--; AudioSys.sfx.step(); }
-        if (KEYS.right && GAME.ticks % 10 === 0) { GAME.charIndex++; AudioSys.sfx.step(); }
-        if (GAME.charIndex < 0) GAME.charIndex = GAME.charList.length - 1;
-        if (GAME.charIndex >= GAME.charList.length) GAME.charIndex = 0;
+        let changed = false;
+        if (KEYS.left && GAME.ticks % 10 === 0) { GAME.charIndex--; AudioSys.sfx.step(); changed = true; }
+        if (KEYS.right && GAME.ticks % 10 === 0) { GAME.charIndex++; AudioSys.sfx.step(); changed = true; }
+        
+        if (changed) {
+            if (GAME.charIndex < 0) GAME.charIndex = GAME.charList.length - 1;
+            if (GAME.charIndex >= GAME.charList.length) GAME.charIndex = 0;
+            // TTS Triggered here on selection change via arrows
+            TTSSys.speak(GAME.charList[GAME.charIndex]);
+        }
         return;
     }
 
