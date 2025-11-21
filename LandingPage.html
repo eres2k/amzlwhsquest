@@ -126,6 +126,8 @@
         .char-role { color: #00ffff; font-size: 1rem; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .char-desc { font-size: 0.9rem; color: #ccc; line-height: 1.4; flex-grow: 1;}
         .char-stat { margin-top: 10px; font-size: 0.8rem; color: #aaa; font-style: italic; }
+        .sprite-wrapper { display: flex; justify-content: center; margin-bottom: 10px; }
+        .sprite-canvas { width: 64px; height: 64px; image-rendering: pixelated; background: #0a0a0a; border: 1px solid #333; box-shadow: 0 0 10px rgba(0,0,0,0.6); }
 
         .play-btn {
             background: red; color: white; font-family: 'Press Start 2P';
@@ -182,24 +184,28 @@
             <h2>> THE SQUAD</h2>
             <div class="char-grid">
                 <div class="char-card">
+                    <div class="sprite-wrapper"><canvas class="sprite-canvas" data-sprite="carrie" aria-label="Carrie sprite"></canvas></div>
                     <h3>CARRIE</h3>
                     <div class="char-role">The 5S Monk</div>
                     <div class="char-desc">Can detect a piece of floor tape misaligned by 1mm from across the cluster. Uses meditation to tolerate Ops meetings.</div>
                     <div class="char-stat">Weapon: The Label Maker</div>
                 </div>
                 <div class="char-card">
+                    <div class="sprite-wrapper"><canvas class="sprite-canvas" data-sprite="nevena" aria-label="Nevena sprite"></canvas></div>
                     <h3>NEVENA</h3>
                     <div class="char-role">The Worrier</div>
                     <div class="char-desc">The Safety Oracle. She predicts accidents before they happen. Always carries emergency Palatschinken for stress eating.</div>
                     <div class="char-stat">Weapon: The Clipboard of Doom</div>
                 </div>
                 <div class="char-card">
+                    <div class="sprite-wrapper"><canvas class="sprite-canvas" data-sprite="joao" aria-label="Joao sprite"></canvas></div>
                     <h3>JOAO</h3>
                     <div class="char-role">The Siren</div>
                     <div class="char-desc">His voice is louder than the fire alarm. Associates hear his safety warnings in their dreams. Runs on pure espresso.</div>
                     <div class="char-stat">Weapon: Sonic Shout</div>
                 </div>
                 <div class="char-card">
+                    <div class="sprite-wrapper"><canvas class="sprite-canvas" data-sprite="roman" aria-label="Roman sprite"></canvas></div>
                     <h3>ROMAN</h3>
                     <div class="char-role">The Ghost</div>
                     <div class="char-desc">He is everywhere and nowhere. Hazards seem to fix themselves out of fear when he enters the room.</div>
@@ -212,31 +218,37 @@
             <h2>> THREAT DATABASE (BOSSES)</h2>
             <div class="char-grid">
                 <div class="char-card" style="border-color: #ff4444;">
+                    <div class="sprite-wrapper"><canvas class="sprite-canvas" data-sprite="boss_manager" aria-label="Inspector sprite"></canvas></div>
                     <h3 style="color: #ff4444;">INSPECTOR</h3>
                     <div class="char-role" style="color: #ff4444;">External Auditor</div>
                     <div class="char-desc">Has no soul, only a checklist. Will find the one fire extinguisher you forgot to sign in 2023.</div>
                 </div>
                 <div class="char-card" style="border-color: #ff4444;">
+                    <div class="sprite-wrapper"><canvas class="sprite-canvas" data-sprite="boss_manager" aria-label="Compliance sprite"></canvas></div>
                     <h3 style="color: #ff4444;">COMPLIANCE</h3>
                     <div class="char-role" style="color: #ff4444;">The Auditor</div>
                     <div class="char-desc">Checks every SOP version. If you are using v1.2 instead of v1.3, you are doomed.</div>
                 </div>
                 <div class="char-card" style="border-color: #ff4444;">
+                    <div class="sprite-wrapper"><canvas class="sprite-canvas" data-sprite="boss_sebastian" aria-label="Sebastian sprite"></canvas></div>
                     <h3 style="color: #ff4444;">SEBASTIAN</h3>
                     <div class="char-role" style="color: #ff4444;">Station Commander</div>
                     <div class="char-desc">Obsessed with rates. Believes "Safety Stops" are a myth invented to lower volume.</div>
                 </div>
                 <div class="char-card" style="border-color: #ff4444;">
+                    <div class="sprite-wrapper"><canvas class="sprite-canvas" data-sprite="boss_manager" aria-label="Regional Manager sprite"></canvas></div>
                     <h3 style="color: #ff4444;">REGIONAL MGR</h3>
                     <div class="char-role" style="color: #ff4444;">The Executive</div>
                     <div class="char-desc">Only appears when things are bad. Speaks in acronyms you don't understand.</div>
                 </div>
                 <div class="char-card" style="border-color: #ff4444;">
+                    <div class="sprite-wrapper"><canvas class="sprite-canvas" data-sprite="boss_avetta" aria-label="Avetta AI sprite"></canvas></div>
                     <h3 style="color: #ff4444;">AVETTA AI</h3>
                     <div class="char-role" style="color: #ff4444;">The Algorithm</div>
                     <div class="char-desc">A sentient cloud platform. It knows you forgot your gloves. It is watching.</div>
                 </div>
                 <div class="char-card" style="border-color: #ff4444;">
+                    <div class="sprite-wrapper"><canvas class="sprite-canvas" data-sprite="boss_jelly" aria-label="Jelena sprite"></canvas></div>
                     <h3 style="color: #ff4444;">JELENA "JELLY"</h3>
                     <div class="char-role" style="color: #ff4444;">HR Sentinel</div>
                     <div class="char-desc">From HR and always smiling, until policies are ignored. Remembers every infraction.</div>
@@ -341,6 +353,59 @@
     }
     
     fetchAnnouncement();
+
+    // --- 3. LANDING PAGE SPRITES (MATCHING GAME ASSETS) ---
+    const GFX = {};
+    const c = (w, h, f) => { const c = document.createElement('canvas'); c.width = w; c.height = h; f(c.getContext('2d')); return c; };
+    const createPlayer = (hairColor, hairStyle) => c(16, 16, ctx => {
+        ctx.fillStyle = hairColor;
+        if (hairStyle === 'long') ctx.fillRect(4, 1, 8, 6);
+        if (hairStyle === 'short') ctx.fillRect(4, 1, 8, 4);
+        if (hairStyle === 'spiky') { ctx.fillRect(4, 1, 8, 4); ctx.fillRect(6, 0, 4, 1); }
+        ctx.fillStyle = '#ffcc99'; ctx.fillRect(4, 5, 8, 4);
+        ctx.fillStyle = '#2563eb'; ctx.fillRect(3, 9, 10, 6);
+        ctx.fillStyle = '#60a5fa'; ctx.fillRect(4, 10, 1, 4); ctx.fillRect(11, 10, 1, 4);
+        ctx.fillStyle = '#1e3a8a'; ctx.fillRect(5, 15, 2, 1); ctx.fillRect(9, 15, 2, 1);
+    });
+
+    GFX.chars = {
+        carrie: createPlayer('#fcd34d', 'long'),
+        nevena: createPlayer('#27272a', 'long'),
+        joao: createPlayer('#3f3f46', 'short'),
+        roman: createPlayer('#a1a1aa', 'spiky')
+    };
+
+    GFX.boss_manager = c(16, 16, ctx => { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 16, 16); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4, 2, 8, 6); ctx.fillStyle = '#f00'; ctx.fillRect(6, 4, 2, 1); ctx.fillRect(10, 4, 2, 1); });
+    GFX.boss_sebastian = c(16, 16, ctx => { ctx.fillStyle = '#222'; ctx.fillRect(4, 1, 8, 4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4, 5, 8, 4); ctx.fillStyle = '#000080'; ctx.fillRect(2, 9, 12, 6); ctx.fillStyle = '#000'; ctx.fillRect(5, 6, 2, 1); ctx.fillRect(9, 6, 2, 1); });
+    GFX.boss_jelly = c(16, 16, ctx => {
+        ctx.fillStyle = '#ff69b4'; ctx.fillRect(3, 1, 10, 6);
+        ctx.fillStyle = '#ffcc99'; ctx.fillRect(4, 5, 8, 5);
+        ctx.fillStyle = '#000'; ctx.fillRect(5, 7, 2, 1); ctx.fillRect(9, 7, 2, 1);
+        ctx.fillStyle = '#22c55e'; ctx.fillRect(3, 10, 10, 6);
+        ctx.fillStyle = '#fff'; ctx.fillRect(6, 12, 4, 2);
+    });
+    GFX.boss_avetta = c(16, 16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(2, 2, 12, 12); ctx.fillStyle = '#0f0'; ctx.fillRect(4, 4, 2, 2); ctx.fillRect(4, 8, 2, 2); ctx.fillStyle = '#f00'; ctx.fillRect(10, 4, 2, 2); });
+
+    const spriteLookup = {
+        carrie: GFX.chars.carrie,
+        nevena: GFX.chars.nevena,
+        joao: GFX.chars.joao,
+        roman: GFX.chars.roman,
+        boss_manager: GFX.boss_manager,
+        boss_sebastian: GFX.boss_sebastian,
+        boss_avetta: GFX.boss_avetta,
+        boss_jelly: GFX.boss_jelly
+    };
+
+    document.querySelectorAll('.sprite-canvas').forEach(canvas => {
+        const spriteKey = canvas.dataset.sprite;
+        const sprite = spriteLookup[spriteKey];
+        if (!sprite) return;
+        canvas.width = 64; canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(sprite, 0, 0, sprite.width, sprite.height, 0, 0, canvas.width, canvas.height);
+    });
 </script>
 </body>
 
