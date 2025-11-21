@@ -470,6 +470,13 @@ function generateAssets() {
     GFX.ops = c(16,16, ctx => { ctx.fillStyle = '#333'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#dc2626'; ctx.fillRect(3,10,10,5); ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); });
     GFX.boss_manager = c(16,16, ctx => { ctx.fillStyle = '#000'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,2,8,6); ctx.fillStyle = '#f00'; ctx.fillRect(6,4,2,1); ctx.fillRect(10,4,2,1); });
     GFX.boss_sebastian = c(16,16, ctx => { ctx.fillStyle = '#222'; ctx.fillRect(4,1,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,4); ctx.fillStyle = '#000080'; ctx.fillRect(2,9,12,6); ctx.fillStyle = '#000'; ctx.fillRect(5,6,2,1); ctx.fillRect(9,6,2,1); });
+    GFX.boss_jelly = c(16,16, ctx => {
+        ctx.fillStyle = '#ff69b4'; ctx.fillRect(3,1,10,6); // Hair band
+        ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,5); // Face
+        ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); // Eyes
+        ctx.fillStyle = '#22c55e'; ctx.fillRect(3,10,10,6); // HR vest
+        ctx.fillStyle = '#fff'; ctx.fillRect(6,12,4,2); // Badge
+    });
     GFX.boss_avetta = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(2,2,12,12); ctx.fillStyle = '#0f0'; ctx.fillRect(4,4,2,2); ctx.fillRect(4,8,2,2); ctx.fillStyle = '#f00'; ctx.fillRect(10,4,2,2); });
     GFX.boss_bot = c(16,16, ctx => { ctx.fillStyle = '#555'; ctx.fillRect(2,2,12,12); ctx.fillStyle = '#0f0'; ctx.fillRect(4,6,8,2); });
     GFX.assoc = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,5); });
@@ -514,7 +521,8 @@ const GAME = {
         { name: "Compliance Auditor", sprite: "boss_manager", hp: 12, speed: 0.8, attackDelay: 70, title: "The Watcher", desc: "Nothing escapes.", attackName: "Audit Trail" },
         { name: "Sebastian Sprigade", sprite: "boss_sebastian", hp: 15, speed: 1.0, attackDelay: 60, title: "Delivery Station Mgr", desc: "Obsessed with TPH.", attackName: "Volume Spike" },
         { name: "Senior Regional Mgr", sprite: "boss_manager", hp: 14, speed: 0.6, attackDelay: 90, title: "The Executive", desc: "Metrics first.", attackName: "Budget Cut" },
-        { name: "Avetta Platform", sprite: "boss_avetta", hp: 18, speed: 0.4, attackDelay: 100, title: "Risk Mgmt AI", desc: "Judges all.", attackName: "Compliance Block" }
+        { name: "Avetta Platform", sprite: "boss_avetta", hp: 18, speed: 0.4, attackDelay: 100, title: "Risk Mgmt AI", desc: "Judges all.", attackName: "Compliance Block" },
+        { name: "Jelena \"Jelly\"", sprite: "boss_jelly", hp: 13, speed: 0.9, attackDelay: 65, title: "HR Guardian", desc: "HR legend who never forgets a policy.", attackName: "Policy Shock" }
     ]
 };
 
@@ -835,10 +843,15 @@ function updateBoss() {
              "You are Simon Unglaube, turning into a super boss. Threaten the player with termination and entropy. Max 6 words." :
              `Generate a 5-word taunt from a video game boss named ${b.name}. Warehouse themed.`;
 
-        callGemini(prompt, "taunt").then(text => {
+         callGemini(prompt, "taunt").then(text => {
             if (GAME.state === 'BOSS' && GAME.genId === currentGen) {
                  // Pause game for taunt
-                 showDialog(text, b.name, b.name === "SIMON UNGLAUBE" ? GFX.simonBoss : GFX.boss_manager, true);
+                 let portrait = b.name === "SIMON UNGLAUBE" ? GFX.simonBoss : GFX.boss_manager;
+                 if (b.name.includes("Sebastian")) portrait = GFX.boss_sebastian;
+                 if (b.name.includes("Avetta")) portrait = GFX.boss_avetta;
+                 if (b.name.includes("Bot")) portrait = GFX.boss_bot;
+                 if (b.name.includes("Jelena")) portrait = GFX.boss_jelly;
+                 showDialog(text, b.name, portrait, true);
             }
         });
     }
@@ -1305,7 +1318,8 @@ function draw() {
             if (e.name.includes("Sebastian")) img = GFX.boss_sebastian;
             if (e.name.includes("Avetta")) img = GFX.boss_avetta;
             if (e.name.includes("Bot")) img = GFX.boss_bot;
-            
+            if (e.name.includes("Jelena")) img = GFX.boss_jelly;
+
             ctx.drawImage(img, dx, dy, 32, 32);
         } else {
             ctx.fillStyle = 'rgba(0,0,0,0.4)';
