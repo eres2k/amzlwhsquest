@@ -169,11 +169,20 @@ const BANTER_DB = {
 
 // --- CHARACTER DATA ---
 const CHAR_DATA = {
-    "Carrie": { role: "Perfectionist Monk", backstory: "Meditates on 5S standards. Can spot a misaligned floor tape label from 50 meters away.", attack: "Zen Correction" },
-    "Nevena": { role: "The Worrier", backstory: "Always expects the worst case scenario. Makes legendary Palatschinken to calm her nerves.", attack: "Anxiety Blast" },
-    "Joao": { role: "Brazilian Fire", backstory: "Passionate, loud, and unstoppable. His safety shouts echo through the entire delivery station.", attack: "Samba Kick" },
-    "Roman": { role: "Silent Warrior", backstory: "A man of few words but many audits. He moves like a shadow and fixes hazards before they exist.", attack: "Stealth Audit" }
+    "Carrie": { role: "Perfectionist Monk", backstory: "Meditates on 5S standards. Can spot a misaligned floor tape label from 50 meters away.", attack: "Zen Correction", speed: 1.5, lives: 5 },
+    "Nevena": { role: "The Worrier", backstory: "Always expects the worst case scenario. Makes legendary Palatschinken to calm her nerves.", attack: "Anxiety Blast", speed: 1.5, lives: 5 },
+    "Joao": { role: "Brazilian Fire", backstory: "Passionate, loud, and unstoppable. His safety shouts echo through the entire delivery station.", attack: "Samba Kick", speed: 1.5, lives: 5 },
+    "Roman": { role: "Silent Warrior", backstory: "A man of few words but many audits. He moves like a shadow and fixes hazards before they exist.", attack: "Stealth Audit", speed: 1.5, lives: 5 },
+    "Erwin": { role: "WHS Manager", backstory: "Rolls into shifts inside a kid-sized Tesla Model 3. Doubles speed, but the bumper is basically made of hope.", attack: "Electric Drift", speed: 3.0, lives: 1 }
 };
+
+function getCharStats(name) {
+    const data = CHAR_DATA[name] || {};
+    return {
+        speed: data.speed ?? 1.5,
+        lives: data.lives ?? 5
+    };
+}
 
 // --- SIMULATED AI DATABASE (FALLBACKS) ---
 const SIMULATED_AI = {
@@ -497,6 +506,18 @@ function generateAssets() {
             ctx.fillStyle = '#0f172a'; ctx.fillRect(4,3,8,3); ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,6,6,5);
             ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); ctx.fillStyle = '#1e293b'; ctx.fillRect(3,11,10,5);
             ctx.fillStyle = '#e5e7eb'; ctx.fillRect(7,12,2,2); ctx.fillStyle = '#0b1224'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        }),
+        "Erwin": c(16,16, ctx => {
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(2,10,12,4); // Tesla body
+            ctx.fillStyle = '#111827'; ctx.fillRect(3,9,10,2); // hood line
+            ctx.fillStyle = '#94a3b8'; ctx.fillRect(1,12,3,2); ctx.fillRect(12,12,3,2); // wheels
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,11,8,1); // windshield glow
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(6,5,4,3); // face
+            ctx.fillStyle = '#111827'; ctx.fillRect(5,4,6,3); // hair top
+            ctx.fillStyle = '#000'; ctx.fillRect(6,6,4,2); // beard
+            ctx.fillStyle = '#000'; ctx.fillRect(7,6,1,1); ctx.fillRect(9,6,1,1); // eyes
+            ctx.fillStyle = '#eab308'; ctx.fillRect(7,7,2,1); // smirk
+            ctx.fillStyle = '#0b1224'; ctx.fillRect(4,14,8,2); // bumper
         })
     };
     GFX.simon = c(16,16, ctx => { ctx.fillStyle = '#222'; ctx.fillRect(4,1,8,5); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,4); ctx.fillStyle = '#000'; ctx.fillRect(4,7,8,1); ctx.fillStyle = '#aaddff'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); ctx.fillStyle = '#eab308'; ctx.fillRect(3,9,10,6); ctx.fillStyle = '#fff'; ctx.fillRect(6,11,4,4); });
@@ -539,7 +560,7 @@ const GAME = {
     ticks: 0,
     player: null,
     selectedChar: "Carrie",
-    charList: ["Carrie", "Nevena", "Joao", "Roman"],
+    charList: ["Carrie", "Nevena", "Joao", "Roman", "Erwin"],
     charIndex: 0,
     camera: { x: 0, y: 0 },
     map: [], clutter: [], entities: [], projectiles: [], particles: [], floatingTexts: [],
@@ -625,10 +646,11 @@ function resetGame() {
     GAME.state = 'PLAY';
     GAME.genId++;
     GAME.gameOverTriggered = false;
-    GAME.player = { x: 100, y: 100, dir: 0, speed: 1.5, iframe: 0, cooldown: 0 };
+    const stats = getCharStats(GAME.selectedChar);
+    GAME.player = { x: 100, y: 100, dir: 0, speed: stats.speed, iframe: 0, cooldown: 0 };
     GAME.entities = []; GAME.projectiles = []; GAME.particles = []; GAME.floatingTexts = [];
     GAME.activeIssues = []; GAME.clutter = [];
-    GAME.issuesFixed = 0; GAME.lives = 5; GAME.simonHits = 0; GAME.boss = null;
+    GAME.issuesFixed = 0; GAME.lives = stats.lives; GAME.simonHits = 0; GAME.boss = null;
     GAME.nextState = 'PLAY'; GAME.aiResultText = null;
     GAME.startTime = Date.now(); GAME.booksFired = 0; GAME.opsPushed = 0;
     
