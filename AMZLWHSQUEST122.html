@@ -1045,7 +1045,6 @@ function generateAssets() {
         ctx.fillRect(11,9,3,1);
     })
 };
-    };
     GFX.door = c(16,16, ctx => { ctx.fillStyle = '#16a34a'; ctx.fillRect(2,2,12,14); ctx.fillStyle='#fff'; ctx.fillRect(3,4,10,2); });
     GFX.floor = c(16,16, ctx => { ctx.fillStyle = '#4a4a4a'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#404040'; ctx.fillRect(0,15,16,1); });
     GFX.wall = c(16,16, ctx => { ctx.fillStyle = '#3e2723'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#5d4037'; ctx.fillRect(0,6,16,10); });
@@ -1054,7 +1053,6 @@ function generateAssets() {
     GFX.req = c(10,10, ctx => { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(5,0); ctx.lineTo(10,5); ctx.lineTo(5,10); ctx.lineTo(0,5); ctx.fill(); ctx.fillStyle='red'; ctx.font='8px sans'; ctx.fillText("!",3,8); });
     GFX.bossProj = c(12,12, ctx => { ctx.fillStyle = '#ff00ff'; ctx.beginPath(); ctx.arc(6,6,5,0,Math.PI*2); ctx.fill(); });
 }
- };
 // --- GAME STATE ---
 const GAME = {
     state: 'LOGO', 
