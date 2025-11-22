@@ -1054,7 +1054,7 @@ function generateAssets() {
     GFX.req = c(10,10, ctx => { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(5,0); ctx.lineTo(10,5); ctx.lineTo(5,10); ctx.lineTo(0,5); ctx.fill(); ctx.fillStyle='red'; ctx.font='8px sans'; ctx.fillText("!",3,8); });
     GFX.bossProj = c(12,12, ctx => { ctx.fillStyle = '#ff00ff'; ctx.beginPath(); ctx.arc(6,6,5,0,Math.PI*2); ctx.fill(); });
 }
-
+ };
 // --- GAME STATE ---
 const GAME = {
     state: 'LOGO', 
