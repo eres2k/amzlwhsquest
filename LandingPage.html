@@ -534,7 +534,7 @@
             topic = `the issue: "${input}"`;
         }
         
-       const prompt = `Invent a technically plausible, realistic excuse based on this short input: "${input}". Max 25 Words. Amazon related with humour.;
+       const prompt = `Invent a technically plausible, realistic excuse based on this short input: "${input}". Max 25 Words. Amazon related with humour.`;
         const text = await callGemini(prompt);
         
         if (text) out.innerText = "> " + text;
@@ -678,6 +678,7 @@
 </script>
 </body>
 </html>
+
 
 
 
