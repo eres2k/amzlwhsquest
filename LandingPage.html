@@ -511,7 +511,7 @@
             return;
         }
 
-        const prompt = "Write a single, short (max 15 words), funny, cynical, dystopic announcement for an Amazon logistics warehouse worker. Mention safety shoes, TOT, or rates. Use ALL CAPS. Start with 'ATTENTION DVI1:'.";
+        const prompt = "Write a single, short (max 15 words), funny, cynical, dystopic announcement for an Amazon logistics warehouse worker. Mention safety shoes, TOT, or rates. Use ALL CAPS. Start with 'ATTENTION:'.";
         const text = await callGemini(prompt);
         
         if(text) renderTicker([text, ...defaultMessages]);
@@ -534,7 +534,7 @@
             topic = `the issue: "${input}"`;
         }
         
-        const prompt = `Rewrite this excuse: "${input}" into a positive, realistic, funny, responsibility-focused explanation suitable for Amazon-style management communication, emphasizing appreciation, context, and proactive next steps. Max 25 words.`;
+       const prompt = `Invent a technically plausible, realistic excuse based on this short input: "${input}". Max 25 Words. Amazon related with humour.;
         const text = await callGemini(prompt);
         
         if (text) out.innerText = "> " + text;
@@ -678,6 +678,7 @@
 </script>
 </body>
 </html>
+
 
 
 
