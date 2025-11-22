@@ -534,7 +534,7 @@
             topic = `the issue: "${input}"`;
         }
         
-        const prompt = `Translate this worker excuse: "${topic}" into overly positive, corporate, Amazon-style management speak. Max 25 Words..`;
+        const prompt = `Rewrite this excuse: "${input}" into a positive, realistic, funny, responsibility-focused explanation suitable for Amazon-style management communication, emphasizing appreciation, context, and proactive next steps. Max 25 words.`;
         const text = await callGemini(prompt);
         
         if (text) out.innerText = "> " + text;
@@ -678,5 +678,6 @@
 </script>
 </body>
 </html>
+
 
 
