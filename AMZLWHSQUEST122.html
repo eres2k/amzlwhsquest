@@ -708,18 +708,20 @@ function update() {
 
     if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') {
         GAME.splashTimer--;
-        if (GAME.splashTimer <= 0) {
-            if (GAME.aiResultText) {
-                const isWin = GAME.state === 'WIN_SPLASH';
-                const speaker = isWin ? "Simon Unglaube" : "Simon Unglaube";
-                let finalText = GAME.aiResultText.replace(/\[.*?\]/g, GAME.selectedChar);
-                let header = isWin ? `OUTSTANDING!\n"${finalText}"\n` : `AUDIT FAILED\n"${finalText}"\n`;
-                let stats = `\nStats:\nTime Spent: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nSafety Rules used: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`;
-                showDialog(header + stats, speaker, GFX.simonFace, true);
-                GAME.state = 'DIALOG'; GAME.nextState = 'TITLE';
-            } else {
-                showDialog("Calculating Safety Score...\n(Please wait)", "System", null, true);
-            }
+        const ready = GAME.aiResultText !== null;
+        const waitedEnough = GAME.splashTimer <= 0;
+        const fallbackTimer = -600;
+
+        if (ready && waitedEnough) {
+            const isWin = GAME.state === 'WIN_SPLASH';
+            const speaker = isWin ? "Simon Unglaube" : "Simon Unglaube";
+            let finalText = GAME.aiResultText.replace(/\[.*?\]/g, GAME.selectedChar);
+            let header = isWin ? `OUTSTANDING!\n"${finalText}"\n` : `AUDIT FAILED\n"${finalText}"\n`;
+            let stats = `\nStats:\nTime Spent: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nSafety Rules used: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`;
+            showDialog(header + stats, speaker, GFX.simonFace, true);
+            GAME.state = 'DIALOG'; GAME.nextState = 'TITLE';
+        } else if (!ready && GAME.splashTimer <= fallbackTimer) {
+            GAME.aiResultText = 'System could not load live review. Using cached performance log.';
         }
         return;
     }
@@ -1014,7 +1016,7 @@ function tryInteract() {
 }
 
 function triggerGameOver(reason) {
-    GAME.gameOverTriggered = true; GAME.nextState = 'TITLE'; GAME.state = 'LOSE_SPLASH'; GAME.splashTimer = 180; GAME.aiResultText = null;
+    GAME.gameOverTriggered = true; GAME.nextState = 'TITLE'; GAME.state = 'LOSE_SPLASH'; GAME.splashTimer = 260; GAME.aiResultText = null; GAME.stateTimer = 0;
     document.getElementById('boss-hud').style.display = 'none'; document.getElementById('dialog-box').style.display = 'none';
     document.getElementById('hud-layer').style.display = 'none';
     const time = Math.floor((Date.now() - GAME.startTime)/1000); const currentGen = GAME.genId;
@@ -1028,7 +1030,7 @@ function triggerGameOver(reason) {
 }
 
 function winGame() {
-    AudioSys.sfx.start(); MusicSys.play('victory'); GAME.nextState = 'TITLE'; GAME.state = 'WIN_SPLASH'; GAME.splashTimer = 180; GAME.aiResultText = null;
+    AudioSys.sfx.start(); MusicSys.play('victory'); GAME.nextState = 'TITLE'; GAME.state = 'WIN_SPLASH'; GAME.splashTimer = 260; GAME.aiResultText = null; GAME.stateTimer = 0;
     document.getElementById('boss-hud').style.display = 'none'; document.getElementById('dialog-box').style.display = 'none';
     document.getElementById('hud-layer').style.display = 'none';
     const currentGen = GAME.genId; const time = Math.floor((Date.now() - GAME.startTime)/1000);
@@ -1072,18 +1074,70 @@ function updateMusicForState() {
     else if (GAME.state === 'BOSS' || GAME.state === 'BOSS_INTRO') MusicSys.play('boss');
 }
 
+function drawSnesSplash(isWin) {
+    const t = GAME.stateTimer;
+    const primary = isWin ? '#0d1b4c' : '#2d0a0f';
+    const accent = isWin ? '#7dd3fc' : '#f87171';
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, isWin ? '#0a102a' : '#1a0408');
+    gradient.addColorStop(0.5, primary);
+    gradient.addColorStop(1, '#000');
+    ctx.fillStyle = gradient; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Moving scanlines
+    for (let y = 0; y < canvas.height; y += 8) {
+        const offset = Math.sin((t / 8) + y * 0.12) * 3;
+        ctx.fillStyle = `rgba(255,255,255,${isWin ? 0.05 : 0.04})`;
+        ctx.fillRect(offset, y, canvas.width, 2);
+    }
+
+    // Mode-7 style horizon lines
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height * 0.65);
+    for (let i = 0; i < 18; i++) {
+        const scale = (i + 1) / 18;
+        const wave = Math.sin((t / 10) + i * 0.6) * 4;
+        const w = canvas.width * (1.1 - scale * 0.6);
+        const y = i * 12 + wave;
+        ctx.strokeStyle = `${accent}80`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-w / 2, y);
+        ctx.lineTo(w / 2, y);
+        ctx.stroke();
+    }
+    ctx.restore();
+
+    // Star glints
+    for (let i = 0; i < 14; i++) {
+        const x = (Math.sin((t + i * 13) / 6) * 0.5 + 0.5) * canvas.width;
+        const y = (i * 37 + t * 2) % canvas.height;
+        const alpha = 0.25 + ((i % 3) * 0.1);
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.fillRect(x, y, 2, 2);
+        ctx.fillRect(x - 2, y, 6, 1);
+        ctx.fillRect(x, y - 2, 1, 6);
+    }
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#000';
+    ctx.font = '22px monospace';
+    const text = isWin ? 'COMPLIANT!' : 'TERMINATED';
+    const shadowOffsets = [[2,2],[-2,2],[2,-2],[-2,-2]];
+    shadowOffsets.forEach(([dx, dy]) => ctx.fillText(text, canvas.width/2 + dx, canvas.height/2 - 6 + dy));
+
+    ctx.fillStyle = accent;
+    ctx.fillText(text, canvas.width/2, canvas.height/2 - 6);
+    ctx.font = '11px monospace';
+    ctx.fillStyle = '#fef9c3';
+    const sub = isWin ? 'CALCULATING SAFETY SCORE...' : 'PREPARING EXIT INTERVIEW...';
+    ctx.fillText(sub, canvas.width/2, canvas.height/2 + 20);
+    ctx.textAlign = 'start';
+}
+
 function draw() {
-    if (GAME.state === 'LOSE_SPLASH') {
-        ctx.fillStyle = '#500'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        const pulse = Math.sin(Date.now() / 100) * 0.2 + 0.8;
-        ctx.fillStyle = `rgba(255, 0, 0, ${pulse})`; ctx.font = '20px monospace'; ctx.textAlign = 'center'; ctx.fillText("TERMINATED", canvas.width/2, canvas.height/2 - 20);
-        ctx.fillStyle = '#fff'; ctx.font = '10px monospace'; ctx.fillText("PREPARING EXIT INTERVIEW...", canvas.width/2, canvas.height/2 + 20); ctx.textAlign = 'start'; return;
-    }
-    if (GAME.state === 'WIN_SPLASH') {
-        ctx.fillStyle = '#004'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#eab308'; ctx.font = '20px monospace'; ctx.textAlign = 'center'; ctx.fillText("COMPLIANT!", canvas.width/2, canvas.height/2 - 20);
-        ctx.fillStyle = '#fff'; ctx.font = '10px monospace'; ctx.fillText("CALCULATING SAFETY SCORE...", canvas.width/2, canvas.height/2 + 20); ctx.textAlign = 'start'; return;
-    }
+    if (GAME.state === 'LOSE_SPLASH') { drawSnesSplash(false); return; }
+    if (GAME.state === 'WIN_SPLASH') { drawSnesSplash(true); return; }
 
     ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width, canvas.height);
     let dxShake = 0, dyShake = 0;
