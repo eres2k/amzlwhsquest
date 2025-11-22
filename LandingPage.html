@@ -463,22 +463,40 @@
 
     // --- 3. GEMINI API INTEGRATION ---
     const defaultMessages = [
-        "ATTENTION DVI1: IF YOU CAN READ THIS, YOU're NOT MOVING PALLETS FAST ENOUGH.",
+        "ATTENTION DVI1: IF YOU CAN READ THIS, YOU'RE NOT MOVING PALLETS FAST ENOUGH.",
         "ATTENTION DVI1: TPH GOAL UPDATED TO WHATEVER IS HIGHER THAN CURRENT. PLEASE COMPLY.",
         "ATTENTION DVI1: BREAKS ARE LIKE UNICORNS. HEARD OFTEN, RARELY SEEN.",
         "ATTENTION DVI1: REMEMBER, SAFETY FIRST, BUT ALSO SECOND, THIRD, AND MAYBE FOURTH.",
         "ATTENTION DVI1: LOST A RACK? PLEASE FILE A TICKET WITH FACILITIES AND YOUR THERAPIST.",
-        "ATTENTION DVI1: OPS SAYS WE'RE FAMILY. FAMILY DOES 60 TPH, RIGHT?"
+        "ATTENTION DVI1: OPS SAYS WE'RE FAMILY. FAMILY DOES 60 TPH, RIGHT?",
+        "ATTENTION DVI1: SAFETY SHOES ARE NOT " +
+            "A CONCEPT; THEY ARE THE ONLY THING BETWEEN YOU AND A ROGUE PALLET JACK.",
+        "ATTENTION DVI1: WE TRACK TOT SO WELL WE'RE CONSIDERING ADDING IT TO YOUR DNA."
     ];
 
-    function renderTicker(messages) {
+    const aiMessages = [];
+    const maxAiMessages = 6;
+
+    function renderTicker() {
         const track = document.getElementById('feed-track');
         const separator = "  ⚡  ";
-        const text = messages.join(separator);
+
+        const priorityMessages = aiMessages.flatMap(msg => [msg, msg]); // Double AI lines to boost frequency
+        const combinedMessages = (priorityMessages.length ? priorityMessages : [])
+            .concat(defaultMessages);
+
+        const text = combinedMessages.join(separator);
         track.innerText = text + separator + text;
 
-        const duration = Math.max(30, Math.min(90, text.length / 1.5));
+        const duration = Math.max(25, Math.min(90, text.length / 1.8));
         track.style.setProperty('--scroll-duration', `${duration}s`);
+    }
+
+    function pushAiMessage(text) {
+        if (!text) return;
+        aiMessages.unshift(text);
+        if (aiMessages.length > maxAiMessages) aiMessages.pop();
+        renderTicker();
     }
 
     async function callGemini(prompt) {
@@ -503,19 +521,16 @@
     async function fetchAnnouncement() {
         const track = document.getElementById('feed-track');
         track.innerText = "CONNECTING TO HQ...";
-        
-        await fetchApiKeyFromNetlify(); // Ensure key is loaded
-        
-        if (!apiKey) {
-            renderTicker(defaultMessages);
-            return;
-        }
 
-        const prompt = "Write a single, short (max 15 words), funny, cynical, dystopic announcement for an Amazon logistics warehouse worker. Mention safety shoes, TOT, or rates. Use ALL CAPS. Start with 'ATTENTION:'.";
+        await fetchApiKeyFromNetlify(); // Ensure key is loaded
+
+        if (!apiKey) { renderTicker(); return; }
+
+        const prompt = "Write a single, short (max 15 words), funny, cynical, dystopic announcement for an Amazon logistics warehouse worker. Mention safety shoes, TOT, or brutal rates. Use ALL CAPS. Start with 'ATTENTION:'.";
         const text = await callGemini(prompt);
-        
-        if(text) renderTicker([text, ...defaultMessages]);
-        else renderTicker(defaultMessages);
+
+        if(text) pushAiMessage(text);
+        else renderTicker();
     }
 
     // --- 4. NEW AI TOOLS ---
@@ -673,7 +688,9 @@
         });
     }
 
+    renderTicker(); // Show defaults immediately
     fetchAnnouncement();
+    setInterval(fetchAnnouncement, 45000); // Refresh HQ feed often for fresh AI sarcasm
     renderPortraits();
 </script>
 </body>
