@@ -1250,22 +1250,46 @@ function draw() {
         ctx.fillStyle='#fff'; ctx.fillText("[PRESS SPACE]", 80, 190); ctx.restore(); return;
     }
     if (GAME.state === 'SELECT') {
-        ctx.fillStyle = '#0a0a0a'; ctx.fillRect(12, 20, 232, 50); ctx.fillStyle = '#111'; ctx.fillRect(12, 80, 232, 120);
-        ctx.fillStyle='#eab308'; ctx.font='12px monospace'; ctx.fillText("CHOOSE COORDINATOR", 40, 50);
-        ctx.fillStyle='#888'; ctx.font='8px monospace'; ctx.fillText("ARROWS TO BROWSE | SPACE TO START", 26, 64);
+        const frameX = 14, frameY = 28, frameW = 228, frameH = 168;
+        ctx.fillStyle = '#0a0a0a'; ctx.fillRect(frameX, frameY, frameW, frameH);
+        ctx.strokeStyle = '#222'; ctx.lineWidth = 2; ctx.strokeRect(frameX - 2, frameY - 2, frameW + 4, frameH + 4);
+        ctx.fillStyle = '#111'; ctx.fillRect(frameX + 6, frameY + 30, frameW - 12, frameH - 44);
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle='#eab308'; ctx.font='12px monospace';
+        ctx.fillText("CHOOSE COORDINATOR", frameX + frameW / 2, frameY + 16);
+        ctx.fillStyle='#888'; ctx.font='8px monospace';
+        ctx.fillText("ARROWS TO BROWSE | SPACE TO START", frameX + frameW / 2, frameY + 28);
+
         let name = GAME.charList[GAME.charIndex]; let data = CHAR_DATA[name];
-        ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(GFX.chars[name], 34, 104, 48, 48); ctx.restore();
-        ctx.fillStyle='#eab308'; ctx.font='12px monospace'; ctx.fillText("< " + name + " >", 100, 108);
-        ctx.font='8px monospace'; ctx.fillStyle='#00ffff'; ctx.fillText("ROLE: " + data.role, 100, 124);
-        const wrapText = (text, maxChars = 28) => {
+        const portraitX = frameX + 18, portraitY = frameY + 46;
+        ctx.fillStyle = '#000'; ctx.fillRect(portraitX - 2, portraitY - 2, 56, 56);
+        ctx.strokeStyle = '#333'; ctx.strokeRect(portraitX - 4, portraitY - 4, 60, 60);
+        ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(GFX.chars[name], portraitX, portraitY, 52, 52); ctx.restore();
+
+        ctx.fillStyle='#eab308'; ctx.font='12px monospace';
+        ctx.fillText("< " + name + " >", frameX + frameW / 2, frameY + 54);
+
+        ctx.textAlign = 'left';
+        ctx.font='8px monospace'; ctx.fillStyle='#00ffff';
+        const textStartX = portraitX + 70; const textStartY = frameY + 70;
+        ctx.fillText("ROLE: " + data.role, textStartX, textStartY);
+
+        const wrapText = (text, maxChars = 30) => {
             const words = text.split(' '); const lines = []; let line = '';
             words.forEach(word => { const candidate = line.length ? line + ' ' + word : word; if (candidate.length > maxChars) { lines.push(line); line = word; } else { line = candidate; } });
             if (line) lines.push(line); return lines;
         };
-        const backstoryLines = wrapText(data.backstory, 32).slice(0, 3);
-        ctx.fillStyle='#fff'; backstoryLines.forEach((l, idx) => ctx.fillText(l, 24, 150 + idx * 12));
-        ctx.fillStyle='#ff00ff'; ctx.fillText("ATTACK: " + data.attack, 24, 192);
-        ctx.fillStyle='#888'; ctx.font='10px monospace'; ctx.fillText("PRESS SPACE", 92, 210); ctx.restore(); return;
+        const backstoryLines = wrapText(data.backstory, 30).slice(0, 3);
+        ctx.fillStyle='#fff'; backstoryLines.forEach((l, idx) => ctx.fillText(l, textStartX, textStartY + 14 + idx * 12));
+
+        ctx.fillStyle='#ff00ff';
+        ctx.fillText("ATTACK: " + data.attack, frameX + 18, frameY + frameH - 30);
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle='#888'; ctx.font='10px monospace';
+        ctx.fillText("PRESS SPACE", frameX + frameW / 2, frameY + frameH - 12);
+        ctx.restore(); return;
     }
     if (GAME.state === 'BOSS_INTRO' && GAME.boss) {
         ctx.fillStyle = '#222'; ctx.fillRect(0, 0, canvas.width, canvas.height);
