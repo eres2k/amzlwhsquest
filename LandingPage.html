@@ -14,6 +14,7 @@
             --corp-blue: #0000a0;
             --bg-dark: #050505;
             --glass: rgba(0, 20, 0, 0.75);
+            --terminal-gray: #1a1a1a;
         }
 
         * { box-sizing: border-box; }
@@ -157,8 +158,49 @@
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
             animation: shine 3s infinite;
         }
-        @keyframes shine { 0% { left: -100%; } 20% { left: 100%; } 100% { left: 100%; } }
 
+        /* --- AI UTILITIES STYLES --- */
+        .ai-tools-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+        }
+        @media (max-width: 600px) { .ai-tools-grid { grid-template-columns: 1fr; } }
+        
+        .ai-tool { 
+            background: var(--terminal-gray); 
+            border: 1px solid #444; 
+            padding: 15px; 
+            position: relative; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+        .ai-tool h3 { font-size: 1rem; color: var(--neon-green); margin-top: 0; }
+        .ai-tool p { flex-grow: 1; } /* Pushes content down */
+
+        .ai-controls {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .ai-btn {
+            background: var(--corp-blue); color: white; border: 2px solid white;
+            font-family: 'Press Start 2P'; font-size: 0.7rem; padding: 10px;
+            cursor: pointer; width: 100%; transition: 0.2s;
+        }
+        .ai-btn:hover { background: #0044cc; transform: translateY(-2px); }
+        .ai-btn:disabled { background: #555; cursor: not-allowed; border-color: #777; }
+
+        .ai-output {
+            margin-top: 15px; padding: 10px; background: #000; border: 1px dashed var(--neon-pink);
+            min-height: 60px; font-size: 0.9rem; color: var(--neon-pink); white-space: pre-wrap;
+        }
+
+        @keyframes shine { 0% { left: -100%; } 20% { left: 100%; } 100% { left: 100%; } }
         @keyframes blink { 50% { opacity: 0; } }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 0, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); } }
     </style>
@@ -174,7 +216,7 @@
     </header>
 
     <div id="live-feed">
-        <span id="feed-track" class="ticker-track">CONNECTING TO HQ<span class="loading-dots"></span></span>
+        <span id="feed-track" class="ticker-track">ESTABLISHING SECURE LINK TO NETLIFY...<span class="loading-dots"></span></span>
     </div>
 
     <div style="text-align: center; margin: 60px 0;">
@@ -307,6 +349,39 @@
                 </div>
             </div>
         </section>
+
+        <!-- NEW AI SECTION (MOVED TO BOTTOM) -->
+        <section>
+            <h2>> WORKER UTILITIES</h2>
+            <div class="ai-tools-grid">
+                <!-- TOOL 1: EXCUSE GENERATOR -->
+                <div class="ai-tool">
+                    <div>
+                        <h3>THE EXCUSE GENERATOR</h3>
+                        <p style="font-size:0.8rem; color:#ccc;">Missed a TPH goal? Need to explain why you were in the breakroom for 17 minutes? Let the AI fabricate a technically plausible excuse.</p>
+                    </div>
+                    <div class="ai-controls">
+                        <!-- ADDED INPUT FIELD HERE -->
+                        <input type="text" id="excuse-input" placeholder="e.g. late for shift" style="width:100%; background:#222; border:1px solid #555; color:white; font-family:'VT323'; padding:5px;">
+                        <button class="ai-btn" onclick="generateExcuse()" id="btn-excuse">GENERATE EXCUSE</button>
+                        <div class="ai-output" id="out-excuse">// WAITING FOR INPUT...</div>
+                    </div>
+                </div>
+
+                <!-- TOOL 2: OPS SPEAK TRANSLATOR -->
+                <div class="ai-tool">
+                    <div>
+                        <h3>OPS SPEAK TRANSLATOR</h3>
+                        <p style="font-size:0.8rem; color:#ccc;">Translate your complaints into "High Performance" corporate jargon that managers love.</p>
+                    </div>
+                    <div class="ai-controls">
+                        <input type="text" id="translate-input" placeholder="e.g. I hate this job" style="width:100%; background:#222; border:1px solid #555; color:white; font-family:'VT323'; padding:5px;">
+                        <button class="ai-btn" onclick="translateSpeak()" id="btn-translate">TRANSLATE</button>
+                        <div class="ai-output" id="out-translate" style="color: #00ffff; border-color: #00ffff;">// WAITING FOR INPUT...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <footer>
@@ -366,25 +441,34 @@
     }
     animateGrid();
 
-    // --- 2. GEMINI API INTEGRATION (Announcement) ---
-    const apiKey = ""; // System provides key at runtime usually
+    // --- 2. KEY FETCHING (NEW) ---
+    let apiKey = null;
 
+    async function fetchApiKeyFromNetlify() {
+        try {
+            // This endpoint must exist in your Netlify functions folder
+            const res = await fetch('/.netlify/functions/get-gemini-key', { cache: 'no-store' });
+            if (!res.ok) throw new Error(`Netlify key endpoint returned ${res.status}`);
+            const data = await res.json();
+            const key = (data && data.apiKey ? String(data.apiKey) : '').trim();
+            if (!key) throw new Error('No apiKey field in Netlify response');
+            apiKey = key;
+            console.log("SECURE LINK ESTABLISHED. KEY LOADED.");
+            return apiKey;
+        } catch (err) {
+            console.error("FAILED TO LOAD KEY:", err);
+            return null;
+        }
+    }
+
+    // --- 3. GEMINI API INTEGRATION ---
     const defaultMessages = [
-        "ATTENTION DVI1: IF YOU CAN READ THIS, YOU'RE NOT MOVING PALLETS FAST ENOUGH.",
+        "ATTENTION DVI1: IF YOU CAN READ THIS, YOU're NOT MOVING PALLETS FAST ENOUGH.",
         "ATTENTION DVI1: TPH GOAL UPDATED TO WHATEVER IS HIGHER THAN CURRENT. PLEASE COMPLY.",
         "ATTENTION DVI1: BREAKS ARE LIKE UNICORNS. HEARD OFTEN, RARELY SEEN.",
         "ATTENTION DVI1: REMEMBER, SAFETY FIRST, BUT ALSO SECOND, THIRD, AND MAYBE FOURTH.",
         "ATTENTION DVI1: LOST A RACK? PLEASE FILE A TICKET WITH FACILITIES AND YOUR THERAPIST.",
-        "ATTENTION DVI1: IF YOU FIND A BARCODE ON YOUR SHOE, CONGRATS, YOU'RE NOW INVENTORY.",
-        "ATTENTION DVI1: OPS SAYS WE'RE FAMILY. FAMILY DOES 60 TPH, RIGHT?",
-        "ATTENTION DVI1: IF THE PIT HORN ISN'T WORKING, PLEASE SCREAM ‘BEEP’ AT ASSOCIATES.",
-        "ATTENTION DVI1: VOID WALKING COUNTS AS CARDIO. TRACK IT IN WORKDAY.",
-        "ATTENTION DVI1: NEW POLICY—NO MORE CALLING IT CHAOS. IT'S NOW ‘FLEX PRIORITIZATION’.",
-        "ATTENTION DVI1: VISITORS LOVE CLIPBOARDS. GIVE THEM A SHOW, NOT A HAZARD.",
-        "ATTENTION DVI1: KPI UPDATE—SMILES PER PALLET NOW MEASURED AND NOT OPTIONAL.",
-        "ATTENTION DVI1: PLEASE RETURN ALL BORROWED PALLET JACKS. THEY MISS THEIR HOME DOCK.",
-        "ATTENTION DVI1: REMINDER, THE FLOOR IS LAVA WHEREVER THERE'S A SPILL.",
-        "ATTENTION DVI1: DO NOT BRIBE THE ROBOTS WITH BATTERIES. THEY'RE UNIONIZING."
+        "ATTENTION DVI1: OPS SAYS WE'RE FAMILY. FAMILY DOES 60 TPH, RIGHT?"
     ];
 
     function renderTicker(messages) {
@@ -397,16 +481,11 @@
         track.style.setProperty('--scroll-duration', `${duration}s`);
     }
 
-    async function fetchAnnouncement() {
-        const track = document.getElementById('feed-track');
-        if (!apiKey) {
-            setTimeout(() => renderTicker(defaultMessages), 1000);
-            return;
-        }
+    async function callGemini(prompt) {
+        if (!apiKey) await fetchApiKeyFromNetlify();
+        if (!apiKey) return null;
 
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-        const prompt = "Write a single, short (max 15 words), cynical, dystopic corporate announcement for a warehouse worker starting their shift. Use ALL CAPS. Start with 'ATTENTION DVI1:'.";
-
         try {
             const response = await fetch(url, {
                 method: 'POST',
@@ -414,15 +493,79 @@
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             const data = await response.json();
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if(text) renderTicker([text, ...defaultMessages]);
-            else throw new Error("No text");
+            return data.candidates?.[0]?.content?.parts?.[0]?.text;
         } catch (e) {
-            track.innerText = "📢 SYSTEM ERROR: COFFEE SUPPLIES CRITICAL.";
+            console.error(e);
+            return null;
         }
     }
 
-    // --- 3. PIXEL PORTRAITS FOR LANDING PAGE ---
+    async function fetchAnnouncement() {
+        const track = document.getElementById('feed-track');
+        track.innerText = "CONNECTING TO HQ...";
+        
+        await fetchApiKeyFromNetlify(); // Ensure key is loaded
+        
+        if (!apiKey) {
+            renderTicker(defaultMessages);
+            return;
+        }
+
+        const prompt = "Write a single, short (max 15 words), funny, cynical, dystopic announcement for an Amazon logistics warehouse worker. Mention safety shoes, TOT, or rates. Use ALL CAPS. Start with 'ATTENTION DVI1:'.";
+        const text = await callGemini(prompt);
+        
+        if(text) renderTicker([text, ...defaultMessages]);
+        else renderTicker(defaultMessages);
+    }
+
+    // --- 4. NEW AI TOOLS ---
+    async function generateExcuse() {
+        const out = document.getElementById('out-excuse');
+        const btn = document.getElementById('btn-excuse');
+        const input = document.getElementById('excuse-input').value; // GET INPUT
+        
+        btn.disabled = true;
+        btn.innerText = "CALCULATING...";
+        out.innerText = "// ACCESSING MAINFRAME...";
+        
+        // DEFAULT TOPIC IF EMPTY
+        let topic = "having low rates";
+        if (input && input.trim() !== "") {
+            topic = `the issue: "${input}"`;
+        }
+        
+        const prompt = `Write a very short (max 20 words), overly technical, and absurd excuse for a warehouse worker regarding ${topic}. Use Sci-Fi or bureaucratic jargon. Be funny.`;
+        const text = await callGemini(prompt);
+        
+        if (text) out.innerText = "> " + text;
+        else out.innerText = "> ERROR: EXCUSE MODULE OFFLINE. TRY TELLING THE TRUTH (NOT RECOMMENDED).";
+        
+        btn.disabled = false;
+        btn.innerText = "GENERATE EXCUSE";
+    }
+
+    async function translateSpeak() {
+        const input = document.getElementById('translate-input').value;
+        const out = document.getElementById('out-translate');
+        const btn = document.getElementById('btn-translate');
+        
+        if (!input) { out.innerText = "> ERROR: NO INPUT DETECTED."; return; }
+
+        btn.disabled = true;
+        btn.innerText = "OPTIMIZING...";
+        out.innerText = "// APPLYING SYNERGY...";
+        
+        const prompt = `Translate this worker complaint: "${input}" into overly positive, corporate, Amazon-style management speak. Max 25 words.`;
+        const text = await callGemini(prompt);
+        
+        if (text) out.innerText = "> " + text;
+        else out.innerText = "> ERROR: TRANSLATION FAILED.";
+        
+        btn.disabled = false;
+        btn.innerText = "TRANSLATE";
+    }
+
+    // --- 5. PIXEL PORTRAITS ---
     const spritePainters = {
         carrie: ctx => {
             ctx.fillStyle = '#fcd34d'; ctx.fillRect(3,1,10,4); ctx.fillRect(2,3,2,8);
@@ -534,8 +677,4 @@
     renderPortraits();
 </script>
 </body>
-
 </html>
-
-
-
