@@ -470,6 +470,9 @@
         "ATTENTION DVI1: LOST A RACK? PLEASE FILE A TICKET WITH FACILITIES AND YOUR THERAPIST.",
         "ATTENTION DVI1: OPS SAYS WE'RE FAMILY. FAMILY DOES 60 TPH, RIGHT?"
     ];
+    const aiMessages = [];
+    const maxAiMessages = 4;
+    const aiRefreshMs = 45000;
 
     function renderTicker(messages) {
         const track = document.getElementById('feed-track');
@@ -479,6 +482,11 @@
 
         const duration = Math.max(30, Math.min(90, text.length / 1.5));
         track.style.setProperty('--scroll-duration', `${duration}s`);
+    }
+
+    function buildTickerMessages() {
+        if (aiMessages.length) return [...aiMessages, ...defaultMessages];
+        return [...defaultMessages];
     }
 
     async function callGemini(prompt) {
@@ -511,11 +519,15 @@
             return;
         }
 
-        const prompt = "Write a single, short (max 15 words), funny, cynical, dystopic announcement for an Amazon logistics warehouse worker. Mention safety shoes, TOT, or rates. Use ALL CAPS. Start with 'ATTENTION:'.";
+        const prompt = "Write a single, short (max 15 words), funny, cynical, dystopic announcement for an Amazon logistics warehouse worker. Keep it darkly humorous, mention safety shoes, TOT, rates, scanners, or pallet jacks. Use ALL CAPS. Start with 'ATTENTION:'.";
         const text = await callGemini(prompt);
-        
-        if(text) renderTicker([text, ...defaultMessages]);
-        else renderTicker(defaultMessages);
+
+        if (text) {
+            aiMessages.unshift(text.trim());
+            if (aiMessages.length > maxAiMessages) aiMessages.pop();
+        }
+
+        renderTicker(buildTickerMessages());
     }
 
     // --- 4. NEW AI TOOLS ---
@@ -673,7 +685,9 @@
         });
     }
 
+    renderTicker(buildTickerMessages());
     fetchAnnouncement();
+    setInterval(fetchAnnouncement, aiRefreshMs);
     renderPortraits();
 </script>
 </body>
