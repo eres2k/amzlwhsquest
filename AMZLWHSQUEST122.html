@@ -1055,9 +1055,9 @@ function generateAssets() {
 }
 // --- GAME STATE ---
 const GAME = {
-    state: 'LOGO', 
-    stateTimer: 0, 
-    nextState: 'PLAY', 
+    state: 'LOGO',
+    stateTimer: 0,
+    nextState: 'PLAY',
     ticks: 0,
     player: null,
     selectedChar: "Carrie",
@@ -1067,6 +1067,7 @@ const GAME = {
     map: [], clutter: [], entities: [], projectiles: [], particles: [], floatingTexts: [],
     activeIssues: [],
     issuesFixed: 0, lives: 5, genId: 0, gameOverTriggered: false, simonHits: 0, boss: null,
+    bossQueued: false,
     shake: 0, flash: 0, 
     dialogText: "", dialogVisible: "", dialogTimer: 0,
     splashTimer: 0, aiResultText: null,
@@ -1249,8 +1250,9 @@ function handleAction() {
             GAME.dialogVisible = GAME.dialogText; document.getElementById('text-content').innerText = GAME.dialogVisible;
         } else { closeDialog(); }
     }
+    else if (GAME.state === 'BOSS_SPLASH') { initBossEncounter(); }
     else if (GAME.state === 'BOSS_INTRO') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
-    else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') { 
+    else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') {
         document.getElementById('boss-hud').style.display = 'none'; GAME.state = 'TITLE'; updateMusicForState();
     }
     else if (GAME.state === 'PLAY' || GAME.state === 'BOSS') { if (GAME.state === 'PLAY' && tryInteract()) return; throwBook(); }
@@ -1280,7 +1282,7 @@ function resetGame() {
     GAME.player = { x: 100, y: 100, dir: 0, speed: stats.speed, iframe: 0, cooldown: 0, cooldownMax: 120 };
     GAME.entities = []; GAME.projectiles = []; GAME.particles = []; GAME.floatingTexts = [];
     GAME.activeIssues = []; GAME.clutter = [];
-    GAME.issuesFixed = 0; GAME.lives = stats.lives; GAME.simonHits = 0; GAME.boss = null;
+    GAME.issuesFixed = 0; GAME.lives = stats.lives; GAME.simonHits = 0; GAME.boss = null; GAME.bossQueued = false;
     GAME.nextState = 'PLAY'; GAME.aiResultText = null;
     GAME.startTime = Date.now(); GAME.booksFired = 0; GAME.opsPushed = 0;
     
@@ -1344,24 +1346,34 @@ function spawnEntity(type) {
 
 function initSimonBoss() {
     GAME.state = 'BOSS_INTRO';
+    GAME.nextState = 'BOSS';
     AudioSys.sfx.bossIntro();
     GAME.boss = {
-        name: "MEGA SIMON", sprite: "simonBoss", hp: 25, speed: 1.5, attackDelay: 30, 
+        name: "MEGA SIMON", sprite: "simonBoss", hp: 25, speed: 1.5, attackDelay: 30,
         title: "THE WHS FINAL BOSS", desc: "He is not impressed.", attackName: "TERMINATION PROTOCOL",
         tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25], maxHp: 25,
         x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, timer: 0 
     };
     GAME.entities = []; GAME.projectiles = [];
+    GAME.stateTimer = 0; GAME.bossQueued = false;
     updateMusicForState();
 }
 
 function initBossEncounter() {
     GAME.state = 'BOSS_INTRO';
-    AudioSys.sfx.bossIntro(); 
+    GAME.nextState = 'BOSS';
+    AudioSys.sfx.bossIntro();
     const bossData = GAME.bossTypes[Math.floor(Math.random() * GAME.bossTypes.length)];
     GAME.boss = { ...bossData, x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, w: 32, h: 32, maxHp: bossData.hp, timer: 0, tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25] };
     GAME.entities = []; GAME.projectiles = [];
+    GAME.stateTimer = 0; GAME.bossQueued = false;
     updateMusicForState();
+}
+
+function queueBossSplash() {
+    if (GAME.bossQueued || GAME.boss) return;
+    GAME.bossQueued = true;
+    GAME.nextState = 'BOSS_SPLASH';
 }
 
 function update() {
@@ -1387,6 +1399,11 @@ function update() {
         } else if (!ready && GAME.splashTimer <= fallbackTimer) {
             GAME.aiResultText = 'System could not load live review. Using cached performance log.';
         }
+        return;
+    }
+
+    if (GAME.state === 'BOSS_SPLASH') {
+        if (GAME.stateTimer > 150) initBossEncounter();
         return;
     }
 
@@ -1647,11 +1664,10 @@ function tryInteract() {
         if (e.type === 'runner' && Math.hypot(p.x-e.x, p.y-e.y) < 20) {
              e.type = 'assoc'; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
              spawnFloatingText(e.x, e.y, "Safe!", "#00ff00");
-             
-             if (GAME.issuesFixed >= 5) {
-                 initBossEncounter();
-                 return true;
-             }
+
+             const bossReady = GAME.issuesFixed >= 5 && !GAME.boss && !GAME.bossQueued;
+             if (bossReady) queueBossSplash();
+             GAME.nextState = bossReady ? 'BOSS_SPLASH' : 'PLAY';
 
              // SIMON COMMENTARY
              const currentGen = GAME.genId;
@@ -1673,16 +1689,15 @@ function tryInteract() {
             h.fixed = true; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
             spawnFloatingText(h.x, h.y, "Fixed!", "#00ff00");
             
-            if (GAME.issuesFixed >= 5) {
-                 initBossEncounter();
-                 return true;
-            }
-
             // SIMON COMMENTARY
             const currentGen = GAME.genId;
-            
+
             // --- CHANGED: Show thinking state immediately ---
             showThinking("Simon Unglaube", GFX.simonFace);
+
+            const bossReady = GAME.issuesFixed >= 5 && !GAME.boss && !GAME.bossQueued;
+            if (bossReady) queueBossSplash();
+            GAME.nextState = bossReady ? 'BOSS_SPLASH' : 'PLAY';
 
             callGemini(
                 `You are Simon Unglaube, WHS Senior Regional Manager. A hazard "${h.data.name}" was fixed. Praise the player with dry, professional humor and share one specific safety tip tied to that hazard. Max 32 words.`,
@@ -1768,7 +1783,7 @@ function showThinking(speaker, portrait) {
 
 function closeDialog() {
     TTSSys.cancel(); AudioSys.sfx.step(); document.getElementById('dialog-box').style.display = 'none';
-    GAME.state = GAME.nextState; if (GAME.state === 'PLAY' && GAME.issuesFixed >= 5 && !GAME.boss) initBossEncounter();
+    GAME.state = GAME.nextState; GAME.stateTimer = 0;
     updateMusicForState();
 }
 
@@ -1776,7 +1791,7 @@ function updateMusicForState() {
     if (['LOGO', 'INTRO', 'STORY', 'TITLE'].includes(GAME.state)) MusicSys.play('title');
     else if (['HOWTO', 'SELECT'].includes(GAME.state)) MusicSys.play('menu');
     else if (GAME.state === 'PLAY') MusicSys.play('ingame');
-    else if (GAME.state === 'BOSS' || GAME.state === 'BOSS_INTRO') MusicSys.play('boss');
+    else if (GAME.state === 'BOSS' || GAME.state === 'BOSS_INTRO' || GAME.state === 'BOSS_SPLASH') MusicSys.play('boss');
 }
 
 function drawSnesSplash(isWin) {
@@ -1840,9 +1855,59 @@ function drawSnesSplash(isWin) {
     ctx.textAlign = 'start';
 }
 
+function drawVisitorSplash() {
+    const t = GAME.stateTimer;
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#1b0a2f');
+    gradient.addColorStop(0.5, '#2f1f60');
+    gradient.addColorStop(1, '#0a0514');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (let y = 0; y < canvas.height; y += 8) {
+        const offset = Math.sin((t / 9) + y * 0.14) * 4;
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        ctx.fillRect(offset, y, canvas.width, 2);
+    }
+
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height * 0.65);
+    for (let i = 0; i < 14; i++) {
+        const scale = (i + 1) / 14;
+        const wobble = Math.sin((t / 12) + i * 0.5) * 3;
+        const w = canvas.width * (1.05 - scale * 0.55);
+        const y = i * 11 + wobble;
+        ctx.strokeStyle = 'rgba(248, 113, 113, 0.35)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-w / 2, y);
+        ctx.lineTo(w / 2, y);
+        ctx.stroke();
+    }
+    ctx.restore();
+
+    ctx.textAlign = 'center';
+    const title = 'SURPRISE VISITOR';
+    const accent = '#f472b6';
+    const shadowOffsets = [[2,2],[-2,2],[2,-2],[-2,-2]];
+    ctx.font = '20px monospace';
+    ctx.fillStyle = '#000';
+    shadowOffsets.forEach(([dx, dy]) => ctx.fillText(title, canvas.width/2 + dx, canvas.height/2 - 10 + dy));
+    ctx.fillStyle = accent;
+    ctx.fillText(title, canvas.width/2, canvas.height/2 - 10);
+
+    ctx.font = '11px monospace';
+    ctx.fillStyle = '#c084fc';
+    ctx.fillText('An unexpected auditor approaches...', canvas.width/2, canvas.height/2 + 14);
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillText('[PRESS SPACE TO BRACE]', canvas.width/2, canvas.height/2 + 34);
+    ctx.textAlign = 'start';
+}
+
 function draw() {
     if (GAME.state === 'LOSE_SPLASH') { drawSnesSplash(false); return; }
     if (GAME.state === 'WIN_SPLASH') { drawSnesSplash(true); return; }
+    if (GAME.state === 'BOSS_SPLASH') { drawVisitorSplash(); return; }
 
     ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width, canvas.height);
     let dxShake = 0, dyShake = 0;
