@@ -840,11 +840,11 @@ function initYardLevel() {
         player: { x: YARD_W / 2 - 8, y: YARD_H - 28, w: 16, h: 16, speed: 1.6 },
         vehicles: [],
         lanes: [
-            { y: 60, dir: 1, speed: 1.2, rate: 120, offset: 0, type: 'van' },
-            { y: 90, dir: -1, speed: 1.5, rate: 110, offset: 40, type: 'truck' },
-            { y: 120, dir: 1, speed: 1.8, rate: 90, offset: 70, type: 'van' },
-            { y: 150, dir: -1, speed: 1.4, rate: 100, offset: 10, type: 'truck' },
-            { y: 180, dir: 1, speed: 1.6, rate: 105, offset: 20, type: 'van' }
+            { y: 60, dir: 1, speed: 0.8, rate: 140, offset: 0, type: 'van' },
+            { y: 90, dir: -1, speed: 1.0, rate: 130, offset: 40, type: 'truck' },
+            { y: 120, dir: 1, speed: 1.05, rate: 120, offset: 70, type: 'van' },
+            { y: 150, dir: -1, speed: 0.95, rate: 125, offset: 10, type: 'truck' },
+            { y: 180, dir: 1, speed: 1.1, rate: 135, offset: 20, type: 'van' }
         ],
         goalY: 18,
         lives: 3,
@@ -899,7 +899,7 @@ function updateYard() {
         GAME.yard.complete = true;
         GAME.state = 'DIALOG';
         GAME.nextState = 'TITLE';
-        const msg = "You braved the vans. I needed to tell you: keep walking pace, even when Ops rushes.";
+        const msg = "Great, you survived the yard after fixing all 5 hazards. I only wanted to ask: did you see my thermos?";
         showDialog(msg, "Simon", GFX.simonFace, false);
     }
 }
@@ -1384,18 +1384,27 @@ function drawSnesSplash(isWin) {
 
 function drawYardScene(showIntro) {
     ctx.fillStyle = '#0b1021'; ctx.fillRect(0,0,canvas.width, canvas.height);
-    ctx.fillStyle = '#1f2937'; ctx.fillRect(0, 30, canvas.width, canvas.height - 60);
+    ctx.fillStyle = '#111827'; ctx.fillRect(0, 30, canvas.width, canvas.height - 60);
+    ctx.fillStyle = '#0f172a'; ctx.fillRect(6, 36, canvas.width - 12, canvas.height - 72);
+    ctx.fillStyle = '#1f2937'; ctx.fillRect(10, 40, canvas.width - 20, canvas.height - 80);
     ctx.fillStyle = '#111827'; ctx.fillRect(0, 28, canvas.width, 2); ctx.fillRect(0, canvas.height - 30, canvas.width, 2);
 
-    for (let y = 50; y < canvas.height - 40; y += 30) {
-        ctx.fillStyle = '#0b1323'; ctx.fillRect(0, y, canvas.width, 20);
-        for (let x = 0; x < canvas.width; x += 32) {
-            ctx.fillStyle = '#fef3c7'; ctx.fillRect(x + 8, y + 9, 12, 3);
+    for (let y = 54; y < canvas.height - 44; y += 30) {
+        ctx.fillStyle = '#0b1323'; ctx.fillRect(12, y, canvas.width - 24, 20);
+        for (let x = 12; x < canvas.width - 12; x += 32) {
+            ctx.fillStyle = '#fef3c7'; ctx.fillRect(x + 6, y + 9, 14, 3);
         }
+    }
+
+    for (let i = 0; i < canvas.width; i += 32) {
+        ctx.fillStyle = '#6ee7b7'; ctx.fillRect(i + 2, 20, 6, 6);
+        ctx.fillRect(i + 12, canvas.height - 26, 6, 6);
     }
 
     ctx.fillStyle = '#22c55e'; ctx.fillRect(0, 0, canvas.width, 24); ctx.fillRect(0, canvas.height - 24, canvas.width, 24);
     ctx.fillStyle = '#14532d'; ctx.fillRect(0, 0, canvas.width, 6); ctx.fillRect(0, canvas.height - 6, canvas.width, 6);
+    ctx.fillStyle = '#86efac';
+    for (let x = 8; x < canvas.width; x += 18) { ctx.fillRect(x, 8, 6, 4); ctx.fillRect(x + 4, canvas.height - 14, 6, 4); }
 
     if (GAME.yard) {
         ctx.save(); ctx.imageSmoothingEnabled = false;
@@ -1416,9 +1425,10 @@ function drawYardScene(showIntro) {
         ctx.strokeStyle = '#eab308'; ctx.lineWidth = 2; ctx.strokeRect(14, 52, canvas.width-28, 116);
         ctx.fillStyle = '#eab308'; ctx.font = '12px monospace'; ctx.fillText('AMZL YARD - CROSS QUICKLY', 24, 76);
         ctx.fillStyle = '#fff'; ctx.font = '10px monospace';
-        ctx.fillText('Frogger style: dodge vans and trucks.', 24, 102);
-        ctx.fillText('Reach Simon on the far side.', 24, 116);
+        ctx.fillText('Mission: cross the yard so Simon can speak.', 24, 102);
+        ctx.fillText('He refuses to talk before 5 hazards are fixed.', 24, 116);
         ctx.fillText('Move with arrows/WASD. Press Space to start.', 24, 136);
+        ctx.fillText('Expectation: message will be oddly unrelated.', 24, 150);
     }
 }
 
@@ -1447,9 +1457,9 @@ function draw() {
     }
     if (GAME.state === 'STORY') {
         ctx.fillStyle='#eab308'; ctx.font='10px monospace'; ctx.fillText("MISSION BRIEFING", 20, 40); ctx.fillStyle='#fff';
-        ctx.fillText("Simon Unglaube asks you to:", 20, 70); ctx.fillText("- Do the safety audit", 20, 90);
+        ctx.fillText("Simon Unglaube asks you to:", 20, 70); ctx.fillText("- Find 5 hazards (oil leaks, debris)", 20, 90);
         ctx.fillText("- Dodge crazy Ops requests", 20, 110); ctx.fillText("- Push back with rules", 20, 130);
-        ctx.fillText("- Deal with 'visitors'", 20, 150); ctx.fillStyle='#888'; ctx.fillText("[PRESS SPACE]", 80, 200); ctx.restore(); return;
+        ctx.fillText("- Cross the yard so he'll talk", 20, 150); ctx.fillStyle='#888'; ctx.fillText("[PRESS SPACE]", 80, 200); ctx.restore(); return;
     }
     if (GAME.state === 'TITLE') {
         let offset = (Date.now() / 20) % 256; ctx.strokeStyle = '#004400'; ctx.lineWidth = 1;
@@ -1462,7 +1472,8 @@ function draw() {
         ctx.fillStyle='#fff'; ctx.font='12px monospace'; ctx.fillText("HOW TO PLAY", 80, 30); ctx.font='10px monospace';
         ctx.fillStyle='#eab308'; ctx.fillText("WASD / ARROWS : MOVE", 20, 60); ctx.fillStyle='#aaa'; ctx.fillText("Navigate the warehouse.", 20, 75);
         ctx.fillStyle='#eab308'; ctx.fillText("SPACE : INTERACT / SHOOT", 20, 100); ctx.fillStyle='#aaa'; ctx.fillText("Fix hazards or throw rules.", 20, 115);
-        ctx.fillStyle='#eab308'; ctx.fillText("GOAL: FIND 5 HAZARDS", 20, 140); ctx.fillStyle='#aaa'; ctx.fillText("Then defeat the boss!", 20, 155);
+        ctx.fillStyle='#eab308'; ctx.fillText("GOAL: FIND 5 HAZARDS", 20, 140); ctx.fillStyle='#aaa'; ctx.fillText("Oil leaks, debris, blocked exits.", 20, 155);
+        ctx.fillStyle='#eab308'; ctx.fillText("AFTER: CROSS THE YARD", 20, 175); ctx.fillStyle='#aaa'; ctx.fillText("Simon insists before he speaks.", 20, 190);
         ctx.fillStyle='#fff'; ctx.fillText("[PRESS SPACE]", 80, 190); ctx.restore(); return;
     }
     if (GAME.state === 'YARD_INTRO') { drawYardScene(true); ctx.restore(); return; }
