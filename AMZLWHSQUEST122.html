@@ -214,6 +214,23 @@ function setAIStatus(message, level = 'info') {
     console.log(`[AI STATUS ${level}]: ${message}`);
 }
 
+function personalizeAIText(text) {
+    if (!text) return text;
+    const name = (typeof GAME !== 'undefined' && GAME.selectedChar) ? GAME.selectedChar : 'Coordinator';
+    const patterns = [
+        /\[\s*player\s*name\s*\]/gi,
+        /\{\s*player\s*name\s*\}/gi,
+        /<\s*player\s*name\s*>/gi,
+        /player name/gi,
+        /\[\s*player\s*\]/gi,
+        /\{\s*player\s*\}/gi,
+        /<\s*player\s*>/gi
+    ];
+    let cleaned = text;
+    patterns.forEach(p => { cleaned = cleaned.replace(p, name); });
+    return cleaned;
+}
+
 async function fetchApiKeyFromNetlify() {
     try {
         const res = await fetch('/.netlify/functions/get-gemini-key', { cache: 'no-store' });
@@ -238,7 +255,7 @@ async function ensureApiKey() {
 async function callGemini(prompt, category = 'generic', context = {}) {
     const activeKey = await ensureApiKey();
     if (!activeKey) {
-        return getRandomFallback(prompt, category, context);
+        return personalizeAIText(getRandomFallback(prompt, category, context));
     }
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${activeKey}`;
@@ -257,28 +274,39 @@ async function callGemini(prompt, category = 'generic', context = {}) {
         });
         const response = await Promise.race([fetchPromise, timeout]);
         
-        if (response === "TIMEOUT") return getRandomFallback(prompt, category, context);
-        if (!response.ok) return getRandomFallback(prompt, category, context);
+        if (response === "TIMEOUT") return personalizeAIText(getRandomFallback(prompt, category, context));
+        if (!response.ok) return personalizeAIText(getRandomFallback(prompt, category, context));
         
         const data = await response.json();
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) return text.trim();
-        return getRandomFallback(prompt, category, context);
+        if (text) return personalizeAIText(text.trim());
+        return personalizeAIText(getRandomFallback(prompt, category, context));
 
-    } catch (e) { 
-        return getRandomFallback(prompt, category, context); 
+    } catch (e) {
+        return personalizeAIText(getRandomFallback(prompt, category, context));
     }
 }
 
 function getRandomFallback(prompt, category = 'generic', context = {}) {
     const hazardName = context.hazardName;
+    const stats = context.stats;
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const is = (key) => category === key || prompt.includes(key);
 
     if (is("runners")) return pick(SIMULATED_AI.runners);
-    if (is("taunt")) {
+    if (is("taunt")) { 
          if(prompt.includes("Simon")) return pick(SIMULATED_AI.simon_taunts);
          return pick(SIMULATED_AI.taunts);
+    }
+    if ((is("reviews_loss") || is("reviews_win")) && stats) {
+        const time = stats.time ?? "?";
+        const hazards = stats.hazards ?? "?";
+        const books = stats.books ?? "?";
+        const ops = stats.ops ?? "?";
+        if (is("reviews_loss")) {
+            return `Audit recap: ${hazards}/5 hazards, ${books} rule books thrown, ${ops} ops nudged in ${time}s. Safety tip: hydrate, then try again.`;
+        }
+        return `Victory recap: ${hazards}/5 hazards cleared in ${time}s, ${books} rule books launched, ${ops} ops redirected. Celebrate, then keep exits clear.`;
     }
     if (is("reviews_loss")) return pick(SIMULATED_AI.reviews_loss);
     if (is("reviews_win")) return pick(SIMULATED_AI.reviews_win);
@@ -507,7 +535,7 @@ const GAME = {
         { name: "Labour Inspector", sprite: "boss_inspector", hp: 10, speed: 1.2, attackDelay: 50, title: "The Enforcer", desc: "Checks every corner.", attackName: "Citation Storm" },
         { name: "Compliance Auditor", sprite: "boss_compliance", hp: 12, speed: 0.8, attackDelay: 70, title: "The Watcher", desc: "Nothing escapes.", attackName: "Audit Trail" },
         { name: "Sebastian Sprigade", sprite: "boss_sebastian", hp: 15, speed: 1.0, attackDelay: 60, title: "Delivery Station Mgr", desc: "Obsessed with TPH.", attackName: "Volume Spike" },
-        { name: "Regional MG3", sprite: "boss_regional", hp: 14, speed: 0.6, attackDelay: 90, title: "The Executive", desc: "Metrics first.", attackName: "Budget Cut" },
+        { name: "Regional OPS MGR", sprite: "boss_regional", hp: 14, speed: 0.6, attackDelay: 90, title: "The Executive", desc: "Metrics first.", attackName: "Budget Cut" },
         { name: "Avetta Platform", sprite: "boss_avetta", hp: 18, speed: 0.4, attackDelay: 100, title: "Risk Mgmt AI", desc: "Judges all.", attackName: "Compliance Block" },
         { name: "Jelena \"Jelly\"", sprite: "boss_jelly", hp: 13, speed: 0.9, attackDelay: 65, title: "HR Guardian", desc: "HR legend who never forgets a policy.", attackName: "Policy Shock" }
     ]
@@ -586,12 +614,12 @@ function resetGame() {
     
     generateMap();
     GAME.entities.push({ type: 'simon', x: 100, y: 80, w: 16, h: 16 });
-    document.getElementById('hud-layer').style.display = 'block';
+    document.getElementById('hud-layer').style.display = 'block'; updateHud();
     document.getElementById('boss-hud').style.display = 'none';
     
     showDialog("Analyzing coordinator lethargy levels...", "Simon Unglaube", GFX.simonFace, true);
     const currentGen = GAME.genId;
-    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Address ${GAME.selectedChar} with dry humor. Encouragement but warning about compliance. Max 15 words.`, "intro").then(text => {
+    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Greet ${GAME.selectedChar} with dry humor and one quick, relevant safety reminder for starting the shift. Keep it witty. Max 18 words.`, "intro").then(text => {
         if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
              let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
              showDialog(finalText, "Simon Unglaube", GFX.simonFace, true);
@@ -929,7 +957,7 @@ function tryInteract() {
              // SIMON COMMENTARY
              const currentGen = GAME.genId;
              callGemini(
-                 "You are Simon Unglaube, WHS Senior Regional Manager. You stopped a runner. Praise the player with dry, professional humor. Give a related Safety tipp. Max 15 words.", 
+                 "You are Simon Unglaube, WHS Senior Regional Manager. You stopped a runner. Praise the player with dry, professional humor and add a witty safety reminder about slowing down. Max 22 words.",
                  "runners"
              ).then(tip => {
                 if (GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
@@ -950,8 +978,8 @@ function tryInteract() {
             // SIMON COMMENTARY
             const currentGen = GAME.genId;
             callGemini(
-                `You are Simon Unglaube, WHS Senior Regional Manager. A hazard "${h.data.name}" was fixed. Praise the player with dry, professional humor. Max 30 words.`, 
-                "hazard", 
+                `You are Simon Unglaube, WHS Senior Regional Manager. A hazard "${h.data.name}" was fixed. Praise the player with dry, professional humor and share one specific safety tip tied to that hazard. Max 32 words.`,
+                "hazard",
                 { hazardName: h.data.name }
             ).then(tip => {
                 if (GAME.genId === currentGen) showDialog(`Fixed: ${h.data.name}!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
@@ -965,10 +993,12 @@ function tryInteract() {
 function triggerGameOver(reason) {
     GAME.gameOverTriggered = true; GAME.nextState = 'TITLE'; GAME.state = 'LOSE_SPLASH'; GAME.splashTimer = 180; GAME.aiResultText = null;
     document.getElementById('boss-hud').style.display = 'none'; document.getElementById('dialog-box').style.display = 'none';
+    document.getElementById('hud-layer').style.display = 'none';
     const time = Math.floor((Date.now() - GAME.startTime)/1000); const currentGen = GAME.genId;
-    if (reason === "FIRED!") { GAME.aiResultText = "Terminated for unsafe behavior."; } 
+    if (reason === "FIRED!") { GAME.aiResultText = "Terminated for unsafe behavior."; }
     else {
-        callGemini(`Simon Unglaube review. Coordinator failed after ${time}s. Scathing. Max 40 words.`, "reviews_loss").then(review => {
+        const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
+        callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator failed after ${time}s with ${GAME.issuesFixed}/5 hazards fixed, ${GAME.booksFired} rule books thrown, ${GAME.opsPushed} ops pushed. Deliver a scathing yet funny performance review that weaves those stats into a safety lesson. Max 50 words.`, "reviews_loss", { stats }).then(review => {
              if (GAME.genId === currentGen) { GAME.aiResultText = review; }
         });
     }
@@ -977,8 +1007,10 @@ function triggerGameOver(reason) {
 function winGame() {
     AudioSys.sfx.start(); MusicSys.play('victory'); GAME.nextState = 'TITLE'; GAME.state = 'WIN_SPLASH'; GAME.splashTimer = 180; GAME.aiResultText = null;
     document.getElementById('boss-hud').style.display = 'none'; document.getElementById('dialog-box').style.display = 'none';
+    document.getElementById('hud-layer').style.display = 'none';
     const currentGen = GAME.genId; const time = Math.floor((Date.now() - GAME.startTime)/1000);
-    callGemini(`Simon Unglaube review. Won in ${time}s. Professional praise. Max 50 words.`, "reviews_win").then(praise => {
+    const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
+    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator won in ${time}s clearing ${GAME.issuesFixed}/5 hazards, tossing ${GAME.booksFired} rule books, redirecting ${GAME.opsPushed} ops. Give warm but witty praise plus one practical safety takeaway using those stats. Max 55 words.`, "reviews_win", { stats }).then(praise => {
         if (GAME.genId === currentGen) GAME.aiResultText = praise;
     });
 }
