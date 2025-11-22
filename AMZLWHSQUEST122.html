@@ -629,128 +629,422 @@ function generateAssets() {
     GFX.runner = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,5); ctx.fillStyle = '#fff'; ctx.fillRect(1, 12, 2, 1); ctx.fillRect(14, 10, 2, 1); });
     
     GFX.clutter = { cart: c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(2,6,12,8); ctx.fillStyle = '#8b4513'; ctx.fillRect(4,4,8,6); }), coffee: c(8,8, ctx => { ctx.fillStyle='#fff'; ctx.fillRect(2,2,4,5); }), paper: c(8,8, ctx => { ctx.fillStyle='#eee'; ctx.fillRect(1,3,6,4); }), tape: c(8,8, ctx => { ctx.fillStyle='#d97706'; ctx.beginPath(); ctx.arc(4,4,3,0,Math.PI*2); ctx.fill(); }) };
-    GFX.hazards = {
-        spill: c(16,16, ctx => {
-            ctx.fillStyle = '#16a34a';
-            ctx.beginPath();
-            ctx.ellipse(8,9,7,5,0,0,Math.PI*2);
-            ctx.fill();
-            ctx.fillStyle = '#22c55e';
-            ctx.beginPath();
-            ctx.ellipse(6,7,4,3,0,0,Math.PI*2);
-            ctx.fill();
-            ctx.fillStyle = '#bbf7d0';
-            ctx.fillRect(9,10,3,2);
-        }),
-        box: c(16,16, ctx => {
-            ctx.fillStyle = '#a16207';
-            ctx.fillRect(2,3,12,10);
-            ctx.fillStyle = '#ca8a04';
-            ctx.fillRect(2,7,12,2);
-            ctx.fillStyle = '#fbbf24';
-            ctx.fillRect(2,5,12,2);
-            ctx.fillStyle = '#0ea5e9';
-            ctx.fillRect(5,9,6,2);
-            ctx.fillStyle = '#111';
-            ctx.fillRect(7,4,2,2);
-        }),
-        drum: c(16,16, ctx => {
-            ctx.fillStyle = '#1d4ed8';
-            ctx.fillRect(4,2,8,12);
-            ctx.fillStyle = '#3b82f6';
-            ctx.fillRect(4,4,8,2);
-            ctx.fillRect(4,10,8,2);
-            ctx.fillStyle = '#f87171';
-            ctx.fillRect(6,7,4,3);
-            ctx.fillStyle = '#111';
-            ctx.fillRect(7,8,2,1);
-        }),
-        tall_pallet: c(16,16, ctx => {
-            ctx.fillStyle = '#d97706';
-            ctx.fillRect(3,1,10,14);
-            ctx.fillStyle = '#ea580c';
-            ctx.fillRect(4,3,8,2);
-            ctx.fillRect(4,7,8,2);
-            ctx.fillRect(4,11,8,2);
-            ctx.fillStyle = '#f59e0b';
-            ctx.fillRect(3,14,10,1);
-        }),
-        debris: c(16,16, ctx => {
-            ctx.save();
-            ctx.fillStyle = '#92400e';
-            ctx.translate(8,8);
-            ctx.rotate(0.4);
-            ctx.fillRect(-7,-2,14,4);
-            ctx.fillStyle = '#f97316';
-            ctx.fillRect(-2,-2,3,4);
-            ctx.restore();
-        }),
-        jack: c(16,16, ctx => {
-            ctx.fillStyle = '#e11d48';
-            ctx.fillRect(2,9,12,3);
-            ctx.fillStyle = '#fca5a5';
-            ctx.fillRect(4,8,8,2);
-            ctx.fillStyle = '#111';
-            ctx.fillRect(6,4,2,5);
-            ctx.fillRect(8,4,2,5);
-            ctx.fillRect(3,11,2,3);
-            ctx.fillRect(11,11,2,3);
-        }),
-        conveyor: c(16,16, ctx => {
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(1,6,14,5);
-            ctx.fillStyle = '#1e293b';
-            ctx.fillRect(2,7,12,3);
-            ctx.fillStyle = '#94a3b8';
-            ctx.fillRect(2,5,3,2);
-            ctx.fillRect(11,5,3,2);
-            ctx.fillStyle = '#ef4444';
-            ctx.fillRect(7,6,2,5);
-        }),
-        battery: c(16,16, ctx => {
-            ctx.fillStyle = '#1f2937';
-            ctx.fillRect(3,4,10,8);
-            ctx.fillStyle = '#facc15';
-            ctx.fillRect(5,3,2,2);
-            ctx.fillRect(9,3,2,2);
-            ctx.fillStyle = '#34d399';
-            ctx.beginPath();
-            ctx.arc(8,12,4,Math.PI,Math.PI*2);
-            ctx.fill();
-            ctx.fillStyle = '#bbf7d0';
-            ctx.fillRect(6,11,4,1);
-        }),
-        cord: c(16,16, ctx => {
-            ctx.strokeStyle = '#facc15';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(2,2);
-            ctx.bezierCurveTo(8,6,10,2,14,6);
-            ctx.stroke();
-            ctx.fillStyle = '#111827';
-            ctx.fillRect(11,6,3,6);
-        }),
-        tote: c(16,16, ctx => {
-            ctx.fillStyle = '#1d4ed8';
-            ctx.fillRect(2,6,12,6);
-            ctx.fillStyle = '#2563eb';
-            ctx.fillRect(2,4,12,3);
-            ctx.fillStyle = '#60a5fa';
-            ctx.fillRect(3,7,10,2);
-            ctx.fillStyle = '#0ea5e9';
-            ctx.fillRect(6,9,4,3);
-        }),
-        wrap: c(16,16, ctx => {
-            ctx.fillStyle = '#e5e7eb';
-            ctx.beginPath();
-            ctx.moveTo(3,4);
-            ctx.lineTo(13,6);
-            ctx.lineTo(4,12);
-            ctx.lineTo(12,14);
-            ctx.fill();
-            ctx.fillStyle = '#9ca3af';
-            ctx.fillRect(5,6,6,2);
-        })
+   GFX.hazards = {
+    // --- Liquids / Spills ---
+    spill: c(16,16, ctx => {
+        // dark base
+        ctx.fillStyle = '#15803d';
+        ctx.beginPath();
+        ctx.ellipse(8,10,7,5,0,0,Math.PI*2);
+        ctx.fill();
+        // main puddle
+        ctx.fillStyle = '#16a34a';
+        ctx.beginPath();
+        ctx.ellipse(8,9,6,4,0,0,Math.PI*2);
+        ctx.fill();
+        // highlight
+        ctx.fillStyle = '#22c55e';
+        ctx.beginPath();
+        ctx.ellipse(6,7,3.5,2.5,0,0,Math.PI*2);
+        ctx.fill();
+        // shiny reflection
+        ctx.fillStyle = '#bbf7d0';
+        ctx.fillRect(9,10,3,2);
+    }),
+
+    // --- Boxes / Generic obstacles ---
+    box: c(16,16, ctx => {
+        // shadow
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(1,5,14,9);
+        // front face
+        ctx.fillStyle = '#a16207';
+        ctx.fillRect(2,4,12,9);
+        // top flap layers
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(2,3,12,2);
+        ctx.fillStyle = '#ca8a04';
+        ctx.fillRect(2,5,12,1);
+        // tape
+        ctx.fillStyle = '#0ea5e9';
+        ctx.fillRect(5,8,6,2);
+        // label
+        ctx.fillStyle = '#111';
+        ctx.fillRect(7,6,2,2);
+    }),
+
+    // --- Chemical drum / unlabeled chem ---
+    drum: c(16,16, ctx => {
+        // body
+        ctx.fillStyle = '#1d4ed8';
+        ctx.fillRect(4,3,8,10);
+        // top ellipse
+        ctx.fillStyle = '#3b82f6';
+        ctx.beginPath();
+        ctx.ellipse(8,3,4,2,0,0,Math.PI*2);
+        ctx.fill();
+        // bands
+        ctx.fillRect(4,6,8,2);
+        ctx.fillRect(4,10,8,2);
+        // hazard label
+        ctx.fillStyle = '#f97373';
+        ctx.fillRect(6,7,4,3);
+        ctx.fillStyle = '#111';
+        ctx.fillRect(7,8,2,1);
+    }),
+
+    // --- Tall pallet stacks ---
+    tall_pallet: c(16,16, ctx => {
+        // main stack
+        ctx.fillStyle = '#d97706';
+        ctx.fillRect(3,1,10,13);
+        // box layers
+        ctx.fillStyle = '#ea580c';
+        ctx.fillRect(4,2,8,2);
+        ctx.fillRect(4,6,8,2);
+        ctx.fillRect(4,10,8,2);
+        // vertical slats
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(5,1,1,13);
+        ctx.fillRect(10,1,1,13);
+        // pallet base
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(3,14,10,1);
+    }),
+
+    // --- Debris / broken pallets ---
+    debris: c(16,16, ctx => {
+        ctx.save();
+        ctx.translate(8,9);
+        ctx.rotate(0.4);
+        // main plank
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(-7,-2,14,4);
+        // broken edge
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(-3,-2,3,4);
+        ctx.restore();
+
+        // extra small chunks
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(3,12,2,2);
+        ctx.fillRect(11,11,2,2);
+    }),
+
+    // --- Pallet jack / pump truck ---
+    jack: c(16,16, ctx => {
+        // base
+        ctx.fillStyle = '#e11d48';
+        ctx.fillRect(2,9,12,3);
+        ctx.fillStyle = '#fca5a5';
+        ctx.fillRect(4,8,8,2);
+        // handle
+        ctx.strokeStyle = '#111';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(5,8);
+        ctx.lineTo(5,4);
+        ctx.lineTo(8,3);
+        ctx.stroke();
+        // wheels
+        ctx.fillStyle = '#111';
+        ctx.fillRect(3,11,3,3);
+        ctx.fillRect(10,11,3,3);
+    }),
+
+    // --- Conveyor / chute ---
+    conveyor: c(16,16, ctx => {
+        // frame
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(1,5,14,7);
+        // belt
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(2,6,12,5);
+        // rollers
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(2,5,3,2);
+        ctx.fillRect(11,5,3,2);
+        // package jam indicator
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(7,6,2,4);
+        // tiny package on top
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(6,4,4,2);
+    }),
+
+    // --- Batteries / acid trail ---
+    battery: c(16,16, ctx => {
+        // body
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(3,5,10,7);
+        // terminals
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(5,4,2,2);
+        ctx.fillRect(9,4,2,2);
+        // lightning symbol
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.moveTo(8,6);
+        ctx.lineTo(6,10);
+        ctx.lineTo(8,10);
+        ctx.lineTo(7,13);
+        ctx.lineTo(10,9);
+        ctx.lineTo(8,9);
+        ctx.closePath();
+        ctx.fill();
+        // leak puddle
+        ctx.fillStyle = '#34d399';
+        ctx.beginPath();
+        ctx.arc(8,13,4,Math.PI,Math.PI*2);
+        ctx.fill();
+    }),
+
+    // --- Cords / cables / scanner ---
+    cord: c(16,16, ctx => {
+        // curly cable
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(2,3);
+        ctx.bezierCurveTo(6,7,10,1,14,6);
+        ctx.stroke();
+        // plug body
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(10,6,4,5);
+        // prongs
+        ctx.fillStyle = '#e5e7eb';
+        ctx.fillRect(11,11,1,2);
+        ctx.fillRect(13,11,1,2);
+    }),
+
+    // --- Tote / bin ---
+    tote: c(16,16, ctx => {
+        // body
+        ctx.fillStyle = '#1d4ed8';
+        ctx.fillRect(2,6,12,7);
+        // rim
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(2,4,12,3);
+        // inner line
+        ctx.fillStyle = '#60a5fa';
+        ctx.fillRect(3,7,10,2);
+        // label
+        ctx.fillStyle = '#0ea5e9';
+        ctx.fillRect(6,9,4,3);
+        // handles
+        ctx.fillStyle = '#bfdbfe';
+        ctx.fillRect(3,5,2,1);
+        ctx.fillRect(11,5,2,1);
+    }),
+
+    // --- Stretch wrap / loose foil ---
+    wrap: c(16,16, ctx => {
+        // main crumpled foil
+        ctx.fillStyle = '#e5e7eb';
+        ctx.beginPath();
+        ctx.moveTo(3,4);
+        ctx.lineTo(13,6);
+        ctx.lineTo(10,13);
+        ctx.lineTo(4,12);
+        ctx.closePath();
+        ctx.fill();
+        // tension stripe
+        ctx.fillStyle = '#9ca3af';
+        ctx.fillRect(5,6,6,2);
+        // torn edge
+        ctx.fillStyle = '#d1d5db';
+        ctx.fillRect(8,11,3,2);
+    }),
+
+    // --- Roller cage / cart cage ---
+    cage: c(16,16, ctx => {
+        // frame
+        ctx.fillStyle = '#4b5563';
+        ctx.fillRect(3,2,10,11);
+        // bars
+        ctx.fillStyle = '#9ca3af';
+        for (let x = 4; x <= 11; x += 2) {
+            ctx.fillRect(x,3,1,9);
+        }
+        ctx.fillRect(3,6,10,1);
+        ctx.fillRect(3,9,10,1);
+        // wheels
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(4,13,3,2);
+        ctx.fillRect(9,13,3,2);
+    }),
+
+    // --- Flat cart / blue cart ---
+    cart: c(16,16, ctx => {
+        // platform
+        ctx.fillStyle = '#1d4ed8';
+        ctx.fillRect(2,9,12,3);
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(2,8,12,2);
+        // handle
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(3,4,2,4);
+        ctx.fillRect(3,4,8,2);
+        // wheels
+        ctx.fillStyle = '#111';
+        ctx.fillRect(3,12,3,3);
+        ctx.fillRect(10,12,3,3);
+    }),
+
+    // --- Fire door + wedge hazard ---
+    door: c(16,16, ctx => {
+        // door leaf
+        ctx.fillStyle = '#e5e7eb';
+        ctx.fillRect(4,2,8,12);
+        // frame
+        ctx.strokeStyle = '#9ca3af';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(4.5,2.5,7,11);
+        // push bar
+        ctx.fillStyle = '#64748b';
+        ctx.fillRect(6,8,4,1);
+        // wedge
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.moveTo(5,14);
+        ctx.lineTo(8,14);
+        ctx.lineTo(8,12);
+        ctx.closePath();
+        ctx.fill();
+    }),
+
+    // --- Dock area / dock plate ---
+    dock: c(16,16, ctx => {
+        // pit
+        ctx.fillStyle = '#020617';
+        ctx.fillRect(2,6,12,7);
+        // plate
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(3,7,10,5);
+        // yellow safety edge
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(3,7,10,1);
+        ctx.fillRect(3,11,10,1);
+        // warning stripes
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(3,5,3,1);
+        ctx.fillRect(10,5,3,1);
+    }),
+
+    // --- General facility hazard (bollard, column, etc.) ---
+    facility: c(16,16, ctx => {
+        // column
+        ctx.fillStyle = '#e5e7eb';
+        ctx.fillRect(6,2,4,11);
+        // yellow/black stripes
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(5,9,6,4);
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(5,10,6,1);
+        ctx.fillRect(5,12,6,1);
+        // small crack
+        ctx.fillStyle = '#9ca3af';
+        ctx.fillRect(7,5,2,1);
+    }),
+
+    // --- NPC / associate ---
+    npc: c(16,16, ctx => {
+        // head
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.arc(8,4,3,0,Math.PI*2);
+        ctx.fill();
+        // body (vest)
+        ctx.fillStyle = '#0ea5e9';
+        ctx.fillRect(5,7,6,6);
+        // hi-vis stripes
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(5,8,6,1);
+        ctx.fillRect(5,10,6,1);
+        // legs
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(5,13,2,2);
+        ctx.fillRect(9,13,2,2);
+    }),
+
+    // --- Forklift / FLT ---
+    forklift: c(16,16, ctx => {
+        // body
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(4,7,7,5);
+        // cabin
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(4,5,5,3);
+        ctx.fillStyle = '#e5e7eb';
+        ctx.fillRect(5,6,3,2);
+        // mast
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(10,3,2,9);
+        // forks
+        ctx.fillRect(11,11,3,1);
+        ctx.fillRect(11,12,3,1);
+        // wheels
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(4,11,3,3);
+        ctx.fillRect(8,11,3,3);
+    }),
+
+    // --- Yard / van area ---
+    yard: c(16,16, ctx => {
+        // road
+        ctx.fillStyle = '#020617';
+        ctx.fillRect(1,4,14,10);
+        // lane markings
+        ctx.fillStyle = '#e5e7eb';
+        ctx.fillRect(4,9,2,1);
+        ctx.fillRect(7,9,2,1);
+        ctx.fillRect(10,9,2,1);
+        // van silhouette
+        ctx.fillStyle = '#1d4ed8';
+        ctx.fillRect(4,5,8,4);
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(5,6,6,2);
+        // wheels
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(5,9,2,2);
+        ctx.fillRect(9,9,2,2);
+    }),
+
+    // --- Compliance / documentation / SIR spike ---
+    compliance: c(16,16, ctx => {
+        // paper sheet
+        ctx.fillStyle = '#e5e7eb';
+        ctx.fillRect(4,2,8,12);
+        // folded corner
+        ctx.fillStyle = '#cbd5f5';
+        ctx.fillRect(9,2,3,3);
+        // lines
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(5,5,6,1);
+        ctx.fillRect(5,7,5,1);
+        ctx.fillRect(5,9,4,1);
+        // exclamation mark
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(8,10,1,3);
+        ctx.fillRect(8,14,1,1);
+    }),
+
+    // --- Box cutter / blade hazard ---
+    blade: c(16,16, ctx => {
+        // handle
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(3,7,8,4);
+        // grip
+        ctx.fillStyle = '#b91c1c';
+        ctx.fillRect(4,8,2,2);
+        // blade
+        ctx.fillStyle = '#e5e7eb';
+        ctx.fillRect(10,8,4,2);
+        // blade edge line
+        ctx.fillStyle = '#9ca3af';
+        ctx.fillRect(11,9,3,1);
+    })
+};
     };
     GFX.door = c(16,16, ctx => { ctx.fillStyle = '#16a34a'; ctx.fillRect(2,2,12,14); ctx.fillStyle='#fff'; ctx.fillRect(3,4,10,2); });
     GFX.floor = c(16,16, ctx => { ctx.fillStyle = '#4a4a4a'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#404040'; ctx.fillRect(0,15,16,1); });
@@ -792,26 +1086,87 @@ const GAME = {
 };
 
 const HAZARD_POOL = [
-    { name: "Chem Spill", type: "spill" },
-    { name: "Leaking Battery Cart", type: "battery" },
-    { name: "Abandoned Pallet Jack", type: "jack" },
-    { name: "Loose Stretch Wrap", type: "wrap" },
-    { name: "Broken Conveyor Guard", type: "conveyor" },
-    { name: "Tote Avalanche", type: "tote" },
-    { name: "Dangling Scanner Cord", type: "cord" },
-    { name: "Unstable Stack", type: "tall_pallet" },
-    { name: "Pallet Debris", type: "debris" },
-    { name: "Blocked Extinguisher", type: "box" },
-    { name: "Forklift Drip", type: "spill" },
-    { name: "Loose Pallet Nails", type: "debris" },
-    { name: "Unlabeled Chem", type: "drum" },
-    { name: "Spilled Beans", type: "spill" },
-    { name: "Bad Pallet", type: "box" },
-    { name: "Broken Glass", type: "spill" },
-    { name: "Stray Tote", type: "tote" },
-    { name: "Damaged Rack Beam", type: "tall_pallet" },
-    { name: "Battery Acid Trail", type: "battery" },
-    { name: "Overstuffed Gaylord", type: "box" }
+    { name: "Runaway Roller Cage", type: "cage" },
+    { name: "Rogue Blue Cart", type: "cart" },
+    { name: "Mysterious Wet Spot", type: "spill" },
+    { name: "Leaking Ice Pack", type: "spill" },
+    { name: "Misplaced Fire Door Wedge", type: "door" },
+    { name: "Unplugged Dock Plate Sensor", type: "dock" },
+    { name: "Crumbling Pallet Kingdom", type: "tall_pallet" },
+    { name: "Jammed Chute Monster", type: "conveyor" },
+    { name: "DIY Stair Railing", type: "facility" },
+    { name: "Slippery Floor Tape", type: "spill" },
+    
+    // Funny but realistic WHS chaos
+    { name: "Coffee Lake at Standup", type: "spill" },
+    { name: "Mysterious Lunchbox Leak", type: "spill" },
+    { name: "The Legendary Flying Tote", type: "tote" },
+    { name: "Forbidden Pallet Tower of Vienna", type: "tall_pallet" },
+    { name: "Beeping Scanner of Doom", type: "cord" },
+    { name: "Random Orange Cone", type: "facility" },
+    { name: "Breakroom Soup Catastrophe", type: "spill" },
+    { name: "Sweaty Floor From Peak Shift", type: "spill" },
+    
+    // Real-life Amazon classics
+    { name: "DSP Van Oil Drip", type: "spill" },
+    { name: "On-Road Safety Cone Family", type: "facility" },
+    { name: "Fallen Exit Sign", type: "facility" },
+    { name: "Poorly Parked Pump Truck", type: "jack" },
+    { name: "Stray Shipping Label", type: "debris" },
+    { name: "Half-Dead Emergency Light", type: "facility" },
+    { name: "Box with Surprises (Unknown Contents)", type: "box" },
+    { name: "Missing Bollard Protector", type: "facility" },
+    { name: "Frayed Box Cutter Lanyard", type: "cord" },
+    { name: "Untrained Pallet Jack Driver", type: "jack" },
+    
+    // Peak Season specials
+    { name: "Gift Wrap Glitter Spill", type: "spill" },
+    { name: "Overfilled Holiday Tote", type: "tote" },
+    { name: "Candy Cane Slippage Hazard", type: "spill" },
+    { name: "Runaway Santa Sweater Fibers", type: "debris" },
+
+    // NPC-related hazards
+    { name: "Associate Napping Behind Gaylord", type: "npc" },
+    { name: "Speedwalking Manager", type: "npc" },
+    { name: "New Hire in Wrong Area", type: "npc" },
+    { name: "Stower Dancing to Headphones", type: "npc" },
+    { name: "Driver With 8 Empty Coffee Cups", type: "npc" },
+
+    // Funny DS chaos
+    { name: "Unexplained Forklift Beeping", type: "forklift" },
+    { name: "Van Driver Doing a 27-Point Turn", type: "yard" },
+    { name: "Dock Door That Won’t Stay Open", type: "dock" },
+    { name: "Dock Door That Won’t Stay Closed", type: "dock" },
+    { name: "Leaning Tower of Mis-Sorted Packages", type: "tall_pallet" },
+    { name: "Bag of Air Pillows on the Loose", type: "debris" },
+    { name: "Crushed Amazon Fresh Bag", type: "spill" },
+    { name: "Open Knife Left on Cart", type: "blade" },
+    { name: "Bermuda Triangle of Missing Totes", type: "tote" },
+
+    // Tech weirdness
+    { name: "Glitching Voice Pick Headset", type: "cord" },
+    { name: "Scanner That Randomly Reboots", type: "cord" },
+    { name: "Mystery Bluetooth Interference", type: "cord" },
+
+    // High comedy hazards
+    { name: "Associate Riding Pallet Jack Like Scooter", type: "jack" },
+    { name: "Box Labelled 'Definitely Not Dangerous'", type: "box" },
+    { name: "Stack Held Together by Hope", type: "tall_pallet" },
+    { name: "Employee Who Thinks He’s Faster Than Conveyor", type: "npc" },
+    { name: "The Forbidden Shortcut", type: "facility" },
+    { name: "Random Banana Peel", type: "spill" },
+
+    // Yard area special for your yard music level
+    { name: "Leaking Coolant from DSP Van", type: "spill" },
+    { name: "Loose Yard Sign Flapping Menacingly", type: "facility" },
+    { name: "Stray Wheel Chock", type: "debris" },
+    { name: "Wet Leaves From Delivery Vans", type: "spill" },
+    { name: "Van Door Hinge Failure", type: "yard" },
+
+    // Simon Unglaube tribute hazards (WHS manager boss fight)
+    { name: "SIR Spike on Whiteboard", type: "compliance" },
+    { name: "Outdated Risk Assessment", type: "compliance" },
+    { name: "Unapproved Process Change", type: "compliance" },
 ];
 
 function shuffleArray(arr) {
