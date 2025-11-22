@@ -397,6 +397,8 @@ const ctx = canvas.getContext('2d');
 const TILE_SIZE = 16;
 const MAP_W = 60;
 const MAP_H = 40;
+const YARD_W = 256;
+const YARD_H = 224;
 
 // --- TTS SYSTEM ---
 const TTSSys = {
@@ -633,6 +635,18 @@ function generateAssets() {
     GFX.book = c(8,8, ctx => { ctx.fillStyle = '#fff'; ctx.fillRect(0,0,8,8); ctx.fillStyle='green'; ctx.fillRect(2,2,4,4); });
     GFX.req = c(10,10, ctx => { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(5,0); ctx.lineTo(10,5); ctx.lineTo(5,10); ctx.lineTo(0,5); ctx.fill(); ctx.fillStyle='red'; ctx.font='8px sans'; ctx.fillText("!",3,8); });
     GFX.bossProj = c(12,12, ctx => { ctx.fillStyle = '#ff00ff'; ctx.beginPath(); ctx.arc(6,6,5,0,Math.PI*2); ctx.fill(); });
+    GFX.van = c(28,12, ctx => {
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(0,2,28,8);
+        ctx.fillStyle = '#fff'; ctx.fillRect(4,4,10,4);
+        ctx.fillStyle = '#111827'; ctx.fillRect(2,9,24,2);
+        ctx.fillStyle = '#f97316'; ctx.fillRect(18,4,6,4);
+    });
+    GFX.truck = c(34,14, ctx => {
+        ctx.fillStyle = '#9ca3af'; ctx.fillRect(0,3,34,8);
+        ctx.fillStyle = '#e5e7eb'; ctx.fillRect(4,5,12,4);
+        ctx.fillStyle = '#111827'; ctx.fillRect(2,10,30,3);
+        ctx.fillStyle = '#facc15'; ctx.fillRect(22,5,8,4);
+    });
 }
 
 // --- GAME STATE ---
@@ -648,8 +662,9 @@ const GAME = {
     camera: { x: 0, y: 0 },
     map: [], clutter: [], entities: [], projectiles: [], particles: [], floatingTexts: [],
     activeIssues: [],
+    yard: null,
     issuesFixed: 0, lives: 5, genId: 0, gameOverTriggered: false, simonHits: 0, boss: null,
-    shake: 0, flash: 0, 
+    shake: 0, flash: 0,
     dialogText: "", dialogVisible: "", dialogTimer: 0,
     splashTimer: 0, aiResultText: null,
     startTime: 0, booksFired: 0, opsPushed: 0,
@@ -702,6 +717,8 @@ function handleAction() {
             GAME.dialogVisible = GAME.dialogText; document.getElementById('text-content').innerText = GAME.dialogVisible;
         } else { closeDialog(); }
     }
+    else if (GAME.state === 'YARD_INTRO') { GAME.state = 'YARD_PLAY'; updateMusicForState(); }
+    else if (GAME.state === 'YARD_PLAY') { /* no action key use */ }
     else if (GAME.state === 'BOSS_INTRO') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
     else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') { 
         document.getElementById('boss-hud').style.display = 'none'; GAME.state = 'TITLE'; updateMusicForState();
@@ -811,11 +828,80 @@ function initSimonBoss() {
 
 function initBossEncounter() {
     GAME.state = 'BOSS_INTRO';
-    AudioSys.sfx.bossIntro(); 
+    AudioSys.sfx.bossIntro();
     const bossData = GAME.bossTypes[Math.floor(Math.random() * GAME.bossTypes.length)];
     GAME.boss = { ...bossData, x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, w: 32, h: 32, maxHp: bossData.hp, timer: 0, tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25] };
     GAME.entities = []; GAME.projectiles = [];
     updateMusicForState();
+}
+
+function initYardLevel() {
+    GAME.yard = {
+        player: { x: YARD_W / 2 - 8, y: YARD_H - 28, w: 16, h: 16, speed: 1.6 },
+        vehicles: [],
+        lanes: [
+            { y: 60, dir: 1, speed: 1.2, rate: 120, offset: 0, type: 'van' },
+            { y: 90, dir: -1, speed: 1.5, rate: 110, offset: 40, type: 'truck' },
+            { y: 120, dir: 1, speed: 1.8, rate: 90, offset: 70, type: 'van' },
+            { y: 150, dir: -1, speed: 1.4, rate: 100, offset: 10, type: 'truck' },
+            { y: 180, dir: 1, speed: 1.6, rate: 105, offset: 20, type: 'van' }
+        ],
+        goalY: 18,
+        lives: 3,
+        complete: false
+    };
+    GAME.state = 'YARD_INTRO';
+    GAME.nextState = 'YARD_PLAY';
+    GAME.stateTimer = 0;
+    GAME.shake = 0; GAME.flash = 0;
+    document.getElementById('hud-layer').style.display = 'none';
+    document.getElementById('boss-hud').style.display = 'none';
+    updateMusicForState();
+}
+
+function updateYard() {
+    if (!GAME.yard) return;
+    const p = GAME.yard.player;
+    if (KEYS.up) p.y -= p.speed; if (KEYS.down) p.y += p.speed; if (KEYS.left) p.x -= p.speed; if (KEYS.right) p.x += p.speed;
+    p.x = Math.max(6, Math.min(YARD_W - p.w - 6, p.x));
+    p.y = Math.max(10, Math.min(YARD_H - p.h - 4, p.y));
+
+    GAME.yard.lanes.forEach(l => {
+        l.timer = (typeof l.timer === 'number' ? l.timer : (l.offset || 0)) - 1;
+        if (l.timer <= 0) {
+            const sprite = l.type === 'truck' ? GFX.truck : GFX.van;
+            const w = sprite.width;
+            const h = sprite.height;
+            const startX = l.dir > 0 ? -w : YARD_W;
+            GAME.yard.vehicles.push({ x: startX, y: l.y, w, h, dir: l.dir, speed: l.speed, type: l.type });
+            l.timer = l.rate + Math.random() * 40;
+        }
+    });
+
+    GAME.yard.vehicles.forEach(v => { v.x += v.speed * v.dir; });
+    GAME.yard.vehicles = GAME.yard.vehicles.filter(v => v.x > -v.w - 10 && v.x < YARD_W + 10);
+
+    for (const v of GAME.yard.vehicles) {
+        if (p.x < v.x + v.w && p.x + p.w > v.x && p.y < v.y + v.h && p.y + p.h > v.y) {
+            AudioSys.sfx.hit(); GAME.shake = 6; GAME.flash = 4; GAME.yard.lives = Math.max(0, GAME.yard.lives - 1);
+            p.x = YARD_W / 2 - 8; p.y = YARD_H - 28; break;
+        }
+    }
+
+    if (GAME.yard.lives <= 0 && GAME.state !== 'DIALOG') {
+        GAME.state = 'DIALOG';
+        GAME.nextState = 'TITLE';
+        showDialog("Too many near misses in the yard. Back to training.", "Simon", GFX.simonFace, false);
+        return;
+    }
+
+    if (p.y <= GAME.yard.goalY && !GAME.yard.complete) {
+        GAME.yard.complete = true;
+        GAME.state = 'DIALOG';
+        GAME.nextState = 'TITLE';
+        const msg = "You braved the vans. I needed to tell you: keep walking pace, even when Ops rushes.";
+        showDialog(msg, "Simon", GFX.simonFace, false);
+    }
 }
 
 function update() {
@@ -837,7 +923,7 @@ function update() {
             let header = isWin ? `OUTSTANDING!\n"${finalText}"\n` : `AUDIT FAILED\n"${finalText}"\n`;
             let stats = `\nStats:\nTime Spent: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nSafety Rules used: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`;
             showDialog(header + stats, speaker, GFX.simonFace, true);
-            GAME.state = 'DIALOG'; GAME.nextState = 'TITLE';
+            GAME.state = 'DIALOG'; GAME.nextState = isWin ? 'YARD_INTRO' : 'TITLE';
         } else if (!ready && GAME.splashTimer <= fallbackTimer) {
             GAME.aiResultText = 'System could not load live review. Using cached performance log.';
         }
@@ -869,7 +955,7 @@ function update() {
         return;
     }
 
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO'].includes(GAME.state)) return;
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'YARD_INTRO'].includes(GAME.state)) return;
 
     if (GAME.state === 'PLAY' || GAME.state === 'BOSS') {
         updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts(); updateCamera();
@@ -877,6 +963,7 @@ function update() {
 
     if (GAME.state === 'PLAY') updateEntities();
     if (GAME.state === 'BOSS') updateBoss();
+    if (GAME.state === 'YARD_PLAY') updateYard();
 }
 
 function updatePlayer() {
@@ -1166,7 +1253,7 @@ function triggerGameOver(reason) {
 }
 
 function winGame() {
-    AudioSys.sfx.start(); MusicSys.play('victory'); GAME.nextState = 'TITLE'; GAME.state = 'WIN_SPLASH'; GAME.splashTimer = 260; GAME.aiResultText = null; GAME.stateTimer = 0;
+    AudioSys.sfx.start(); MusicSys.play('victory'); GAME.nextState = 'YARD_INTRO'; GAME.state = 'WIN_SPLASH'; GAME.splashTimer = 260; GAME.aiResultText = null; GAME.stateTimer = 0;
     document.getElementById('boss-hud').style.display = 'none'; document.getElementById('dialog-box').style.display = 'none';
     document.getElementById('hud-layer').style.display = 'none';
     const currentGen = GAME.genId; const time = Math.floor((Date.now() - GAME.startTime)/1000);
@@ -1222,6 +1309,7 @@ function showThinking(speaker, portrait) {
 
 function closeDialog() {
     TTSSys.cancel(); AudioSys.sfx.step(); document.getElementById('dialog-box').style.display = 'none';
+    if (GAME.nextState === 'YARD_INTRO') { initYardLevel(); return; }
     GAME.state = GAME.nextState; if (GAME.state === 'PLAY' && GAME.issuesFixed >= 5 && !GAME.boss) initBossEncounter();
     updateMusicForState();
 }
@@ -1229,7 +1317,7 @@ function closeDialog() {
 function updateMusicForState() {
     if (['LOGO', 'INTRO', 'STORY', 'TITLE'].includes(GAME.state)) MusicSys.play('title');
     else if (['HOWTO', 'SELECT'].includes(GAME.state)) MusicSys.play('menu');
-    else if (GAME.state === 'PLAY') MusicSys.play('ingame');
+    else if (GAME.state === 'PLAY' || GAME.state === 'YARD_INTRO' || GAME.state === 'YARD_PLAY') MusicSys.play('ingame');
     else if (GAME.state === 'BOSS' || GAME.state === 'BOSS_INTRO') MusicSys.play('boss');
 }
 
@@ -1294,6 +1382,46 @@ function drawSnesSplash(isWin) {
     ctx.textAlign = 'start';
 }
 
+function drawYardScene(showIntro) {
+    ctx.fillStyle = '#0b1021'; ctx.fillRect(0,0,canvas.width, canvas.height);
+    ctx.fillStyle = '#1f2937'; ctx.fillRect(0, 30, canvas.width, canvas.height - 60);
+    ctx.fillStyle = '#111827'; ctx.fillRect(0, 28, canvas.width, 2); ctx.fillRect(0, canvas.height - 30, canvas.width, 2);
+
+    for (let y = 50; y < canvas.height - 40; y += 30) {
+        ctx.fillStyle = '#0b1323'; ctx.fillRect(0, y, canvas.width, 20);
+        for (let x = 0; x < canvas.width; x += 32) {
+            ctx.fillStyle = '#fef3c7'; ctx.fillRect(x + 8, y + 9, 12, 3);
+        }
+    }
+
+    ctx.fillStyle = '#22c55e'; ctx.fillRect(0, 0, canvas.width, 24); ctx.fillRect(0, canvas.height - 24, canvas.width, 24);
+    ctx.fillStyle = '#14532d'; ctx.fillRect(0, 0, canvas.width, 6); ctx.fillRect(0, canvas.height - 6, canvas.width, 6);
+
+    if (GAME.yard) {
+        ctx.save(); ctx.imageSmoothingEnabled = false;
+        GAME.yard.vehicles.forEach(v => {
+            const sprite = v.type === 'truck' ? GFX.truck : GFX.van;
+            ctx.drawImage(sprite, Math.floor(v.x), Math.floor(v.y));
+        });
+        const p = GAME.yard.player;
+        ctx.drawImage(GFX.chars[GAME.selectedChar], Math.floor(p.x), Math.floor(p.y));
+        ctx.restore();
+
+        ctx.fillStyle = '#fff'; ctx.font = '8px monospace';
+        ctx.fillText(`YARD LIVES: ${'❤️'.repeat(Math.max(0, GAME.yard.lives)) || '0'}`, 8, 16);
+    }
+
+    if (showIntro) {
+        ctx.fillStyle = 'rgba(0,0,0,0.65)'; ctx.fillRect(12, 50, canvas.width-24, 120);
+        ctx.strokeStyle = '#eab308'; ctx.lineWidth = 2; ctx.strokeRect(14, 52, canvas.width-28, 116);
+        ctx.fillStyle = '#eab308'; ctx.font = '12px monospace'; ctx.fillText('AMZL YARD - CROSS QUICKLY', 24, 76);
+        ctx.fillStyle = '#fff'; ctx.font = '10px monospace';
+        ctx.fillText('Frogger style: dodge vans and trucks.', 24, 102);
+        ctx.fillText('Reach Simon on the far side.', 24, 116);
+        ctx.fillText('Move with arrows/WASD. Press Space to start.', 24, 136);
+    }
+}
+
 function draw() {
     if (GAME.state === 'LOSE_SPLASH') { drawSnesSplash(false); return; }
     if (GAME.state === 'WIN_SPLASH') { drawSnesSplash(true); return; }
@@ -1337,6 +1465,8 @@ function draw() {
         ctx.fillStyle='#eab308'; ctx.fillText("GOAL: FIND 5 HAZARDS", 20, 140); ctx.fillStyle='#aaa'; ctx.fillText("Then defeat the boss!", 20, 155);
         ctx.fillStyle='#fff'; ctx.fillText("[PRESS SPACE]", 80, 190); ctx.restore(); return;
     }
+    if (GAME.state === 'YARD_INTRO') { drawYardScene(true); ctx.restore(); return; }
+    if (GAME.state === 'YARD_PLAY') { drawYardScene(false); ctx.restore(); return; }
     if (GAME.state === 'SELECT') {
         const frameX = 14, frameY = 28, frameW = 228, frameH = 168;
         ctx.fillStyle = '#0a0a0a'; ctx.fillRect(frameX, frameY, frameW, frameH);
