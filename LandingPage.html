@@ -243,8 +243,8 @@
                         <div class="char-portrait" data-sprite="carrie"></div>
                         <div class="char-text">
                             <div class="char-role">The 5S Monk</div>
-                            <p class="char-desc">Can detect a piece of floor tape misaligned by 1mm from across the cluster. Uses meditation to tolerate Ops meetings.</p>
-                            <p class="char-stat">Weapon: The Label Maker</p>
+                            <p class="char-desc">Black-haired precision hawk. Spots crooked tape from 50 meters and keeps Ops chaos calm.</p>
+                            <p class="char-stat">Special: Label Maker Burst</p>
                         </div>
                     </div>
                 </div>
@@ -254,8 +254,8 @@
                         <div class="char-portrait" data-sprite="nevena"></div>
                         <div class="char-text">
                             <div class="char-role">The Worrier</div>
-                            <p class="char-desc">The Safety Oracle. She predicts accidents before they happen. Always carries emergency Palatschinken for stress eating.</p>
-                            <p class="char-stat">Weapon: The Clipboard of Doom</p>
+                            <p class="char-desc">Brown-haired safety oracle. Predicts mishaps, packs Palatschinken, and documents everything twice.</p>
+                            <p class="char-stat">Special: Clipboard Shockwave</p>
                         </div>
                     </div>
                 </div>
@@ -265,8 +265,8 @@
                         <div class="char-portrait" data-sprite="joao"></div>
                         <div class="char-text">
                             <div class="char-role">The Siren</div>
-                            <p class="char-desc">His voice is louder than the fire alarm. Associates hear his safety warnings in their dreams. Runs on pure espresso.</p>
-                            <p class="char-stat">Weapon: Sonic Shout</p>
+                            <p class="char-desc">Black-haired espresso cannon. His warnings cut through alarms and kick energy across the floor.</p>
+                            <p class="char-stat">Special: Sonic Shout</p>
                         </div>
                     </div>
                 </div>
@@ -276,8 +276,8 @@
                         <div class="char-portrait" data-sprite="roman"></div>
                         <div class="char-text">
                             <div class="char-role">The Ghost</div>
-                            <p class="char-desc">He is everywhere and nowhere. Hazards seem to fix themselves out of fear when he enters the room.</p>
-                            <p class="char-stat">Weapon: Stealth Audit</p>
+                            <p class="char-desc">Bald audit phantom. Appears, fixes, vanishes—hazards correct themselves when he is near.</p>
+                            <p class="char-stat">Special: Stealth Audit Pulse</p>
                         </div>
                     </div>
                 </div>
@@ -287,8 +287,8 @@
                         <div class="char-portrait" data-sprite="erwin"></div>
                         <div class="char-text">
                             <div class="char-role">WHS Manager</div>
-                            <p class="char-desc">Drifts into briefings inside a kid-sized Tesla Model 3. Claims it saves time and battery life. Floor tape fears his parking attempts.</p>
-                            <p class="char-stat">Move Speed: ⚡⚡ | Health: ❤️</p>
+                            <p class="char-desc">Black hair, beard, and a gray kid-sized Tesla. Slides into briefings faster than gossip spreads.</p>
+                            <p class="char-stat">Special: Tesla Drift</p>
                         </div>
                     </div>
                 </div>
@@ -579,49 +579,48 @@
     // --- 5. PIXEL PORTRAITS ---
     const spritePainters = {
         carrie: ctx => {
-            ctx.fillStyle = '#fcd34d'; ctx.fillRect(3,1,10,4); ctx.fillRect(2,3,2,8);
-            ctx.fillStyle = '#38bdf8'; ctx.fillRect(4,2,8,2);
-            ctx.fillStyle = '#ffcc99'; ctx.fillRect(5,5,6,5);
-            ctx.fillStyle = '#000'; ctx.fillRect(6,7,1,1); ctx.fillRect(9,7,1,1);
-            ctx.fillStyle = '#a855f7'; ctx.fillRect(3,10,10,6);
-            ctx.fillStyle = '#facc15'; ctx.fillRect(7,12,2,2);
-            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(2,1,12,5); ctx.fillRect(3,2,10,2); // black hair
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,6,6,5); // face
+            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); // eyes
+            ctx.fillStyle = '#22c55e'; ctx.fillRect(5,11,6,1); // headset band
+            ctx.fillStyle = '#a855f7'; ctx.fillRect(3,11,10,5); // robe
+            ctx.fillStyle = '#c4b5fd'; ctx.fillRect(7,12,2,2); // sash highlight
+            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1); // boots
         },
         nevena: ctx => {
-            ctx.fillStyle = '#1f2937'; ctx.fillRect(3,2,10,4); ctx.fillRect(2,4,2,6);
-            ctx.fillStyle = '#14b8a6'; ctx.fillRect(4,3,8,2);
-            ctx.fillStyle = '#f5c89a'; ctx.fillRect(5,6,6,5);
-            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1);
-            ctx.fillStyle = '#7f1d1d'; ctx.fillRect(3,11,10,5);
-            ctx.fillStyle = '#9ca3af'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2);
-            ctx.fillStyle = '#334155'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+            ctx.fillStyle = '#7c2d12'; ctx.fillRect(3,2,10,4); ctx.fillRect(2,3,2,5); // brown hair
+            ctx.fillStyle = '#f5c89a'; ctx.fillRect(5,6,6,5); // face
+            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); // eyes
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,3,8,2); // headband
+            ctx.fillStyle = '#7f1d1d'; ctx.fillRect(3,11,10,5); // jacket
+            ctx.fillStyle = '#eab308'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); // clipboard corners
+            ctx.fillStyle = '#334155'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // boots
         },
         joao: ctx => {
-            ctx.fillStyle = '#166534'; ctx.fillRect(4,1,8,3); ctx.fillRect(6,0,4,1);
-            ctx.fillStyle = '#f0a16b'; ctx.fillRect(5,4,6,5);
-            ctx.fillStyle = '#6b7280'; ctx.fillRect(4,9,8,1);
-            ctx.fillStyle = '#000'; ctx.fillRect(6,6,1,1); ctx.fillRect(9,6,1,1);
-            ctx.fillStyle = '#fb923c'; ctx.fillRect(3,10,10,6);
-            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2);
-            ctx.fillStyle = '#7c2d12'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(4,1,8,3); ctx.fillRect(6,0,4,1); // black hair
+            ctx.fillStyle = '#f0a16b'; ctx.fillRect(5,4,6,5); // face
+            ctx.fillStyle = '#000'; ctx.fillRect(6,6,1,1); ctx.fillRect(9,6,1,1); // eyes
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,9,8,1); // mic wire
+            ctx.fillStyle = '#fb923c'; ctx.fillRect(3,10,10,6); // vest
+            ctx.fillStyle = '#f97316'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); // armbands
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // shoes
         },
         roman: ctx => {
-            ctx.fillStyle = '#9ca3af'; ctx.fillRect(3,1,10,4); ctx.fillRect(2,3,2,5);
-            ctx.fillStyle = '#0f172a'; ctx.fillRect(4,3,8,3);
-            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,6,6,5);
-            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1);
-            ctx.fillStyle = '#1e293b'; ctx.fillRect(3,11,10,5);
-            ctx.fillStyle = '#e5e7eb'; ctx.fillRect(7,12,2,2);
-            ctx.fillStyle = '#0b1224'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,4,6,6); // bald head/face
+            ctx.fillStyle = '#000'; ctx.fillRect(6,7,1,1); ctx.fillRect(9,7,1,1); // eyes
+            ctx.fillStyle = '#1f2937'; ctx.fillRect(4,10,8,2); // collar shadow
+            ctx.fillStyle = '#111827'; ctx.fillRect(3,11,10,5); // stealth coat
+            ctx.fillStyle = '#94a3b8'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); // cuffs
+            ctx.fillStyle = '#0b1224'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1); // boots
         },
         erwin: ctx => {
-            ctx.fillStyle = '#111827'; ctx.fillRect(2,9,12,5); // Tesla body
+            ctx.fillStyle = '#6b7280'; ctx.fillRect(2,9,12,5); // Tesla body
             ctx.fillStyle = '#9ca3af'; ctx.fillRect(1,12,3,2); ctx.fillRect(12,12,3,2); // wheels
-            ctx.fillStyle = '#1f2937'; ctx.fillRect(3,8,10,2); // hood line
-            ctx.fillStyle = '#334155'; ctx.fillRect(4,10,8,2); // windshield
+            ctx.fillStyle = '#d1d5db'; ctx.fillRect(3,8,10,2); // hood line
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,10,8,2); // windshield
             ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,11,6,1); // dashboard glow
-            ctx.fillStyle = '#0f172a'; ctx.fillRect(5,5,6,3); // hair outline
-            ctx.fillStyle = '#000'; ctx.fillRect(6,6,4,2); // beard shadow
+            ctx.fillStyle = '#111827'; ctx.fillRect(5,4,6,3); // black hair
+            ctx.fillStyle = '#0b1224'; ctx.fillRect(6,6,4,2); // beard shadow
             ctx.fillStyle = '#f5d0a0'; ctx.fillRect(6,5,4,2); // face
             ctx.fillStyle = '#000'; ctx.fillRect(7,6,1,1); ctx.fillRect(9,6,1,1); // eyes
             ctx.fillStyle = '#eab308'; ctx.fillRect(6,7,4,1); // smile
