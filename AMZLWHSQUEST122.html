@@ -621,6 +621,30 @@ function generateAssets() {
     GFX.boss_jelly = c(16,16, ctx => { ctx.fillStyle = '#ec4899'; ctx.fillRect(3,1,10,5); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,5); ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); ctx.fillStyle = '#22c55e'; ctx.fillRect(3,10,10,6); ctx.fillStyle = '#f5f5f5'; ctx.fillRect(6,12,4,2); ctx.fillStyle = '#10b981'; ctx.fillRect(2,9,2,2); });
     GFX.boss_avetta = c(16,16, ctx => { ctx.fillStyle = '#0f172a'; ctx.fillRect(2,2,12,12); ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,3,10,10); ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,5,6,2); ctx.fillRect(5,9,6,2); ctx.fillStyle = '#34d399'; ctx.fillRect(4,7,8,1); ctx.fillStyle = '#fcd34d'; ctx.fillRect(7,6,2,4); });
     GFX.boss_bot = c(16,16, ctx => { ctx.fillStyle = '#475569'; ctx.fillRect(2,2,12,12); ctx.fillStyle = '#1e293b'; ctx.fillRect(3,3,10,2); ctx.fillStyle = '#7dd3fc'; ctx.fillRect(5,6,2,2); ctx.fillRect(9,6,2,2); ctx.fillStyle = '#22c55e'; ctx.fillRect(4,10,8,3); ctx.fillStyle = '#9ca3af'; ctx.fillRect(7,0,2,2); ctx.fillStyle = '#ef4444'; ctx.fillRect(7,12,2,2); });
+
+    const createBossPortrait = (spriteKey, borderColor = '#444') => c(64,64, ctx => {
+        ctx.imageSmoothingEnabled = false;
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, 0, 64, 64);
+        ctx.strokeStyle = '#222';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(2, 2, 60, 60);
+        if (GFX[spriteKey]) ctx.drawImage(GFX[spriteKey], 0, 0, 16, 16, 8, 8, 48, 48);
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(6, 6, 52, 52);
+    });
+
+    GFX.bossPortraits = {
+        boss_inspector: createBossPortrait('boss_inspector', '#facc15'),
+        boss_compliance: createBossPortrait('boss_compliance', '#22d3ee'),
+        boss_sebastian: createBossPortrait('boss_sebastian', '#f97316'),
+        boss_regional: createBossPortrait('boss_regional', '#c084fc'),
+        boss_avetta: createBossPortrait('boss_avetta', '#22c55e'),
+        boss_jelly: createBossPortrait('boss_jelly', '#ec4899'),
+        simonBoss: createBossPortrait('simonBoss', '#eab308'),
+        boss_manager: createBossPortrait('boss_manager', '#ef4444')
+    };
     GFX.assoc = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,5); });
     GFX.runner = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,5); ctx.fillStyle = '#fff'; ctx.fillRect(1, 12, 2, 1); ctx.fillRect(14, 10, 2, 1); });
     
@@ -1386,6 +1410,14 @@ function draw() {
         ctx.fillStyle = '#fff'; ctx.font = '8px monospace'; ctx.fillText(GAME.boss.title, 20, 110);
         ctx.fillStyle = '#888'; ctx.fillText(GAME.boss.desc, 20, 130);
         ctx.fillStyle = '#eab308'; ctx.fillText("ATTACK: " + GAME.boss.attackName, 20, 160);
+
+        const portraitKey = GAME.boss.name === 'MEGA SIMON' ? 'simonBoss' : GAME.boss.sprite;
+        const portrait = (GFX.bossPortraits && GFX.bossPortraits[portraitKey]) ? GFX.bossPortraits[portraitKey] : GFX.bossPortraits.boss_manager;
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(portrait, 160, 60);
+        ctx.restore();
+
         ctx.fillStyle = '#fff'; ctx.fillText("[PRESS SPACE TO FIGHT]", 50, 200); ctx.restore(); return;
     }
 
