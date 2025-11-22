@@ -169,12 +169,55 @@ const BANTER_DB = {
 
 // --- CHARACTER DATA ---
 const CHAR_DATA = {
-    "Carrie": { role: "Perfectionist Monk", backstory: "Meditates on 5S standards. Can spot a misaligned floor tape label from 50 meters away.", attack: "Zen Correction", speed: 1.5, lives: 5 },
-    "Nevena": { role: "The Worrier", backstory: "Always expects the worst case scenario. Makes legendary Palatschinken to calm her nerves.", attack: "Anxiety Blast", speed: 1.5, lives: 5 },
-    "Joao": { role: "Brazilian Fire", backstory: "Passionate, loud, and unstoppable. His safety shouts echo through the entire delivery station.", attack: "Samba Kick", speed: 1.5, lives: 5 },
-    "Roman": { role: "Silent Warrior", backstory: "A man of few words but many audits. He moves like a shadow and fixes hazards before they exist.", attack: "Stealth Audit", speed: 1.5, lives: 5 },
-    "Erwin": { role: "WHS Manager", backstory: "Rolls into shifts inside a kid-sized Tesla Model 3. Doubles speed, but the bumper is basically made of hope.", attack: "Electric Drift", speed: 3.0, lives: 1 }
+    "Carrie": {
+        role: "The 5S Monk",
+        backstory: "Black-haired precision hawk. Spots crooked tape from 50 meters and breathes calm into chaotic clusters.",
+        attack: "Label Maker Burst",
+        speed: 1.5,
+        lives: 5
+    },
+    "Nevena": {
+        role: "The Worrier",
+        backstory: "Brown-haired safety oracle. Predicts mishaps, carries emergency Palatschinken, and documents everything twice.",
+        attack: "Clipboard Shockwave",
+        speed: 1.5,
+        lives: 5
+    },
+    "Joao": {
+        role: "The Siren",
+        backstory: "Black-haired espresso cannon. His warnings ring louder than the fire alarm and kick energy through the floor.",
+        attack: "Sonic Shout",
+        speed: 1.5,
+        lives: 5
+    },
+    "Roman": {
+        role: "The Ghost",
+        backstory: "Bald audit phantom. Appears, fixes, vanishes. Hazards straighten themselves when he is near.",
+        attack: "Stealth Audit Pulse",
+        speed: 1.5,
+        lives: 5
+    },
+    "Erwin": {
+        role: "WHS Manager",
+        backstory: "Black-haired, bearded, and cruising a gray kid-sized Tesla. Slides into briefings faster than gossip spreads.",
+        attack: "Tesla Drift",
+        speed: 3.0,
+        lives: 1
+    }
 };
+
+const ATTACKS = {
+    "Carrie": { name: "Label Maker Burst", sprite: "attack_carrie", speed: 4.2, cooldown: 110, color: "#a855f7", text: "Aligned!" },
+    "Nevena": { name: "Clipboard Shockwave", sprite: "attack_nevena", speed: 4.0, cooldown: 120, color: "#0ea5e9", text: "Documented!" },
+    "Joao": { name: "Sonic Shout", sprite: "attack_joao", speed: 4.6, cooldown: 105, color: "#f97316", text: "Heard!" },
+    "Roman": { name: "Stealth Audit Pulse", sprite: "attack_roman", speed: 4.0, cooldown: 115, color: "#94a3b8", text: "Noted." },
+    "Erwin": { name: "Tesla Drift", sprite: "attack_erwin", speed: 5.0, cooldown: 140, color: "#22d3ee", text: "Zapped!" },
+    default: { name: "Rule Book", sprite: "book", speed: 4.0, cooldown: 120, color: "#00ffff", text: "Hit!" }
+};
+
+function getAttackData(name) {
+    return ATTACKS[name] || ATTACKS.default;
+}
 
 function getCharStats(name) {
     const data = CHAR_DATA[name] || {};
@@ -484,40 +527,80 @@ function generateAssets() {
 
     GFX.chars = {
         "Carrie": c(16,16, ctx => {
-            ctx.fillStyle = '#fcd34d'; ctx.fillRect(3,1,10,4); ctx.fillRect(2,3,2,8);
-            ctx.fillStyle = '#38bdf8'; ctx.fillRect(4,2,8,2); ctx.fillStyle = '#ffcc99'; ctx.fillRect(5,5,6,5);
-            ctx.fillStyle = '#000'; ctx.fillRect(6,7,1,1); ctx.fillRect(9,7,1,1); ctx.fillStyle = '#a855f7'; ctx.fillRect(3,10,10,6);
-            ctx.fillStyle = '#facc15'; ctx.fillRect(7,12,2,2); ctx.fillStyle = '#1e3a8a'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(2,1,12,5); ctx.fillRect(3,2,10,2); // black hair
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,6,6,5); // face
+            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); // eyes
+            ctx.fillStyle = '#22c55e'; ctx.fillRect(5,11,6,1); // headset band
+            ctx.fillStyle = '#a855f7'; ctx.fillRect(3,11,10,5); // robe
+            ctx.fillStyle = '#c4b5fd'; ctx.fillRect(7,12,2,2); // sash highlight
+            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1); // boots
         }),
         "Nevena": c(16,16, ctx => {
-            ctx.fillStyle = '#1f2937'; ctx.fillRect(3,2,10,4); ctx.fillRect(2,4,2,6);
-            ctx.fillStyle = '#14b8a6'; ctx.fillRect(4,3,8,2); ctx.fillStyle = '#f5c89a'; ctx.fillRect(5,6,6,5);
-            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); ctx.fillStyle = '#7f1d1d'; ctx.fillRect(3,11,10,5);
-            ctx.fillStyle = '#9ca3af'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); ctx.fillStyle = '#334155'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+            ctx.fillStyle = '#7c2d12'; ctx.fillRect(3,2,10,4); ctx.fillRect(2,3,2,5); // brown hair
+            ctx.fillStyle = '#f5c89a'; ctx.fillRect(5,6,6,5); // face
+            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); // eyes
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,3,8,2); // headband
+            ctx.fillStyle = '#7f1d1d'; ctx.fillRect(3,11,10,5); // jacket
+            ctx.fillStyle = '#eab308'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); // clipboard corners
+            ctx.fillStyle = '#334155'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // boots
         }),
         "Joao": c(16,16, ctx => {
-            ctx.fillStyle = '#166534'; ctx.fillRect(4,1,8,3); ctx.fillRect(6,0,4,1);
-            ctx.fillStyle = '#f0a16b'; ctx.fillRect(5,4,6,5); ctx.fillStyle = '#6b7280'; ctx.fillRect(4,9,8,1);
-            ctx.fillStyle = '#000'; ctx.fillRect(6,6,1,1); ctx.fillRect(9,6,1,1); ctx.fillStyle = '#fb923c'; ctx.fillRect(3,10,10,6);
-            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); ctx.fillStyle = '#7c2d12'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(4,1,8,3); ctx.fillRect(6,0,4,1); // black hair
+            ctx.fillStyle = '#f0a16b'; ctx.fillRect(5,4,6,5); // face
+            ctx.fillStyle = '#000'; ctx.fillRect(6,6,1,1); ctx.fillRect(9,6,1,1); // eyes
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,9,8,1); // mic wire
+            ctx.fillStyle = '#fb923c'; ctx.fillRect(3,10,10,6); // vest
+            ctx.fillStyle = '#f97316'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); // armbands
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // shoes
         }),
         "Roman": c(16,16, ctx => {
-            ctx.fillStyle = '#9ca3af'; ctx.fillRect(3,1,10,4); ctx.fillRect(2,3,2,5);
-            ctx.fillStyle = '#0f172a'; ctx.fillRect(4,3,8,3); ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,6,6,5);
-            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); ctx.fillStyle = '#1e293b'; ctx.fillRect(3,11,10,5);
-            ctx.fillStyle = '#e5e7eb'; ctx.fillRect(7,12,2,2); ctx.fillStyle = '#0b1224'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,4,6,6); // bald head/face
+            ctx.fillStyle = '#000'; ctx.fillRect(6,7,1,1); ctx.fillRect(9,7,1,1); // eyes
+            ctx.fillStyle = '#1f2937'; ctx.fillRect(4,10,8,2); // collar shadow
+            ctx.fillStyle = '#111827'; ctx.fillRect(3,11,10,5); // stealth coat
+            ctx.fillStyle = '#94a3b8'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); // cuffs
+            ctx.fillStyle = '#0b1224'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1); // boots
         }),
         "Erwin": c(16,16, ctx => {
-            ctx.fillStyle = '#0f172a'; ctx.fillRect(2,10,12,4); // Tesla body
-            ctx.fillStyle = '#111827'; ctx.fillRect(3,9,10,2); // hood line
-            ctx.fillStyle = '#94a3b8'; ctx.fillRect(1,12,3,2); ctx.fillRect(12,12,3,2); // wheels
-            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,11,8,1); // windshield glow
+            ctx.fillStyle = '#6b7280'; ctx.fillRect(2,9,12,5); // Tesla body
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(1,12,3,2); ctx.fillRect(12,12,3,2); // wheels
+            ctx.fillStyle = '#d1d5db'; ctx.fillRect(3,8,10,2); // hood line
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,10,8,2); // windshield glow
             ctx.fillStyle = '#f5d0a0'; ctx.fillRect(6,5,4,3); // face
-            ctx.fillStyle = '#111827'; ctx.fillRect(5,4,6,3); // hair top
-            ctx.fillStyle = '#000'; ctx.fillRect(6,6,4,2); // beard
+            ctx.fillStyle = '#111827'; ctx.fillRect(5,4,6,3); // black hair
+            ctx.fillStyle = '#0b1224'; ctx.fillRect(6,6,4,2); // beard
             ctx.fillStyle = '#000'; ctx.fillRect(7,6,1,1); ctx.fillRect(9,6,1,1); // eyes
             ctx.fillStyle = '#eab308'; ctx.fillRect(7,7,2,1); // smirk
             ctx.fillStyle = '#0b1224'; ctx.fillRect(4,14,8,2); // bumper
+        })
+    };
+
+    GFX.attacks = {
+        "Carrie": c(12,12, ctx => {
+            ctx.fillStyle = '#a855f7'; ctx.fillRect(1,4,10,4);
+            ctx.fillStyle = '#c4b5fd'; ctx.fillRect(2,5,8,2);
+            ctx.fillStyle = '#10b981'; ctx.fillRect(5,3,2,6);
+        }),
+        "Nevena": c(12,12, ctx => {
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(2,2,8,8);
+            ctx.fillStyle = '#f8fafc'; ctx.fillRect(3,3,6,6);
+            ctx.fillStyle = '#334155'; ctx.fillRect(4,4,4,1);
+            ctx.fillStyle = '#94a3b8'; ctx.fillRect(5,7,2,2);
+        }),
+        "Joao": c(12,12, ctx => {
+            ctx.fillStyle = '#f97316'; ctx.beginPath(); ctx.moveTo(1,6); ctx.lineTo(5,2); ctx.lineTo(5,10); ctx.fill();
+            ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.moveTo(4,6); ctx.lineTo(9,1); ctx.lineTo(9,11); ctx.fill();
+            ctx.fillStyle = '#22d3ee'; ctx.beginPath(); ctx.moveTo(8,6); ctx.lineTo(11,3); ctx.lineTo(11,9); ctx.fill();
+        }),
+        "Roman": c(12,12, ctx => {
+            ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(6,6,4,0,Math.PI*2); ctx.stroke();
+            ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.arc(6,6,2,0,Math.PI*2); ctx.fill();
+        }),
+        "Erwin": c(12,12, ctx => {
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(1,5,10,4);
+            ctx.fillStyle = '#6b7280'; ctx.fillRect(2,4,8,3);
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,5,6,2);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(0,6,3,2); ctx.fillRect(9,6,3,2);
         })
     };
     GFX.simon = c(16,16, ctx => { ctx.fillStyle = '#222'; ctx.fillRect(4,1,8,5); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,4); ctx.fillStyle = '#000'; ctx.fillRect(4,7,8,1); ctx.fillStyle = '#aaddff'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); ctx.fillStyle = '#eab308'; ctx.fillRect(3,9,10,6); ctx.fillStyle = '#fff'; ctx.fillRect(6,11,4,4); });
@@ -647,7 +730,7 @@ function resetGame() {
     GAME.genId++;
     GAME.gameOverTriggered = false;
     const stats = getCharStats(GAME.selectedChar);
-    GAME.player = { x: 100, y: 100, dir: 0, speed: stats.speed, iframe: 0, cooldown: 0 };
+    GAME.player = { x: 100, y: 100, dir: 0, speed: stats.speed, iframe: 0, cooldown: 0, cooldownMax: 120 };
     GAME.entities = []; GAME.projectiles = []; GAME.particles = []; GAME.floatingTexts = [];
     GAME.activeIssues = []; GAME.clutter = [];
     GAME.issuesFixed = 0; GAME.lives = stats.lives; GAME.simonHits = 0; GAME.boss = null;
@@ -932,42 +1015,46 @@ function updateProjectiles() {
             }
             GAME.projectiles.splice(i,1);
         }
-        if (p.type === 'book' && GAME.state === 'BOSS' && GAME.boss) {
-             if (Math.hypot(p.x - (GAME.boss.x+16), p.y - (GAME.boss.y+16)) < 24) {
-                 GAME.boss.hp--; updateBossHud(); AudioSys.sfx.bossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, '#ff0000', -2); GAME.projectiles.splice(i,1);
-                 if (GAME.boss.hp <= 0) winGame(); continue;
-             }
-        }
-        if (p.type === 'book' && GAME.state === 'PLAY') {
-            let simon = GAME.entities.find(e => e.type === 'simon');
-            if (simon && Math.hypot(p.x-simon.x, p.y-simon.y) < 12) {
-                 GAME.simonHits++; AudioSys.sfx.angry(); GAME.projectiles.splice(i,1);
-                 if (GAME.simonHits <= 2) {
-                     const warningIndex = GAME.simonHits - 1;
-                     const currentGen = GAME.genId;
-                     GAME.nextState = 'PLAY';
-                     
-                     // --- CHANGED: REMOVED HARDCODED FALLBACK DISPLAY. SHOW LOADING. ---
-                     showThinking("Simon Unglaube", GFX.simonFace);
-
-                     callGemini(`You are Simon Unglaube. Deliver a ${warningIndex === 0 ? "first" : "final"} warning to the coordinator who keeps throwing rule books at you. Keep it sharp, under 24 words.`, "simon_warning", { warningIndex }).then(text => {
-                         if (GAME.genId === currentGen && GAME.state === 'DIALOG') {
-                              showDialog(text, "Simon Unglaube", GFX.simonFace, true);
-                         }
-                     });
-                 }
-                 else if (GAME.simonHits >= 3) initSimonBoss();
-                 continue;
-            }
-            let hit = false;
-            GAME.entities.forEach(e => {
-                if (e.type === 'ops' && Math.hypot(p.x-e.x, p.y-e.y) < 12) {
-                    e.type = 'assoc'; AudioSys.sfx.hit(); spawnParticle(e.x, e.y, '#fff', -2); GAME.opsPushed++;
-                    spawnFloatingText(e.x, e.y, "My Rates!", "#ff0000"); // Instant reaction
-                    hit = true;
+        if (p.type === 'attack') {
+            const attackMeta = getAttackData(p.owner);
+            if (GAME.state === 'BOSS' && GAME.boss) {
+                if (Math.hypot(p.x - (GAME.boss.x+16), p.y - (GAME.boss.y+16)) < 24) {
+                    GAME.boss.hp--; updateBossHud(); AudioSys.sfx.bossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, attackMeta.color || '#ff0000', -2); GAME.projectiles.splice(i,1);
+                    spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, attackMeta.text || 'Hit!', attackMeta.color || '#ff0000');
+                    if (GAME.boss.hp <= 0) winGame(); continue;
                 }
-            });
-            if (hit) GAME.projectiles.splice(i,1);
+            }
+            if (GAME.state === 'PLAY') {
+                let simon = GAME.entities.find(e => e.type === 'simon');
+                if (simon && Math.hypot(p.x-simon.x, p.y-simon.y) < 12) {
+                     GAME.simonHits++; AudioSys.sfx.angry(); GAME.projectiles.splice(i,1);
+                     if (GAME.simonHits <= 2) {
+                         const warningIndex = GAME.simonHits - 1;
+                         const currentGen = GAME.genId;
+                         GAME.nextState = 'PLAY';
+
+                         // --- CHANGED: REMOVED HARDCODED FALLBACK DISPLAY. SHOW LOADING. ---
+                         showThinking("Simon Unglaube", GFX.simonFace);
+
+                         callGemini(`You are Simon Unglaube. Deliver a ${warningIndex === 0 ? "first" : "final"} warning to the coordinator who keeps throwing rule books at you. Keep it sharp, under 24 words.`, "simon_warning", { warningIndex }).then(text => {
+                             if (GAME.genId === currentGen && GAME.state === 'DIALOG') {
+                                  showDialog(text, "Simon Unglaube", GFX.simonFace, true);
+                             }
+                         });
+                     }
+                     else if (GAME.simonHits >= 3) initSimonBoss();
+                     continue;
+                }
+                let hit = false;
+                GAME.entities.forEach(e => {
+                    if (e.type === 'ops' && Math.hypot(p.x-e.x, p.y-e.y) < 12) {
+                        e.type = 'assoc'; AudioSys.sfx.hit(); spawnParticle(e.x, e.y, attackMeta.color || '#fff', -2); GAME.opsPushed++;
+                        spawnFloatingText(e.x, e.y, attackMeta.text || "My Rates!", attackMeta.color || "#ff0000");
+                        hit = true;
+                    }
+                });
+                if (hit) GAME.projectiles.splice(i,1);
+            }
         }
     }
 }
@@ -993,17 +1080,18 @@ function spawnParticle(x, y, color, forceY = 0) {
 }
 
 function throwBook() {
-    const p = GAME.player; if (p.cooldown > 0) return; p.cooldown = 120; GAME.booksFired++;
+    const p = GAME.player; if (p.cooldown > 0) return; const attackMeta = getAttackData(GAME.selectedChar); p.cooldown = attackMeta.cooldown || 120; p.cooldownMax = attackMeta.cooldown || 120; GAME.booksFired++;
+    const speed = attackMeta.speed || 4;
     let vx=0, vy=0;
     if (GAME.state === 'BOSS' && GAME.boss) {
-        let angle = Math.atan2((GAME.boss.y+16) - p.y, (GAME.boss.x+16) - p.x); vx = Math.cos(angle) * 4; vy = Math.sin(angle) * 4;
+        let angle = Math.atan2((GAME.boss.y+16) - p.y, (GAME.boss.x+16) - p.x); vx = Math.cos(angle) * speed; vy = Math.sin(angle) * speed;
     } else {
         let target = null; let minDist = 200;
         GAME.entities.forEach(e => { if (e.type === 'ops') { let d = Math.hypot(e.x - p.x, e.y - p.y); if (d < minDist) { minDist = d; target = e; } } });
-        if (target) { let angle = Math.atan2(target.y - p.y, target.x - p.x); vx = Math.cos(angle) * 4; vy = Math.sin(angle) * 4; } 
-        else { if (KEYS.up) vy=-4; else if (KEYS.down) vy=4; else if (KEYS.left) vx=-4; else vx=4; }
+        if (target) { let angle = Math.atan2(target.y - p.y, target.x - p.x); vx = Math.cos(angle) * speed; vy = Math.sin(angle) * speed; }
+        else { if (KEYS.up) vy=-speed; else if (KEYS.down) vy=speed; else if (KEYS.left) vx=-speed; else vx=speed; }
     }
-    GAME.projectiles.push({ type:'book', x:p.x+8, y:p.y+8, vx, vy, life:40 }); AudioSys.sfx.throw();
+    GAME.projectiles.push({ type:'attack', owner: GAME.selectedChar, sprite: attackMeta.sprite, color: attackMeta.color, x:p.x+8, y:p.y+8, vx, vy, life:attackMeta.life || 40, text: attackMeta.text }); AudioSys.sfx.throw();
 }
 
 function tryInteract() {
@@ -1335,8 +1423,12 @@ function draw() {
             else if (e.type === 'runner') ctx.drawImage(GFX.runner, dx, dy);
             else if (e === GAME.player) {
                 if (e.iframe%4 < 2) ctx.drawImage(GFX.chars[GAME.selectedChar], dx, dy);
-                if (e.cooldown > 0) { ctx.fillStyle = '#555'; ctx.fillRect(dx, dy-4, 16, 2); ctx.fillStyle = '#00ffff'; ctx.fillRect(dx, dy-4, 16 * (1 - e.cooldown/120), 2); } 
+                if (e.cooldown > 0) { ctx.fillStyle = '#555'; ctx.fillRect(dx, dy-4, 16, 2); ctx.fillStyle = '#00ffff'; ctx.fillRect(dx, dy-4, 16 * (1 - e.cooldown/Math.max(1, e.cooldownMax || 120)), 2); }
                 else { ctx.fillStyle = '#00ff00'; ctx.fillRect(dx+6, dy-6, 4, 4); }
+            }
+            else if (e.type === 'attack') {
+                const sprite = (GFX.attacks && GFX.attacks[e.owner]) ? GFX.attacks[e.owner] : GFX.book;
+                ctx.drawImage(sprite, dx+2, dy+4);
             }
             else if (e.type === 'book') ctx.drawImage(GFX.book, dx, dy);
             else if (e.type === 'req') { if (e.boss) ctx.drawImage(GFX.bossProj, dx, dy); else ctx.drawImage(GFX.req, dx, dy); }
