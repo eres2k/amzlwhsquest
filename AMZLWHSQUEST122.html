@@ -1385,6 +1385,16 @@ function draw() {
         ctx.fillStyle = '#ff0000'; ctx.font = '12px monospace'; ctx.fillText(GAME.boss.name.toUpperCase(), 20, 90);
         ctx.fillStyle = '#fff'; ctx.font = '8px monospace'; ctx.fillText(GAME.boss.title, 20, 110);
         ctx.fillStyle = '#888'; ctx.fillText(GAME.boss.desc, 20, 130);
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        const portraitFrameX = 170, portraitFrameY = 70, portraitSize = 88;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(portraitFrameX - 4, portraitFrameY - 4, portraitSize + 8, portraitSize + 8);
+        ctx.strokeStyle = '#444';
+        ctx.strokeRect(portraitFrameX - 6, portraitFrameY - 6, portraitSize + 12, portraitSize + 12);
+        const bossSprite = (GAME.boss.sprite && GFX[GAME.boss.sprite]) ? GFX[GAME.boss.sprite] : GFX.boss_manager;
+        ctx.drawImage(bossSprite, portraitFrameX, portraitFrameY, portraitSize, portraitSize);
+        ctx.restore();
         ctx.fillStyle = '#eab308'; ctx.fillText("ATTACK: " + GAME.boss.attackName, 20, 160);
         ctx.fillStyle = '#fff'; ctx.fillText("[PRESS SPACE TO FIGHT]", 50, 200); ctx.restore(); return;
     }
