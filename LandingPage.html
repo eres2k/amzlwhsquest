@@ -358,7 +358,7 @@
                 <div class="ai-tool">
                     <div>
                         <h3>THE EXCUSE GENERATOR</h3>
-                        <p style="font-size:0.8rem; color:#ccc;">Missed a TPH goal? Need to explain why you were in the breakroom for 17 minutes? Let the AI fabricate a technically plausible excuse.</p>
+                        <p style="font-size:0.8rem; color:#ccc;">Missed a TPH goal? Need to explain why you were in the breakroom for 17 minutes? Let the tool fabricate a technically plausible excuse.</p>
                     </div>
                     <div class="ai-controls">
                         <!-- ADDED INPUT FIELD HERE -->
@@ -534,7 +534,7 @@
             topic = `the issue: "${input}"`;
         }
         
-        const prompt = `Write a very short (max 25 words), absurd but funny excuse regarding ${topic}. Use bureaucratic jargon. Be funny.`;
+        const prompt = `Translate this worker excuse: "${topic}" into overly positive, corporate, Amazon-style management speak. Max 25 Words..`;
         const text = await callGemini(prompt);
         
         if (text) out.innerText = "> " + text;
@@ -678,4 +678,5 @@
 </script>
 </body>
 </html>
+
 
