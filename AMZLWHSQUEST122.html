@@ -156,14 +156,18 @@ const MODEL_NAME = "gemini-2.5-flash-lite";
 // --- BANTER DATA ---
 const BANTER_DB = {
     ops: [
-        "TPH is down!", "Walk faster!", "No talking!", "VTO?", 
+        "TPH is down!", "Walk faster!", "No talking!", "VTO?",
         "Scan scan scan!", "Where's your vest?", "Audit panic!",
-        "My bonus!", "TOT!", "Bad rate!", "Let's go!"
+        "My bonus!", "TOT!", "Bad rate!", "Let's go!",
+        "Chase blue line!", "Less chatter!", "Time is rate!", "Trim that idle!",
+        "Metrics don't nap!", "Pick it up!", "Stay in lanes!"
     ],
     assoc: [
-        "My feet...", "Break time?", "Box heavy...", "Ugh...", 
+        "My feet...", "Break time?", "Box heavy...", "Ugh...",
         "Safety shoes hurt", "Where's HR?", "Need coffee...",
-        "Too early...", "Night shift...", "Pizza party?"
+        "Too early...", "Night shift...", "Pizza party?",
+        "Belt keeps eating me", "Where's my badge?", "Snacks when?",
+        "Scanner dying...", "Stuck in pack?", "Shift never ends"
     ]
 };
 
@@ -665,11 +669,75 @@ const GAME = {
     ]
 };
 
-const SAFETY_ISSUES = [
-    { name: "Chem Spill", type: "spill" }, { name: "Bad Pallet", type: "box" }, { name: "Trash", type: "box" }, 
-    { name: "Cable Trip", type: "spill" }, { name: "Broken Glass", type: "spill" }, { name: "Unlabeled Chem", type: "drum" },
-    { name: "Pallet Debris", type: "debris" }, { name: "Unstable Stack", type: "tall_pallet" }, { name: "Blocked Extinguisher", type: "box" }
+const HAZARD_POOL = [
+    { name: "Chem Spill", type: "spill" },
+    { name: "Bad Pallet", type: "box" },
+    { name: "Trash", type: "box" },
+    { name: "Cable Trip", type: "spill" },
+    { name: "Broken Glass", type: "spill" },
+    { name: "Unlabeled Chem", type: "drum" },
+    { name: "Pallet Debris", type: "debris" },
+    { name: "Unstable Stack", type: "tall_pallet" },
+    { name: "Blocked Extinguisher", type: "box" },
+    { name: "Leaking Battery", type: "spill" },
+    { name: "Loose Stretch Wrap", type: "debris" },
+    { name: "Stray Tote", type: "box" },
+    { name: "Damaged Rack", type: "tall_pallet" },
+    { name: "Forklift Drip", type: "spill" },
+    { name: "Pallet Nails", type: "debris" },
+    { name: "Spilled Beans", type: "spill" }
 ];
+
+function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function pickRandomHazards(count) {
+    const picks = shuffleArray([...HAZARD_POOL]);
+    return picks.slice(0, Math.min(count, picks.length));
+}
+
+function randomDoorPlacement() {
+    const side = ['top', 'bottom', 'left', 'right'][Math.floor(Math.random() * 4)];
+    const buffer = 2;
+    let doorX = 0, doorY = 0, hazardX = 0, hazardY = 0;
+
+    if (side === 'top') {
+        doorY = 0; doorX = Math.floor(Math.random() * (MAP_W - buffer * 2)) + buffer;
+        hazardX = doorX; hazardY = 1;
+    } else if (side === 'bottom') {
+        doorY = MAP_H - 1; doorX = Math.floor(Math.random() * (MAP_W - buffer * 2)) + buffer;
+        hazardX = doorX; hazardY = MAP_H - 2;
+    } else if (side === 'left') {
+        doorX = 0; doorY = Math.floor(Math.random() * (MAP_H - buffer * 2)) + buffer;
+        hazardX = 1; hazardY = doorY;
+    } else {
+        doorX = MAP_W - 1; doorY = Math.floor(Math.random() * (MAP_H - buffer * 2)) + buffer;
+        hazardX = MAP_W - 2; hazardY = doorY;
+    }
+
+    return { doorX, doorY, hazardX, hazardY };
+}
+
+function isTileFree(tx, ty) {
+    if (GAME.map[ty][tx] !== 0) return false;
+    return !GAME.activeIssues.some(h => Math.round(h.x / TILE_SIZE) === tx && Math.round(h.y / TILE_SIZE) === ty);
+}
+
+function pickRandomFloorTile() {
+    let attempts = 0;
+    while (attempts < 500) {
+        const tx = Math.floor(Math.random() * (MAP_W - 2)) + 1;
+        const ty = Math.floor(Math.random() * (MAP_H - 2)) + 1;
+        if (isTileFree(tx, ty)) return { tx, ty };
+        attempts++;
+    }
+    return { tx: 1, ty: 1 };
+}
 
 // --- INPUT ---
 const KEYS = { up: false, down: false, left: false, right: false, action: false };
@@ -773,19 +841,18 @@ function generateMap() {
     }
     for(let y=15; y<25; y++) for(let x=25; x<35; x++) GAME.map[y][x] = 0;
 
-    let dx = 30, dy = 0; GAME.map[dy][dx] = 3; 
-    GAME.activeIssues.push({ x: dx*TILE_SIZE, y: (dy+1)*TILE_SIZE, data: {name: "Blocked Exit", type: "box"}, fixed: false });
+    const door = randomDoorPlacement();
+    GAME.map[door.doorY][door.doorX] = 3;
+    GAME.map[door.hazardY][door.hazardX] = 0;
+    GAME.activeIssues.push({ x: door.hazardX*TILE_SIZE, y: door.hazardY*TILE_SIZE, data: {name: "Blocked Exit", type: "box"}, fixed: false });
 
     spawnEntity('runner'); spawnEntity('runner');
-    let count = 0;
-    while(count < 3) { 
-        let tx = Math.floor(Math.random()*(MAP_W-2))+1; let ty = Math.floor(Math.random()*(MAP_H-2))+1;
-        if (GAME.map[ty][tx] === 0) {
-            let rHazard = SAFETY_ISSUES[Math.floor(Math.random() * SAFETY_ISSUES.length)];
-            GAME.activeIssues.push({ x:tx*TILE_SIZE, y:ty*TILE_SIZE, data: rHazard, fixed:false });
-            count++;
-        }
-    }
+
+    const hazardList = pickRandomHazards(3);
+    hazardList.forEach(rHazard => {
+        const { tx, ty } = pickRandomFloorTile();
+        GAME.activeIssues.push({ x: tx*TILE_SIZE, y: ty*TILE_SIZE, data: rHazard, fixed: false });
+    });
     for(let i=0; i<8; i++) spawnEntity('ops');
     for(let i=0; i<10; i++) spawnEntity('assoc');
 }
