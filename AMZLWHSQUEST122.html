@@ -193,6 +193,10 @@ const SIMULATED_AI = {
         "ENTROPY COMES FOR US ALL!",
         "YOUR PPE IS INSUFFICIENT!"
     ],
+    simon_warnings: [
+        "First warning: Stop flinging manuals. Compliance is not a contact sport.",
+        "Final warning: Holster the rule books or I escalate this audit into a boss fight."
+    ],
     reviews_win: [
         "Performance: IMPROBABLE. You survived. I am... adequately pleased.",
         "You fought chaos and won. For today.",
@@ -294,6 +298,11 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
     const is = (key) => category === key || prompt.includes(key);
 
     if (is("runners")) return pick(SIMULATED_AI.runners);
+    if (is("simon_warning")) {
+        const warnings = SIMULATED_AI.simon_warnings || [];
+        const idx = Math.min(context.warningIndex || 0, warnings.length - 1);
+        return warnings.length ? warnings[Math.max(0, idx)] : pick(SIMULATED_AI.taunts);
+    }
     if (is("taunt")) { 
          if(prompt.includes("Simon")) return pick(SIMULATED_AI.simon_taunts);
          return pick(SIMULATED_AI.taunts);
@@ -890,7 +899,21 @@ function updateProjectiles() {
             let simon = GAME.entities.find(e => e.type === 'simon');
             if (simon && Math.hypot(p.x-simon.x, p.y-simon.y) < 12) {
                  GAME.simonHits++; AudioSys.sfx.angry(); GAME.projectiles.splice(i,1);
-                 if (GAME.simonHits === 1) showDialog("...", "Simon Unglaube", GFX.simonFace, true);
+                 if (GAME.simonHits <= 2) {
+                     const warningIndex = GAME.simonHits - 1;
+                     const fallbackWarnings = [
+                         "First warning: Stop flinging manuals. Compliance is not a contact sport.",
+                         "Final warning: Holster the rule books or I escalate this audit into a boss fight."
+                     ];
+                     const currentGen = GAME.genId;
+                     GAME.nextState = 'PLAY';
+                     showDialog(fallbackWarnings[warningIndex], "Simon Unglaube", GFX.simonFace, false);
+                     callGemini(`You are Simon Unglaube. Deliver a ${warningIndex === 0 ? "first" : "final"} warning to the coordinator who keeps throwing rule books at you. Keep it sharp, under 24 words.`, "simon_warning", { warningIndex }).then(text => {
+                         if (GAME.genId === currentGen && GAME.state === 'DIALOG') {
+                              showDialog(text, "Simon Unglaube", GFX.simonFace, true);
+                         }
+                     });
+                 }
                  else if (GAME.simonHits >= 3) initSimonBoss();
                  continue;
             }
