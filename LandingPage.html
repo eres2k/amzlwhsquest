@@ -237,6 +237,17 @@
         <section>
             <h2>> THE SQUAD</h2>
             <div class="char-grid">
+                <div class="char-card" style="border-color: var(--neon-green);">
+                    <h3>ERWIN</h3>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="erwin"></div>
+                        <div class="char-text">
+                            <div class="char-role">WHS Manager (Tesla Edition)</div>
+                            <p class="char-desc">Rolls into shift inside a ride-on Tesla Model 3 kids car. Claims honking counts as a floor brief.</p>
+                            <p class="char-stat">Moves 2x faster but only 1 heart. Weapon: Autopilot Audit</p>
+                        </div>
+                    </div>
+                </div>
                 <div class="char-card">
                     <h3>CARRIE</h3>
                     <div class="card-content">
@@ -602,6 +613,17 @@
             ctx.fillStyle = '#1e293b'; ctx.fillRect(3,11,10,5);
             ctx.fillStyle = '#e5e7eb'; ctx.fillRect(7,12,2,2);
             ctx.fillStyle = '#0b1224'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        },
+        erwin: ctx => {
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(5,1,6,3); // hair
+            ctx.fillStyle = '#f5cba7'; ctx.fillRect(6,4,4,4); // face
+            ctx.fillStyle = '#111827'; ctx.fillRect(6,6,4,2); // beard
+            ctx.fillStyle = '#000'; ctx.fillRect(7,5,1,1); ctx.fillRect(9,5,1,1); // eyes
+            ctx.fillStyle = '#991b1b'; ctx.fillRect(1,9,14,5); // tesla body
+            ctx.fillStyle = '#b91c1c'; ctx.fillRect(2,10,12,3);
+            ctx.fillStyle = '#93c5fd'; ctx.fillRect(7,8,4,2); // windshield
+            ctx.fillStyle = '#e5e7eb'; ctx.fillRect(3,9,3,2); // headlight
+            ctx.fillStyle = '#111827'; ctx.fillRect(2,14,3,2); ctx.fillRect(11,14,3,2); // wheels
         },
         boss_manager: ctx => {
             ctx.fillStyle = '#0f172a'; ctx.fillRect(2,1,12,5);
