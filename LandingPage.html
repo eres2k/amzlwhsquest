@@ -281,6 +281,17 @@
                         </div>
                     </div>
                 </div>
+                <div class="char-card">
+                    <h3>ERWIN</h3>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="erwin"></div>
+                        <div class="char-text">
+                            <div class="char-role">WHS Manager</div>
+                            <p class="char-desc">Drifts into briefings inside a kid-sized Tesla Model 3. Claims it saves time and battery life. Floor tape fears his parking attempts.</p>
+                            <p class="char-stat">Move Speed: ⚡⚡ | Health: ❤️</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -602,6 +613,19 @@
             ctx.fillStyle = '#1e293b'; ctx.fillRect(3,11,10,5);
             ctx.fillStyle = '#e5e7eb'; ctx.fillRect(7,12,2,2);
             ctx.fillStyle = '#0b1224'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        },
+        erwin: ctx => {
+            ctx.fillStyle = '#111827'; ctx.fillRect(2,9,12,5); // Tesla body
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(1,12,3,2); ctx.fillRect(12,12,3,2); // wheels
+            ctx.fillStyle = '#1f2937'; ctx.fillRect(3,8,10,2); // hood line
+            ctx.fillStyle = '#334155'; ctx.fillRect(4,10,8,2); // windshield
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,11,6,1); // dashboard glow
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(5,5,6,3); // hair outline
+            ctx.fillStyle = '#000'; ctx.fillRect(6,6,4,2); // beard shadow
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(6,5,4,2); // face
+            ctx.fillStyle = '#000'; ctx.fillRect(7,6,1,1); ctx.fillRect(9,6,1,1); // eyes
+            ctx.fillStyle = '#eab308'; ctx.fillRect(6,7,4,1); // smile
+            ctx.fillStyle = '#0b1224'; ctx.fillRect(4,14,8,2); // bumper
         },
         boss_manager: ctx => {
             ctx.fillStyle = '#0f172a'; ctx.fillRect(2,1,12,5);
