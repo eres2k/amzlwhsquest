@@ -107,10 +107,24 @@
         .boss-name { color: #ff0000; text-align: center; font-size: 10px; margin-bottom: 4px; text-shadow: 1px 1px black; }
         
         #ai-status {
-            display: none !important; 
+            display: none !important;
             position: absolute; top: 10px; left: 10px; font-size: 10px; color: #00ffff;
             background: rgba(0,0,0,0.8); padding: 4px; border: 1px solid #00ffff; pointer-events: none;
-            z-index: 2000; 
+            z-index: 2000;
+        }
+
+        .dialog-choice {
+            background: #1a1a4a; border: 2px solid #ffff00; padding: 8px;
+            margin: 4px 0; cursor: pointer; font-size: 12px; color: #fff;
+            transition: all 0.2s;
+        }
+
+        .dialog-choice:hover {
+            background: #2a2a6a; border-color: #ffaa00; transform: translateX(4px);
+        }
+
+        .dialog-choice.selected {
+            background: #3a3a8a; border-color: #ff0000;
         }
     </style>
 </head>
@@ -140,6 +154,7 @@
                 <div style="display:flex; flex-direction:column; width:100%;">
                     <div id="gemini-badge" class="gemini-badge">✨ SIMON IS ANALYZING...</div>
                     <div id="text-content"></div>
+                    <div id="dialog-choices" style="display:none; margin-top:12px;"></div>
                     <div id="press-space-hint">▼ PRESS SPACE</div>
                 </div>
             </div>
@@ -296,8 +311,21 @@ const BEZOS_TAUNTS = [
     "Frugality means NO raises!",
     "Deliver RESULTS or get REPLACED!",
     "Your TOT is UNACCEPTABLE!",
+
     "The yard IS the final exam!",
     "Automation never complains!"
+];
+
+// --- SIMON YARD SAFETY MESSAGES ---
+const SIMON_YARD_SAFETY = [
+    "Yard safety rule #1: Don't walk into moving vehicles. Radical concept, I know.",
+    "Crossing the yard requires looking both ways. Unlike your performance review, this is reversible.",
+    "The yard is not a shortcut. Neither is your career, but here we are.",
+    "Amazon yard safety tip: Vehicles have right of way. Physics doesn't negotiate.",
+    "Fun fact: High-visibility vests work better when you're NOT under a van.",
+    "Yard safety protocol: Stay in designated walkways. The asphalt isn't a zen garden.",
+    "Pro tip: Dodging traffic builds character, but workers' comp paperwork builds resentment.",
+    "Your yard crossing technique needs work. So does your hazard awareness. Shocking correlation."
 ];
 
 // --- AI STATUS HELPERS ---
@@ -1294,6 +1322,8 @@ const GAME = {
     issuesFixed: 0, lives: 5, genId: 0, gameOverTriggered: false, simonHits: 0, boss: null, pendingBossIntro: false,
     shake: 0, flash: 0,
     dialogText: "", dialogVisible: "", dialogTimer: 0,
+    dialogChoices: [], // For dialog choice system
+    dialogChoiceCallbacks: [], // Callbacks for each choice
     splashTimer: 0, aiResultText: null,
     startTime: 0, booksFired: 0, opsPushed: 0,
     lastAIBanterTime: 0, // Throttle AI requests
@@ -1643,7 +1673,21 @@ function startYardLevel() {
             { y: h - 150, dir: -1, speed: 0.9, timer: 95 },
             { y: h - 210, dir: 1, speed: 1.0, timer: 100 },
             { y: h - 270, dir: -1, speed: 0.85, timer: 105 }
-        ]
+        ],
+        // Jeff Bezos as regular character at the top
+        bezos: {
+            x: canvas.width / 2 - 12,
+            y: 25,
+            w: 24,
+            h: 24,
+            transformed: false,
+            tauntTimer: 0,
+            currentTaunt: BEZOS_TAUNTS[Math.floor(Math.random() * BEZOS_TAUNTS.length)]
+        },
+        // Save position for car hit respawn
+        lastSafeX: canvas.width / 2 - 8,
+        lastSafeY: h - 32,
+        yardBoundaryY: h - 300 // Boundary to prevent pushing through
     };
     GAME.player.speed = GAME.yard.speed;
     GAME.projectiles = [];
@@ -2125,6 +2169,24 @@ function updateYardLevel() {
     if (dx!==0 && dy!==0) { dx *= 0.707; dy *= 0.707; }
     y.playerX = Math.max(0, Math.min(canvas.width - 16, y.playerX + dx));
     y.playerY = Math.max(10, Math.min(y.height - 22, y.playerY + dy));
+
+    // Yard boundary reset - if player crosses the boundary line, reset to beginning
+    if (y.playerY < y.yardBoundaryY && !y.bezos.transformed) {
+        const snarkyMsg = SIMON_YARD_SAFETY[Math.floor(Math.random() * SIMON_YARD_SAFETY.length)];
+        y.playerX = y.lastSafeX;
+        y.playerY = y.lastSafeY;
+        y.cameraY = Math.max(0, y.height - canvas.height);
+        showDialog(snarkyMsg, 'Simon Unglaube', GFX.simonFace, false);
+        GAME.nextState = 'YARD_LEVEL';
+        return;
+    }
+
+    // Update last safe position when in the safe zone
+    if (y.playerY > y.yardBoundaryY + 20) {
+        y.lastSafeX = y.playerX;
+        y.lastSafeY = y.playerY;
+    }
+
     GAME.player.x = y.playerX; GAME.player.y = y.playerY;
 
     const viewAnchor = y.playerY - canvas.height * 0.55;
@@ -2186,8 +2248,52 @@ function updateYardLevel() {
         if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 6) && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 6)) {
             if (GAME.player.iframe <= 0) {
                 GAME.lives--; GAME.player.iframe = 90; GAME.flash = 8; AudioSys.sfx.hurt(); updateHud();
-                y.playerX = canvas.width / 2 - 8; y.playerY = y.height - 32; y.cameraY = Math.max(0, y.height - canvas.height);
+
+                // Save current position before reset
+                const hitX = y.playerX;
+                const hitY = y.playerY;
+
                 if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
+
+                // Show dialog with choices
+                const snarkyMsg = SIMON_YARD_SAFETY[Math.floor(Math.random() * SIMON_YARD_SAFETY.length)];
+                const currentGen = ++GAME.genId;
+
+                // First show hardcoded message
+                showThinking("Simon Unglaube", GFX.simonFace);
+                GAME.nextState = 'YARD_LEVEL';
+
+                // Then get AI message and show choices
+                callGemini(
+                    `You are Simon Unglaube, WHS Senior Regional Manager. A coordinator just got hit by a vehicle in the Amazon yard. Give a snarky, darkly funny safety comment about yard safety and vehicle awareness. Reference Amazon warehouse culture. Max 35 words.`,
+                    "yard_hit",
+                    {}
+                ).then(aiMsg => {
+                    if (GAME.genId === currentGen) {
+                        const fullMsg = snarkyMsg + "\n\n" + aiMsg;
+                        showDialogWithChoices(
+                            fullMsg,
+                            "Simon Unglaube",
+                            GFX.simonFace,
+                            ["Return to warehouse", "Continue from here"],
+                            [
+                                () => {
+                                    // Reset to beginning
+                                    y.playerX = canvas.width / 2 - 8;
+                                    y.playerY = y.height - 32;
+                                    y.cameraY = Math.max(0, y.height - canvas.height);
+                                },
+                                () => {
+                                    // Continue from hit position
+                                    y.playerX = hitX;
+                                    y.playerY = hitY;
+                                }
+                            ],
+                            true
+                        );
+                    }
+                });
+                return;
             }
         }
     }
@@ -2207,20 +2313,36 @@ function updateYardLevel() {
         }
     }
 
-    if (y.playerY <= 12) {
-        GAME.nextState = 'MECHA_BOSS_INTRO';
-        const jeffLines = [
-            'You dare clock out without my permission?',
-            'Prime compliance at 0%. Unacceptable.',
-            'Your audit ends under my orbital beam.',
-            'Little coordinator, big mistake.'
-        ];
-        if (!y.tauntShown) {
-            y.tauntShown = true;
+    // Update Jeff Bezos taunt timer
+    if (!y.bezos.transformed) {
+        y.bezos.tauntTimer++;
+        if (y.bezos.tauntTimer > 180) { // Change taunt every 3 seconds
+            y.bezos.currentTaunt = BEZOS_TAUNTS[Math.floor(Math.random() * BEZOS_TAUNTS.length)];
+            y.bezos.tauntTimer = 0;
+        }
+
+        // Check collision with Jeff Bezos
+        const bx = y.bezos.x;
+        const by = y.bezos.y;
+        const bw = y.bezos.w;
+        const bh = y.bezos.h;
+        if (Math.abs((bx + bw/2) - (y.playerX + 8)) < (bw/2 + 8) && Math.abs((by + bh/2) - (y.playerY + 8)) < (bh/2 + 8)) {
+            // Touch Jeff Bezos - transform to Mecha Jeff
+            y.bezos.transformed = true;
+            GAME.nextState = 'MECHA_BOSS_INTRO';
+            const jeffLines = [
+                'You dare clock out without my permission?',
+                'Prime compliance at 0%. Unacceptable.',
+                'Your audit ends under my orbital beam.',
+                'Little coordinator, big mistake.'
+            ];
             y.tauntLine = jeffLines[Math.floor(Math.random()*jeffLines.length)];
             showDialog(y.tauntLine, 'Mecha Jeff', GFX.mechaJeff);
             return;
         }
+    }
+
+    if (y.playerY <= 12 && y.bezos.transformed) {
         showDialog('The yard opens to something colossal...', 'Simon Unglaube', GFX.simonFace, true);
         return;
     }
@@ -2628,14 +2750,50 @@ function updateHud() { document.getElementById('life-val').innerText = "❤️".
 
 function showDialog(text, speaker, portrait, isAI = false) {
     GAME.state = 'DIALOG'; GAME.dialogText = (speaker ? speaker + ":\n" : "") + text; GAME.dialogVisible = "";
+    GAME.dialogChoices = []; GAME.dialogChoiceCallbacks = [];
     const box = document.getElementById('dialog-box'); const badge = document.getElementById('gemini-badge'); const port = document.getElementById('portrait'); const pCtx = port.getContext('2d');
-    box.style.display = 'flex'; document.getElementById('text-content').innerText = ""; 
+    box.style.display = 'flex'; document.getElementById('text-content').innerText = "";
+    document.getElementById('dialog-choices').style.display = 'none';
     badge.style.display = isAI ? 'block' : 'none';
     badge.innerHTML = isAI ? "✨ SIMON IS ANALYZING..." : ""; // Reset badge text
     pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,32,32);
     if (portrait) pCtx.drawImage(portrait, 0, 0); else { pCtx.fillStyle='#fff'; pCtx.fillText("!", 10, 20); }
     AudioSys.sfx.text();
     if (speaker) TTSSys.speak(text.replace(speaker + ":\n", "").replace(/\n/g, ' '), speaker);
+}
+
+function showDialogWithChoices(text, speaker, portrait, choices, callbacks, isAI = false) {
+    GAME.state = 'DIALOG'; GAME.dialogText = (speaker ? speaker + ":\n" : "") + text; GAME.dialogVisible = "";
+    GAME.dialogChoices = choices;
+    GAME.dialogChoiceCallbacks = callbacks;
+    const box = document.getElementById('dialog-box'); const badge = document.getElementById('gemini-badge'); const port = document.getElementById('portrait'); const pCtx = port.getContext('2d');
+    box.style.display = 'flex'; document.getElementById('text-content').innerText = "";
+    badge.style.display = isAI ? 'block' : 'none';
+    badge.innerHTML = isAI ? "✨ SIMON IS ANALYZING..." : "";
+    pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,32,32);
+    if (portrait) pCtx.drawImage(portrait, 0, 0); else { pCtx.fillStyle='#fff'; pCtx.fillText("!", 10, 20); }
+    AudioSys.sfx.text();
+    if (speaker) TTSSys.speak(text.replace(speaker + ":\n", "").replace(/\n/g, ' '), speaker);
+
+    // Show choices after dialog is fully visible
+    setTimeout(() => {
+        const choicesDiv = document.getElementById('dialog-choices');
+        choicesDiv.innerHTML = '';
+        choicesDiv.style.display = 'block';
+        document.getElementById('press-space-hint').style.display = 'none';
+
+        choices.forEach((choice, index) => {
+            const btn = document.createElement('div');
+            btn.className = 'dialog-choice';
+            btn.innerText = choice;
+            btn.onclick = () => {
+                AudioSys.sfx.step();
+                closeDialog();
+                if (callbacks[index]) callbacks[index]();
+            };
+            choicesDiv.appendChild(btn);
+        });
+    }, 100);
 }
 
 // --- NEW FUNCTION: Show "Thinking" state ---
@@ -2661,7 +2819,10 @@ function showThinking(speaker, portrait) {
 }
 
 function closeDialog() {
-    TTSSys.cancel(); AudioSys.sfx.step(); document.getElementById('dialog-box').style.display = 'none';
+    TTSSys.cancel(); AudioSys.sfx.step();
+    document.getElementById('dialog-box').style.display = 'none';
+    document.getElementById('dialog-choices').style.display = 'none';
+    document.getElementById('press-space-hint').style.display = 'block';
     GAME.state = GAME.nextState;
 
     if (GAME.state === 'VISITOR_SPLASH') { showVisitorSplash(); return; }
@@ -2843,10 +3004,41 @@ function drawYardLevel() {
                 ctx.drawImage(GFX.assoc, th.x, th.y);
             });
         }
-        if ((y.tauntShown || y.playerY < 120) && y.tauntLine) {
-            ctx.drawImage(GFX.mechaJeff, canvas.width/2 - 32, y.cameraY + 2, 64, 64);
-            ctx.fillStyle = '#0ea5e9'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
-            ctx.fillText(y.tauntLine.toUpperCase(), canvas.width/2, y.cameraY + 70);
+
+        // Draw Jeff Bezos as regular character or transformed
+        if (y.bezos && !y.bezos.transformed) {
+            // Draw regular Jeff Bezos (using bezosHead sprite)
+            ctx.drawImage(GFX.bezosHead, y.bezos.x, y.bezos.y);
+
+            // Draw associate banter above his head (speech bubble style)
+            const taunt = y.bezos.currentTaunt;
+            const tauntWidth = ctx.measureText(taunt).width;
+            const bubbleX = y.bezos.x + y.bezos.w/2 - tauntWidth/2 - 6;
+            const bubbleY = y.bezos.y - 28;
+            const bubbleW = tauntWidth + 12;
+            const bubbleH = 20;
+
+            // Speech bubble background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(bubbleX, bubbleY, bubbleW, bubbleH);
+            ctx.fillStyle = '#000000';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(bubbleX, bubbleY, bubbleW, bubbleH);
+
+            // Speech bubble tail
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.moveTo(y.bezos.x + y.bezos.w/2 - 3, bubbleY + bubbleH);
+            ctx.lineTo(y.bezos.x + y.bezos.w/2 + 3, bubbleY + bubbleH);
+            ctx.lineTo(y.bezos.x + y.bezos.w/2, bubbleY + bubbleH + 5);
+            ctx.fill();
+            ctx.stroke();
+
+            // Taunt text
+            ctx.fillStyle = '#000000';
+            ctx.font = '7px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(taunt, y.bezos.x + y.bezos.w/2, bubbleY + 13);
             ctx.textAlign = 'left';
         }
     }
