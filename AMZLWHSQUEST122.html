@@ -300,6 +300,15 @@ const BEZOS_TAUNTS = [
     "Automation never complains!"
 ];
 
+// Yard-top Bezos banter (associate voice)
+const YARD_BEZOS_BANTER = [
+    "Bro, that's not how you push rate.",
+    "Even I could find hazards faster than that.",
+    "Two lines, no waiting. Unlike your pace.",
+    "Clock says hustle, champ.",
+    "You call that TOT recovery?",
+];
+
 // --- AI STATUS HELPERS ---
 const aiStatusEl = document.getElementById('ai-status');
 let aiStatus = "init";
@@ -1247,6 +1256,14 @@ function generateAssets() {
         // Ears
         ctx.fillStyle = '#f5deb3'; ctx.fillRect(2,12,2,4); ctx.fillRect(20,12,2,4);
     });
+    GFX.jeff = c(32,32, ctx => {
+        ctx.fillStyle = '#f2d6b3'; ctx.fillRect(10,4,12,14);
+        ctx.fillStyle = '#000'; ctx.fillRect(12,10,2,2); ctx.fillRect(18,10,2,2);
+        ctx.fillStyle = '#8b5a2b'; ctx.fillRect(8,0,16,6);
+        ctx.fillStyle = '#d97706'; ctx.fillRect(8,18,16,12);
+        ctx.fillStyle = '#374151'; ctx.fillRect(6,18,6,12); ctx.fillRect(20,18,6,12);
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(10,22,12,4);
+    });
     GFX.mechaBezos = c(48,48, ctx => {
         // Mecha head
         ctx.fillStyle = '#9ca3af'; ctx.fillRect(12,4,24,20);
@@ -1298,6 +1315,7 @@ const GAME = {
     startTime: 0, booksFired: 0, opsPushed: 0,
     lastAIBanterTime: 0, // Throttle AI requests
     fireExitDoor: null, // Hidden level door position
+    yardReturnPoint: null, // Warehouse position before entering yard
     froggerVehicles: [], // Frogger level vehicles
     bezosTaunt: "", // Current Bezos taunt
     bezosTauntTimer: 0, // Timer for taunt display
@@ -1621,11 +1639,15 @@ function startYardLevel() {
     GAME.state = 'YARD_LEVEL';
     GAME.stateTimer = 0;
     const h = 520;
+    const startX = canvas.width / 2 - 8;
+    const startY = h - 32;
     GAME.yard = {
         height: h,
         cameraY: 0,
-        playerX: canvas.width / 2 - 8,
-        playerY: h - 32,
+        playerX: startX,
+        playerY: startY,
+        startX,
+        startY,
         speed: getCharStats(GAME.selectedChar).speed * 0.9,
         vehicles: [],
         flying: [],
@@ -1633,6 +1655,7 @@ function startYardLevel() {
         tauntShown: false,
         tauntLine: ['You dare clock out without my permission?', 'Prime compliance at 0%. Unacceptable.', 'Little coordinator, big mistake.'][Math.floor(Math.random()*3)],
         tauntTimer: 260,
+        jeff: { x: canvas.width / 2 - 12, y: 8, w: 24, h: 28, banter: YARD_BEZOS_BANTER[0], timer: 0 },
         maxAirBoxes: 7,
         throwers: [
             { x: 10, y: 26, cooldown: 70, variance: 40, timer: 60 },
@@ -2075,6 +2098,8 @@ function update() {
 
     if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO'].includes(GAME.state)) return;
 
+    if (GAME.state === 'YARD_LEVEL') { updateYardLevel(); return; }
+
     // Bezos victory screen
     if (GAME.state === 'BEZOS_WIN') {
         // Auto-advance after delay
@@ -2129,6 +2154,22 @@ function updateYardLevel() {
 
     const viewAnchor = y.playerY - canvas.height * 0.55;
     y.cameraY = Math.max(0, Math.min(y.height - canvas.height, viewAnchor));
+
+    if (y.jeff) {
+        y.jeff.timer++;
+        if (y.jeff.timer > 200) {
+            y.jeff.banter = YARD_BEZOS_BANTER[Math.floor(Math.random() * YARD_BEZOS_BANTER.length)];
+            y.jeff.timer = 0;
+        }
+
+        const px = y.playerX + 8;
+        const py = y.playerY + 8;
+        if (px > y.jeff.x && px < y.jeff.x + y.jeff.w && py > y.jeff.y && py < y.jeff.y + y.jeff.h) {
+            GAME.nextState = 'MECHA_BOSS_INTRO';
+            showDialog('He was waiting. Bezos cracks a grin and the chrome folds out.\n\nMECHA JEFF AWAKENS!', 'System', null, false);
+            return;
+        }
+    }
 
     // flying package gauntlet near the top
     y.flyTimer--;
@@ -2185,9 +2226,9 @@ function updateYardLevel() {
         if (v.x < -80 || v.x > canvas.width + 80) { y.vehicles.splice(i,1); continue; }
         if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 6) && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 6)) {
             if (GAME.player.iframe <= 0) {
-                GAME.lives--; GAME.player.iframe = 90; GAME.flash = 8; AudioSys.sfx.hurt(); updateHud();
-                y.playerX = canvas.width / 2 - 8; y.playerY = y.height - 32; y.cameraY = Math.max(0, y.height - canvas.height);
+                handleYardCollision('vehicle');
                 if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
+                return;
             }
         }
     }
@@ -2200,30 +2241,78 @@ function updateYardLevel() {
         if (f.x < -32 || f.x > canvas.width + 32 || f.y > 180) { y.flying.splice(i,1); continue; }
         if (Math.abs((f.x + f.w/2) - (y.playerX + 8)) < (f.w/2 + 6) && Math.abs((f.y + f.h/2) - (y.playerY + 8)) < (f.h/2 + 6)) {
             if (GAME.player.iframe <= 0) {
-                GAME.lives--; GAME.player.iframe = 90; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
-                y.playerX = canvas.width / 2 - 8; y.playerY = Math.min(y.height - 32, y.playerY + 60); y.cameraY = Math.max(0, y.height - canvas.height);
+                handleYardCollision('flying');
                 if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
+                return;
             }
         }
     }
+}
 
-    if (y.playerY <= 12) {
-        GAME.nextState = 'MECHA_BOSS_INTRO';
-        const jeffLines = [
-            'You dare clock out without my permission?',
-            'Prime compliance at 0%. Unacceptable.',
-            'Your audit ends under my orbital beam.',
-            'Little coordinator, big mistake.'
-        ];
-        if (!y.tauntShown) {
-            y.tauntShown = true;
-            y.tauntLine = jeffLines[Math.floor(Math.random()*jeffLines.length)];
-            showDialog(y.tauntLine, 'Mecha Jeff', GFX.mechaJeff);
-            return;
+function resetYardPosition() {
+    const y = GAME.yard;
+    if (!y) return;
+    y.playerX = typeof y.startX === 'number' ? y.startX : canvas.width / 2 - 8;
+    y.playerY = typeof y.startY === 'number' ? y.startY : (y.height ? y.height - 32 : canvas.height - 32);
+    y.cameraY = Math.max(0, (y.height || canvas.height) - canvas.height);
+    GAME.player.x = y.playerX;
+    GAME.player.y = y.playerY;
+}
+
+function handleYardCollision(type) {
+    const y = GAME.yard;
+    if (!y || GAME.player.iframe > 0) return;
+
+    GAME.lives--;
+    GAME.player.iframe = 90;
+    GAME.flash = type === 'vehicle' ? 8 : 10;
+    AudioSys.sfx.hurt();
+    updateHud();
+    resetYardPosition();
+
+    const hardcoded = "Simon’s Unglaube says: If the van hits you, the van ALWAYS wins. Respect the yard lines, champ.";
+    const base = type === 'vehicle' ? hardcoded : `${hardcoded}\n\nAlso: duck the flying boxes.`;
+
+    GAME.nextState = 'YARD_LEVEL';
+    const currentGen = GAME.genId;
+    showThinking('Simon Unglaube', GFX.simonFace);
+
+    const prompt = `You are Simon Unglaube, WHS Senior Regional Manager. The player was clipped by a ${type === 'vehicle' ? 'yard van' : 'flying box'} in the Amazon yard. Deliver a short, sarcastic safety reminder that sounds like a seasoned associate roasting a coworker. Max 32 words.`;
+    callGemini(prompt, 'yard_hazard', { type }).then(line => {
+        if (GAME.genId !== currentGen) return;
+        const finalLine = line ? `${base}\n\n${line}` : base;
+        showDialog(finalLine, 'Simon Unglaube', GFX.simonFace, true);
+
+        if (type === 'vehicle') {
+            setDialogOptions([
+                { label: 'Return to Yard', onSelect: () => { GAME.nextState = 'YARD_LEVEL'; closeDialog(); } },
+                { label: 'Return to Warehouse', onSelect: () => { returnToWarehouseFromYard(); closeDialog(); } }
+            ]);
         }
-        showDialog('The yard opens to something colossal...', 'Simon Unglaube', GFX.simonFace, true);
-        return;
-    }
+    }).catch(() => {
+        if (GAME.genId !== currentGen) return;
+        showDialog(base, 'Simon Unglaube', GFX.simonFace, false);
+        if (type === 'vehicle') {
+            setDialogOptions([
+                { label: 'Return to Yard', onSelect: () => { GAME.nextState = 'YARD_LEVEL'; closeDialog(); } },
+                { label: 'Return to Warehouse', onSelect: () => { returnToWarehouseFromYard(); closeDialog(); } }
+            ]);
+        }
+    });
+}
+
+function returnToWarehouseFromYard() {
+    if (!GAME.yardReturnPoint) { closeDialog(); return; }
+
+    GAME.yard = null;
+    GAME.state = 'PLAY';
+    GAME.nextState = 'PLAY';
+    GAME.player.speed = getCharStats(GAME.selectedChar).speed;
+    GAME.player.x = GAME.yardReturnPoint.x;
+    GAME.player.y = GAME.yardReturnPoint.y;
+    GAME.camera = { ...GAME.yardReturnPoint.camera };
+    updateCamera();
+    updateMusicForState();
 }
 
 function updateMechaBattle() {
@@ -2580,6 +2669,7 @@ function tryInteract() {
         const dx = GAME.player.x - GAME.hiddenDoor.doorX * TILE_SIZE;
         const dy = GAME.player.y - GAME.hiddenDoor.doorY * TILE_SIZE;
         if (Math.hypot(dx, dy) < 18) {
+            GAME.yardReturnPoint = { x: GAME.player.x, y: GAME.player.y, camera: { ...GAME.camera } };
             GAME.state = 'YARD_INTRO';
             GAME.stateTimer = 0;
             GAME.nextState = 'YARD_LEVEL';
@@ -2626,10 +2716,46 @@ function checkCol(x, y) {
 
 function updateHud() { document.getElementById('life-val').innerText = "❤️".repeat(Math.max(0, GAME.lives)); document.getElementById('score-val').innerText = GAME.issuesFixed + "/5"; }
 
+function clearDialogOptions() {
+    const opts = document.getElementById('dialog-options');
+    if (opts && opts.parentNode) opts.parentNode.removeChild(opts);
+}
+
+function setDialogOptions(options = []) {
+    clearDialogOptions();
+    if (!options.length) return;
+
+    const box = document.getElementById('dialog-box');
+    const container = document.createElement('div');
+    container.id = 'dialog-options';
+    container.style.display = 'flex';
+    container.style.gap = '8px';
+    container.style.marginTop = '12px';
+    container.style.flexWrap = 'wrap';
+    container.style.width = '100%';
+
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt.label;
+        btn.style.fontFamily = '"Press Start 2P", monospace';
+        btn.style.fontSize = '8px';
+        btn.style.padding = '6px 8px';
+        btn.style.border = '2px solid #fff';
+        btn.style.background = '#0b1224';
+        btn.style.color = '#fff';
+        btn.style.cursor = 'pointer';
+        btn.onclick = opt.onSelect;
+        container.appendChild(btn);
+    });
+
+    box.appendChild(container);
+}
+
 function showDialog(text, speaker, portrait, isAI = false) {
     GAME.state = 'DIALOG'; GAME.dialogText = (speaker ? speaker + ":\n" : "") + text; GAME.dialogVisible = "";
     const box = document.getElementById('dialog-box'); const badge = document.getElementById('gemini-badge'); const port = document.getElementById('portrait'); const pCtx = port.getContext('2d');
-    box.style.display = 'flex'; document.getElementById('text-content').innerText = ""; 
+    clearDialogOptions();
+    box.style.display = 'flex'; document.getElementById('text-content').innerText = "";
     badge.style.display = isAI ? 'block' : 'none';
     badge.innerHTML = isAI ? "✨ SIMON IS ANALYZING..." : ""; // Reset badge text
     pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,32,32);
@@ -2647,7 +2773,8 @@ function showThinking(speaker, portrait) {
     const badge = document.getElementById('gemini-badge');
     const port = document.getElementById('portrait');
     const pCtx = port.getContext('2d');
-    
+
+    clearDialogOptions();
     box.style.display = 'flex';
     document.getElementById('text-content').innerHTML = "<span class='loading-dots'>PROCESSING</span>"; // Loading animation
     
@@ -2662,6 +2789,7 @@ function showThinking(speaker, portrait) {
 
 function closeDialog() {
     TTSSys.cancel(); AudioSys.sfx.step(); document.getElementById('dialog-box').style.display = 'none';
+    clearDialogOptions();
     GAME.state = GAME.nextState;
 
     if (GAME.state === 'VISITOR_SPLASH') { showVisitorSplash(); return; }
@@ -2843,10 +2971,48 @@ function drawYardLevel() {
                 ctx.drawImage(GFX.assoc, th.x, th.y);
             });
         }
-        if ((y.tauntShown || y.playerY < 120) && y.tauntLine) {
-            ctx.drawImage(GFX.mechaJeff, canvas.width/2 - 32, y.cameraY + 2, 64, 64);
-            ctx.fillStyle = '#0ea5e9'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
-            ctx.fillText(y.tauntLine.toUpperCase(), canvas.width/2, y.cameraY + 70);
+        if (y.jeff) {
+            ctx.drawImage(GFX.jeff, y.jeff.x, y.jeff.y, 32, 32);
+
+            const bubbleX = y.jeff.x + 30;
+            const bubbleY = y.jeff.y - 4;
+            const bubbleW = 180;
+            const bubbleH = 26;
+
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillRect(bubbleX + 2, bubbleY + 2, bubbleW, bubbleH);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(bubbleX, bubbleY, bubbleW, bubbleH);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(bubbleX, bubbleY, bubbleW, bubbleH);
+
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.moveTo(bubbleX, bubbleY + 10);
+            ctx.lineTo(bubbleX - 6, bubbleY + 8);
+            ctx.lineTo(bubbleX, bubbleY + 14);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#000';
+            ctx.font = '8px "Press Start 2P"';
+            ctx.textAlign = 'left';
+            const banter = y.jeff.banter || '';
+            const words = banter.split(' ');
+            let line = '';
+            let row = 0;
+            words.forEach(word => {
+                const candidate = line.length ? `${line} ${word}` : word;
+                if (candidate.length > 28) {
+                    ctx.fillText(line, bubbleX + 6, bubbleY + 12 + row * 10);
+                    line = word;
+                    row++;
+                } else {
+                    line = candidate;
+                }
+            });
+            if (line) ctx.fillText(line, bubbleX + 6, bubbleY + 12 + row * 10);
             ctx.textAlign = 'left';
         }
     }
