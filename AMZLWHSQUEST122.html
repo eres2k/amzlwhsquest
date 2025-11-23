@@ -1910,8 +1910,8 @@ function throwBook() {
 function tryInteract() {
     const p = GAME.player;
 
-    // Check if player is near fire exit door after all hazards cleared
-    if (GAME.issuesFixed >= 5 && GAME.fireExitDoor && Math.hypot(p.x - GAME.fireExitDoor.x, p.y - GAME.fireExitDoor.y) < 20) {
+    // Check if player is near fire exit door after 3+ hazards cleared
+    if (GAME.issuesFixed >= 3 && GAME.fireExitDoor && Math.hypot(p.x - GAME.fireExitDoor.x, p.y - GAME.fireExitDoor.y) < 20) {
         AudioSys.sfx.alert();
         showDialog("You found the hidden exit!\n\nYou step through the fire door into the Amazon yard...", "System", null, false);
         GAME.nextState = 'FROGGER_INTRO';
@@ -2451,8 +2451,8 @@ function draw() {
                 if (t===3) {
                     ctx.drawImage(GFX.wall, dx, dy);
                     ctx.drawImage(GFX.door, dx, dy);
-                    // Glow effect when door is accessible (all hazards cleared)
-                    if (GAME.issuesFixed >= 5 && GAME.fireExitDoor) {
+                    // Glow effect when door is accessible (3+ hazards cleared)
+                    if (GAME.issuesFixed >= 3 && GAME.fireExitDoor) {
                         const pulse = Math.sin(GAME.ticks * 0.1) * 0.3 + 0.7;
                         ctx.fillStyle = `rgba(255, 215, 0, ${pulse * 0.4})`;
                         ctx.fillRect(dx - 2, dy - 2, 20, 20);
