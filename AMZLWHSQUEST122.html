@@ -661,29 +661,30 @@ function generateAssets() {
     GFX.assoc = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,5); });
     GFX.runner = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,5); ctx.fillStyle = '#fff'; ctx.fillRect(1, 12, 2, 1); ctx.fillRect(14, 10, 2, 1); });
 
-    GFX.van = c(32,16, ctx => {
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(0,10,32,6);
-        ctx.fillStyle = '#1d4ed8'; ctx.fillRect(2,3,27,9);
-        ctx.fillStyle = '#3b82f6'; ctx.fillRect(4,5,21,6);
-        ctx.fillStyle = '#60a5fa'; ctx.fillRect(6,6,13,4);
-        ctx.fillStyle = '#1e3a8a'; ctx.fillRect(2,2,18,3);
-        ctx.fillStyle = '#f8fafc'; ctx.fillRect(20,7,7,3);
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(6,12,6,3); ctx.fillRect(20,12,6,3);
-        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(22,9,4,2);
+    GFX.van = c(34,18, ctx => {
+        ctx.fillStyle = '#0b1224'; ctx.fillRect(1,12,32,6);
+        ctx.fillStyle = '#1d4ed8'; ctx.fillRect(2,4,30,10);
+        ctx.fillStyle = '#2563eb'; ctx.fillRect(4,6,26,8);
+        ctx.fillStyle = '#60a5fa'; ctx.fillRect(6,7,14,5);
+        ctx.fillStyle = '#f8fafc'; ctx.fillRect(18,7,10,4);
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(22,9,6,2);
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(6,14,8,4); ctx.fillRect(22,14,8,4);
+        ctx.fillStyle = '#eab308'; ctx.fillRect(4,12,2,2); ctx.fillRect(28,12,2,2);
+        ctx.fillStyle = '#0f172a'; ctx.font = '6px monospace'; ctx.fillText('DSP', 6, 11);
     });
 
-    GFX.truck = c(48,18, ctx => {
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(2,12,44,6);
-        ctx.fillStyle = '#e5e7eb'; ctx.fillRect(6,2,36,12);
-        ctx.fillStyle = '#cbd5e1'; ctx.fillRect(4,4,40,10);
-        ctx.fillStyle = '#9ca3af'; ctx.fillRect(4,6,16,8);
-        ctx.fillStyle = '#f8fafc'; ctx.fillRect(20,6,20,7);
-        ctx.fillStyle = '#1e3a8a'; ctx.fillRect(6,3,18,2);
-        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(8,10,32,2);
-        ctx.fillStyle = '#111827'; ctx.fillRect(8,13,10,4); ctx.fillRect(30,13,10,4);
-        ctx.fillStyle = '#0b132b'; ctx.fillRect(2,8,6,6);
-        ctx.fillStyle = '#1d4ed8'; ctx.fillRect(22,8,16,5);
-        ctx.fillStyle = '#0f172a'; ctx.font = '6px monospace'; ctx.fillText('PR', 24, 12); ctx.fillText('IME', 30, 12);
+    GFX.truck = c(52,20, ctx => {
+        ctx.fillStyle = '#0b1224'; ctx.fillRect(2,14,48,6);
+        ctx.fillStyle = '#cbd5e1'; ctx.fillRect(4,4,44,12);
+        ctx.fillStyle = '#e5e7eb'; ctx.fillRect(6,6,40,10);
+        ctx.fillStyle = '#94a3b8'; ctx.fillRect(6,8,18,8);
+        ctx.fillStyle = '#f8fafc'; ctx.fillRect(24,8,24,8);
+        ctx.fillStyle = '#1d4ed8'; ctx.fillRect(8,6,20,2);
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(8,12,34,2);
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(10,15,10,4); ctx.fillRect(34,15,10,4);
+        ctx.fillStyle = '#facc15'; ctx.fillRect(4,4,4,10);
+        ctx.fillStyle = '#0f172a'; ctx.font = '7px monospace'; ctx.fillText('PRIME', 22, 13);
+        ctx.fillStyle = '#64748b'; ctx.fillRect(2,10,6,6);
     });
     
     GFX.clutter = { cart: c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(2,6,12,8); ctx.fillStyle = '#8b4513'; ctx.fillRect(4,4,8,6); }), coffee: c(8,8, ctx => { ctx.fillStyle='#fff'; ctx.fillRect(2,2,4,5); }), paper: c(8,8, ctx => { ctx.fillStyle='#eee'; ctx.fillRect(1,3,6,4); }), tape: c(8,8, ctx => { ctx.fillStyle='#d97706'; ctx.beginPath(); ctx.arc(4,4,3,0,Math.PI*2); ctx.fill(); }) };
@@ -1450,16 +1451,19 @@ function initBossEncounter() {
 function startYardLevel() {
     GAME.state = 'YARD_LEVEL';
     GAME.stateTimer = 0;
+    const h = 360;
     GAME.yard = {
+        height: h,
+        cameraY: 0,
         playerX: canvas.width / 2 - 8,
-        playerY: canvas.height - 28,
+        playerY: h - 32,
         speed: getCharStats(GAME.selectedChar).speed,
         vehicles: [],
         lanes: [
-            { y: 60, dir: 1, speed: 1.4, timer: 40 },
-            { y: 90, dir: -1, speed: 1.8, timer: 20 },
-            { y: 120, dir: 1, speed: 2.1, timer: 70 },
-            { y: 150, dir: -1, speed: 1.2, timer: 50 }
+            { y: h - 70, dir: 1, speed: 1.05, timer: 70 },
+            { y: h - 110, dir: -1, speed: 1.25, timer: 60 },
+            { y: h - 150, dir: 1, speed: 1.35, timer: 80 },
+            { y: h - 190, dir: -1, speed: 1.1, timer: 90 }
         ]
     };
     GAME.player.speed = GAME.yard.speed;
@@ -1605,18 +1609,21 @@ function updateYardLevel() {
     if (KEYS.up) dy = -y.speed; if (KEYS.down) dy = y.speed; if (KEYS.left) dx = -y.speed; if (KEYS.right) dx = y.speed;
     if (dx!==0 && dy!==0) { dx *= 0.707; dy *= 0.707; }
     y.playerX = Math.max(0, Math.min(canvas.width - 16, y.playerX + dx));
-    y.playerY = Math.max(8, Math.min(canvas.height - 20, y.playerY + dy));
+    y.playerY = Math.max(10, Math.min(y.height - 22, y.playerY + dy));
     GAME.player.x = y.playerX; GAME.player.y = y.playerY;
+
+    const viewAnchor = y.playerY - canvas.height * 0.55;
+    y.cameraY = Math.max(0, Math.min(y.height - canvas.height, viewAnchor));
 
     y.lanes.forEach(lane => {
         lane.timer--;
         if (lane.timer <= 0) {
             const type = Math.random() < 0.6 ? 'van' : 'truck';
-            const w = type === 'van' ? 32 : 48;
-            const h = type === 'van' ? 14 : 18;
+            const w = type === 'van' ? 34 : 52;
+            const h = type === 'van' ? 16 : 20;
             const x = lane.dir === 1 ? -w : canvas.width + w;
-            y.vehicles.push({ type, x, y: lane.y - h/2, w, h, dir: lane.dir, speed: lane.speed + Math.random()*0.4 });
-            lane.timer = 60 + Math.random() * 80;
+            y.vehicles.push({ type, x, y: lane.y - h/2, w, h, dir: lane.dir, speed: lane.speed + Math.random()*0.25 });
+            lane.timer = 70 + Math.random() * 90;
         }
     });
 
@@ -1627,13 +1634,13 @@ function updateYardLevel() {
         if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 6) && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 6)) {
             if (GAME.player.iframe <= 0) {
                 GAME.lives--; GAME.player.iframe = 90; GAME.flash = 8; AudioSys.sfx.hurt(); updateHud();
-                y.playerX = canvas.width / 2 - 8; y.playerY = canvas.height - 28;
+                y.playerX = canvas.width / 2 - 8; y.playerY = y.height - 32; y.cameraY = Math.max(0, y.height - canvas.height);
                 if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
             }
         }
     }
 
-    if (y.playerY <= 8) {
+    if (y.playerY <= 12) {
         GAME.nextState = 'MECHA_BOSS_INTRO';
         showDialog('The yard opens to something colossal...', 'Simon Unglaube', GFX.simonFace, true);
         return;
@@ -1656,7 +1663,7 @@ function updateMechaBattle() {
     if (m.attackTimer > 320) { m.attackTimer = 0; m.attackPhase = (m.attackPhase + 1) % 3; m.shadows = []; m.beam = null; }
 
     if (m.attackPhase === 0 && m.timer % 45 === 0) {
-        m.projectiles.push({ type: 'drone', x: m.x + 32, y: m.y + 24, vx: 0, vy: 1.1, life: 240 });
+        m.projectiles.push({ type: 'drone', x: m.x + 32, y: m.y + 24, vx: 0, vy: 0.85, life: 260 });
     }
     if (m.attackPhase === 1 && m.timer % 65 === 0) {
         m.shadows.push({ x: Math.random() * (canvas.width - 20) + 4, timer: 50 });
@@ -1669,7 +1676,7 @@ function updateMechaBattle() {
         const pr = m.projectiles[i];
         if (pr.type === 'drone') {
             const angle = Math.atan2(p.y - pr.y, p.x - pr.x);
-            pr.vx = Math.cos(angle) * 1.25; pr.vy = Math.sin(angle) * 1.25;
+            pr.vx = Math.cos(angle) * 0.95; pr.vy = Math.sin(angle) * 0.95;
         } else if (pr.type === 'box') {
             pr.vy += 0.04;
         }
@@ -2152,44 +2159,69 @@ function drawSnesSplash(isWin) {
 }
 
 function drawYardLevel() {
-    // asphalt gradient and bay header
-    const asphalt = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    asphalt.addColorStop(0, '#0b1220'); asphalt.addColorStop(1, '#1f2937');
-    ctx.fillStyle = asphalt; ctx.fillRect(0,0,canvas.width, canvas.height);
-    ctx.fillStyle = '#0ea5e9'; ctx.fillRect(0,0,canvas.width,8);
-    ctx.fillStyle = '#111827'; ctx.fillRect(0,8,canvas.width,14);
-    ctx.fillStyle = '#9ca3af'; ctx.fillRect(0,22,canvas.width,4);
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(0,26,canvas.width,6);
+    const y = GAME.yard;
+    const camY = y ? y.cameraY || 0 : 0;
+    const yardHeight = y ? y.height : canvas.height;
 
-    // lanes and dividers
+    ctx.save();
+    ctx.translate(0, -camY);
+
+    // asphalt base with SNES-style tiling
+    ctx.fillStyle = '#0b1224'; ctx.fillRect(0,0,canvas.width, yardHeight);
     ctx.fillStyle = '#111827';
-    [64, 98, 132, 166].forEach(y => ctx.fillRect(0, y-8, canvas.width, 16));
-    ctx.setLineDash([10, 10]);
-    ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2;
-    [72, 106, 140, 174].forEach(y => { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); });
-    ctx.setLineDash([]);
+    for (let ty = -8; ty < yardHeight + 16; ty += 16) {
+        for (let tx = (ty % 32 === 0 ? 0 : 8); tx < canvas.width; tx += 16) {
+            ctx.fillRect(tx, ty, 12, 12);
+        }
+    }
+    ctx.fillStyle = 'rgba(255,255,255,0.02)';
+    for (let ty = 0; ty < yardHeight; ty += 8) {
+        for (let tx = 4; tx < canvas.width; tx += 16) ctx.fillRect(tx, ty + ((tx + ty) % 16 === 0 ? 2 : 0), 2, 2);
+    }
 
-    // curb/goal strip
-    ctx.fillStyle = '#16a34a'; ctx.fillRect(0,0,canvas.width,6);
-    ctx.fillStyle = '#fef9c3'; ctx.fillRect(0,6,canvas.width,2);
-    ctx.fillStyle = '#94a3b8'; ctx.fillRect(0,190,canvas.width,4);
-    ctx.fillStyle = '#e5e7eb'; for (let x=0; x<canvas.width; x+=20) ctx.fillRect(x,186,10,4);
+    // curbs and dock edges
+    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, yardHeight - 18, canvas.width, 18);
+    ctx.fillStyle = '#334155'; ctx.fillRect(0, yardHeight - 22, canvas.width, 4);
+    ctx.fillStyle = '#64748b'; for (let x=0; x<canvas.width; x+=14) ctx.fillRect(x, yardHeight - 16, 8, 3);
+    ctx.fillStyle = '#fef08a'; ctx.fillRect(0,2,canvas.width,3);
+    ctx.fillStyle = '#22c55e'; ctx.fillRect(0,0,canvas.width,2);
 
-    // yard accents
-    ctx.fillStyle = '#0ea5e9';
-    for (let x=6; x<canvas.width; x+=40) { ctx.fillRect(x,30,3,12); ctx.fillRect(x+16,30,3,12); }
-    ctx.fillStyle = '#f97316';
-    for (let x=12; x<canvas.width; x+=48) ctx.fillRect(x,180,6,10);
+    // painted dock goal
+    ctx.fillStyle = '#14532d'; ctx.fillRect(0,0,canvas.width,10);
+    ctx.fillStyle = '#facc15'; ctx.fillRect(0,10,canvas.width,2);
+    ctx.fillStyle = '#94a3b8'; ctx.fillRect(0,12,canvas.width,3);
+    ctx.fillStyle = '#0ea5e9'; for (let x=6; x<canvas.width; x+=34) ctx.fillRect(x,14,14,2);
 
-    if (GAME.yard) {
-        GAME.yard.vehicles.forEach(v => {
+    // lane bands and markings
+    if (y) {
+        ctx.setLineDash([8, 10]);
+        ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2;
+        y.lanes.forEach(lane => {
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(0, lane.y - 20, canvas.width, 40);
+            ctx.fillStyle = '#111827'; ctx.fillRect(0, lane.y - 14, canvas.width, 28);
+            ctx.beginPath(); ctx.moveTo(0, lane.y); ctx.lineTo(canvas.width, lane.y); ctx.stroke();
+            ctx.fillStyle = '#1e293b'; ctx.fillRect(0, lane.y - 22, canvas.width, 2);
+            ctx.fillStyle = '#1e293b'; ctx.fillRect(0, lane.y + 20, canvas.width, 2);
+        });
+        ctx.setLineDash([]);
+    }
+
+    // chainlink and palettes
+    ctx.fillStyle = '#1f2937'; for (let x=0; x<canvas.width; x+=32) ctx.fillRect(x+2, 32, 28, 4);
+    ctx.fillStyle = '#0ea5e9'; for (let x=0; x<canvas.width; x+=26) ctx.fillRect(x+6, 28, 2, 8);
+    ctx.fillStyle = '#f97316'; for (let x=10; x<canvas.width; x+=60) ctx.fillRect(x, yardHeight - 36, 8, 16);
+    ctx.fillStyle = '#9ca3af'; for (let x=6; x<canvas.width; x+=50) ctx.fillRect(x, yardHeight - 48, 14, 6);
+
+    if (y) {
+        y.vehicles.forEach(v => {
             const sprite = v.type === 'van' ? GFX.van : GFX.truck;
             ctx.drawImage(sprite, v.x, v.y);
         });
     }
 
     ctx.drawImage(GFX.chars[GAME.selectedChar], GAME.player.x, GAME.player.y);
-    ctx.fillStyle = '#facc15'; ctx.font = '8px monospace'; ctx.fillText('GOAL', 8, 10);
+    ctx.fillStyle = '#facc15'; ctx.font = '8px monospace'; ctx.fillText('GOAL', 8, 8);
+    ctx.restore();
 }
 
 function drawMechaBattle() {
