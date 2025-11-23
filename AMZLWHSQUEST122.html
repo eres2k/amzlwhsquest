@@ -1978,22 +1978,17 @@ function draw() {
         ctx.fillText("SURPRISE VISITOR!", -122, -2);
         ctx.restore();
 
+        ctx.textAlign = 'center';
         ctx.fillStyle = '#ffd166';
         ctx.font = '10px monospace';
-        ctx.fillText("An unannounced boss is stepping onto the floor...", 18, 150);
+        ctx.fillText("An unannounced boss is stepping onto the floor...", canvas.width / 2, 148);
         ctx.fillStyle = '#fff';
-        ctx.fillText("Simon braces: tighten PPE, breathe, and stand tall.", 18, 168);
-
-        ctx.save();
-        ctx.imageSmoothingEnabled = false;
-        const bob = Math.sin(t / 8) * 3;
-        const sprite = GFX.boss_manager;
-        ctx.drawImage(sprite, 176, 96 + bob, 64, 64);
-        ctx.restore();
+        ctx.fillText("Simon braces: tighten PPE, breathe, and stand tall.", canvas.width / 2, 166);
 
         ctx.fillStyle = '#ff00ff';
         ctx.font = '10px monospace';
-        ctx.fillText("[PRESS SPACE TO CONTINUE]", 70, 206);
+        ctx.fillText("[PRESS SPACE TO CONTINUE]", canvas.width / 2, 204);
+        ctx.textAlign = 'left';
         ctx.restore(); return;
     }
     if (GAME.state === 'BOSS_INTRO' && GAME.boss) {
