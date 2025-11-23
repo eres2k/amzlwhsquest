@@ -47,10 +47,29 @@
         }
 
         #dialog-box {
-            width: 100%; min-height: 140px; background: #0000a0; 
+            width: 100%; min-height: 140px; background: #0000a0;
             border: 4px solid #fff; border-radius: 8px; display: none;
             flex-direction: row; padding: 16px; box-sizing: border-box;
-            box-shadow: 6px 6px 0px rgba(0,0,0,0.5); pointer-events: auto; 
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.5); pointer-events: auto;
+        }
+
+        .dialog-action-btn {
+            margin-top: 12px;
+            align-self: flex-start;
+            background: #facc15;
+            color: #000;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            padding: 8px 12px;
+            border: 2px solid #fff;
+            box-shadow: 3px 3px 0px rgba(0,0,0,0.5);
+            cursor: pointer;
+            display: none;
+        }
+
+        .dialog-action-btn:hover {
+            background: #fde68a;
+            transform: translate(-1px, -1px);
         }
 
         #portrait {
@@ -141,6 +160,7 @@
                     <div id="gemini-badge" class="gemini-badge">✨ SIMON IS ANALYZING...</div>
                     <div id="text-content"></div>
                     <div id="press-space-hint">▼ PRESS SPACE</div>
+                    <button id="dialog-action-btn" class="dialog-action-btn"></button>
                 </div>
             </div>
         </div>
@@ -299,6 +319,16 @@ const BEZOS_TAUNTS = [
     "The yard IS the final exam!",
     "Automation never complains!"
 ];
+
+const BEZOS_YARD_BANTER = [
+    "Bro, that's not how you push rate.",
+    "Even I could find hazards faster than that.",
+    "Walk the line, champ—no bonus for frogger.",
+    "Two steps left and you still missed the tape.",
+    "Think you can ghost a van? Bold move."
+];
+
+const SIMON_YARD_SNARK = "Simon’s Unglaube says: If the van hits you, the van ALWAYS wins. Respect the yard lines, champ.";
 
 // --- AI STATUS HELPERS ---
 const aiStatusEl = document.getElementById('ai-status');
@@ -660,6 +690,26 @@ function generateAssets() {
     GFX.boss_jelly = c(16,16, ctx => { ctx.fillStyle = '#ec4899'; ctx.fillRect(3,1,10,5); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,5); ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); ctx.fillStyle = '#22c55e'; ctx.fillRect(3,10,10,6); ctx.fillStyle = '#f5f5f5'; ctx.fillRect(6,12,4,2); ctx.fillStyle = '#10b981'; ctx.fillRect(2,9,2,2); });
     GFX.boss_avetta = c(16,16, ctx => { ctx.fillStyle = '#0f172a'; ctx.fillRect(2,2,12,12); ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,3,10,10); ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,5,6,2); ctx.fillRect(5,9,6,2); ctx.fillStyle = '#34d399'; ctx.fillRect(4,7,8,1); ctx.fillStyle = '#fcd34d'; ctx.fillRect(7,6,2,4); });
     GFX.boss_bot = c(16,16, ctx => { ctx.fillStyle = '#475569'; ctx.fillRect(2,2,12,12); ctx.fillStyle = '#1e293b'; ctx.fillRect(3,3,10,2); ctx.fillStyle = '#7dd3fc'; ctx.fillRect(5,6,2,2); ctx.fillRect(9,6,2,2); ctx.fillStyle = '#22c55e'; ctx.fillRect(4,10,8,3); ctx.fillStyle = '#9ca3af'; ctx.fillRect(7,0,2,2); ctx.fillStyle = '#ef4444'; ctx.fillRect(7,12,2,2); });
+
+    GFX.jeff = c(28,32, ctx => {
+        // bald head
+        ctx.fillStyle = '#fcd7b6'; ctx.fillRect(8,2,12,10);
+        ctx.fillStyle = '#fbbf77'; ctx.fillRect(10,0,8,4);
+        // face
+        ctx.fillStyle = '#fcd7b6'; ctx.fillRect(6,8,16,12);
+        ctx.fillStyle = '#111827'; ctx.fillRect(8,12,4,2); ctx.fillRect(16,12,4,2);
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(9,14,2,2); ctx.fillRect(17,14,2,2);
+        ctx.fillStyle = '#7c2d12'; ctx.fillRect(12,18,4,1);
+        // hoodie body
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(4,18,20,12);
+        ctx.fillStyle = '#111827'; ctx.fillRect(6,20,16,10);
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(10,22,8,2);
+        // arms
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(0,20,6,8); ctx.fillRect(22,20,6,8);
+        ctx.fillStyle = '#fcd7b6'; ctx.fillRect(1,26,4,3); ctx.fillRect(23,26,4,3);
+        // jeans
+        ctx.fillStyle = '#1d4ed8'; ctx.fillRect(8,30,6,2); ctx.fillRect(14,30,6,2);
+    });
 
     GFX.mechaJeff = c(64,64, ctx => {
         // cockpit frame
@@ -1301,6 +1351,8 @@ const GAME = {
     froggerVehicles: [], // Frogger level vehicles
     bezosTaunt: "", // Current Bezos taunt
     bezosTauntTimer: 0, // Timer for taunt display
+    warehouseReturnPoint: null, // Where the player left the warehouse
+    pendingWarehouseReturn: false,
 
     bossTypes: [
         { name: "Labour Inspector", sprite: "boss_inspector", hp: 10, speed: 1.2, attackDelay: 50, title: "The Enforcer", desc: "Checks every corner.", attackName: "Citation Storm" },
@@ -1621,11 +1673,15 @@ function startYardLevel() {
     GAME.state = 'YARD_LEVEL';
     GAME.stateTimer = 0;
     const h = 520;
+    const startX = canvas.width / 2 - 8;
+    const startY = h - 32;
     GAME.yard = {
         height: h,
         cameraY: 0,
-        playerX: canvas.width / 2 - 8,
-        playerY: h - 32,
+        playerX: startX,
+        playerY: startY,
+        startX,
+        startY,
         speed: getCharStats(GAME.selectedChar).speed * 0.9,
         vehicles: [],
         flying: [],
@@ -1634,6 +1690,16 @@ function startYardLevel() {
         tauntLine: ['You dare clock out without my permission?', 'Prime compliance at 0%. Unacceptable.', 'Little coordinator, big mistake.'][Math.floor(Math.random()*3)],
         tauntTimer: 260,
         maxAirBoxes: 7,
+        bezos: {
+            x: canvas.width / 2 - 14,
+            y: 6,
+            w: 28,
+            h: 32,
+            form: 'human',
+            taunt: BEZOS_YARD_BANTER[Math.floor(Math.random() * BEZOS_YARD_BANTER.length)],
+            timer: 0,
+            changeDelay: 210
+        },
         throwers: [
             { x: 10, y: 26, cooldown: 70, variance: 40, timer: 60 },
             { x: canvas.width - 26, y: 26, cooldown: 70, variance: 40, timer: 80 }
@@ -2085,6 +2151,9 @@ function update() {
         return;
     }
 
+    if (GAME.state === 'YARD_LEVEL') { updateYardLevel(); updateFloatingTexts(); return; }
+    if (GAME.state === 'MECHA_BOSS') { updateMechaBattle(); updateParticles(); updateFloatingTexts(); return; }
+
     if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') {
         updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts();
         if (GAME.state !== 'FROGGER') updateCamera(); // Frogger has fixed camera
@@ -2115,6 +2184,69 @@ function updatePlayer() {
     }
 }
 
+function returnToWarehouseFromYard() {
+    if (!GAME.warehouseReturnPoint) return;
+    GAME.pendingWarehouseReturn = false;
+    GAME.yard = null;
+    GAME.state = 'PLAY';
+    GAME.nextState = 'PLAY';
+    GAME.player.x = GAME.warehouseReturnPoint.x;
+    GAME.player.y = GAME.warehouseReturnPoint.y;
+    GAME.player.speed = getCharStats(GAME.selectedChar).speed;
+    GAME.player.iframe = 30;
+    document.getElementById('hud-layer').style.display = 'block';
+    updateCamera();
+    updateMusicForState();
+}
+
+function triggerYardHazardDialog(source = 'vehicle') {
+    const actionConfig = GAME.warehouseReturnPoint ? {
+        label: 'Return to Warehouse',
+        onClick: () => {
+            GAME.pendingWarehouseReturn = true;
+            GAME.nextState = 'PLAY';
+            closeDialog();
+        }
+    } : null;
+
+    const introText = SIMON_YARD_SNARK;
+    const currentGen = GAME.genId;
+    showDialog(introText, 'Simon Unglaube', GFX.simonFace, false, actionConfig);
+
+    const hazardDescriptor = source === 'vehicle' ? 'a delivery van in the Amazon yard' : 'yard debris or traffic';
+    const prompt = `You are Simon Unglaube, WHS Senior Regional Manager. The player was clipped by ${hazardDescriptor}. Deliver a fresh, witty yard-safety quip about respecting yard lines, mirrors, and lookouts. Max 30 words.`;
+
+    callGemini(prompt, 'yard_collision').then(text => {
+        if (GAME.genId !== currentGen) return;
+        const aiLine = personalizeAIText(text);
+        showDialog(`${introText}\n\n${aiLine}`, 'Simon Unglaube', GFX.simonFace, true, actionConfig);
+    });
+
+    GAME.nextState = 'YARD_LEVEL';
+}
+
+function handleYardCollision(source = 'vehicle') {
+    if (!GAME.yard) return false;
+    const y = GAME.yard;
+    y.playerX = y.startX;
+    y.playerY = y.startY;
+    y.cameraY = Math.max(0, y.height - canvas.height);
+
+    const tookDamage = GAME.player.iframe <= 0;
+    GAME.player.iframe = 90;
+    GAME.flash = Math.max(GAME.flash, 8);
+
+    if (tookDamage) {
+        GAME.lives--;
+        AudioSys.sfx.hurt();
+        updateHud();
+        if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return true; }
+    }
+
+    triggerYardHazardDialog(source);
+    return true;
+}
+
 function updateYardLevel() {
     if (!GAME.yard) return;
     const y = GAME.yard;
@@ -2129,6 +2261,21 @@ function updateYardLevel() {
 
     const viewAnchor = y.playerY - canvas.height * 0.55;
     y.cameraY = Math.max(0, Math.min(y.height - canvas.height, viewAnchor));
+
+    // Bezos banter and transformation trigger
+    if (y.bezos) {
+        y.bezos.timer++;
+        if (y.bezos.timer >= y.bezos.changeDelay) {
+            y.bezos.taunt = BEZOS_YARD_BANTER[Math.floor(Math.random() * BEZOS_YARD_BANTER.length)];
+            y.bezos.timer = 0;
+        }
+        const collidesWithJeff = Math.abs((y.bezos.x + y.bezos.w / 2) - (y.playerX + 8)) < (y.bezos.w / 2 + 6)
+            && Math.abs((y.bezos.y + y.bezos.h / 2) - (y.playerY + 8)) < (y.bezos.h / 2 + 6);
+        if (collidesWithJeff && y.bezos.form !== 'mecha') {
+            y.bezos.form = 'mecha';
+            AudioSys.sfx.alert();
+        }
+    }
 
     // flying package gauntlet near the top
     y.flyTimer--;
@@ -2161,6 +2308,7 @@ function updateYardLevel() {
             ];
             y.tauntLine = jeffLines[Math.floor(Math.random() * jeffLines.length)];
             y.tauntTimer = 260;
+            if (y.bezos) y.bezos.taunt = y.tauntLine;
         }
     } else {
         y.flyTimer = Math.min(y.flyTimer, 50);
@@ -2184,11 +2332,7 @@ function updateYardLevel() {
         v.x += v.dir * v.speed;
         if (v.x < -80 || v.x > canvas.width + 80) { y.vehicles.splice(i,1); continue; }
         if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 6) && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 6)) {
-            if (GAME.player.iframe <= 0) {
-                GAME.lives--; GAME.player.iframe = 90; GAME.flash = 8; AudioSys.sfx.hurt(); updateHud();
-                y.playerX = canvas.width / 2 - 8; y.playerY = y.height - 32; y.cameraY = Math.max(0, y.height - canvas.height);
-                if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
-            }
+            if (handleYardCollision('vehicle')) return;
         }
     }
 
@@ -2199,11 +2343,7 @@ function updateYardLevel() {
         f.y += Math.sin(f.t / 12) * 0.4 + f.vy;
         if (f.x < -32 || f.x > canvas.width + 32 || f.y > 180) { y.flying.splice(i,1); continue; }
         if (Math.abs((f.x + f.w/2) - (y.playerX + 8)) < (f.w/2 + 6) && Math.abs((f.y + f.h/2) - (y.playerY + 8)) < (f.h/2 + 6)) {
-            if (GAME.player.iframe <= 0) {
-                GAME.lives--; GAME.player.iframe = 90; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
-                y.playerX = canvas.width / 2 - 8; y.playerY = Math.min(y.height - 32, y.playerY + 60); y.cameraY = Math.max(0, y.height - canvas.height);
-                if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
-            }
+            if (handleYardCollision('flying_box')) return;
         }
     }
 
@@ -2580,6 +2720,7 @@ function tryInteract() {
         const dx = GAME.player.x - GAME.hiddenDoor.doorX * TILE_SIZE;
         const dy = GAME.player.y - GAME.hiddenDoor.doorY * TILE_SIZE;
         if (Math.hypot(dx, dy) < 18) {
+            GAME.warehouseReturnPoint = { x: GAME.player.x, y: GAME.player.y };
             GAME.state = 'YARD_INTRO';
             GAME.stateTimer = 0;
             GAME.nextState = 'YARD_LEVEL';
@@ -2626,14 +2767,24 @@ function checkCol(x, y) {
 
 function updateHud() { document.getElementById('life-val').innerText = "❤️".repeat(Math.max(0, GAME.lives)); document.getElementById('score-val').innerText = GAME.issuesFixed + "/5"; }
 
-function showDialog(text, speaker, portrait, isAI = false) {
+function showDialog(text, speaker, portrait, isAI = false, actionConfig = null) {
     GAME.state = 'DIALOG'; GAME.dialogText = (speaker ? speaker + ":\n" : "") + text; GAME.dialogVisible = "";
-    const box = document.getElementById('dialog-box'); const badge = document.getElementById('gemini-badge'); const port = document.getElementById('portrait'); const pCtx = port.getContext('2d');
-    box.style.display = 'flex'; document.getElementById('text-content').innerText = ""; 
+    const box = document.getElementById('dialog-box'); const badge = document.getElementById('gemini-badge'); const port = document.getElementById('portrait'); const pCtx = port.getContext('2d'); const actionBtn = document.getElementById('dialog-action-btn');
+    box.style.display = 'flex'; document.getElementById('text-content').innerText = "";
     badge.style.display = isAI ? 'block' : 'none';
     badge.innerHTML = isAI ? "✨ SIMON IS ANALYZING..." : ""; // Reset badge text
     pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,32,32);
     if (portrait) pCtx.drawImage(portrait, 0, 0); else { pCtx.fillStyle='#fff'; pCtx.fillText("!", 10, 20); }
+    if (actionBtn) {
+        if (actionConfig) {
+            actionBtn.style.display = 'inline-block';
+            actionBtn.textContent = actionConfig.label || 'OK';
+            actionBtn.onclick = () => { actionConfig.onClick && actionConfig.onClick(); };
+        } else {
+            actionBtn.style.display = 'none';
+            actionBtn.onclick = null;
+        }
+    }
     AudioSys.sfx.text();
     if (speaker) TTSSys.speak(text.replace(speaker + ":\n", "").replace(/\n/g, ' '), speaker);
 }
@@ -2646,6 +2797,7 @@ function showThinking(speaker, portrait) {
     const box = document.getElementById('dialog-box');
     const badge = document.getElementById('gemini-badge');
     const port = document.getElementById('portrait');
+    const actionBtn = document.getElementById('dialog-action-btn');
     const pCtx = port.getContext('2d');
     
     box.style.display = 'flex';
@@ -2653,6 +2805,11 @@ function showThinking(speaker, portrait) {
     
     badge.style.display = 'block';
     badge.innerText = "✨ UPLINK ESTABLISHED...";
+
+    if (actionBtn) {
+        actionBtn.style.display = 'none';
+        actionBtn.onclick = null;
+    }
     
     pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,32,32);
     if (portrait) pCtx.drawImage(portrait, 0, 0);
@@ -2666,7 +2823,8 @@ function closeDialog() {
 
     if (GAME.state === 'VISITOR_SPLASH') { showVisitorSplash(); return; }
 
-    if (GAME.state === 'YARD_LEVEL') { startYardLevel(); return; }
+    if (GAME.state === 'YARD_LEVEL') { if (!GAME.yard) startYardLevel(); return; }
+    if (GAME.pendingWarehouseReturn && GAME.state === 'PLAY') { returnToWarehouseFromYard(); return; }
     if (GAME.state === 'MECHA_BOSS_INTRO') { beginMechaEncounter(); return; }
     if (GAME.state === 'CREDITS') { startCredits(); return; }
 
@@ -2843,11 +3001,26 @@ function drawYardLevel() {
                 ctx.drawImage(GFX.assoc, th.x, th.y);
             });
         }
-        if ((y.tauntShown || y.playerY < 120) && y.tauntLine) {
-            ctx.drawImage(GFX.mechaJeff, canvas.width/2 - 32, y.cameraY + 2, 64, 64);
-            ctx.fillStyle = '#0ea5e9'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
-            ctx.fillText(y.tauntLine.toUpperCase(), canvas.width/2, y.cameraY + 70);
-            ctx.textAlign = 'left';
+        if (y.bezos) {
+            const sprite = y.bezos.form === 'mecha' ? GFX.mechaJeff : GFX.jeff;
+            const spriteW = y.bezos.form === 'mecha' ? 64 : 28;
+            const spriteH = y.bezos.form === 'mecha' ? 64 : 32;
+            const bx = y.bezos.x;
+            const by = y.cameraY + y.bezos.y;
+            ctx.drawImage(sprite, bx, by, spriteW, spriteH);
+            if (y.bezos.taunt) {
+                const bubbleW = spriteW + 20;
+                const bubbleX = bx - 10;
+                const bubbleY = by + spriteH + 2;
+                ctx.fillStyle = 'rgba(15,23,42,0.9)';
+                ctx.strokeStyle = '#0ea5e9';
+                ctx.lineWidth = 1.5;
+                ctx.fillRect(bubbleX, bubbleY, bubbleW, 22);
+                ctx.strokeRect(bubbleX, bubbleY, bubbleW, 22);
+                ctx.fillStyle = '#e2e8f0'; ctx.font = '8px monospace'; ctx.textAlign = 'center';
+                ctx.fillText(y.bezos.taunt.toUpperCase(), bubbleX + bubbleW / 2, bubbleY + 14);
+                ctx.textAlign = 'left';
+            }
         }
     }
 
