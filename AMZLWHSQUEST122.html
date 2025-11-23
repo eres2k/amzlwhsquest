@@ -2150,15 +2150,17 @@ function update() {
         return;
     }
 
-    if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') {
+    if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS' || GAME.state === 'YARD_LEVEL' || GAME.state === 'MECHA_BOSS') {
         updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts();
-        if (GAME.state !== 'FROGGER') updateCamera(); // Frogger has fixed camera
+        if (GAME.state !== 'FROGGER' && GAME.state !== 'YARD_LEVEL') updateCamera(); // Frogger and Yard have custom camera
     }
 
     if (GAME.state === 'PLAY') updateEntities();
     if (GAME.state === 'BOSS') updateBoss();
     if (GAME.state === 'FROGGER') updateFrogger();
     if (GAME.state === 'BEZOS_BOSS') updateMechaBezos();
+    if (GAME.state === 'YARD_LEVEL') updateYardLevel();
+    if (GAME.state === 'MECHA_BOSS') updateMechaBattle();
 }
 
 function updatePlayer() {
