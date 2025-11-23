@@ -2085,6 +2085,11 @@ function update() {
         return;
     }
 
+    if (GAME.state === 'YARD_LEVEL') {
+        updateYardLevel();
+        return;
+    }
+
     if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') {
         updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts();
         if (GAME.state !== 'FROGGER') updateCamera(); // Frogger has fixed camera
