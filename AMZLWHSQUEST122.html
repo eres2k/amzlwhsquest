@@ -1052,12 +1052,38 @@ function generateAssets() {
     GFX.book = c(8,8, ctx => { ctx.fillStyle = '#fff'; ctx.fillRect(0,0,8,8); ctx.fillStyle='green'; ctx.fillRect(2,2,4,4); });
     GFX.req = c(10,10, ctx => { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(5,0); ctx.lineTo(10,5); ctx.lineTo(5,10); ctx.lineTo(0,5); ctx.fill(); ctx.fillStyle='red'; ctx.font='8px sans'; ctx.fillText("!",3,8); });
     GFX.bossProj = c(12,12, ctx => { ctx.fillStyle = '#ff00ff'; ctx.beginPath(); ctx.arc(6,6,5,0,Math.PI*2); ctx.fill(); });
+
+    // Hidden level assets
+    GFX.van = c(32,20, ctx => { ctx.fillStyle = '#146eb4'; ctx.fillRect(0,0,32,20); ctx.fillStyle = '#0a3d5c'; ctx.fillRect(2,2,28,16); ctx.fillStyle = '#fff'; ctx.fillRect(4,6,10,8); ctx.fillRect(18,6,10,8); ctx.fillStyle = '#000'; for(let i=0; i<2; i++) { ctx.fillRect(6+i*16,16,4,4); } });
+    GFX.truck = c(40,24, ctx => { ctx.fillStyle = '#d97706'; ctx.fillRect(0,0,40,24); ctx.fillStyle = '#78350f'; ctx.fillRect(2,2,36,20); ctx.fillStyle = '#fff'; ctx.fillRect(4,6,12,10); ctx.fillRect(22,6,12,10); ctx.fillStyle = '#000'; for(let i=0; i<2; i++) { ctx.fillRect(8+i*20,20,6,4); } });
+    GFX.road = c(16,16, ctx => { ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#ffff00'; ctx.fillRect(6,0,4,6); });
+    GFX.grass = c(16,16, ctx => { ctx.fillStyle = '#16a34a'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#22c55e'; for(let i=0; i<5; i++) { ctx.fillRect(Math.random()*12, Math.random()*12, 2, 2); } });
+    GFX.mechaBezos = c(48,48, ctx => {
+        // Mecha head
+        ctx.fillStyle = '#9ca3af'; ctx.fillRect(12,4,24,20);
+        // Bald head shine
+        ctx.fillStyle = '#d1d5db'; ctx.fillRect(14,6,8,6);
+        // Eyes (evil red glow)
+        ctx.fillStyle = '#ff0000'; ctx.fillRect(16,12,4,4); ctx.fillRect(26,12,4,4);
+        // Evil smile
+        ctx.fillStyle = '#000'; ctx.fillRect(18,18,12,2);
+        // Mecha body
+        ctx.fillStyle = '#4b5563'; ctx.fillRect(8,24,32,18);
+        // Amazon logo on chest
+        ctx.fillStyle = '#ff9900'; ctx.fillRect(20,28,8,6);
+        // Arm cannons
+        ctx.fillStyle = '#374151'; ctx.fillRect(0,26,8,12); ctx.fillRect(40,26,8,12);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(2,30,4,4); ctx.fillRect(42,30,4,4);
+        // Legs
+        ctx.fillStyle = '#6b7280'; ctx.fillRect(12,42,10,6); ctx.fillRect(26,42,10,6);
+    });
+    GFX.bezosProj = c(12,12, ctx => { ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(6,6,5,0,Math.PI*2); ctx.fill(); ctx.fillStyle = '#ff9900'; ctx.beginPath(); ctx.arc(6,6,3,0,Math.PI*2); ctx.fill(); });
 }
 // --- GAME STATE ---
 const GAME = {
-    state: 'LOGO', 
-    stateTimer: 0, 
-    nextState: 'PLAY', 
+    state: 'LOGO',
+    stateTimer: 0,
+    nextState: 'PLAY',
     ticks: 0,
     player: null,
     selectedChar: "Carrie",
@@ -1067,11 +1093,13 @@ const GAME = {
     map: [], clutter: [], entities: [], projectiles: [], particles: [], floatingTexts: [],
     activeIssues: [],
     issuesFixed: 0, lives: 5, genId: 0, gameOverTriggered: false, simonHits: 0, boss: null, pendingBossIntro: false,
-    shake: 0, flash: 0, 
+    shake: 0, flash: 0,
     dialogText: "", dialogVisible: "", dialogTimer: 0,
     splashTimer: 0, aiResultText: null,
     startTime: 0, booksFired: 0, opsPushed: 0,
     lastAIBanterTime: 0, // Throttle AI requests
+    fireExitDoor: null, // Hidden level door position
+    froggerVehicles: [], // Frogger level vehicles
 
     bossTypes: [
         { name: "Labour Inspector", sprite: "boss_inspector", hp: 10, speed: 1.2, attackDelay: 50, title: "The Enforcer", desc: "Checks every corner.", attackName: "Citation Storm" },
@@ -1240,21 +1268,36 @@ function handleAction() {
     if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') return;
     if (GAME.state === 'LOGO') { advanceState(); }
     else if (['INTRO', 'STORY'].includes(GAME.state)) { AudioSys.sfx.start(); advanceState(); }
-    else if (['TITLE', 'HOWTO'].includes(GAME.state)) { 
+    else if (['TITLE', 'HOWTO'].includes(GAME.state)) {
         GAME.state = (GAME.state==='TITLE')?'HOWTO':'SELECT'; AudioSys.sfx.select(); updateMusicForState();
     }
     else if (GAME.state === 'SELECT') { AudioSys.sfx.select(); GAME.selectedChar = GAME.charList[GAME.charIndex]; resetGame(); }
     else if (GAME.state === 'DIALOG') {
         if (GAME.dialogVisible.length < GAME.dialogText.length) {
             GAME.dialogVisible = GAME.dialogText; document.getElementById('text-content').innerText = GAME.dialogVisible;
-        } else { closeDialog(); }
+        } else {
+            closeDialog();
+            // Check if transitioning to hidden level
+            if (GAME.nextState === 'FROGGER_INTRO') {
+                initFroggerLevel();
+            }
+        }
     }
     else if (GAME.state === 'VISITOR_SPLASH') { initBossEncounter(); }
     else if (GAME.state === 'BOSS_INTRO') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
+    else if (GAME.state === 'BEZOS_INTRO') { GAME.state = 'BEZOS_BOSS'; GAME.nextState = 'BEZOS_BOSS'; updateMusicForState(); }
     else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') {
         document.getElementById('boss-hud').style.display = 'none'; GAME.state = 'TITLE'; updateMusicForState();
     }
-    else if (GAME.state === 'PLAY' || GAME.state === 'BOSS') { if (GAME.state === 'PLAY' && tryInteract()) return; throwBook(); }
+    else if (GAME.state === 'BEZOS_WIN') {
+        GAME.state = 'TITLE'; updateMusicForState();
+    }
+    else if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') {
+        if (GAME.state === 'PLAY' && tryInteract()) return;
+        if (GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') throwBook();
+        else if (GAME.state === 'BOSS') throwBook();
+        else throwBook();
+    }
 }
 
 function init() {
@@ -1324,6 +1367,7 @@ function generateMap() {
     const door = randomDoorPlacement();
     GAME.map[door.doorY][door.doorX] = 3;
     GAME.map[door.hazardY][door.hazardX] = 0;
+    GAME.fireExitDoor = { x: door.doorX * TILE_SIZE, y: door.doorY * TILE_SIZE }; // Store door position for hidden level
     GAME.activeIssues.push({ x: door.hazardX*TILE_SIZE, y: door.hazardY*TILE_SIZE, data: {name: "Blocked Exit", type: "box"}, fixed: false });
 
     spawnEntity('runner'); spawnEntity('runner');
@@ -1382,6 +1426,189 @@ function showVisitorSplash() {
     updateMusicForState();
 }
 
+// --- HIDDEN LEVEL FUNCTIONS ---
+function initFroggerLevel() {
+    GAME.state = 'FROGGER';
+    GAME.nextState = 'FROGGER';
+    GAME.player.x = 128;
+    GAME.player.y = 200; // Start at bottom
+    GAME.froggerVehicles = [];
+    GAME.entities = [];
+    GAME.projectiles = [];
+
+    // Spawn vehicles in lanes
+    for (let lane = 0; lane < 5; lane++) {
+        const y = 40 + lane * 32;
+        const isVan = lane % 2 === 0;
+        const speed = (lane % 2 === 0 ? 1.5 : -1.8) * (1 + lane * 0.2);
+        const count = 2 + Math.floor(lane / 2);
+
+        for (let i = 0; i < count; i++) {
+            GAME.froggerVehicles.push({
+                x: i * (256 / count),
+                y: y,
+                w: isVan ? 32 : 40,
+                h: isVan ? 20 : 24,
+                speed: speed,
+                type: isVan ? 'van' : 'truck'
+            });
+        }
+    }
+
+    updateMusicForState();
+}
+
+function updateFrogger() {
+    const p = GAME.player;
+
+    // Update vehicles
+    GAME.froggerVehicles.forEach(v => {
+        v.x += v.speed;
+        if (v.speed > 0 && v.x > 256) v.x = -v.w;
+        if (v.speed < 0 && v.x < -v.w) v.x = 256;
+
+        // Check collision with player
+        if (p.iframe === 0 &&
+            p.x < v.x + v.w && p.x + 16 > v.x &&
+            p.y < v.y + v.h && p.y + 16 > v.y) {
+            p.iframe = 60;
+            GAME.lives--;
+            updateHud();
+            AudioSys.sfx.hurt();
+            GAME.shake = 10;
+
+            if (GAME.lives <= 0) {
+                triggerGameOver("FLATTENED BY AMAZON LOGISTICS!");
+            }
+        }
+    });
+
+    // Check if player reached the top (victory!)
+    if (p.y < 30) {
+        initMechaBezos();
+    }
+}
+
+function initMechaBezos() {
+    GAME.state = 'BEZOS_INTRO';
+    GAME.stateTimer = 0;
+    AudioSys.sfx.bossIntro();
+
+    GAME.boss = {
+        name: "MECHA JEFF BEZOS",
+        sprite: "mechaBezos",
+        hp: 30,
+        maxHp: 30,
+        speed: 1.2,
+        attackDelay: 40,
+        title: "THE ULTIMATE BOSS",
+        desc: "Automation has gone too far!",
+        attackName: "PRIME MISSILE",
+        x: 104,
+        y: 60,
+        w: 48,
+        h: 48,
+        timer: 0,
+        tauntsTriggered: [],
+        tauntThresholds: [0.75, 0.5, 0.25]
+    };
+
+    GAME.player.x = 120;
+    GAME.player.y = 180;
+    GAME.entities = [];
+    GAME.projectiles = [];
+    GAME.froggerVehicles = [];
+
+    document.getElementById('boss-name-el').innerText = "MECHA JEFF BEZOS";
+    document.getElementById('boss-hud').style.display = 'block';
+    updateBossHud();
+    updateMusicForState();
+}
+
+function updateMechaBezos() {
+    const b = GAME.boss;
+    if (!b) return;
+
+    b.timer++;
+
+    // Move toward player
+    const dx = GAME.player.x - b.x;
+    const dy = GAME.player.y - b.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist > 60) {
+        b.x += (dx / dist) * b.speed;
+        b.y += (dy / dist) * b.speed;
+    }
+
+    // Attack pattern
+    if (b.timer % b.attackDelay === 0) {
+        // Fire missiles in a spread pattern
+        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
+            const vx = Math.cos(angle) * 3;
+            const vy = Math.sin(angle) * 3;
+            GAME.projectiles.push({
+                type: 'bezos_missile',
+                x: b.x + 24,
+                y: b.y + 24,
+                vx: vx,
+                vy: vy,
+                life: 120,
+                boss: true
+            });
+        }
+        AudioSys.sfx.throw();
+    }
+
+    // Check player projectiles hitting boss
+    for (let i = GAME.projectiles.length - 1; i >= 0; i--) {
+        const proj = GAME.projectiles[i];
+        if (proj.type === 'attack' &&
+            proj.x >= b.x && proj.x <= b.x + b.w &&
+            proj.y >= b.y && proj.y <= b.y + b.h) {
+            b.hp--;
+            updateBossHud();
+            AudioSys.sfx.bossHit();
+            GAME.shake = 5;
+            GAME.projectiles.splice(i, 1);
+            spawnParticle(proj.x, proj.y, '#ff9900', 5);
+
+            if (b.hp <= 0) {
+                winBezosLevel();
+            }
+        }
+    }
+
+    // Check boss projectiles hitting player
+    for (let i = GAME.projectiles.length - 1; i >= 0; i--) {
+        const proj = GAME.projectiles[i];
+        if (proj.type === 'bezos_missile' && GAME.player.iframe === 0) {
+            if (Math.hypot(proj.x - GAME.player.x, proj.y - GAME.player.y) < 16) {
+                GAME.lives--;
+                GAME.player.iframe = 60;
+                updateHud();
+                AudioSys.sfx.hurt();
+                GAME.shake = 8;
+                GAME.projectiles.splice(i, 1);
+
+                if (GAME.lives <= 0) {
+                    triggerGameOver("AUTOMATED OUT OF EXISTENCE!");
+                }
+            }
+        }
+    }
+}
+
+function winBezosLevel() {
+    GAME.state = 'BEZOS_WIN';
+    GAME.stateTimer = 0;
+    GAME.boss = null;
+    document.getElementById('boss-hud').style.display = 'none';
+    document.getElementById('hud-layer').style.display = 'none';
+    AudioSys.sfx.start();
+    MusicSys.play('victory');
+}
+
 function update() {
     GAME.ticks++;
     GAME.stateTimer++;
@@ -1433,14 +1660,27 @@ function update() {
         return;
     }
 
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH'].includes(GAME.state)) return;
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO'].includes(GAME.state)) return;
 
-    if (GAME.state === 'PLAY' || GAME.state === 'BOSS') {
-        updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts(); updateCamera();
+    // Bezos victory screen
+    if (GAME.state === 'BEZOS_WIN') {
+        // Auto-advance after delay
+        if (GAME.stateTimer > 300) {
+            GAME.state = 'TITLE';
+            updateMusicForState();
+        }
+        return;
+    }
+
+    if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') {
+        updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts();
+        if (GAME.state !== 'FROGGER') updateCamera(); // Frogger has fixed camera
     }
 
     if (GAME.state === 'PLAY') updateEntities();
     if (GAME.state === 'BOSS') updateBoss();
+    if (GAME.state === 'FROGGER') updateFrogger();
+    if (GAME.state === 'BEZOS_BOSS') updateMechaBezos();
 }
 
 function updatePlayer() {
@@ -1450,8 +1690,14 @@ function updatePlayer() {
     if (KEYS.up) dy = -p.speed; if (KEYS.down) dy = p.speed; if (KEYS.left) dx = -p.speed; if (KEYS.right) dx = p.speed;
     if (dx!==0 && dy!==0) { dx *= 0.707; dy *= 0.707; }
     if (dx!==0 || dy!==0) {
-        if (!checkCol(p.x+dx, p.y)) p.x+=dx;
-        if (!checkCol(p.x, p.y+dy)) p.y+=dy;
+        // In Frogger mode, no collision detection with walls
+        if (GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') {
+            p.x = Math.max(0, Math.min(240, p.x + dx));
+            p.y = Math.max(0, Math.min(208, p.y + dy));
+        } else {
+            if (!checkCol(p.x+dx, p.y)) p.x+=dx;
+            if (!checkCol(p.x, p.y+dy)) p.y+=dy;
+        }
         if (GAME.ticks % 20 === 0) { AudioSys.sfx.step(); spawnParticle(p.x+8, p.y+16, '#555', 0); }
     }
 }
@@ -1570,7 +1816,10 @@ function updateProjectiles() {
     for(let i=GAME.projectiles.length-1; i>=0; i--) {
         let p = GAME.projectiles[i];
         p.x += p.vx; p.y += p.vy; p.life--; if(p.grace > 0) p.grace--;
-        if (p.grace <= 0 && checkCol(p.x, p.y)) { GAME.projectiles.splice(i,1); continue; }
+        // Skip wall collision check in Frogger and Bezos levels
+        if (GAME.state !== 'FROGGER' && GAME.state !== 'BEZOS_BOSS') {
+            if (p.grace <= 0 && checkCol(p.x, p.y)) { GAME.projectiles.splice(i,1); continue; }
+        }
         if (p.life <= 0) { GAME.projectiles.splice(i,1); continue; }
         if ((p.type === 'req') && Math.hypot(p.x-GAME.player.x, p.y-GAME.player.y) < 10) {
             if (GAME.player.iframe<=0) {
@@ -1660,17 +1909,26 @@ function throwBook() {
 
 function tryInteract() {
     const p = GAME.player;
+
+    // Check if player is near fire exit door after all hazards cleared
+    if (GAME.issuesFixed >= 5 && GAME.fireExitDoor && Math.hypot(p.x - GAME.fireExitDoor.x, p.y - GAME.fireExitDoor.y) < 20) {
+        AudioSys.sfx.alert();
+        showDialog("You found the hidden exit!\n\nYou step through the fire door into the Amazon yard...", "System", null, false);
+        GAME.nextState = 'FROGGER_INTRO';
+        return true;
+    }
+
     for (let i=0; i<GAME.entities.length; i++) {
         let e = GAME.entities[i];
         if (e.type === 'runner' && Math.hypot(p.x-e.x, p.y-e.y) < 20) {
              e.type = 'assoc'; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
              spawnFloatingText(e.x, e.y, "Safe!", "#00ff00");
-             
+
              if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
 
              // SIMON COMMENTARY
              const currentGen = GAME.genId;
-             
+
              // --- CHANGED: Show thinking state immediately for responsiveness ---
              showThinking("Simon Unglaube", GFX.simonFace);
 
@@ -1687,12 +1945,12 @@ function tryInteract() {
         if (!h.fixed && Math.hypot(p.x-h.x, p.y-h.y) < 20) {
             h.fixed = true; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
             spawnFloatingText(h.x, h.y, "Fixed!", "#00ff00");
-            
+
             if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
 
             // SIMON COMMENTARY
             const currentGen = GAME.genId;
-            
+
             // --- CHANGED: Show thinking state immediately ---
             showThinking("Simon Unglaube", GFX.simonFace);
 
@@ -2012,6 +2270,176 @@ function draw() {
         ctx.fillStyle = '#fff'; ctx.fillText("[PRESS SPACE TO FIGHT]", 50, 200); ctx.restore(); return;
     }
 
+    // Frogger level rendering
+    if (GAME.state === 'FROGGER') {
+        // Background
+        ctx.fillStyle = '#16a34a'; ctx.fillRect(0, 0, 256, 30); // Top grass
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 30, 256, 160); // Road
+        ctx.fillStyle = '#16a34a'; ctx.fillRect(0, 190, 256, 34); // Bottom grass
+
+        // Road lanes
+        for (let lane = 0; lane < 5; lane++) {
+            const y = 40 + lane * 32;
+            ctx.fillStyle = '#ffff00';
+            for (let i = 0; i < 16; i++) {
+                ctx.fillRect(i * 18, y + 10, 10, 2);
+            }
+        }
+
+        // Vehicles
+        GAME.froggerVehicles.forEach(v => {
+            const img = v.type === 'van' ? GFX.van : GFX.truck;
+            ctx.drawImage(img, v.x, v.y);
+        });
+
+        // Player
+        const p = GAME.player;
+        if (p.iframe % 4 < 2) {
+            ctx.drawImage(GFX.chars[GAME.selectedChar], p.x, p.y);
+        }
+
+        // UI
+        ctx.fillStyle = '#fff';
+        ctx.font = '10px "Press Start 2P"';
+        ctx.fillText("CROSS TO THE TOP!", 40, 15);
+        ctx.restore();
+        return;
+    }
+
+    // Bezos intro screen
+    if (GAME.state === 'BEZOS_INTRO' && GAME.boss) {
+        ctx.fillStyle = '#0a0a0a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Dramatic lines
+        for (let i = 0; i < 10; i++) {
+            ctx.strokeStyle = `rgba(255, 153, 0, ${0.3 - i * 0.03})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(128, 112);
+            const angle = (GAME.stateTimer * 0.05 + i * 0.3) % (Math.PI * 2);
+            ctx.lineTo(128 + Math.cos(angle) * 200, 112 + Math.sin(angle) * 200);
+            ctx.stroke();
+        }
+
+        ctx.fillStyle = '#ff9900'; ctx.font = '16px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText("FINAL BOSS", 128, 40);
+        ctx.fillStyle = '#ff0000'; ctx.font = '14px "Press Start 2P"';
+        ctx.fillText("MECHA JEFF BEZOS", 128, 70);
+        ctx.fillStyle = '#fff'; ctx.font = '8px monospace';
+        ctx.fillText("AUTOMATION PROTOCOL ACTIVATED", 128, 90);
+
+        // Boss sprite
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(GFX.mechaBezos, 104, 100, 48, 48);
+        ctx.restore();
+
+        ctx.fillStyle = '#eab308'; ctx.font = '8px monospace';
+        ctx.fillText("PRIME MISSILES READY", 128, 170);
+        ctx.fillStyle = '#fff';
+        ctx.fillText("[PRESS SPACE]", 128, 200);
+        ctx.textAlign = 'left';
+        ctx.restore();
+        return;
+    }
+
+    // Bezos boss fight rendering
+    if (GAME.state === 'BEZOS_BOSS') {
+        // Space background
+        ctx.fillStyle = '#0a0a14'; ctx.fillRect(0, 0, 256, 224);
+
+        // Stars
+        for (let i = 0; i < 50; i++) {
+            const x = (i * 37) % 256;
+            const y = (i * 61) % 224;
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(x, y, 1, 1);
+        }
+
+        // Boss
+        if (GAME.boss) {
+            ctx.drawImage(GFX.mechaBezos, GAME.boss.x, GAME.boss.y);
+        }
+
+        // Player
+        const p = GAME.player;
+        if (p.iframe % 4 < 2) {
+            ctx.drawImage(GFX.chars[GAME.selectedChar], p.x, p.y);
+        }
+
+        // Projectiles
+        GAME.projectiles.forEach(proj => {
+            if (proj.type === 'bezos_missile') {
+                ctx.drawImage(GFX.bezosProj, proj.x, proj.y);
+            } else if (proj.type === 'attack') {
+                const sprite = (GFX.attacks && GFX.attacks[proj.owner]) ? GFX.attacks[proj.owner] : GFX.book;
+                ctx.drawImage(sprite, proj.x, proj.y);
+            }
+        });
+
+        ctx.restore();
+        return;
+    }
+
+    // Bezos victory screen
+    if (GAME.state === 'BEZOS_WIN') {
+        // Victory gradient
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#1a4d1a');
+        gradient.addColorStop(1, '#0a1a0a');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Fireworks effect
+        for (let i = 0; i < 20; i++) {
+            const x = (i * 31 + GAME.stateTimer * 2) % 256;
+            const y = (i * 47 + GAME.stateTimer * 3) % 224;
+            const colors = ['#ff9900', '#ffd700', '#ff6b6b', '#4ecdc4'];
+            ctx.fillStyle = colors[i % colors.length];
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.textAlign = 'center';
+        ctx.font = '16px "Press Start 2P"';
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText("CONGRATULATIONS!", 128, 40);
+
+        ctx.font = '12px "Press Start 2P"';
+        ctx.fillStyle = '#fff';
+        ctx.fillText("YOU DEFEATED", 128, 70);
+        ctx.fillText("MECHA JEFF BEZOS!", 128, 90);
+
+        // Digitized face (using character sprite as placeholder)
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        const faceSize = 64;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(96, 100, faceSize, faceSize);
+        ctx.drawImage(GFX.chars[GAME.selectedChar], 96, 100, faceSize, faceSize);
+        ctx.restore();
+
+        ctx.font = '10px "Press Start 2P"';
+        ctx.fillStyle = '#00ff00';
+        ctx.fillText("TRUE HERO OF WHS!", 128, 175);
+
+        // Credits
+        ctx.font = '8px monospace';
+        ctx.fillStyle = '#888';
+        const creditsY = 190;
+        ctx.fillText("CREDITS:", 128, creditsY);
+        const credits = ["Director: Erwin Esener", "Producer: Erwin Esener", "Lead Dev: Erwin Esener", "Art: Erwin Esener", "Music: Erwin Esener"];
+        credits.forEach((credit, i) => {
+            ctx.fillText(credit, 128, creditsY + 12 + i * 10);
+        });
+
+        ctx.textAlign = 'left';
+        ctx.restore();
+        return;
+    }
+
     const cx = Math.floor(GAME.camera.x); const cy = Math.floor(GAME.camera.y);
     let sx = Math.floor(cx/TILE_SIZE); let ex = sx + 17; let sy = Math.floor(cy/TILE_SIZE); let ey = sy + 15;
     for(let y=sy; y<=ey; y++) {
@@ -2020,7 +2448,16 @@ function draw() {
                 let t = GAME.map[y][x]; let dx = x*TILE_SIZE - cx; let dy = y*TILE_SIZE - cy;
                 if (t===0) ctx.drawImage(GFX.floor, dx, dy); if (t===1) ctx.drawImage(GFX.wall, dx, dy);
                 if (t===2) { ctx.drawImage(GFX.floor, dx, dy); ctx.drawImage(GFX.shelf, dx, dy); }
-                if (t===3) { ctx.drawImage(GFX.wall, dx, dy); ctx.drawImage(GFX.door, dx, dy); }
+                if (t===3) {
+                    ctx.drawImage(GFX.wall, dx, dy);
+                    ctx.drawImage(GFX.door, dx, dy);
+                    // Glow effect when door is accessible (all hazards cleared)
+                    if (GAME.issuesFixed >= 5 && GAME.fireExitDoor) {
+                        const pulse = Math.sin(GAME.ticks * 0.1) * 0.3 + 0.7;
+                        ctx.fillStyle = `rgba(255, 215, 0, ${pulse * 0.4})`;
+                        ctx.fillRect(dx - 2, dy - 2, 20, 20);
+                    }
+                }
             }
         }
     }
