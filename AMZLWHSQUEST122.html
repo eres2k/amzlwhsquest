@@ -1313,87 +1313,90 @@ const GAME = {
 };
 
 const HAZARD_POOL = [
+    // Cages, carts & equipment
     { name: "Runaway Roller Cage", type: "cage" },
     { name: "Rogue Blue Cart", type: "cart" },
+    { name: "Poorly Parked Pump Truck", type: "jack" },
+    { name: "Untrained Pallet Jack Driver", type: "jack" },
+    { name: "Associate Riding Pallet Jack Like Scooter", type: "jack" },
+
+    // Spills & floor hazards
     { name: "Mysterious Wet Spot", type: "spill" },
     { name: "Leaking Ice Pack", type: "spill" },
-    { name: "Misplaced Fire Door Wedge", type: "door" },
-    { name: "Unplugged Dock Plate Sensor", type: "dock" },
-    { name: "Crumbling Pallet Kingdom", type: "tall_pallet" },
-    { name: "Jammed Chute Monster", type: "conveyor" },
-    { name: "DIY Stair Railing", type: "facility" },
     { name: "Slippery Floor Tape", type: "spill" },
-    
-    // Funny but realistic WHS chaos
     { name: "Coffee Lake at Standup", type: "spill" },
     { name: "Mysterious Lunchbox Leak", type: "spill" },
-    { name: "The Legendary Flying Tote", type: "tote" },
-    { name: "Forbidden Pallet Tower of Vienna", type: "tall_pallet" },
-    { name: "Beeping Scanner of Doom", type: "cord" },
-    { name: "Random Orange Cone", type: "facility" },
     { name: "Breakroom Soup Catastrophe", type: "spill" },
     { name: "Sweaty Floor From Peak Shift", type: "spill" },
-    
-    // Real-life Amazon classics
-    { name: "DSP Van Oil Drip", type: "spill" },
-    { name: "On-Road Safety Cone Family", type: "facility" },
-    { name: "Fallen Exit Sign", type: "facility" },
-    { name: "Poorly Parked Pump Truck", type: "jack" },
-    { name: "Stray Shipping Label", type: "debris" },
-    { name: "Half-Dead Emergency Light", type: "facility" },
-    { name: "Box with Surprises (Unknown Contents)", type: "box" },
-    { name: "Missing Bollard Protector", type: "facility" },
-    { name: "Frayed Box Cutter Lanyard", type: "cord" },
-    { name: "Untrained Pallet Jack Driver", type: "jack" },
-    
-    // Peak Season specials
     { name: "Gift Wrap Glitter Spill", type: "spill" },
-    { name: "Overfilled Holiday Tote", type: "tote" },
     { name: "Candy Cane Slippage Hazard", type: "spill" },
-    { name: "Runaway Santa Sweater Fibers", type: "debris" },
+    { name: "Random Banana Peel", type: "spill" },
+
+    // Fire & facility
+    { name: "Misplaced Fire Door Wedge", type: "door" },
+    { name: "Fallen Exit Sign", type: "facility" },
+    { name: "Half-Dead Emergency Light", type: "facility" },
+    { name: "Random Orange Cone", type: "facility" },
+    { name: "DIY Stair Railing", type: "facility" },
+    { name: "The Forbidden Shortcut", type: "facility" },
+
+    // Docks (indoor)
+    { name: "Unplugged Dock Plate Sensor", type: "dock" },
+    { name: "Dock Door That Won’t Stay Open", type: "dock" },
+    { name: "Dock Door That Won’t Stay Closed", type: "dock" },
+
+    // Tall stacks / storage chaos
+    { name: "Crumbling Pallet Kingdom", type: "tall_pallet" },
+    { name: "Forbidden Pallet Tower of Vienna", type: "tall_pallet" },
+    { name: "Leaning Tower of Mis-Sorted Packages", type: "tall_pallet" },
+    { name: "Stack Held Together by Hope", type: "tall_pallet" },
+    { name: "Stack of Empty Pallets Too High", type: "tall_pallet" },
+
+    // Conveyors & chutes
+    { name: "Jammed Chute Monster", type: "conveyor" },
+    { name: "Employee Who Thinks He’s Faster Than Conveyor", type: "npc" },
+    { name: "Loose Conveyor Guard Screw", type: "conveyor" },
+
+    // Debris
+    { name: "Stray Shipping Label", type: "debris" },
+    { name: "Bag of Air Pillows on the Loose", type: "debris" },
+    { name: "Wet Packaging Foam Bits", type: "debris" },
+    { name: "Overloaded Recycling Bin", type: "debris" },
+
+    // Totes & boxes
+    { name: "The Legendary Flying Tote", type: "tote" },
+    { name: "Overfilled Holiday Tote", type: "tote" },
+    { name: "Bermuda Triangle of Missing Totes", type: "tote" },
+    { name: "Box with Surprises (Unknown Contents)", type: "box" },
+    { name: "Box Labelled 'Definitely Not Dangerous'", type: "box" },
+
+    // Tools / cords / blades
+    { name: "Beeping Scanner of Doom", type: "cord" },
+    { name: "Frayed Box Cutter Lanyard", type: "cord" },
+    { name: "Glitching Voice Pick Headset", type: "cord" },
+    { name: "Scanner That Randomly Reboots", type: "cord" },
+    { name: "Mystery Bluetooth Interference", type: "cord" },
+    { name: "Charging Cable Across Walkway", type: "cord" },
+    { name: "Open Knife Left on Cart", type: "blade" },
 
     // NPC-related hazards
-    { name: "Associate Napping Behind Gaylord", type: "npc" },
+    { name: "Associate Napping Behind OB Cart", type: "npc" },
     { name: "Speedwalking Manager", type: "npc" },
     { name: "New Hire in Wrong Area", type: "npc" },
     { name: "Stower Dancing to Headphones", type: "npc" },
     { name: "Driver With 8 Empty Coffee Cups", type: "npc" },
 
-    // Funny DS chaos
-    { name: "Unexplained Forklift Beeping", type: "forklift" },
-    { name: "Van Driver Doing a 27-Point Turn", type: "yard" },
-    { name: "Dock Door That Won’t Stay Open", type: "dock" },
-    { name: "Dock Door That Won’t Stay Closed", type: "dock" },
-    { name: "Leaning Tower of Mis-Sorted Packages", type: "tall_pallet" },
-    { name: "Bag of Air Pillows on the Loose", type: "debris" },
-    { name: "Crushed Amazon Fresh Bag", type: "spill" },
-    { name: "Open Knife Left on Cart", type: "blade" },
-    { name: "Bermuda Triangle of Missing Totes", type: "tote" },
-
-    // Tech weirdness
-    { name: "Glitching Voice Pick Headset", type: "cord" },
-    { name: "Scanner That Randomly Reboots", type: "cord" },
-    { name: "Mystery Bluetooth Interference", type: "cord" },
-
-    // High comedy hazards
-    { name: "Associate Riding Pallet Jack Like Scooter", type: "jack" },
-    { name: "Box Labelled 'Definitely Not Dangerous'", type: "box" },
-    { name: "Stack Held Together by Hope", type: "tall_pallet" },
-    { name: "Employee Who Thinks He’s Faster Than Conveyor", type: "npc" },
-    { name: "The Forbidden Shortcut", type: "facility" },
-    { name: "Random Banana Peel", type: "spill" },
-
-    // Yard area special for your yard music level
-    { name: "Leaking Coolant from DSP Van", type: "spill" },
-    { name: "Loose Yard Sign Flapping Menacingly", type: "facility" },
-    { name: "Stray Wheel Chock", type: "debris" },
-    { name: "Wet Leaves From Delivery Vans", type: "spill" },
-    { name: "Van Door Hinge Failure", type: "yard" },
-
-    // Simon Unglaube tribute hazards (WHS manager boss fight)
+    // WHS / compliance chaos (boss fight pool)
     { name: "SIR Spike on Whiteboard", type: "compliance" },
     { name: "Outdated Risk Assessment", type: "compliance" },
     { name: "Unapproved Process Change", type: "compliance" },
+
+    // New realistic indoor DS hazards
+    { name: "Unsecured OB Cart Edge", type: "facility" },
+    { name: "Compactor Area Blocked", type: "facility" },
+    { name: "Fire Extinguisher Partially Obstructed", type: "facility" },
+    { name: "Broken Roller on Cage", type: "cage" },
+    { name: "Misaligned Floor Marking", type: "facility" },
 ];
 
 function shuffleArray(arr) {
