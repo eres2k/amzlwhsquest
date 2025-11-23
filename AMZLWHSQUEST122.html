@@ -1681,8 +1681,7 @@ function startYardLevel() {
             w: 24,
             h: 24,
             transformed: false,
-            tauntTimer: 0,
-            currentTaunt: BEZOS_TAUNTS[Math.floor(Math.random() * BEZOS_TAUNTS.length)]
+            tauntTimer: 0
         },
         // Save position for car hit respawn
         lastSafeX: canvas.width / 2 - 8,
@@ -2313,11 +2312,12 @@ function updateYardLevel() {
         }
     }
 
-    // Update Jeff Bezos taunt timer
+    // Update Jeff Bezos taunt timer - spawn floating text above his head
     if (!y.bezos.transformed) {
         y.bezos.tauntTimer++;
         if (y.bezos.tauntTimer > 180) { // Change taunt every 3 seconds
-            y.bezos.currentTaunt = BEZOS_TAUNTS[Math.floor(Math.random() * BEZOS_TAUNTS.length)];
+            const taunt = BEZOS_TAUNTS[Math.floor(Math.random() * BEZOS_TAUNTS.length)];
+            spawnFloatingText(y.bezos.x, y.bezos.y - 8, taunt, '#ff9900');
             y.bezos.tauntTimer = 0;
         }
 
@@ -3005,45 +3005,18 @@ function drawYardLevel() {
             });
         }
 
-        // Draw Jeff Bezos as regular character or transformed
+        // Draw Jeff Bezos as regular character (not transformed yet)
         if (y.bezos && !y.bezos.transformed) {
             // Draw regular Jeff Bezos (using bezosHead sprite)
             ctx.drawImage(GFX.bezosHead, y.bezos.x, y.bezos.y);
-
-            // Draw associate banter above his head (speech bubble style)
-            const taunt = y.bezos.currentTaunt;
-            const tauntWidth = ctx.measureText(taunt).width;
-            const bubbleX = y.bezos.x + y.bezos.w/2 - tauntWidth/2 - 6;
-            const bubbleY = y.bezos.y - 28;
-            const bubbleW = tauntWidth + 12;
-            const bubbleH = 20;
-
-            // Speech bubble background
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(bubbleX, bubbleY, bubbleW, bubbleH);
-            ctx.fillStyle = '#000000';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(bubbleX, bubbleY, bubbleW, bubbleH);
-
-            // Speech bubble tail
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.moveTo(y.bezos.x + y.bezos.w/2 - 3, bubbleY + bubbleH);
-            ctx.lineTo(y.bezos.x + y.bezos.w/2 + 3, bubbleY + bubbleH);
-            ctx.lineTo(y.bezos.x + y.bezos.w/2, bubbleY + bubbleH + 5);
-            ctx.fill();
-            ctx.stroke();
-
-            // Taunt text
-            ctx.fillStyle = '#000000';
-            ctx.font = '7px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText(taunt, y.bezos.x + y.bezos.w/2, bubbleY + 13);
-            ctx.textAlign = 'left';
         }
     }
 
     ctx.drawImage(GFX.chars[GAME.selectedChar], GAME.player.x, GAME.player.y);
+
+    // Draw floating texts (for Jeff Bezos taunts and other messages)
+    GAME.floatingTexts.forEach(t => { ctx.fillStyle = t.color; ctx.font = '7px monospace'; ctx.fillText(t.text, t.x, t.y); });
+
     ctx.fillStyle = '#facc15'; ctx.font = '8px monospace'; ctx.fillText('GOAL', 8, 8);
     ctx.restore();
 }
