@@ -276,6 +276,30 @@ const SIMULATED_AI = {
     ]
 };
 
+// --- BEZOS TAUNTS FOR FROGGER LEVEL ---
+const BEZOS_TAUNTS = [
+    "Work harder, not smarter!",
+    "Day One? Try Day DONE!",
+    "No bathroom breaks in space!",
+    "Prime delivery: FAILURE!",
+    "Your metrics are TERRIBLE!",
+    "Automate or ELIMINATE!",
+    "I'm watching your IDLE TIME!",
+    "Customer obsession DEMANDS speed!",
+    "Move faster! Time is MONEY!",
+    "Safety? I have insurance!",
+    "Be peculiar! Like a PANCAKE!",
+    "Invent and SIMPLIFY your exit!",
+    "Ownership? I own EVERYTHING!",
+    "Bias for ACTION not survival!",
+    "Think BIG or go HOME!",
+    "Frugality means NO raises!",
+    "Deliver RESULTS or get REPLACED!",
+    "Your TOT is UNACCEPTABLE!",
+    "The yard IS the final exam!",
+    "Automation never complains!"
+];
+
 // --- AI STATUS HELPERS ---
 const aiStatusEl = document.getElementById('ai-status');
 let aiStatus = "init";
@@ -1135,19 +1159,123 @@ function generateAssets() {
     GFX.req = c(10,10, ctx => { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(5,0); ctx.lineTo(10,5); ctx.lineTo(5,10); ctx.lineTo(0,5); ctx.fill(); ctx.fillStyle='red'; ctx.font='8px sans'; ctx.fillText("!",3,8); });
     GFX.bossProj = c(12,12, ctx => { ctx.fillStyle = '#ff00ff'; ctx.beginPath(); ctx.arc(6,6,5,0,Math.PI*2); ctx.fill(); });
 
-    GFX.erwinFace = c(96,96, ctx => {
-        ctx.fillStyle = '#111827'; ctx.fillRect(0,0,96,96);
-        ctx.fillStyle = '#1f2937'; ctx.fillRect(6,6,84,84);
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(4,60,88,20);
-        ctx.fillStyle = '#f5d0a0'; ctx.fillRect(26,26,44,40);
-        ctx.fillStyle = '#d1a878'; ctx.fillRect(30,30,36,30);
-        ctx.fillStyle = '#0b1224'; ctx.fillRect(30,40,36,6);
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(32,36,10,4); ctx.fillRect(54,36,10,4);
-        ctx.fillStyle = '#eab308'; ctx.fillRect(44,52,8,4);
-        ctx.fillStyle = '#0b1224'; ctx.fillRect(34,56,28,10);
-        ctx.fillStyle = '#e5e7eb'; ctx.fillRect(22,22,52,6);
-        ctx.fillStyle = '#4b5563'; ctx.fillRect(18,18,60,6);
-        ctx.fillStyle = '#6b7280'; ctx.fillRect(32,68,32,10);
+    // Hidden level assets - HIGH QUALITY SNES style
+    GFX.van = c(32,22, ctx => {
+        // Main body outline
+        ctx.fillStyle = '#0a3d5c'; ctx.fillRect(0,1,32,19);
+        // Main body - Amazon blue with gradient effect
+        ctx.fillStyle = '#146eb4'; ctx.fillRect(1,2,30,17);
+        ctx.fillStyle = '#1e7fc4'; ctx.fillRect(1,2,30,2); // Top highlight
+        ctx.fillStyle = '#0a4d7c'; ctx.fillRect(1,17,30,2); // Bottom shadow
+        // Windshield (angled)
+        ctx.fillStyle = '#4a5f7f'; ctx.fillRect(2,4,11,8);
+        ctx.fillStyle = '#6a8fb8'; ctx.fillRect(3,5,9,6);
+        ctx.fillStyle = '#87ceeb'; ctx.fillRect(4,6,7,4);
+        // Side windows
+        ctx.fillStyle = '#4a5f7f'; ctx.fillRect(14,5,7,7);
+        ctx.fillStyle = '#6a8fb8'; ctx.fillRect(15,6,5,5);
+        ctx.fillStyle = '#87ceeb'; ctx.fillRect(15,6,4,4);
+        ctx.fillStyle = '#4a5f7f'; ctx.fillRect(22,5,7,7);
+        ctx.fillStyle = '#6a8fb8'; ctx.fillRect(23,6,5,5);
+        ctx.fillStyle = '#87ceeb'; ctx.fillRect(23,6,4,4);
+        // Amazon smile arrow
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(15,13,10,2);
+        ctx.fillRect(23,13,2,3);
+        // Front grille
+        ctx.fillStyle = '#222'; ctx.fillRect(2,11,4,3);
+        // Wheels (detailed)
+        ctx.fillStyle = '#000'; ctx.fillRect(5,19,6,3);
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(6,19,4,3);
+        ctx.fillStyle = '#444'; ctx.fillRect(7,20,2,1);
+        ctx.fillStyle = '#000'; ctx.fillRect(21,19,6,3);
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(22,19,4,3);
+        ctx.fillStyle = '#444'; ctx.fillRect(23,20,2,1);
+        // Highlights
+        ctx.fillStyle = '#fff'; ctx.fillRect(2,3,2,1); ctx.fillRect(5,5,1,2);
+    });
+    GFX.truck = c(42,26, ctx => {
+        // Outline
+        ctx.fillStyle = '#4a2511'; ctx.fillRect(0,1,42,23);
+        // Main body - brown with shading
+        ctx.fillStyle = '#8b4513'; ctx.fillRect(1,2,40,21);
+        ctx.fillStyle = '#a0522d'; ctx.fillRect(1,2,40,3); // Top highlight
+        ctx.fillStyle = '#5d2a0a'; ctx.fillRect(1,20,40,3); // Bottom shadow
+        // Cab section
+        ctx.fillStyle = '#654321'; ctx.fillRect(1,3,14,15);
+        // Windshield
+        ctx.fillStyle = '#2a3f5f'; ctx.fillRect(2,5,13,9);
+        ctx.fillStyle = '#4a6f8f'; ctx.fillRect(3,6,11,7);
+        ctx.fillStyle = '#6a9fbe'; ctx.fillRect(4,7,9,5);
+        // Cargo section windows
+        ctx.fillStyle = '#2a3f5f'; ctx.fillRect(17,6,9,8);
+        ctx.fillStyle = '#4a6f8f'; ctx.fillRect(18,7,7,6);
+        ctx.fillStyle = '#87ceeb'; ctx.fillRect(19,8,5,4);
+        ctx.fillStyle = '#2a3f5f'; ctx.fillRect(28,6,9,8);
+        ctx.fillStyle = '#4a6f8f'; ctx.fillRect(29,7,7,6);
+        ctx.fillStyle = '#87ceeb'; ctx.fillRect(30,8,5,4);
+        // Amazon logo (large on side)
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(18,15,18,4);
+        ctx.fillRect(32,15,4,5);
+        ctx.fillStyle = '#000';
+        ctx.font = '6px monospace';
+        ctx.fillText('PRIME', 20, 18);
+        // Front grille
+        ctx.fillStyle = '#222'; ctx.fillRect(2,13,6,4);
+        // Wheels (detailed)
+        ctx.fillStyle = '#000'; ctx.fillRect(7,23,7,3);
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(8,23,5,3);
+        ctx.fillStyle = '#555'; ctx.fillRect(9,24,3,1);
+        ctx.fillStyle = '#000'; ctx.fillRect(29,23,7,3);
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(30,23,5,3);
+        ctx.fillStyle = '#555'; ctx.fillRect(31,24,3,1);
+        // Highlights
+        ctx.fillStyle = '#fff'; ctx.fillRect(2,3,3,1); ctx.fillRect(5,6,1,3);
+    });
+    GFX.bezosHead = c(24,24, ctx => {
+        // Bald head
+        ctx.fillStyle = '#f5deb3'; ctx.fillRect(4,2,16,18);
+        // Head shine
+        ctx.fillStyle = '#fff'; ctx.fillRect(6,4,6,4);
+        // Eyes
+        ctx.fillStyle = '#000'; ctx.fillRect(8,10,3,3); ctx.fillRect(13,10,3,3);
+        // Evil eyebrows
+        ctx.fillStyle = '#000'; ctx.fillRect(7,8,4,1); ctx.fillRect(13,8,4,1);
+        // Smile
+        ctx.fillStyle = '#000'; ctx.fillRect(8,16,8,2);
+        // Ears
+        ctx.fillStyle = '#f5deb3'; ctx.fillRect(2,12,2,4); ctx.fillRect(20,12,2,4);
+    });
+    GFX.mechaBezos = c(48,48, ctx => {
+        // Mecha head
+        ctx.fillStyle = '#9ca3af'; ctx.fillRect(12,4,24,20);
+        // Bald head shine
+        ctx.fillStyle = '#d1d5db'; ctx.fillRect(14,6,8,6);
+        // Eyes (evil red glow)
+        ctx.fillStyle = '#ff0000'; ctx.fillRect(16,12,4,4); ctx.fillRect(26,12,4,4);
+        // Evil smile
+        ctx.fillStyle = '#000'; ctx.fillRect(18,18,12,2);
+        // Mecha body
+        ctx.fillStyle = '#4b5563'; ctx.fillRect(8,24,32,18);
+        // Amazon logo on chest
+        ctx.fillStyle = '#ff9900'; ctx.fillRect(20,28,8,6);
+        // Arm cannons
+        ctx.fillStyle = '#374151'; ctx.fillRect(0,26,8,12); ctx.fillRect(40,26,8,12);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(2,30,4,4); ctx.fillRect(42,30,4,4);
+        // Legs
+        ctx.fillStyle = '#6b7280'; ctx.fillRect(12,42,10,6); ctx.fillRect(26,42,10,6);
+    });
+    GFX.bezosProj = c(12,12, ctx => { ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(6,6,5,0,Math.PI*2); ctx.fill(); ctx.fillStyle = '#ff9900'; ctx.beginPath(); ctx.arc(6,6,3,0,Math.PI*2); ctx.fill(); });
+    GFX.drone = c(16,16, ctx => {
+        // Drone body
+        ctx.fillStyle = '#2a2a2a'; ctx.fillRect(4,6,8,4);
+        // Propellers
+        ctx.fillStyle = '#444'; ctx.fillRect(2,4,3,8); ctx.fillRect(11,4,3,8);
+        // Eye/camera
+        ctx.fillStyle = '#ff0000'; ctx.fillRect(7,7,2,2);
+        // Amazon logo
+        ctx.fillStyle = '#ff9900'; ctx.fillRect(5,7,2,2); ctx.fillRect(9,7,2,2);
     });
 }
 // --- GAME STATE ---
@@ -1164,12 +1292,15 @@ const GAME = {
     map: [], clutter: [], entities: [], projectiles: [], particles: [], floatingTexts: [],
     activeIssues: [],
     issuesFixed: 0, lives: 5, genId: 0, gameOverTriggered: false, simonHits: 0, boss: null, pendingBossIntro: false,
-    hiddenDoor: null, yard: null, mecha: null,
     shake: 0, flash: 0,
     dialogText: "", dialogVisible: "", dialogTimer: 0,
     splashTimer: 0, aiResultText: null,
     startTime: 0, booksFired: 0, opsPushed: 0,
     lastAIBanterTime: 0, // Throttle AI requests
+    fireExitDoor: null, // Hidden level door position
+    froggerVehicles: [], // Frogger level vehicles
+    bezosTaunt: "", // Current Bezos taunt
+    bezosTauntTimer: 0, // Timer for taunt display
 
     bossTypes: [
         { name: "Labour Inspector", sprite: "boss_inspector", hp: 10, speed: 1.2, attackDelay: 50, title: "The Enforcer", desc: "Checks every corner.", attackName: "Citation Storm" },
@@ -1338,26 +1469,36 @@ function handleAction() {
     if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') return;
     if (GAME.state === 'LOGO') { advanceState(); }
     else if (['INTRO', 'STORY'].includes(GAME.state)) { AudioSys.sfx.start(); advanceState(); }
-    else if (['TITLE', 'HOWTO'].includes(GAME.state)) { 
+    else if (['TITLE', 'HOWTO'].includes(GAME.state)) {
         GAME.state = (GAME.state==='TITLE')?'HOWTO':'SELECT'; AudioSys.sfx.select(); updateMusicForState();
     }
     else if (GAME.state === 'SELECT') { AudioSys.sfx.select(); GAME.selectedChar = GAME.charList[GAME.charIndex]; resetGame(); }
     else if (GAME.state === 'DIALOG') {
         if (GAME.dialogVisible.length < GAME.dialogText.length) {
             GAME.dialogVisible = GAME.dialogText; document.getElementById('text-content').innerText = GAME.dialogVisible;
-        } else { closeDialog(); }
+        } else {
+            closeDialog();
+            // Check if transitioning to hidden level
+            if (GAME.nextState === 'FROGGER_INTRO') {
+                initFroggerLevel();
+            }
+        }
     }
     else if (GAME.state === 'VISITOR_SPLASH') { initBossEncounter(); }
     else if (GAME.state === 'BOSS_INTRO') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
-    else if (GAME.state === 'YARD_INTRO') { startYardLevel(); }
-    else if (GAME.state === 'MECHA_BOSS_INTRO') { GAME.state = 'MECHA_BOSS'; GAME.stateTimer = 0; updateMusicForState(); }
-    else if (GAME.state === 'CREDITS') {
-        if (GAME.stateTimer > 600) { GAME.state = 'TITLE'; updateMusicForState(); }
-    }
+    else if (GAME.state === 'BEZOS_INTRO') { GAME.state = 'BEZOS_BOSS'; GAME.nextState = 'BEZOS_BOSS'; updateMusicForState(); }
     else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') {
         document.getElementById('boss-hud').style.display = 'none'; GAME.state = 'TITLE'; updateMusicForState();
     }
-    else if (['PLAY','BOSS','MECHA_BOSS'].includes(GAME.state)) { if (GAME.state === 'PLAY' && tryInteract()) return; throwBook(); }
+    else if (GAME.state === 'BEZOS_WIN') {
+        GAME.state = 'TITLE'; updateMusicForState();
+    }
+    else if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') {
+        if (GAME.state === 'PLAY' && tryInteract()) return;
+        if (GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') throwBook();
+        else if (GAME.state === 'BOSS') throwBook();
+        else throwBook();
+    }
 }
 
 function init() {
@@ -1428,8 +1569,8 @@ function generateMap() {
     const door = randomDoorPlacement();
     GAME.map[door.doorY][door.doorX] = 3;
     GAME.map[door.hazardY][door.hazardX] = 0;
-    GAME.hiddenDoor = { ...door, unlocked: false };
-    GAME.activeIssues.push({ x: door.hazardX*TILE_SIZE, y: door.hazardY*TILE_SIZE, data: {name: "Blocked Exit", type: "box"}, fixed: false, hiddenDoor: true });
+    GAME.fireExitDoor = { x: door.doorX * TILE_SIZE, y: door.doorY * TILE_SIZE }; // Store door position for hidden level
+    GAME.activeIssues.push({ x: door.hazardX*TILE_SIZE, y: door.hazardY*TILE_SIZE, data: {name: "Blocked Exit", type: "box"}, fixed: false });
 
     spawnEntity('runner'); spawnEntity('runner');
 
@@ -1557,6 +1698,327 @@ function showVisitorSplash() {
     updateMusicForState();
 }
 
+// --- HIDDEN LEVEL FUNCTIONS ---
+function initFroggerLevel() {
+    GAME.state = 'FROGGER';
+    GAME.nextState = 'FROGGER';
+    GAME.player.x = 128;
+    GAME.player.y = 200; // Start at bottom
+    GAME.froggerVehicles = [];
+    GAME.entities = [];
+    GAME.projectiles = [];
+
+    // Spawn fewer vehicles with lane-changing AI for more natural traffic
+    const vehicleTypes = ['van', 'truck', 'van', 'truck', 'van'];
+    for (let i = 0; i < 7; i++) { // Only 7 vehicles total
+        const lane = Math.floor(Math.random() * 5);
+        const y = 42 + lane * 32;
+        const type = vehicleTypes[lane];
+        const isVan = type === 'van';
+        const baseSpeed = lane % 2 === 0 ? 0.7 : -0.8;
+
+        GAME.froggerVehicles.push({
+            x: Math.random() * 256,
+            y: y,
+            lane: lane,
+            targetLane: lane,
+            laneChangeTimer: Math.floor(Math.random() * 120) + 120,
+            w: isVan ? 32 : 42,
+            h: isVan ? 22 : 26,
+            speed: baseSpeed * (0.9 + Math.random() * 0.4), // Varying speeds
+            type: type
+        });
+    }
+
+    // Initialize Bezos taunts
+    GAME.bezosTaunt = BEZOS_TAUNTS[Math.floor(Math.random() * BEZOS_TAUNTS.length)];
+    GAME.bezosTauntTimer = 0;
+
+    updateMusicForState();
+}
+
+function updateFrogger() {
+    const p = GAME.player;
+
+    // Update Bezos taunt timer
+    GAME.bezosTauntTimer++;
+    if (GAME.bezosTauntTimer > 180) { // Change taunt every 3 seconds
+        GAME.bezosTaunt = BEZOS_TAUNTS[Math.floor(Math.random() * BEZOS_TAUNTS.length)];
+        GAME.bezosTauntTimer = 0;
+        AudioSys.sfx.pop(); // Sound when new taunt appears
+    }
+
+    // Update vehicles with lane-changing AI
+    GAME.froggerVehicles.forEach(v => {
+        // Horizontal movement
+        v.x += v.speed;
+        if (v.speed > 0 && v.x > 256) v.x = -v.w;
+        if (v.speed < 0 && v.x < -v.w) v.x = 256;
+
+        // Lane changing logic
+        v.laneChangeTimer--;
+        if (v.laneChangeTimer <= 0) {
+            // Pick a new target lane (adjacent lanes only)
+            const canGoUp = v.lane > 0;
+            const canGoDown = v.lane < 4;
+            if (canGoUp && canGoDown) {
+                v.targetLane = v.lane + (Math.random() < 0.5 ? -1 : 1);
+            } else if (canGoUp) {
+                v.targetLane = v.lane - 1;
+            } else if (canGoDown) {
+                v.targetLane = v.lane + 1;
+            }
+            v.laneChangeTimer = Math.floor(Math.random() * 180) + 180; // 3-6 seconds
+        }
+
+        // Smooth lane transition
+        const targetY = 42 + v.targetLane * 32;
+        if (v.y < targetY) {
+            v.y = Math.min(v.y + 0.5, targetY);
+            if (v.y === targetY) v.lane = v.targetLane;
+        } else if (v.y > targetY) {
+            v.y = Math.max(v.y - 0.5, targetY);
+            if (v.y === targetY) v.lane = v.targetLane;
+        }
+
+        // Check collision with player
+        if (p.iframe === 0 &&
+            p.x < v.x + v.w && p.x + 16 > v.x &&
+            p.y < v.y + v.h && p.y + 16 > v.y) {
+            p.iframe = 60;
+            GAME.lives--;
+            updateHud();
+            AudioSys.sfx.hurt();
+            GAME.shake = 10;
+
+            if (GAME.lives <= 0) {
+                triggerGameOver("FLATTENED BY AMAZON LOGISTICS!");
+            }
+        }
+    });
+
+    // Check if player reached the top (victory!)
+    if (p.y < 30) {
+        initMechaBezos();
+    }
+}
+
+function initMechaBezos() {
+    GAME.state = 'BEZOS_INTRO';
+    GAME.stateTimer = 0;
+    AudioSys.sfx.bossIntro();
+
+    GAME.boss = {
+        name: "MECHA JEFF BEZOS",
+        sprite: "mechaBezos",
+        hp: 40,
+        maxHp: 40,
+        speed: 1.2,
+        attackDelay: 50,
+        title: "THE ULTIMATE BOSS",
+        desc: "Automation has gone too far!",
+        attackName: "AUTOMATION PROTOCOL",
+        x: 104,
+        y: 60,
+        w: 48,
+        h: 48,
+        timer: 0,
+        attackPhase: 0, // Tracks which attack pattern (0-2)
+        laserAngle: 0, // For laser sweep attack
+        droneSpawnTimer: 0,
+        tauntsTriggered: [],
+        tauntThresholds: [0.75, 0.5, 0.25]
+    };
+
+    GAME.player.x = 120;
+    GAME.player.y = 180;
+    GAME.entities = [];
+    GAME.projectiles = [];
+    GAME.froggerVehicles = [];
+
+    document.getElementById('boss-name-el').innerText = "MECHA JEFF BEZOS";
+    document.getElementById('boss-hud').style.display = 'block';
+    updateBossHud();
+    updateMusicForState();
+}
+
+function updateMechaBezos() {
+    const b = GAME.boss;
+    if (!b) return;
+
+    b.timer++;
+
+    // Move toward player
+    const dx = GAME.player.x - b.x;
+    const dy = GAME.player.y - b.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist > 60) {
+        b.x += (dx / dist) * b.speed;
+        b.y += (dy / dist) * b.speed;
+    }
+
+    // Switch attack phases based on HP
+    if (b.hp > 26) b.attackPhase = 0; // Phase 1: Missile Spread
+    else if (b.hp > 13) b.attackPhase = 1; // Phase 2: Laser Sweep
+    else b.attackPhase = 2; // Phase 3: Drone Swarm
+
+    // === ATTACK PHASE 1: PRIME MISSILE SPREAD ===
+    if (b.attackPhase === 0 && b.timer % b.attackDelay === 0) {
+        // Fire missiles in a spread pattern
+        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
+            const vx = Math.cos(angle) * 3;
+            const vy = Math.sin(angle) * 3;
+            GAME.projectiles.push({
+                type: 'bezos_missile',
+                x: b.x + 24,
+                y: b.y + 24,
+                vx: vx,
+                vy: vy,
+                life: 120,
+                boss: true
+            });
+        }
+        AudioSys.sfx.throw();
+    }
+
+    // === ATTACK PHASE 2: LASER SWEEP ===
+    if (b.attackPhase === 1) {
+        b.laserAngle += 0.05;
+        // Fire laser beam every few frames
+        if (b.timer % 8 === 0) {
+            const laserDist = 150;
+            const vx = Math.cos(b.laserAngle) * 4;
+            const vy = Math.sin(b.laserAngle) * 4;
+            GAME.projectiles.push({
+                type: 'bezos_laser',
+                x: b.x + 24,
+                y: b.y + 24,
+                vx: vx,
+                vy: vy,
+                life: 40,
+                boss: true
+            });
+            if (b.timer % 16 === 0) AudioSys.sfx.alert();
+        }
+    }
+
+    // === ATTACK PHASE 3: DRONE SWARM ===
+    if (b.attackPhase === 2) {
+        b.droneSpawnTimer++;
+        if (b.droneSpawnTimer > 50) {
+            b.droneSpawnTimer = 0;
+            // Spawn a drone that homes in on player
+            const angle = Math.random() * Math.PI * 2;
+            const spawnDist = 100;
+            GAME.entities.push({
+                type: 'drone',
+                x: b.x + 24 + Math.cos(angle) * spawnDist,
+                y: b.y + 24 + Math.sin(angle) * spawnDist,
+                w: 16,
+                h: 16,
+                speed: 1.5,
+                hp: 2
+            });
+            AudioSys.sfx.pop();
+        }
+
+        // Update drones - they home in on player
+        GAME.entities.forEach(drone => {
+            if (drone.type === 'drone') {
+                const dx = GAME.player.x - drone.x;
+                const dy = GAME.player.y - drone.y;
+                const dist = Math.hypot(dx, dy);
+                if (dist > 0) {
+                    drone.x += (dx / dist) * drone.speed;
+                    drone.y += (dy / dist) * drone.speed;
+                }
+
+                // Drone collision with player
+                if (GAME.player.iframe === 0 && Math.hypot(drone.x - GAME.player.x, drone.y - GAME.player.y) < 14) {
+                    GAME.lives--;
+                    GAME.player.iframe = 60;
+                    updateHud();
+                    AudioSys.sfx.hurt();
+                    GAME.shake = 8;
+                    drone.hp = 0; // Destroy drone on impact
+
+                    if (GAME.lives <= 0) {
+                        triggerGameOver("AUTOMATED OUT OF EXISTENCE!");
+                    }
+                }
+            }
+        });
+
+        // Player can destroy drones
+        for (let i = GAME.projectiles.length - 1; i >= 0; i--) {
+            const proj = GAME.projectiles[i];
+            if (proj.type === 'attack') {
+                for (let j = GAME.entities.length - 1; j >= 0; j--) {
+                    const drone = GAME.entities[j];
+                    if (drone.type === 'drone' && Math.hypot(proj.x - drone.x, proj.y - drone.y) < 12) {
+                        drone.hp--;
+                        if (drone.hp <= 0) {
+                            GAME.entities.splice(j, 1);
+                            AudioSys.sfx.hit();
+                        }
+                        GAME.projectiles.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    // Check player projectiles hitting boss
+    for (let i = GAME.projectiles.length - 1; i >= 0; i--) {
+        const proj = GAME.projectiles[i];
+        if (proj.type === 'attack' &&
+            proj.x >= b.x && proj.x <= b.x + b.w &&
+            proj.y >= b.y && proj.y <= b.y + b.h) {
+            b.hp--;
+            updateBossHud();
+            AudioSys.sfx.bossHit();
+            GAME.shake = 5;
+            GAME.projectiles.splice(i, 1);
+            spawnParticle(proj.x, proj.y, '#ff9900', 5);
+
+            if (b.hp <= 0) {
+                winBezosLevel();
+            }
+        }
+    }
+
+    // Check boss projectiles hitting player
+    for (let i = GAME.projectiles.length - 1; i >= 0; i--) {
+        const proj = GAME.projectiles[i];
+        if ((proj.type === 'bezos_missile' || proj.type === 'bezos_laser') && GAME.player.iframe === 0) {
+            if (Math.hypot(proj.x - GAME.player.x, proj.y - GAME.player.y) < 16) {
+                GAME.lives--;
+                GAME.player.iframe = 60;
+                updateHud();
+                AudioSys.sfx.hurt();
+                GAME.shake = 8;
+                GAME.projectiles.splice(i, 1);
+
+                if (GAME.lives <= 0) {
+                    triggerGameOver("AUTOMATED OUT OF EXISTENCE!");
+                }
+            }
+        }
+    }
+}
+
+function winBezosLevel() {
+    GAME.state = 'BEZOS_WIN';
+    GAME.stateTimer = 0;
+    GAME.boss = null;
+    document.getElementById('boss-hud').style.display = 'none';
+    document.getElementById('hud-layer').style.display = 'none';
+    AudioSys.sfx.start();
+    MusicSys.play('victory');
+}
+
 function update() {
     GAME.ticks++;
     GAME.stateTimer++;
@@ -1608,18 +2070,27 @@ function update() {
         return;
     }
 
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH'].includes(GAME.state)) return;
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO'].includes(GAME.state)) return;
 
-    if (GAME.state === 'YARD_LEVEL') { updateYardLevel(); updateParticles(); updateFloatingTexts(); return; }
-    if (GAME.state === 'MECHA_BOSS') { updateMechaBattle(); updateParticles(); updateFloatingTexts(); return; }
-    if (['YARD_INTRO', 'MECHA_BOSS_INTRO', 'CREDITS'].includes(GAME.state)) return;
+    // Bezos victory screen
+    if (GAME.state === 'BEZOS_WIN') {
+        // Auto-advance after delay
+        if (GAME.stateTimer > 300) {
+            GAME.state = 'TITLE';
+            updateMusicForState();
+        }
+        return;
+    }
 
-    if (GAME.state === 'PLAY' || GAME.state === 'BOSS') {
-        updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts(); updateCamera();
+    if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') {
+        updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts();
+        if (GAME.state !== 'FROGGER') updateCamera(); // Frogger has fixed camera
     }
 
     if (GAME.state === 'PLAY') updateEntities();
     if (GAME.state === 'BOSS') updateBoss();
+    if (GAME.state === 'FROGGER') updateFrogger();
+    if (GAME.state === 'BEZOS_BOSS') updateMechaBezos();
 }
 
 function updatePlayer() {
@@ -1629,8 +2100,14 @@ function updatePlayer() {
     if (KEYS.up) dy = -p.speed; if (KEYS.down) dy = p.speed; if (KEYS.left) dx = -p.speed; if (KEYS.right) dx = p.speed;
     if (dx!==0 && dy!==0) { dx *= 0.707; dy *= 0.707; }
     if (dx!==0 || dy!==0) {
-        if (!checkCol(p.x+dx, p.y)) p.x+=dx;
-        if (!checkCol(p.x, p.y+dy)) p.y+=dy;
+        // In Frogger mode, no collision detection with walls
+        if (GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') {
+            p.x = Math.max(0, Math.min(240, p.x + dx));
+            p.y = Math.max(0, Math.min(208, p.y + dy));
+        } else {
+            if (!checkCol(p.x+dx, p.y)) p.x+=dx;
+            if (!checkCol(p.x, p.y+dy)) p.y+=dy;
+        }
         if (GAME.ticks % 20 === 0) { AudioSys.sfx.step(); spawnParticle(p.x+8, p.y+16, '#555', 0); }
     }
 }
@@ -1945,7 +2422,10 @@ function updateProjectiles() {
     for(let i=GAME.projectiles.length-1; i>=0; i--) {
         let p = GAME.projectiles[i];
         p.x += p.vx; p.y += p.vy; p.life--; if(p.grace > 0) p.grace--;
-        if (p.grace <= 0 && checkCol(p.x, p.y)) { GAME.projectiles.splice(i,1); continue; }
+        // Skip wall collision check in Frogger and Bezos levels
+        if (GAME.state !== 'FROGGER' && GAME.state !== 'BEZOS_BOSS') {
+            if (p.grace <= 0 && checkCol(p.x, p.y)) { GAME.projectiles.splice(i,1); continue; }
+        }
         if (p.life <= 0) { GAME.projectiles.splice(i,1); continue; }
         if ((p.type === 'req') && Math.hypot(p.x-GAME.player.x, p.y-GAME.player.y) < 10) {
             if (GAME.player.iframe<=0) {
@@ -2037,17 +2517,26 @@ function throwBook() {
 
 function tryInteract() {
     const p = GAME.player;
+
+    // Check if player is near fire exit door after 3+ hazards cleared
+    if (GAME.issuesFixed >= 3 && GAME.fireExitDoor && Math.hypot(p.x - GAME.fireExitDoor.x, p.y - GAME.fireExitDoor.y) < 20) {
+        AudioSys.sfx.alert();
+        showDialog("You found the hidden exit!\n\nYou step through the fire door into the Amazon yard...", "System", null, false);
+        GAME.nextState = 'FROGGER_INTRO';
+        return true;
+    }
+
     for (let i=0; i<GAME.entities.length; i++) {
         let e = GAME.entities[i];
         if (e.type === 'runner' && Math.hypot(p.x-e.x, p.y-e.y) < 20) {
              e.type = 'assoc'; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
              spawnFloatingText(e.x, e.y, "Safe!", "#00ff00");
-             
+
              if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
 
              // SIMON COMMENTARY
              const currentGen = GAME.genId;
-             
+
              // --- CHANGED: Show thinking state immediately for responsiveness ---
              showThinking("Simon Unglaube", GFX.simonFace);
 
@@ -2065,12 +2554,12 @@ function tryInteract() {
             h.fixed = true; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
             if (h.hiddenDoor && GAME.hiddenDoor) GAME.hiddenDoor.unlocked = true;
             spawnFloatingText(h.x, h.y, "Fixed!", "#00ff00");
-            
+
             if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
 
             // SIMON COMMENTARY
             const currentGen = GAME.genId;
-            
+
             // --- CHANGED: Show thinking state immediately ---
             showThinking("Simon Unglaube", GFX.simonFace);
 
@@ -2590,6 +3079,339 @@ function draw() {
         ctx.fillStyle = '#fff'; ctx.fillText("[PRESS SPACE TO FIGHT]", 50, 200); ctx.restore(); return;
     }
 
+    // FROGGER LEVEL - PREMIUM GRAPHICS
+    if (GAME.state === 'FROGGER') {
+        // === WAREHOUSE BUILDING AT TOP ===
+        // Building base
+        ctx.fillStyle = '#2a2a2a'; ctx.fillRect(0, 0, 256, 35);
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, 256, 3); // Roof
+
+        // Loading dock doors
+        for (let i = 0; i < 4; i++) {
+            const dockX = 20 + i * 60;
+            // Door frame
+            ctx.fillStyle = '#444'; ctx.fillRect(dockX, 8, 36, 24);
+            // Door panels (yellow/orange)
+            ctx.fillStyle = '#cd7f32'; ctx.fillRect(dockX + 2, 10, 32, 20);
+            // Door lines
+            ctx.fillStyle = '#8b5a2b';
+            for (let j = 0; j < 3; j++) {
+                ctx.fillRect(dockX + 2 + j * 11, 10, 2, 20);
+            }
+            // Window at top of door
+            ctx.fillStyle = '#4a5f7f'; ctx.fillRect(dockX + 8, 12, 20, 6);
+        }
+
+        // Warehouse windows
+        for (let i = 0; i < 8; i++) {
+            ctx.fillStyle = '#4a5f7f';
+            ctx.fillRect(8 + i * 30, 4, 12, 6);
+        }
+
+        // Amazon smile logo on building
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(118, 5, 20, 3);
+        ctx.fillRect(134, 5, 4, 5);
+
+        // === SIDEWALK (TOP) ===
+        ctx.fillStyle = '#6b7280'; ctx.fillRect(0, 35, 256, 7);
+        // Sidewalk cracks
+        ctx.fillStyle = '#4b5563';
+        for (let i = 0; i < 8; i++) {
+            ctx.fillRect(i * 32 + 10, 36, 1, 5);
+        }
+
+        // === MAIN ROAD ===
+        // Base road color
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 42, 256, 160);
+
+        // Asphalt texture (random dark spots)
+        ctx.fillStyle = '#0a0a0a';
+        for (let i = 0; i < 30; i++) {
+            const x = (i * 37) % 256;
+            const y = 42 + (i * 61) % 160;
+            ctx.fillRect(x, y, 3, 2);
+        }
+
+        // Oil stains
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+        ctx.fillRect(40, 80, 12, 8);
+        ctx.fillRect(180, 120, 15, 10);
+        ctx.fillRect(90, 150, 10, 6);
+
+        // Lane markers with animation
+        for (let lane = 0; lane < 5; lane++) {
+            const y = 50 + lane * 32;
+            // Dashed center lines
+            ctx.fillStyle = '#ffff00';
+            for (let i = 0; i < 20; i++) {
+                const offset = (GAME.ticks * 0.5) % 24;
+                ctx.fillRect(i * 24 - offset, y + 13, 14, 3);
+            }
+            // Lane edges (subtle)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(0, y, 256, 1);
+            ctx.fillRect(0, y + 28, 256, 1);
+        }
+
+        // Road arrows (keep right/left indicators)
+        ctx.fillStyle = '#fff';
+        // Left arrows
+        for (let i = 0; i < 3; i++) {
+            const y = 60 + i * 64;
+            ctx.fillRect(20, y, 12, 3);
+            ctx.fillRect(20, y, 3, 8);
+        }
+        // Right arrows
+        for (let i = 0; i < 3; i++) {
+            const y = 92 + i * 64;
+            ctx.fillRect(224, y, 12, 3);
+            ctx.fillRect(233, y, 3, 8);
+        }
+
+        // === SIDEWALK (BOTTOM) ===
+        ctx.fillStyle = '#6b7280'; ctx.fillRect(0, 202, 256, 7);
+        // Sidewalk cracks
+        ctx.fillStyle = '#4b5563';
+        for (let i = 0; i < 8; i++) {
+            ctx.fillRect(i * 32 + 15, 203, 1, 5);
+        }
+
+        // === GRASS/CURB (BOTTOM) ===
+        ctx.fillStyle = '#0d5c0d'; ctx.fillRect(0, 209, 256, 15);
+        // Grass tufts
+        ctx.fillStyle = '#16a34a';
+        for (let i = 0; i < 25; i++) {
+            const x = (i * 11) % 256;
+            ctx.fillRect(x, 210, 3, 2);
+            ctx.fillRect(x + 5, 212, 2, 3);
+        }
+
+        // === VEHICLES ===
+        GAME.froggerVehicles.forEach(v => {
+            const img = v.type === 'van' ? GFX.van : GFX.truck;
+            ctx.drawImage(img, v.x, v.y);
+
+            // Headlights glow
+            if (v.speed > 0) {
+                ctx.fillStyle = 'rgba(255, 255, 200, 0.3)';
+                ctx.fillRect(v.x - 8, v.y + 8, 8, 6);
+            }
+        });
+
+        // === PLAYER ===
+        const p = GAME.player;
+        if (p.iframe % 4 < 2) {
+            ctx.drawImage(GFX.chars[GAME.selectedChar], p.x, p.y);
+        }
+        // Player shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(p.x + 4, p.y + 14, 8, 2);
+
+        // === BEZOS HEAD AND TAUNT ===
+        // Dark banner overlay
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillRect(0, 0, 256, 30);
+
+        // Bezos head (larger)
+        ctx.drawImage(GFX.bezosHead, 3, 3);
+
+        // Speech bubble
+        const tauntX = 32;
+        const tauntY = 5;
+        const tauntW = 218;
+        const tauntH = 20;
+
+        // Bubble with drop shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(tauntX + 2, tauntY + 2, tauntW, tauntH);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(tauntX, tauntY, tauntW, tauntH);
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(tauntX, tauntY, tauntW, tauntH);
+
+        // Bubble pointer
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.moveTo(tauntX, tauntY + 10);
+        ctx.lineTo(tauntX - 5, tauntY + 8);
+        ctx.lineTo(tauntX, tauntY + 13);
+        ctx.fill();
+        ctx.stroke();
+
+        // Taunt text
+        ctx.fillStyle = '#000';
+        ctx.font = '7px "Press Start 2P"';
+        ctx.textAlign = 'left';
+        ctx.fillText(GAME.bezosTaunt, tauntX + 4, tauntY + 14);
+
+        ctx.restore();
+        return;
+    }
+
+    // Bezos intro screen
+    if (GAME.state === 'BEZOS_INTRO' && GAME.boss) {
+        ctx.fillStyle = '#0a0a0a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Dramatic lines
+        for (let i = 0; i < 10; i++) {
+            ctx.strokeStyle = `rgba(255, 153, 0, ${0.3 - i * 0.03})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(128, 112);
+            const angle = (GAME.stateTimer * 0.05 + i * 0.3) % (Math.PI * 2);
+            ctx.lineTo(128 + Math.cos(angle) * 200, 112 + Math.sin(angle) * 200);
+            ctx.stroke();
+        }
+
+        ctx.fillStyle = '#ff9900'; ctx.font = '16px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText("FINAL BOSS", 128, 40);
+        ctx.fillStyle = '#ff0000'; ctx.font = '14px "Press Start 2P"';
+        ctx.fillText("MECHA JEFF BEZOS", 128, 70);
+        ctx.fillStyle = '#fff'; ctx.font = '8px monospace';
+        ctx.fillText("AUTOMATION PROTOCOL ACTIVATED", 128, 90);
+
+        // Boss sprite
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(GFX.mechaBezos, 104, 100, 48, 48);
+        ctx.restore();
+
+        ctx.fillStyle = '#eab308'; ctx.font = '8px monospace';
+        ctx.fillText("PRIME MISSILES READY", 128, 170);
+        ctx.fillStyle = '#fff';
+        ctx.fillText("[PRESS SPACE]", 128, 200);
+        ctx.textAlign = 'left';
+        ctx.restore();
+        return;
+    }
+
+    // Bezos boss fight rendering
+    if (GAME.state === 'BEZOS_BOSS') {
+        // Space background
+        ctx.fillStyle = '#0a0a14'; ctx.fillRect(0, 0, 256, 224);
+
+        // Stars
+        for (let i = 0; i < 50; i++) {
+            const x = (i * 37) % 256;
+            const y = (i * 61) % 224;
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(x, y, 1, 1);
+        }
+
+        // Boss
+        if (GAME.boss) {
+            ctx.drawImage(GFX.mechaBezos, GAME.boss.x, GAME.boss.y);
+
+            // Boss attack indicator
+            ctx.font = '8px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            if (GAME.boss.attackPhase === 0) {
+                ctx.fillStyle = '#ff9900';
+                ctx.fillText('MISSILES', GAME.boss.x + 24, GAME.boss.y - 8);
+            } else if (GAME.boss.attackPhase === 1) {
+                ctx.fillStyle = '#00ffff';
+                ctx.fillText('LASER SWEEP', GAME.boss.x + 24, GAME.boss.y - 8);
+            } else if (GAME.boss.attackPhase === 2) {
+                ctx.fillStyle = '#ff00ff';
+                ctx.fillText('DRONE SWARM', GAME.boss.x + 24, GAME.boss.y - 8);
+            }
+        }
+
+        // Drones
+        GAME.entities.forEach(e => {
+            if (e.type === 'drone') {
+                ctx.drawImage(GFX.drone, e.x, e.y);
+            }
+        });
+
+        // Player
+        const p = GAME.player;
+        if (p.iframe % 4 < 2) {
+            ctx.drawImage(GFX.chars[GAME.selectedChar], p.x, p.y);
+        }
+
+        // Projectiles
+        GAME.projectiles.forEach(proj => {
+            if (proj.type === 'bezos_missile') {
+                ctx.drawImage(GFX.bezosProj, proj.x, proj.y);
+            } else if (proj.type === 'bezos_laser') {
+                // Render laser beam
+                ctx.fillStyle = '#00ffff';
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(proj.x - 2, proj.y - 2, 6, 6);
+                ctx.shadowBlur = 0;
+            } else if (proj.type === 'attack') {
+                const sprite = (GFX.attacks && GFX.attacks[proj.owner]) ? GFX.attacks[proj.owner] : GFX.book;
+                ctx.drawImage(sprite, proj.x, proj.y);
+            }
+        });
+
+        ctx.restore();
+        return;
+    }
+
+    // Bezos victory screen
+    if (GAME.state === 'BEZOS_WIN') {
+        // Victory gradient
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#1a4d1a');
+        gradient.addColorStop(1, '#0a1a0a');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Fireworks effect
+        for (let i = 0; i < 20; i++) {
+            const x = (i * 31 + GAME.stateTimer * 2) % 256;
+            const y = (i * 47 + GAME.stateTimer * 3) % 224;
+            const colors = ['#ff9900', '#ffd700', '#ff6b6b', '#4ecdc4'];
+            ctx.fillStyle = colors[i % colors.length];
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.textAlign = 'center';
+        ctx.font = '16px "Press Start 2P"';
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText("CONGRATULATIONS!", 128, 40);
+
+        ctx.font = '12px "Press Start 2P"';
+        ctx.fillStyle = '#fff';
+        ctx.fillText("YOU DEFEATED", 128, 70);
+        ctx.fillText("MECHA JEFF BEZOS!", 128, 90);
+
+        // Digitized face (using character sprite as placeholder)
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        const faceSize = 64;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(96, 100, faceSize, faceSize);
+        ctx.drawImage(GFX.chars[GAME.selectedChar], 96, 100, faceSize, faceSize);
+        ctx.restore();
+
+        ctx.font = '10px "Press Start 2P"';
+        ctx.fillStyle = '#00ff00';
+        ctx.fillText("TRUE HERO OF WHS!", 128, 175);
+
+        // Credits
+        ctx.font = '8px monospace';
+        ctx.fillStyle = '#888';
+        const creditsY = 190;
+        ctx.fillText("CREDITS:", 128, creditsY);
+        const credits = ["Director: Erwin Esener", "Producer: Erwin Esener", "Lead Dev: Erwin Esener", "Art: Erwin Esener", "Music: Erwin Esener"];
+        credits.forEach((credit, i) => {
+            ctx.fillText(credit, 128, creditsY + 12 + i * 10);
+        });
+
+        ctx.textAlign = 'left';
+        ctx.restore();
+        return;
+    }
+
     const cx = Math.floor(GAME.camera.x); const cy = Math.floor(GAME.camera.y);
     let sx = Math.floor(cx/TILE_SIZE); let ex = sx + 17; let sy = Math.floor(cy/TILE_SIZE); let ey = sy + 15;
     for(let y=sy; y<=ey; y++) {
@@ -2598,7 +3420,16 @@ function draw() {
                 let t = GAME.map[y][x]; let dx = x*TILE_SIZE - cx; let dy = y*TILE_SIZE - cy;
                 if (t===0) ctx.drawImage(GFX.floor, dx, dy); if (t===1) ctx.drawImage(GFX.wall, dx, dy);
                 if (t===2) { ctx.drawImage(GFX.floor, dx, dy); ctx.drawImage(GFX.shelf, dx, dy); }
-                if (t===3) { ctx.drawImage(GFX.wall, dx, dy); ctx.drawImage(GFX.door, dx, dy); }
+                if (t===3) {
+                    ctx.drawImage(GFX.wall, dx, dy);
+                    ctx.drawImage(GFX.door, dx, dy);
+                    // Glow effect when door is accessible (3+ hazards cleared)
+                    if (GAME.issuesFixed >= 3 && GAME.fireExitDoor) {
+                        const pulse = Math.sin(GAME.ticks * 0.1) * 0.3 + 0.7;
+                        ctx.fillStyle = `rgba(255, 215, 0, ${pulse * 0.4})`;
+                        ctx.fillRect(dx - 2, dy - 2, 20, 20);
+                    }
+                }
             }
         }
     }
