@@ -1675,7 +1675,7 @@ function tryInteract() {
              showThinking("Simon Unglaube", GFX.simonFace);
 
              callGemini(
-                 "You are Simon Unglaube, WHS Senior Regional Manager. You stopped a runner. Praise the player with dry, professional humor and add a witty safety reminder about slowing down. Max 22 words.",
+                 "You are Simon Unglaube, WHS Senior Regional Manager. The player stopped a runner. Praise the player with dry, professional humor and add a witty safety reminder about slowing down. Max 22 words.",
                  "runners"
              ).then(tip => {
                 if (GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
@@ -1981,8 +1981,8 @@ function draw() {
 
         ctx.textAlign = 'center';
         ctx.fillStyle = '#ffd166';
-        ctx.font = '10px monospace';
-        ctx.fillText("An unannounced boss is stepping onto the floor...", canvas.width / 2, 148);
+        ctx.font = '8px monospace';
+        ctx.fillText("An unannounced Visitor is stepping onto the floor...", canvas.width / 2, 148);
         ctx.fillStyle = '#fff';
         ctx.fillText("Simon braces: tighten PPE, breathe, and stand tall.", canvas.width / 2, 166);
 
