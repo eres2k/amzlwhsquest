@@ -689,6 +689,14 @@ function generateAssets() {
         ctx.fillStyle = '#f59e0b'; ctx.fillRect(20,48,24,4);
         ctx.fillStyle = '#f97316'; ctx.fillRect(24,50,16,2);
     });
+    GFX.jeff = c(32,32, ctx => {
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(0,0,32,32);
+        ctx.fillStyle = '#f59e0b'; ctx.fillRect(4,4,24,24);
+        ctx.fillStyle = '#111'; ctx.fillRect(8,6,16,10);
+        ctx.fillStyle = '#fff'; ctx.fillRect(10,8,4,4); ctx.fillRect(18,8,4,4);
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(8,16,16,2);
+        ctx.fillStyle = '#eab308'; ctx.fillRect(10,20,12,6);
+    });
     GFX.assoc = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,5); });
     GFX.runner = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,5); ctx.fillStyle = '#fff'; ctx.fillRect(1, 12, 2, 1); ctx.fillRect(14, 10, 2, 1); });
 
@@ -1457,6 +1465,18 @@ window.addEventListener('keydown', e => {
     if(e.key==='s'||e.key==='ArrowDown') KEYS.down=true;
     if(e.key==='a'||e.key==='ArrowLeft') KEYS.left=true;
     if(e.key==='d'||e.key==='ArrowRight') KEYS.right=true;
+    if (GAME.state === 'DIALOG' && GAME.yardReturnOption && e.key.toLowerCase() === 'r') {
+        if (GAME.returnFromYardPos) {
+            GAME.player.x = GAME.returnFromYardPos.x;
+            GAME.player.y = GAME.returnFromYardPos.y;
+        }
+        GAME.yard = null;
+        GAME.player.speed = getCharStats(GAME.selectedChar).speed;
+        GAME.yardReturnOption = false;
+        GAME.nextState = 'PLAY';
+        closeDialog();
+        return;
+    }
     if(e.code==='Space') { if(!KEYS.action) handleAction(); KEYS.action=true; }
 });
 window.addEventListener('keyup', e => {
@@ -1529,8 +1549,8 @@ function resetGame() {
     GAME.entities = []; GAME.projectiles = []; GAME.particles = []; GAME.floatingTexts = [];
     GAME.activeIssues = []; GAME.clutter = [];
     GAME.issuesFixed = 0; GAME.lives = stats.lives; GAME.simonHits = 0; GAME.boss = null; GAME.pendingBossIntro = false;
-    GAME.hiddenDoor = null; GAME.yard = null; GAME.mecha = null;
-    GAME.nextState = 'PLAY'; GAME.aiResultText = null;
+    GAME.hiddenDoor = null; GAME.yard = null; GAME.mecha = null; GAME.returnFromYardPos = null;
+    GAME.nextState = 'PLAY'; GAME.aiResultText = null; GAME.yardReturnOption = false;
     GAME.startTime = Date.now(); GAME.booksFired = 0; GAME.opsPushed = 0;
     
     generateMap();
@@ -1620,6 +1640,7 @@ function initBossEncounter() {
 function startYardLevel() {
     GAME.state = 'YARD_LEVEL';
     GAME.stateTimer = 0;
+    GAME.yardReturnOption = false;
     const h = 520;
     GAME.yard = {
         height: h,
@@ -1631,9 +1652,10 @@ function startYardLevel() {
         flying: [],
         flyTimer: 120,
         tauntShown: false,
-        tauntLine: ['You dare clock out without my permission?', 'Prime compliance at 0%. Unacceptable.', 'Little coordinator, big mistake.'][Math.floor(Math.random()*3)],
+        tauntLine: ['Forgot your yard badge confidence?', 'Watch the cones, not your ego.', 'DSP vans gossip faster than you run.'][Math.floor(Math.random()*3)],
         tauntTimer: 260,
         maxAirBoxes: 7,
+        jeff: { x: canvas.width / 2 - 16, y: 6, w: 32, h: 32, banterTimer: 120 },
         throwers: [
             { x: 10, y: 26, cooldown: 70, variance: 40, timer: 60 },
             { x: canvas.width - 26, y: 26, cooldown: 70, variance: 40, timer: 80 }
@@ -2085,6 +2107,12 @@ function update() {
         return;
     }
 
+    if (GAME.state === 'YARD_LEVEL') {
+        updateYardLevel();
+        updateFloatingTexts();
+        return;
+    }
+
     if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') {
         updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts();
         if (GAME.state !== 'FROGGER') updateCamera(); // Frogger has fixed camera
@@ -2115,6 +2143,32 @@ function updatePlayer() {
     }
 }
 
+function resetYardPosition(message = '') {
+    const y = GAME.yard;
+    if (!y) return;
+    y.playerX = canvas.width / 2 - 8;
+    y.playerY = y.height - 32;
+    y.cameraY = Math.max(0, y.height - canvas.height);
+    GAME.player.x = y.playerX; GAME.player.y = y.playerY;
+    if (message) spawnFloatingText(y.playerX, y.playerY - 6, message, '#facc15');
+}
+
+function handleYardVehicleHit() {
+    const currentGen = GAME.genId;
+    GAME.nextState = 'YARD_LEVEL';
+    GAME.yardReturnOption = true;
+    const hardcoded = 'Simon: Vans always win shoving matches. Resetting you to the cones.';
+    showThinking('Simon Unglaube', GFX.simonFace);
+    callGemini(
+        'You are Simon Unglaube, WHS Senior Regional Manager. The coordinator was clipped by a yard vehicle. Deliver a snarky, Amazon-yard-specific safety reminder about respecting traffic flow. Max 28 words.',
+        'yard_hit'
+    ).then(tip => {
+        if (GAME.genId !== currentGen) return;
+        const text = `${hardcoded}\n${tip}\n\n[SPACE = retry yard | R = return to warehouse]`;
+        showDialog(text, 'Simon Unglaube', GFX.simonFace, true);
+    });
+}
+
 function updateYardLevel() {
     if (!GAME.yard) return;
     const y = GAME.yard;
@@ -2124,7 +2178,7 @@ function updateYardLevel() {
     if (KEYS.up) dy = -y.speed; if (KEYS.down) dy = y.speed; if (KEYS.left) dx = -y.speed; if (KEYS.right) dx = y.speed;
     if (dx!==0 && dy!==0) { dx *= 0.707; dy *= 0.707; }
     y.playerX = Math.max(0, Math.min(canvas.width - 16, y.playerX + dx));
-    y.playerY = Math.max(10, Math.min(y.height - 22, y.playerY + dy));
+    y.playerY = Math.max(0, Math.min(y.height - 22, y.playerY + dy));
     GAME.player.x = y.playerX; GAME.player.y = y.playerY;
 
     const viewAnchor = y.playerY - canvas.height * 0.55;
@@ -2155,9 +2209,9 @@ function updateYardLevel() {
         y.tauntTimer--;
         if (y.tauntTimer <= 0) {
             const jeffLines = [
-                'Still climbing? I have prime time to waste.',
-                'The skyboxes belong to me.',
-                'You are late. Again.'
+                'Did you even look left-right-left?',
+                'Associates bet you would flinch.',
+                'Clipboards say yield to DSP vans.'
             ];
             y.tauntLine = jeffLines[Math.floor(Math.random() * jeffLines.length)];
             y.tauntTimer = 260;
@@ -2165,6 +2219,20 @@ function updateYardLevel() {
     } else {
         y.flyTimer = Math.min(y.flyTimer, 50);
         y.tauntTimer = Math.max(y.tauntTimer, 120);
+    }
+
+    if (y.jeff) {
+        y.jeff.banterTimer--;
+        if (y.jeff.banterTimer <= 0) {
+            const jeffLines = [
+                'Nice vest. Shame about the lane discipline.',
+                'Prime gossip: you almost became cone art.',
+                'Blinkers are not optional around here.',
+                'Walk like safety is watching.'
+            ];
+            y.tauntLine = jeffLines[Math.floor(Math.random() * jeffLines.length)];
+            y.jeff.banterTimer = 220;
+        }
     }
 
     y.lanes.forEach(lane => {
@@ -2186,8 +2254,10 @@ function updateYardLevel() {
         if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 6) && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 6)) {
             if (GAME.player.iframe <= 0) {
                 GAME.lives--; GAME.player.iframe = 90; GAME.flash = 8; AudioSys.sfx.hurt(); updateHud();
-                y.playerX = canvas.width / 2 - 8; y.playerY = y.height - 32; y.cameraY = Math.max(0, y.height - canvas.height);
+                resetYardPosition();
+                handleYardVehicleHit();
                 if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
+                return;
             }
         }
     }
@@ -2207,22 +2277,19 @@ function updateYardLevel() {
         }
     }
 
-    if (y.playerY <= 12) {
-        GAME.nextState = 'MECHA_BOSS_INTRO';
-        const jeffLines = [
-            'You dare clock out without my permission?',
-            'Prime compliance at 0%. Unacceptable.',
-            'Your audit ends under my orbital beam.',
-            'Little coordinator, big mistake.'
-        ];
-        if (!y.tauntShown) {
-            y.tauntShown = true;
-            y.tauntLine = jeffLines[Math.floor(Math.random()*jeffLines.length)];
-            showDialog(y.tauntLine, 'Mecha Jeff', GFX.mechaJeff);
+    if (y.playerY <= 2) {
+        resetYardPosition('Back to the cones.');
+        return;
+    }
+
+    if (y.jeff) {
+        const j = y.jeff;
+        if (Math.abs((j.x + j.w/2) - (y.playerX + 8)) < (j.w/2 + 6) && Math.abs((j.y + j.h/2) - (y.playerY + 8)) < (j.h/2 + 6)) {
+            GAME.nextState = 'MECHA_BOSS_INTRO';
+            GAME.yardReturnOption = false;
+            showDialog('Jeff Bezos drops the polite smile. Metal plates unfold as MECHA JEFF powers up.', 'Jeff Bezos', GFX.jeff, false);
             return;
         }
-        showDialog('The yard opens to something colossal...', 'Simon Unglaube', GFX.simonFace, true);
-        return;
     }
 }
 
@@ -2580,6 +2647,7 @@ function tryInteract() {
         const dx = GAME.player.x - GAME.hiddenDoor.doorX * TILE_SIZE;
         const dy = GAME.player.y - GAME.hiddenDoor.doorY * TILE_SIZE;
         if (Math.hypot(dx, dy) < 18) {
+            GAME.returnFromYardPos = { x: GAME.player.x, y: GAME.player.y };
             GAME.state = 'YARD_INTRO';
             GAME.stateTimer = 0;
             GAME.nextState = 'YARD_LEVEL';
@@ -2843,11 +2911,13 @@ function drawYardLevel() {
                 ctx.drawImage(GFX.assoc, th.x, th.y);
             });
         }
-        if ((y.tauntShown || y.playerY < 120) && y.tauntLine) {
-            ctx.drawImage(GFX.mechaJeff, canvas.width/2 - 32, y.cameraY + 2, 64, 64);
-            ctx.fillStyle = '#0ea5e9'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
-            ctx.fillText(y.tauntLine.toUpperCase(), canvas.width/2, y.cameraY + 70);
-            ctx.textAlign = 'left';
+        if (y.jeff) {
+            ctx.drawImage(GFX.jeff, y.jeff.x, y.jeff.y);
+            if (y.tauntLine) {
+                ctx.fillStyle = '#22c55e'; ctx.font = '8px monospace'; ctx.textAlign = 'center';
+                ctx.fillText(`[${y.tauntLine}]`, y.jeff.x + y.jeff.w / 2, y.jeff.y - 4);
+                ctx.textAlign = 'left';
+            }
         }
     }
 
