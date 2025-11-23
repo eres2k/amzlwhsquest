@@ -505,10 +505,17 @@ const MusicSys = {
     play(name, rate = 1) {
         const track = this.tracks[name];
         if (!track) return;
+        if (this.currentName === name) {
+            this.currentRate = rate;
+            track.playbackRate = rate;
+            if (track.paused) track.play().catch(() => {});
+            return;
+        }
         if (this.currentName && this.currentName !== name) this.stop();
         this.currentName = name;
         this.currentRate = rate;
         track.playbackRate = rate;
+        track.currentTime = 0;
         track.play().catch(() => {});
     },
     stop() {
@@ -1480,11 +1487,12 @@ function startYardLevel() {
         flying: [],
         flyTimer: 120,
         tauntShown: false,
-        tauntLine: null,
-        skyBands: [
-            { y: 60, dir: 1, speed: 1.1, timer: 50 },
-            { y: 88, dir: -1, speed: 1.25, timer: 60 },
-            { y: 116, dir: 1, speed: 1.35, timer: 70 }
+        tauntLine: ['You dare clock out without my permission?', 'Prime compliance at 0%. Unacceptable.', 'Little coordinator, big mistake.'][Math.floor(Math.random()*3)],
+        tauntTimer: 260,
+        maxAirBoxes: 7,
+        throwers: [
+            { x: 10, y: 26, cooldown: 70, variance: 40, timer: 60 },
+            { x: canvas.width - 26, y: 26, cooldown: 70, variance: 40, timer: 80 }
         ],
         lanes: [
             { y: h - 90, dir: 1, speed: 0.8, timer: 90 },
@@ -1646,28 +1654,37 @@ function updateYardLevel() {
     y.flyTimer--;
     const inSky = y.playerY < 200;
     if (inSky) {
-        y.skyBands.forEach(b => {
-            b.timer--;
-            if (b.timer <= 0) {
-                const startLeft = Math.random() < 0.5;
-                const startX = startLeft ? -18 : canvas.width + 6;
-                const dir = startLeft ? 1 : -1;
-                const speed = b.speed + (Math.random() * 0.35);
-                y.flying.push({ x: startX, y: b.y + Math.random() * 8, vx: dir * speed, vy: 0.25 + Math.random()*0.2, w: 14, h: 14, t: 0 });
-                b.timer = 65 + Math.random() * 40;
+        y.throwers.forEach(th => {
+            th.timer--;
+            if (th.timer <= 0 && y.flying.length < y.maxAirBoxes) {
+                const target = y.playerX + 8 + (Math.random() * 16 - 8);
+                const horiz = Math.max(-1.45, Math.min(1.45, (target - th.x) / 70));
+                const rise = 0.85 + Math.random() * 0.25;
+                y.flying.push({ x: th.x, y: th.y + 6, vx: horiz, vy: rise, w: 14, h: 14, t: 0 });
+                th.timer = th.cooldown + Math.random() * th.variance;
             }
         });
-        if (y.flyTimer <= 0) {
+        if (y.flyTimer <= 0 && y.flying.length < y.maxAirBoxes) {
             const fromLeft = Math.random() < 0.5;
             const startX = fromLeft ? -18 : canvas.width + 4;
-            const speedX = (fromLeft ? 1 : -1) * (0.8 + Math.random() * 0.5);
-            const wobble = (Math.random() * 0.6) + 0.5;
-            y.flying.push({ x: startX, y: 34 + Math.random() * 28, vx: speedX, vy: wobble, w: 14, h: 14, t: 0 });
-            y.flyTimer = 35 + Math.random() * 30;
+            const speedX = (fromLeft ? 1 : -1) * (0.65 + Math.random() * 0.35);
+            const wobble = 0.45 + Math.random() * 0.25;
+            y.flying.push({ x: startX, y: 44 + Math.random() * 32, vx: speedX, vy: wobble, w: 14, h: 14, t: 0 });
+            y.flyTimer = 70 + Math.random() * 40;
+        }
+        y.tauntTimer--;
+        if (y.tauntTimer <= 0) {
+            const jeffLines = [
+                'Still climbing? I have prime time to waste.',
+                'The skyboxes belong to me.',
+                'You are late. Again.'
+            ];
+            y.tauntLine = jeffLines[Math.floor(Math.random() * jeffLines.length)];
+            y.tauntTimer = 260;
         }
     } else {
         y.flyTimer = Math.min(y.flyTimer, 50);
-        y.skyBands.forEach(b => { b.timer = Math.min(b.timer, 30); });
+        y.tauntTimer = Math.max(y.tauntTimer, 120);
     }
 
     y.lanes.forEach(lane => {
@@ -2327,6 +2344,13 @@ function drawYardLevel() {
             ctx.beginPath(); ctx.ellipse(f.x + 7, f.y + 14, 8, 3, 0, 0, Math.PI*2); ctx.fill();
             ctx.drawImage(GFX.flyingBox, f.x, f.y);
         });
+        if (y.throwers) {
+            y.throwers.forEach(th => {
+                ctx.fillStyle = 'rgba(0,0,0,0.25)';
+                ctx.beginPath(); ctx.ellipse(th.x + 8, th.y + 18, 7, 3, 0, 0, Math.PI*2); ctx.fill();
+                ctx.drawImage(GFX.assoc, th.x, th.y);
+            });
+        }
         if ((y.tauntShown || y.playerY < 120) && y.tauntLine) {
             ctx.drawImage(GFX.mechaJeff, canvas.width/2 - 32, y.cameraY + 2, 64, 64);
             ctx.fillStyle = '#0ea5e9'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
