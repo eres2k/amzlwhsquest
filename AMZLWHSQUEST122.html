@@ -1344,7 +1344,9 @@ function handleAction() {
     else if (GAME.state === 'BOSS_INTRO') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
     else if (GAME.state === 'YARD_INTRO') { startYardLevel(); }
     else if (GAME.state === 'MECHA_BOSS_INTRO') { GAME.state = 'MECHA_BOSS'; GAME.stateTimer = 0; updateMusicForState(); }
-    else if (GAME.state === 'CREDITS') { GAME.state = 'TITLE'; updateMusicForState(); }
+    else if (GAME.state === 'CREDITS') {
+        if (GAME.stateTimer > 600) { GAME.state = 'TITLE'; updateMusicForState(); }
+    }
     else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') {
         document.getElementById('boss-hud').style.display = 'none'; GAME.state = 'TITLE'; updateMusicForState();
     }
@@ -1467,7 +1469,7 @@ function initBossEncounter() {
 function startYardLevel() {
     GAME.state = 'YARD_LEVEL';
     GAME.stateTimer = 0;
-    const h = 420;
+    const h = 520;
     GAME.yard = {
         height: h,
         cameraY: 0,
@@ -1477,11 +1479,18 @@ function startYardLevel() {
         vehicles: [],
         flying: [],
         flyTimer: 120,
+        tauntShown: false,
+        tauntLine: null,
+        skyBands: [
+            { y: 60, dir: 1, speed: 1.1, timer: 50 },
+            { y: 88, dir: -1, speed: 1.25, timer: 60 },
+            { y: 116, dir: 1, speed: 1.35, timer: 70 }
+        ],
         lanes: [
-            { y: h - 70, dir: 1, speed: 0.85, timer: 80 },
-            { y: h - 120, dir: -1, speed: 0.95, timer: 85 },
-            { y: h - 170, dir: 1, speed: 1.05, timer: 90 },
-            { y: h - 220, dir: -1, speed: 0.9, timer: 95 }
+            { y: h - 90, dir: 1, speed: 0.8, timer: 90 },
+            { y: h - 150, dir: -1, speed: 0.9, timer: 95 },
+            { y: h - 210, dir: 1, speed: 1.0, timer: 100 },
+            { y: h - 270, dir: -1, speed: 0.85, timer: 105 }
         ]
     };
     GAME.player.speed = GAME.yard.speed;
@@ -1635,16 +1644,30 @@ function updateYardLevel() {
 
     // flying package gauntlet near the top
     y.flyTimer--;
-    const inSky = y.playerY < 140;
-    if (inSky && y.flyTimer <= 0) {
-        const fromLeft = Math.random() < 0.5;
-        const startX = fromLeft ? -18 : canvas.width + 4;
-        const speedX = (fromLeft ? 1 : -1) * (0.5 + Math.random() * 0.35);
-        const wobble = (Math.random() * 0.6) + 0.4;
-        y.flying.push({ x: startX, y: 22 + Math.random() * 40, vx: speedX, vy: wobble, w: 14, h: 14, t: 0 });
-        y.flyTimer = 45 + Math.random() * 35;
-    } else if (!inSky) {
-        y.flyTimer = Math.min(y.flyTimer, 30);
+    const inSky = y.playerY < 200;
+    if (inSky) {
+        y.skyBands.forEach(b => {
+            b.timer--;
+            if (b.timer <= 0) {
+                const startLeft = Math.random() < 0.5;
+                const startX = startLeft ? -18 : canvas.width + 6;
+                const dir = startLeft ? 1 : -1;
+                const speed = b.speed + (Math.random() * 0.35);
+                y.flying.push({ x: startX, y: b.y + Math.random() * 8, vx: dir * speed, vy: 0.25 + Math.random()*0.2, w: 14, h: 14, t: 0 });
+                b.timer = 65 + Math.random() * 40;
+            }
+        });
+        if (y.flyTimer <= 0) {
+            const fromLeft = Math.random() < 0.5;
+            const startX = fromLeft ? -18 : canvas.width + 4;
+            const speedX = (fromLeft ? 1 : -1) * (0.8 + Math.random() * 0.5);
+            const wobble = (Math.random() * 0.6) + 0.5;
+            y.flying.push({ x: startX, y: 34 + Math.random() * 28, vx: speedX, vy: wobble, w: 14, h: 14, t: 0 });
+            y.flyTimer = 35 + Math.random() * 30;
+        }
+    } else {
+        y.flyTimer = Math.min(y.flyTimer, 50);
+        y.skyBands.forEach(b => { b.timer = Math.min(b.timer, 30); });
     }
 
     y.lanes.forEach(lane => {
@@ -1676,12 +1699,12 @@ function updateYardLevel() {
         const f = y.flying[i];
         f.t++;
         f.x += f.vx;
-        f.y += Math.sin(f.t / 10) * 0.6 + f.vy;
-        if (f.x < -32 || f.x > canvas.width + 32 || f.y > 140) { y.flying.splice(i,1); continue; }
+        f.y += Math.sin(f.t / 12) * 0.4 + f.vy;
+        if (f.x < -32 || f.x > canvas.width + 32 || f.y > 180) { y.flying.splice(i,1); continue; }
         if (Math.abs((f.x + f.w/2) - (y.playerX + 8)) < (f.w/2 + 6) && Math.abs((f.y + f.h/2) - (y.playerY + 8)) < (f.h/2 + 6)) {
             if (GAME.player.iframe <= 0) {
                 GAME.lives--; GAME.player.iframe = 90; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
-                y.playerX = canvas.width / 2 - 8; y.playerY = Math.min(y.height - 32, y.playerY + 40); y.cameraY = Math.max(0, y.height - canvas.height);
+                y.playerX = canvas.width / 2 - 8; y.playerY = Math.min(y.height - 32, y.playerY + 60); y.cameraY = Math.max(0, y.height - canvas.height);
                 if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
             }
         }
@@ -1689,6 +1712,18 @@ function updateYardLevel() {
 
     if (y.playerY <= 12) {
         GAME.nextState = 'MECHA_BOSS_INTRO';
+        const jeffLines = [
+            'You dare clock out without my permission?',
+            'Prime compliance at 0%. Unacceptable.',
+            'Your audit ends under my orbital beam.',
+            'Little coordinator, big mistake.'
+        ];
+        if (!y.tauntShown) {
+            y.tauntShown = true;
+            y.tauntLine = jeffLines[Math.floor(Math.random()*jeffLines.length)];
+            showDialog(y.tauntLine, 'Mecha Jeff', GFX.mechaJeff);
+            return;
+        }
         showDialog('The yard opens to something colossal...', 'Simon Unglaube', GFX.simonFace, true);
         return;
     }
@@ -1709,10 +1744,10 @@ function updateMechaBattle() {
     m.attackTimer++;
     if (m.attackTimer > 320) { m.attackTimer = 0; m.attackPhase = (m.attackPhase + 1) % 3; m.shadows = []; m.beam = null; }
 
-    if (m.attackPhase === 0 && m.timer % 70 === 0) {
+    if (m.attackPhase === 0 && m.timer % 90 === 0) {
         const activeDrones = m.projectiles.filter(pr => pr.type === 'drone').length;
-        if (activeDrones < 3) {
-            m.projectiles.push({ type: 'drone', x: m.x + 32, y: m.y + 24, vx: 0, vy: 0.5, life: 280 });
+        if (activeDrones < 2) {
+            m.projectiles.push({ type: 'drone', x: m.x + 32, y: m.y + 24, vx: 0, vy: 0.35, life: 320 });
         }
     }
     if (m.attackPhase === 1 && m.timer % 65 === 0) {
@@ -1726,10 +1761,10 @@ function updateMechaBattle() {
         const pr = m.projectiles[i];
         if (pr.type === 'drone') {
             const angle = Math.atan2(p.y - pr.y, p.x - pr.x);
-            const targetVx = Math.cos(angle) * 0.65;
-            const targetVy = Math.sin(angle) * 0.65;
-            pr.vx = pr.vx * 0.85 + targetVx * 0.15;
-            pr.vy = pr.vy * 0.85 + targetVy * 0.15;
+            const targetVx = Math.cos(angle) * 0.45;
+            const targetVy = Math.sin(angle) * 0.45;
+            pr.vx = pr.vx * 0.88 + targetVx * 0.12;
+            pr.vy = pr.vy * 0.88 + targetVy * 0.12;
         } else if (pr.type === 'box') {
             pr.vy += 0.04;
         }
@@ -1770,7 +1805,11 @@ function updateMechaBattle() {
         if (a.x < -20 || a.x > canvas.width + 20 || a.y < -20 || a.y > canvas.height + 20 || a.life <= 0) { GAME.projectiles.splice(i,1); continue; }
         if (Math.abs((a.x + 6) - (m.x + 32)) < 32 && Math.abs((a.y + 6) - (m.y + 32)) < 32) {
             m.hp--; GAME.boss.hp = m.hp; updateBossHud(); GAME.projectiles.splice(i,1); AudioSys.sfx.bossHit(); spawnFloatingText(m.x+32, m.y+12, 'Hit!', '#ff2e63');
-            if (m.hp <= 0) { startCredits(); return; }
+            if (m.hp <= 0) {
+                GAME.nextState = 'CREDITS';
+                showDialog('Impressive. You actually crushed Evil Jeff Bezos. Audit notes: flawless.', 'Simon Unglaube', GFX.simonFace);
+                return;
+            }
         }
     }
 }
@@ -2288,6 +2327,12 @@ function drawYardLevel() {
             ctx.beginPath(); ctx.ellipse(f.x + 7, f.y + 14, 8, 3, 0, 0, Math.PI*2); ctx.fill();
             ctx.drawImage(GFX.flyingBox, f.x, f.y);
         });
+        if ((y.tauntShown || y.playerY < 120) && y.tauntLine) {
+            ctx.drawImage(GFX.mechaJeff, canvas.width/2 - 32, y.cameraY + 2, 64, 64);
+            ctx.fillStyle = '#0ea5e9'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
+            ctx.fillText(y.tauntLine.toUpperCase(), canvas.width/2, y.cameraY + 70);
+            ctx.textAlign = 'left';
+        }
     }
 
     ctx.drawImage(GFX.chars[GAME.selectedChar], GAME.player.x, GAME.player.y);
@@ -2341,10 +2386,14 @@ function drawCredits() {
         'Moral Support: Erwin Esener',
         'Everything Else: Erwin Esener'
     ];
-    const startY = canvas.height + 20 - t * 0.5;
+    const startY = canvas.height + 20 - t * 0.25;
     ctx.fillStyle = '#fff'; ctx.font = '9px monospace';
     credits.forEach((line, i) => { ctx.fillText(line, canvas.width/2, startY + i*16); });
     ctx.textAlign = 'left';
+    if (GAME.stateTimer > 600) {
+        ctx.fillStyle = '#94a3b8'; ctx.font = '8px monospace';
+        ctx.fillText('[SPACE TO SKIP]', 8, canvas.height - 10);
+    }
 }
 
 function draw() {
