@@ -1458,6 +1458,16 @@ window.addEventListener('keydown', e => {
     if(e.key==='a'||e.key==='ArrowLeft') KEYS.left=true;
     if(e.key==='d'||e.key==='ArrowRight') KEYS.right=true;
     if(e.code==='Space') { if(!KEYS.action) handleAction(); KEYS.action=true; }
+    // Handle 'R' key for returning to warehouse from yard
+    if((e.key==='r'||e.key==='R') && GAME.state === 'YARD_HIT_POPUP') {
+        // Return to warehouse at the exact position before entering yard
+        GAME.state = 'PLAY';
+        GAME.nextState = 'PLAY';
+        GAME.player.x = GAME.yard.warehouseReturnX;
+        GAME.player.y = GAME.yard.warehouseReturnY;
+        GAME.yard = null; // Clear yard state
+        AudioSys.sfx.step();
+    }
 });
 window.addEventListener('keyup', e => {
     if(e.key==='w'||e.key==='ArrowUp') KEYS.up=false;
@@ -1487,8 +1497,15 @@ function handleAction() {
             }
         }
     }
+    else if (GAME.state === 'YARD_HIT_POPUP') {
+        // SPACE key pressed - continue from yard start
+        GAME.state = 'YARD_LEVEL';
+        GAME.nextState = 'YARD_LEVEL';
+        AudioSys.sfx.step();
+    }
     else if (GAME.state === 'VISITOR_SPLASH') { initBossEncounter(); }
     else if (GAME.state === 'BOSS_INTRO') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
+    else if (GAME.state === 'MECHA_BOSS_INTRO') { GAME.state = 'MECHA_BOSS'; GAME.nextState = 'MECHA_BOSS'; updateMusicForState(); }
     else if (GAME.state === 'BEZOS_INTRO') { GAME.state = 'BEZOS_BOSS'; GAME.nextState = 'BEZOS_BOSS'; updateMusicForState(); }
     else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') {
         document.getElementById('boss-hud').style.display = 'none'; GAME.state = 'TITLE'; updateMusicForState();
@@ -1626,6 +1643,10 @@ function startYardLevel() {
         cameraY: 0,
         playerX: canvas.width / 2 - 8,
         playerY: h - 32,
+        yardStartX: canvas.width / 2 - 8, // Store yard starting position
+        yardStartY: h - 32,
+        warehouseReturnX: GAME.player.x, // Store warehouse exit position for return
+        warehouseReturnY: GAME.player.y,
         speed: getCharStats(GAME.selectedChar).speed * 0.9,
         vehicles: [],
         flying: [],
@@ -1643,7 +1664,23 @@ function startYardLevel() {
             { y: h - 150, dir: -1, speed: 0.9, timer: 95 },
             { y: h - 210, dir: 1, speed: 1.0, timer: 100 },
             { y: h - 270, dir: -1, speed: 0.85, timer: 105 }
-        ]
+        ],
+        // Jeff Bezos character
+        jeffX: canvas.width / 2 - 16,
+        jeffY: 38,
+        jeffTouched: false,
+        jeffBanterTimer: 180,
+        jeffBanter: [
+            "Bro, that's not how you push rate.",
+            "Even I could find hazards faster than that.",
+            "Prime Day speeds only, associate.",
+            "My AI finds packages faster than you.",
+            "You call that hustle?",
+            "Rate is life. This ain't it.",
+            "Safety? More like slow-ty.",
+            "Clock's ticking, champ."
+        ],
+        currentJeffBanter: 0
     };
     GAME.player.speed = GAME.yard.speed;
     GAME.projectiles = [];
@@ -2073,7 +2110,7 @@ function update() {
         return;
     }
 
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO'].includes(GAME.state)) return;
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'YARD_INTRO', 'YARD_HIT_POPUP'].includes(GAME.state)) return;
 
     // Bezos victory screen
     if (GAME.state === 'BEZOS_WIN') {
@@ -2085,7 +2122,7 @@ function update() {
         return;
     }
 
-    if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') {
+    if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS' || GAME.state === 'MECHA_BOSS') {
         updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts();
         if (GAME.state !== 'FROGGER') updateCamera(); // Frogger has fixed camera
     }
@@ -2094,6 +2131,8 @@ function update() {
     if (GAME.state === 'BOSS') updateBoss();
     if (GAME.state === 'FROGGER') updateFrogger();
     if (GAME.state === 'BEZOS_BOSS') updateMechaBezos();
+    if (GAME.state === 'MECHA_BOSS') updateMechaBattle();
+    if (GAME.state === 'YARD_LEVEL') updateYardLevel();
 }
 
 function updatePlayer() {
@@ -2186,8 +2225,39 @@ function updateYardLevel() {
         if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 6) && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 6)) {
             if (GAME.player.iframe <= 0) {
                 GAME.lives--; GAME.player.iframe = 90; GAME.flash = 8; AudioSys.sfx.hurt(); updateHud();
-                y.playerX = canvas.width / 2 - 8; y.playerY = y.height - 32; y.cameraY = Math.max(0, y.height - canvas.height);
-                if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
+
+                // Reset to yard starting position (not warehouse)
+                y.playerX = y.yardStartX;
+                y.playerY = y.yardStartY;
+                y.cameraY = Math.max(0, y.height - canvas.height);
+
+                if (GAME.lives <= 0 && !GAME.gameOverTriggered) {
+                    triggerGameOver('OVERWHELMED!');
+                    return;
+                }
+
+                // Show yard safety message popup
+                GAME.state = 'YARD_HIT_POPUP';
+                GAME.nextState = 'YARD_LEVEL';
+
+                // Generate AI variant message
+                const genId = ++GAME.genId;
+                callGemini(
+                    `You are Simon Unglaube, WHS Senior Regional Manager for Amazon. An associate just got hit by a van in the yard. Give a snarky, dry humor safety reminder about yard safety and respecting vehicle right-of-way. Max 30 words.`,
+                    "yard_hit",
+                    {}
+                ).then(aiMsg => {
+                    if (GAME.genId === genId && GAME.state === 'YARD_HIT_POPUP') {
+                        // Store AI message for display
+                        GAME.yardHitAIMessage = aiMsg;
+                    }
+                });
+
+                // Set hardcoded message as default
+                GAME.yardHitMessage = "Simon's Unglaube says: If the van hits you, the van ALWAYS wins. Respect the yard lines, champ.";
+                GAME.yardHitAIMessage = null; // Will be filled by AI if available
+
+                return; // Stop processing to show popup
             }
         }
     }
@@ -2205,6 +2275,23 @@ function updateYardLevel() {
                 if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
             }
         }
+    }
+
+    // Jeff Bezos banter timer
+    y.jeffBanterTimer--;
+    if (y.jeffBanterTimer <= 0) {
+        y.currentJeffBanter = (y.currentJeffBanter + 1) % y.jeffBanter.length;
+        y.jeffBanterTimer = 180 + Math.random() * 120; // 3-5 seconds between banter changes
+    }
+
+    // Check if player touches Jeff Bezos (trigger Mecha Jeff transformation)
+    const jeffWorldY = y.cameraY + y.jeffY; // Jeff's world position
+    if (!y.jeffTouched && Math.abs(y.playerX - y.jeffX) < 24 && Math.abs(y.playerY - jeffWorldY) < 24) {
+        y.jeffTouched = true;
+        // Trigger Mecha Jeff transformation immediately
+        GAME.nextState = 'MECHA_BOSS_INTRO';
+        showDialog('You actually touched the boss. Big mistake, coordinator.', 'Jeff Bezos', GFX.mechaJeff);
+        return;
     }
 
     if (y.playerY <= 12) {
@@ -2843,12 +2930,44 @@ function drawYardLevel() {
                 ctx.drawImage(GFX.assoc, th.x, th.y);
             });
         }
-        if ((y.tauntShown || y.playerY < 120) && y.tauntLine) {
-            ctx.drawImage(GFX.mechaJeff, canvas.width/2 - 32, y.cameraY + 2, 64, 64);
-            ctx.fillStyle = '#0ea5e9'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
-            ctx.fillText(y.tauntLine.toUpperCase(), canvas.width/2, y.cameraY + 70);
-            ctx.textAlign = 'left';
-        }
+        // Always show Jeff Bezos at the top of the screen with banter (screen-fixed position)
+        const jeffScreenX = y.jeffX;
+        const jeffScreenY = y.cameraY + y.jeffY; // Camera-relative to stay on screen
+
+        // Draw Jeff Bezos character (scale down mechaJeff sprite)
+        ctx.drawImage(GFX.mechaJeff, jeffScreenX, jeffScreenY, 32, 32);
+
+        // Draw speech bubble above Jeff
+        const banterText = y.jeffBanter[y.currentJeffBanter];
+        ctx.font = '8px monospace';
+        const textWidth = ctx.measureText(banterText).width;
+        const bubbleWidth = textWidth + 12;
+        const bubbleHeight = 20;
+        const bubbleX = jeffScreenX + 16 - bubbleWidth / 2;
+        const bubbleY = jeffScreenY - 24;
+
+        // Speech bubble background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight);
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight);
+
+        // Speech bubble tail
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(jeffScreenX + 16, jeffScreenY - 4);
+        ctx.lineTo(jeffScreenX + 12, bubbleY + bubbleHeight);
+        ctx.lineTo(jeffScreenX + 20, bubbleY + bubbleHeight);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Banter text
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'center';
+        ctx.fillText(banterText, jeffScreenX + 16, bubbleY + 13);
+        ctx.textAlign = 'left';
     }
 
     ctx.drawImage(GFX.chars[GAME.selectedChar], GAME.player.x, GAME.player.y);
@@ -3008,6 +3127,85 @@ function draw() {
         ctx.restore(); return;
     }
     if (GAME.state === 'YARD_LEVEL') { drawYardLevel(); ctx.restore(); return; }
+    if (GAME.state === 'YARD_HIT_POPUP') {
+        // Draw yard level in background
+        drawYardLevel();
+
+        // Draw semi-transparent overlay
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw popup box
+        const boxW = 220;
+        const boxH = 110;
+        const boxX = (canvas.width - boxW) / 2;
+        const boxY = (canvas.height - boxH) / 2;
+
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(boxX, boxY, boxW, boxH);
+        ctx.strokeStyle = '#eab308';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+        // Title
+        ctx.fillStyle = '#ff2e63';
+        ctx.font = '12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('VAN COLLISION!', canvas.width / 2, boxY + 16);
+
+        // Display hardcoded message
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '8px monospace';
+        const msg = GAME.yardHitMessage;
+        const words = msg.split(' ');
+        let line = '';
+        let yPos = boxY + 32;
+        for (let i = 0; i < words.length; i++) {
+            const testLine = line + words[i] + ' ';
+            if (ctx.measureText(testLine).width > boxW - 20 && i > 0) {
+                ctx.fillText(line, canvas.width / 2, yPos);
+                line = words[i] + ' ';
+                yPos += 10;
+            } else {
+                line = testLine;
+            }
+        }
+        ctx.fillText(line, canvas.width / 2, yPos);
+
+        // Display AI message if available
+        if (GAME.yardHitAIMessage) {
+            yPos += 14;
+            ctx.fillStyle = '#0ea5e9';
+            ctx.fillText('✨ AI ANALYSIS:', canvas.width / 2, yPos);
+            yPos += 10;
+            ctx.fillStyle = '#94a3b8';
+            const aiMsg = GAME.yardHitAIMessage;
+            const aiWords = aiMsg.split(' ');
+            let aiLine = '';
+            for (let i = 0; i < aiWords.length; i++) {
+                const testLine = aiLine + aiWords[i] + ' ';
+                if (ctx.measureText(testLine).width > boxW - 20 && i > 0) {
+                    ctx.fillText(aiLine, canvas.width / 2, yPos);
+                    aiLine = aiWords[i] + ' ';
+                    yPos += 10;
+                } else {
+                    aiLine = testLine;
+                }
+            }
+            ctx.fillText(aiLine, canvas.width / 2, yPos);
+        }
+
+        // Options
+        ctx.fillStyle = '#22c55e';
+        ctx.font = '9px monospace';
+        ctx.fillText('[SPACE] Continue from Yard Start', canvas.width / 2, boxY + boxH - 24);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillText('[R] Return to Warehouse', canvas.width / 2, boxY + boxH - 12);
+
+        ctx.textAlign = 'left';
+        ctx.restore();
+        return;
+    }
     if (GAME.state === 'VISITOR_SPLASH') {
         const t = GAME.stateTimer;
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
