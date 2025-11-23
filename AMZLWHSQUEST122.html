@@ -1067,6 +1067,7 @@ const GAME = {
     map: [], clutter: [], entities: [], projectiles: [], particles: [], floatingTexts: [],
     activeIssues: [],
     issuesFixed: 0, lives: 5, genId: 0, gameOverTriggered: false, simonHits: 0, boss: null,
+    visitorSplashTriggered: false,
     shake: 0, flash: 0, 
     dialogText: "", dialogVisible: "", dialogTimer: 0,
     splashTimer: 0, aiResultText: null,
@@ -1249,8 +1250,9 @@ function handleAction() {
             GAME.dialogVisible = GAME.dialogText; document.getElementById('text-content').innerText = GAME.dialogVisible;
         } else { closeDialog(); }
     }
+    else if (GAME.state === 'VISITOR_SPLASH') { GAME.stateTimer = 0; initBossEncounter(); }
     else if (GAME.state === 'BOSS_INTRO') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
-    else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') { 
+    else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') {
         document.getElementById('boss-hud').style.display = 'none'; GAME.state = 'TITLE'; updateMusicForState();
     }
     else if (GAME.state === 'PLAY' || GAME.state === 'BOSS') { if (GAME.state === 'PLAY' && tryInteract()) return; throwBook(); }
@@ -1281,6 +1283,7 @@ function resetGame() {
     GAME.entities = []; GAME.projectiles = []; GAME.particles = []; GAME.floatingTexts = [];
     GAME.activeIssues = []; GAME.clutter = [];
     GAME.issuesFixed = 0; GAME.lives = stats.lives; GAME.simonHits = 0; GAME.boss = null;
+    GAME.visitorSplashTriggered = false;
     GAME.nextState = 'PLAY'; GAME.aiResultText = null;
     GAME.startTime = Date.now(); GAME.booksFired = 0; GAME.opsPushed = 0;
     
@@ -1357,7 +1360,8 @@ function initSimonBoss() {
 
 function initBossEncounter() {
     GAME.state = 'BOSS_INTRO';
-    AudioSys.sfx.bossIntro(); 
+    GAME.stateTimer = 0;
+    AudioSys.sfx.bossIntro();
     const bossData = GAME.bossTypes[Math.floor(Math.random() * GAME.bossTypes.length)];
     GAME.boss = { ...bossData, x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, w: 32, h: 32, maxHp: bossData.hp, timer: 0, tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25] };
     GAME.entities = []; GAME.projectiles = [];
@@ -1415,7 +1419,7 @@ function update() {
         return;
     }
 
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO'].includes(GAME.state)) return;
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH'].includes(GAME.state)) return;
 
     if (GAME.state === 'PLAY' || GAME.state === 'BOSS') {
         updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts(); updateCamera();
@@ -1648,14 +1652,13 @@ function tryInteract() {
              e.type = 'assoc'; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
              spawnFloatingText(e.x, e.y, "Safe!", "#00ff00");
              
-             if (GAME.issuesFixed >= 5) {
-                 initBossEncounter();
-                 return true;
-             }
+             const reachedBoss = GAME.issuesFixed >= 5 && !GAME.visitorSplashTriggered;
+             if (reachedBoss) GAME.visitorSplashTriggered = true;
 
              // SIMON COMMENTARY
              const currentGen = GAME.genId;
-             
+             GAME.nextState = reachedBoss ? 'VISITOR_SPLASH' : 'PLAY';
+
              // --- CHANGED: Show thinking state immediately for responsiveness ---
              showThinking("Simon Unglaube", GFX.simonFace);
 
@@ -1672,15 +1675,14 @@ function tryInteract() {
         if (!h.fixed && Math.hypot(p.x-h.x, p.y-h.y) < 20) {
             h.fixed = true; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
             spawnFloatingText(h.x, h.y, "Fixed!", "#00ff00");
-            
-            if (GAME.issuesFixed >= 5) {
-                 initBossEncounter();
-                 return true;
-            }
+
+            const reachedBoss = GAME.issuesFixed >= 5 && !GAME.visitorSplashTriggered;
+            if (reachedBoss) GAME.visitorSplashTriggered = true;
 
             // SIMON COMMENTARY
             const currentGen = GAME.genId;
-            
+            GAME.nextState = reachedBoss ? 'VISITOR_SPLASH' : 'PLAY';
+
             // --- CHANGED: Show thinking state immediately ---
             showThinking("Simon Unglaube", GFX.simonFace);
 
@@ -1768,7 +1770,14 @@ function showThinking(speaker, portrait) {
 
 function closeDialog() {
     TTSSys.cancel(); AudioSys.sfx.step(); document.getElementById('dialog-box').style.display = 'none';
-    GAME.state = GAME.nextState; if (GAME.state === 'PLAY' && GAME.issuesFixed >= 5 && !GAME.boss) initBossEncounter();
+    GAME.state = GAME.nextState;
+
+    if (GAME.state === 'VISITOR_SPLASH') {
+        GAME.stateTimer = 0;
+    } else if (GAME.state === 'PLAY' && GAME.issuesFixed >= 5 && !GAME.boss && !GAME.visitorSplashTriggered) {
+        initBossEncounter();
+    }
+
     updateMusicForState();
 }
 
@@ -1776,7 +1785,7 @@ function updateMusicForState() {
     if (['LOGO', 'INTRO', 'STORY', 'TITLE'].includes(GAME.state)) MusicSys.play('title');
     else if (['HOWTO', 'SELECT'].includes(GAME.state)) MusicSys.play('menu');
     else if (GAME.state === 'PLAY') MusicSys.play('ingame');
-    else if (GAME.state === 'BOSS' || GAME.state === 'BOSS_INTRO') MusicSys.play('boss');
+    else if (['BOSS', 'BOSS_INTRO', 'VISITOR_SPLASH'].includes(GAME.state)) MusicSys.play('boss');
 }
 
 function drawSnesSplash(isWin) {
@@ -1840,9 +1849,91 @@ function drawSnesSplash(isWin) {
     ctx.textAlign = 'start';
 }
 
+function drawVisitorSplash() {
+    const t = GAME.stateTimer;
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#04071f');
+    gradient.addColorStop(0.45, '#0f1b4b');
+    gradient.addColorStop(1, '#060914');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (let y = -20; y < canvas.height + 20; y += 14) {
+        const offset = Math.sin((t / 14) + y * 0.15) * 6;
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        ctx.fillRect(offset, y, canvas.width * 0.9, 3);
+    }
+
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height * 0.55);
+    ctx.strokeStyle = '#2dd4bf80';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 14; i++) {
+        const scale = (i + 1) / 14;
+        const wobble = Math.sin((t / 12) + i) * 6;
+        const w = canvas.width * (1 - scale * 0.4);
+        const y = (i * 14) + wobble;
+        ctx.beginPath();
+        ctx.moveTo(-w / 2, y);
+        ctx.lineTo(w / 2, y + Math.sin(t / 18 + i) * 4);
+        ctx.stroke();
+    }
+
+    ctx.shadowColor = '#00f0ff';
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = '#0ea5e9';
+    ctx.fillRect(-84, -92, 168, 112);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#020617';
+    ctx.fillRect(-76, -84, 152, 96);
+
+    const pulse = 6 + Math.sin(t / 8) * 4;
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(0, -18, 34 + pulse, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = '#0f172a';
+    ctx.strokeStyle = '#f8fafc';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(0, -18, 30 + Math.sin(t / 10) * 2, 24 + Math.cos(t / 12) * 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = '20px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#000';
+    const title = 'SURPRISE VISITOR';
+    const offsets = [[2,2],[-2,2],[2,-2],[-2,-2]];
+    offsets.forEach(([dx, dy]) => ctx.fillText(title, dx, -118 + dy));
+    ctx.fillStyle = '#e0f2fe';
+    ctx.fillText(title, 0, -118);
+
+    ctx.font = '10px monospace';
+    ctx.fillStyle = '#67e8f9';
+    ctx.fillText('Safety anomaly detected...', 0, -52);
+    ctx.fillStyle = '#cbd5f5';
+    ctx.fillText('Simon senses a new challenger approaching!', 0, -36);
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillText('Press SPACE to confront the visitor.', 0, 32 + Math.sin(t / 6) * 2);
+    ctx.restore();
+
+    for (let i = 0; i < 12; i++) {
+        const x = (Math.sin((t + i * 21) / 9) * 0.5 + 0.5) * canvas.width;
+        const y = (i * 31 + t * 3) % canvas.height;
+        const size = 2 + (i % 3);
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.fillRect(x, y, size, size);
+    }
+}
+
 function draw() {
     if (GAME.state === 'LOSE_SPLASH') { drawSnesSplash(false); return; }
     if (GAME.state === 'WIN_SPLASH') { drawSnesSplash(true); return; }
+    if (GAME.state === 'VISITOR_SPLASH') { drawVisitorSplash(); return; }
 
     ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width, canvas.height);
     let dxShake = 0, dyShake = 0;
