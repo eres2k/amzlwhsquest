@@ -644,6 +644,27 @@ function generateAssets() {
     };
     GFX.simon = c(16,16, ctx => { ctx.fillStyle = '#222'; ctx.fillRect(4,1,8,5); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,4); ctx.fillStyle = '#000'; ctx.fillRect(4,7,8,1); ctx.fillStyle = '#aaddff'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); ctx.fillStyle = '#eab308'; ctx.fillRect(3,9,10,6); ctx.fillStyle = '#fff'; ctx.fillRect(6,11,4,4); });
     GFX.simonFace = c(32,32, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simon,0,0,16,16,0,0,32,32); });
+
+    // Jeff Bezos - visible character in yard
+    GFX.jeffBezos = c(32,32, ctx => {
+        // Bald head
+        ctx.fillStyle = '#f5d0a0'; ctx.fillRect(8,4,16,12); // head
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(10,6,4,4); // head shine
+        // Evil eyes
+        ctx.fillStyle = '#000'; ctx.fillRect(11,9,3,3); ctx.fillRect(18,9,3,3); // eyes
+        ctx.fillStyle = '#fff'; ctx.fillRect(12,10,1,1); ctx.fillRect(19,10,1,1); // eye glints
+        // Smirk
+        ctx.fillStyle = '#000'; ctx.fillRect(13,14,6,2); // mouth
+        // Business casual outfit
+        ctx.fillStyle = '#1e3a8a'; ctx.fillRect(6,16,20,10); // blue shirt
+        ctx.fillStyle = '#60a5fa'; ctx.fillRect(8,18,2,4); ctx.fillRect(22,18,2,4); // collar
+        ctx.fillStyle = '#fff'; ctx.fillRect(14,18,4,6); // buttons
+        // Arms
+        ctx.fillStyle = '#1e3a8a'; ctx.fillRect(4,18,4,6); ctx.fillRect(24,18,4,6); // arms
+        ctx.fillStyle = '#f5d0a0'; ctx.fillRect(4,24,4,4); ctx.fillRect(24,24,4,4); // hands
+        // Legs
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(10,26,6,6); ctx.fillRect(16,26,6,6); // pants
+    });
     
     GFX.simonBoss = c(32,32, ctx => { 
         ctx.fillStyle = '#222'; ctx.fillRect(8,2,16,10); ctx.fillStyle = '#ffcc99'; ctx.fillRect(8,12,16,8);
@@ -1301,6 +1322,8 @@ const GAME = {
     froggerVehicles: [], // Frogger level vehicles
     bezosTaunt: "", // Current Bezos taunt
     bezosTauntTimer: 0, // Timer for taunt display
+    warehouseReturnPos: null, // Position to return to when leaving yard
+    yardHitWaitingForChoice: false, // Waiting for player to choose return to warehouse or continue
 
     bossTypes: [
         { name: "Labour Inspector", sprite: "boss_inspector", hp: 10, speed: 1.2, attackDelay: 50, title: "The Enforcer", desc: "Checks every corner.", attackName: "Citation Storm" },
@@ -1458,6 +1481,11 @@ window.addEventListener('keydown', e => {
     if(e.key==='a'||e.key==='ArrowLeft') KEYS.left=true;
     if(e.key==='d'||e.key==='ArrowRight') KEYS.right=true;
     if(e.code==='Space') { if(!KEYS.action) handleAction(); KEYS.action=true; }
+    // ESC key for continuing in yard after van hit
+    if(e.key==='Escape' && GAME.yardHitWaitingForChoice) {
+        GAME.yardHitWaitingForChoice = false;
+        closeDialog();
+    }
 });
 window.addEventListener('keyup', e => {
     if(e.key==='w'||e.key==='ArrowUp') KEYS.up=false;
@@ -1480,6 +1508,21 @@ function handleAction() {
         if (GAME.dialogVisible.length < GAME.dialogText.length) {
             GAME.dialogVisible = GAME.dialogText; document.getElementById('text-content').innerText = GAME.dialogVisible;
         } else {
+            // Handle yard hit "Return to Warehouse" option
+            if (GAME.yardHitWaitingForChoice) {
+                GAME.yardHitWaitingForChoice = false;
+                closeDialog();
+                // Return player to warehouse at saved position
+                if (GAME.warehouseReturnPos) {
+                    GAME.state = 'PLAY';
+                    GAME.nextState = 'PLAY';
+                    GAME.player.x = GAME.warehouseReturnPos.x;
+                    GAME.player.y = GAME.warehouseReturnPos.y;
+                    GAME.yard = null; // Exit yard
+                    updateMusicForState();
+                }
+                return;
+            }
             closeDialog();
             // Check if transitioning to hidden level
             if (GAME.nextState === 'FROGGER_INTRO') {
@@ -1643,8 +1686,30 @@ function startYardLevel() {
             { y: h - 150, dir: -1, speed: 0.9, timer: 95 },
             { y: h - 210, dir: 1, speed: 1.0, timer: 100 },
             { y: h - 270, dir: -1, speed: 0.85, timer: 105 }
-        ]
+        ],
+        // Jeff Bezos character at top of screen
+        jeffBezos: {
+            x: canvas.width / 2 - 16,
+            y: 40,
+            w: 32,
+            h: 32,
+            banterLines: [
+                "Bro, that's not how you push rate.",
+                "Even I could find hazards faster than that.",
+                "You call that crossing a yard? LOL.",
+                "My grandma moves faster, and she's retired.",
+                "Safety first? Nah, speed first, buddy.",
+                "Is this your first day or what?",
+                "Prime delivery: you ain't it, chief.",
+                "That safety vest won't save you here."
+            ],
+            currentBanter: "",
+            banterTimer: 0,
+            banterDuration: 180,
+            visible: true
+        }
     };
+    GAME.yard.jeffBezos.currentBanter = GAME.yard.jeffBezos.banterLines[Math.floor(Math.random() * GAME.yard.jeffBezos.banterLines.length)];
     GAME.player.speed = GAME.yard.speed;
     GAME.projectiles = [];
     GAME.particles = [];
@@ -2186,8 +2251,30 @@ function updateYardLevel() {
         if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 6) && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 6)) {
             if (GAME.player.iframe <= 0) {
                 GAME.lives--; GAME.player.iframe = 90; GAME.flash = 8; AudioSys.sfx.hurt(); updateHud();
+                // Reset player to yard starting point
                 y.playerX = canvas.width / 2 - 8; y.playerY = y.height - 32; y.cameraY = Math.max(0, y.height - canvas.height);
-                if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
+
+                if (GAME.lives <= 0 && !GAME.gameOverTriggered) {
+                    triggerGameOver('OVERWHELMED!');
+                    return;
+                }
+
+                // Show Simon's hardcoded yard safety message first
+                const hardcodedMessage = "Simon Unglaube says:\nIf the van hits you, the van ALWAYS wins.\nRespect the yard lines, champ.";
+
+                // Then trigger AI-generated variant via popup system
+                const currentGen = GAME.genId;
+                showThinking("Simon Unglaube", GFX.simonFace);
+
+                callGemini(
+                    `You are Simon Unglaube, WHS Senior Regional Manager. The player just got hit by a van in the Amazon yard. Deliver a snarky safety comment about yard safety and respecting vehicle traffic. Keep it witty and under 24 words.`,
+                    "yard_safety"
+                ).then(aiTip => {
+                    if (GAME.genId === currentGen && GAME.state !== 'DIALOG') {
+                        showDialog(`${hardcodedMessage}\n\n${aiTip}\n\nOptions:\n[SPACE] Return to Warehouse\n[ESC] Continue in Yard`, "Simon Unglaube", GFX.simonFace, true);
+                        GAME.yardHitWaitingForChoice = true;
+                    }
+                });
             }
         }
     }
@@ -2204,6 +2291,28 @@ function updateYardLevel() {
                 y.playerX = canvas.width / 2 - 8; y.playerY = Math.min(y.height - 32, y.playerY + 60); y.cameraY = Math.max(0, y.height - canvas.height);
                 if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
             }
+        }
+    }
+
+    // Update Jeff Bezos banter
+    if (y.jeffBezos && y.jeffBezos.visible) {
+        y.jeffBezos.banterTimer++;
+        if (y.jeffBezos.banterTimer > y.jeffBezos.banterDuration) {
+            y.jeffBezos.currentBanter = y.jeffBezos.banterLines[Math.floor(Math.random() * y.jeffBezos.banterLines.length)];
+            y.jeffBezos.banterTimer = 0;
+        }
+
+        // Check collision with Jeff Bezos to trigger Mecha transformation
+        const jeff = y.jeffBezos;
+        const jeffWorldY = jeff.y; // Jeff is at fixed position in world space
+        if (GAME.player.iframe <= 0 &&
+            Math.abs((y.playerX + 8) - (jeff.x + jeff.w/2)) < (jeff.w/2 + 8) &&
+            Math.abs((y.playerY + 8) - (jeffWorldY + jeff.h/2)) < (jeff.h/2 + 8)) {
+            // Trigger Mecha Jeff transformation
+            jeff.visible = false; // Hide regular Jeff
+            GAME.nextState = 'MECHA_BOSS_INTRO';
+            showDialog('You touched Jeff Bezos! He transforms into MECHA JEFF!', 'System', null, false);
+            return;
         }
     }
 
@@ -2580,6 +2689,8 @@ function tryInteract() {
         const dx = GAME.player.x - GAME.hiddenDoor.doorX * TILE_SIZE;
         const dy = GAME.player.y - GAME.hiddenDoor.doorY * TILE_SIZE;
         if (Math.hypot(dx, dy) < 18) {
+            // Save warehouse position before entering yard
+            GAME.warehouseReturnPos = { x: GAME.player.x, y: GAME.player.y };
             GAME.state = 'YARD_INTRO';
             GAME.stateTimer = 0;
             GAME.nextState = 'YARD_LEVEL';
@@ -2843,6 +2954,68 @@ function drawYardLevel() {
                 ctx.drawImage(GFX.assoc, th.x, th.y);
             });
         }
+        // Draw Jeff Bezos character with speech bubble
+        if (y.jeffBezos && y.jeffBezos.visible) {
+            const jeff = y.jeffBezos;
+            // Draw Jeff Bezos at fixed position (always at top of screen in camera view)
+            ctx.drawImage(GFX.jeffBezos, jeff.x, jeff.y);
+
+            // Draw speech bubble above Jeff
+            if (jeff.currentBanter) {
+                const bubbleX = jeff.x + jeff.w / 2;
+                const bubbleY = jeff.y - 8;
+                const textLines = [];
+                const maxWidth = 120;
+
+                // Word wrap for speech bubble
+                const words = jeff.currentBanter.split(' ');
+                let currentLine = '';
+                words.forEach(word => {
+                    const testLine = currentLine + (currentLine ? ' ' : '') + word;
+                    ctx.font = '7px monospace';
+                    const metrics = ctx.measureText(testLine);
+                    if (metrics.width > maxWidth && currentLine !== '') {
+                        textLines.push(currentLine);
+                        currentLine = word;
+                    } else {
+                        currentLine = testLine;
+                    }
+                });
+                if (currentLine) textLines.push(currentLine);
+
+                // Draw bubble background
+                const bubbleWidth = maxWidth + 12;
+                const bubbleHeight = textLines.length * 10 + 8;
+                const bubbleLeft = bubbleX - bubbleWidth / 2;
+                const bubbleTop = bubbleY - bubbleHeight - 4;
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                ctx.fillRect(bubbleLeft, bubbleTop, bubbleWidth, bubbleHeight);
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(bubbleLeft, bubbleTop, bubbleWidth, bubbleHeight);
+
+                // Draw bubble tail
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                ctx.beginPath();
+                ctx.moveTo(bubbleX, bubbleY);
+                ctx.lineTo(bubbleX - 6, bubbleTop + bubbleHeight);
+                ctx.lineTo(bubbleX + 6, bubbleTop + bubbleHeight);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Draw text
+                ctx.fillStyle = '#000';
+                ctx.font = '7px monospace';
+                ctx.textAlign = 'center';
+                textLines.forEach((line, i) => {
+                    ctx.fillText(line, bubbleX, bubbleTop + 12 + i * 10);
+                });
+                ctx.textAlign = 'left';
+            }
+        }
+
         if ((y.tauntShown || y.playerY < 120) && y.tauntLine) {
             ctx.drawImage(GFX.mechaJeff, canvas.width/2 - 32, y.cameraY + 2, 64, 64);
             ctx.fillStyle = '#0ea5e9'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
