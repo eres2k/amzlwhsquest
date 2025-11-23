@@ -1066,7 +1066,7 @@ const GAME = {
     camera: { x: 0, y: 0 },
     map: [], clutter: [], entities: [], projectiles: [], particles: [], floatingTexts: [],
     activeIssues: [],
-    issuesFixed: 0, lives: 5, genId: 0, gameOverTriggered: false, simonHits: 0, boss: null,
+    issuesFixed: 0, lives: 5, genId: 0, gameOverTriggered: false, simonHits: 0, boss: null, pendingBossIntro: false,
     shake: 0, flash: 0, 
     dialogText: "", dialogVisible: "", dialogTimer: 0,
     splashTimer: 0, aiResultText: null,
@@ -1249,8 +1249,9 @@ function handleAction() {
             GAME.dialogVisible = GAME.dialogText; document.getElementById('text-content').innerText = GAME.dialogVisible;
         } else { closeDialog(); }
     }
+    else if (GAME.state === 'VISITOR_SPLASH') { initBossEncounter(); }
     else if (GAME.state === 'BOSS_INTRO') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
-    else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') { 
+    else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') {
         document.getElementById('boss-hud').style.display = 'none'; GAME.state = 'TITLE'; updateMusicForState();
     }
     else if (GAME.state === 'PLAY' || GAME.state === 'BOSS') { if (GAME.state === 'PLAY' && tryInteract()) return; throwBook(); }
@@ -1280,7 +1281,7 @@ function resetGame() {
     GAME.player = { x: 100, y: 100, dir: 0, speed: stats.speed, iframe: 0, cooldown: 0, cooldownMax: 120 };
     GAME.entities = []; GAME.projectiles = []; GAME.particles = []; GAME.floatingTexts = [];
     GAME.activeIssues = []; GAME.clutter = [];
-    GAME.issuesFixed = 0; GAME.lives = stats.lives; GAME.simonHits = 0; GAME.boss = null;
+    GAME.issuesFixed = 0; GAME.lives = stats.lives; GAME.simonHits = 0; GAME.boss = null; GAME.pendingBossIntro = false;
     GAME.nextState = 'PLAY'; GAME.aiResultText = null;
     GAME.startTime = Date.now(); GAME.booksFired = 0; GAME.opsPushed = 0;
     
@@ -1357,10 +1358,27 @@ function initSimonBoss() {
 
 function initBossEncounter() {
     GAME.state = 'BOSS_INTRO';
-    AudioSys.sfx.bossIntro(); 
+    GAME.stateTimer = 0;
+    GAME.pendingBossIntro = false;
+    GAME.nextState = 'BOSS';
+    AudioSys.sfx.bossIntro();
     const bossData = GAME.bossTypes[Math.floor(Math.random() * GAME.bossTypes.length)];
     GAME.boss = { ...bossData, x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, w: 32, h: 32, maxHp: bossData.hp, timer: 0, tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25] };
     GAME.entities = []; GAME.projectiles = [];
+    updateMusicForState();
+}
+
+function queueVisitorSplash() {
+    if (GAME.pendingBossIntro || GAME.boss) return;
+    GAME.pendingBossIntro = true;
+    GAME.nextState = 'VISITOR_SPLASH';
+}
+
+function showVisitorSplash() {
+    GAME.state = 'VISITOR_SPLASH';
+    GAME.stateTimer = 0;
+    GAME.nextState = 'BOSS_INTRO';
+    AudioSys.sfx.bossIntro();
     updateMusicForState();
 }
 
@@ -1415,7 +1433,7 @@ function update() {
         return;
     }
 
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO'].includes(GAME.state)) return;
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH'].includes(GAME.state)) return;
 
     if (GAME.state === 'PLAY' || GAME.state === 'BOSS') {
         updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts(); updateCamera();
@@ -1648,10 +1666,7 @@ function tryInteract() {
              e.type = 'assoc'; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
              spawnFloatingText(e.x, e.y, "Safe!", "#00ff00");
              
-             if (GAME.issuesFixed >= 5) {
-                 initBossEncounter();
-                 return true;
-             }
+             if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
 
              // SIMON COMMENTARY
              const currentGen = GAME.genId;
@@ -1673,10 +1688,7 @@ function tryInteract() {
             h.fixed = true; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
             spawnFloatingText(h.x, h.y, "Fixed!", "#00ff00");
             
-            if (GAME.issuesFixed >= 5) {
-                 initBossEncounter();
-                 return true;
-            }
+            if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
 
             // SIMON COMMENTARY
             const currentGen = GAME.genId;
@@ -1768,7 +1780,20 @@ function showThinking(speaker, portrait) {
 
 function closeDialog() {
     TTSSys.cancel(); AudioSys.sfx.step(); document.getElementById('dialog-box').style.display = 'none';
-    GAME.state = GAME.nextState; if (GAME.state === 'PLAY' && GAME.issuesFixed >= 5 && !GAME.boss) initBossEncounter();
+    GAME.state = GAME.nextState;
+
+    if (GAME.state === 'VISITOR_SPLASH') { showVisitorSplash(); return; }
+
+    if (GAME.state === 'PLAY' && GAME.pendingBossIntro && !GAME.boss) {
+        showVisitorSplash();
+        return;
+    }
+    if (GAME.state === 'PLAY' && GAME.issuesFixed >= 5 && !GAME.boss && !GAME.pendingBossIntro) {
+        queueVisitorSplash();
+        showVisitorSplash();
+        return;
+    }
+
     updateMusicForState();
 }
 
@@ -1776,6 +1801,7 @@ function updateMusicForState() {
     if (['LOGO', 'INTRO', 'STORY', 'TITLE'].includes(GAME.state)) MusicSys.play('title');
     else if (['HOWTO', 'SELECT'].includes(GAME.state)) MusicSys.play('menu');
     else if (GAME.state === 'PLAY') MusicSys.play('ingame');
+    else if (GAME.state === 'VISITOR_SPLASH') MusicSys.play('boss');
     else if (GAME.state === 'BOSS' || GAME.state === 'BOSS_INTRO') MusicSys.play('boss');
 }
 
@@ -1923,6 +1949,47 @@ function draw() {
         ctx.textAlign = 'center';
         ctx.fillStyle='#888'; ctx.font='10px monospace';
         ctx.fillText("PRESS SPACE", frameX + frameW / 2, frameY + frameH - 12);
+        ctx.restore(); return;
+    }
+    if (GAME.state === 'VISITOR_SPLASH') {
+        const t = GAME.stateTimer;
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#1a0f2e');
+        gradient.addColorStop(1, '#2a1b44');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let y = -20; y < canvas.height + 20; y += 12) {
+            const offset = (t * 2) % 24;
+            ctx.fillStyle = y % 24 === 0 ? 'rgba(255,215,0,0.08)' : 'rgba(255,255,255,0.05)';
+            ctx.fillRect(((t * 3) + y * 2) % canvas.width, y + offset, canvas.width, 6);
+        }
+
+        ctx.save();
+        ctx.translate(canvas.width / 2, 90);
+        ctx.textAlign = 'center';
+        const wobble = 1 + Math.sin(t / 10) * 0.05;
+        ctx.scale(wobble, wobble);
+        ctx.fillStyle = '#000';
+        ctx.font = '16px "Press Start 2P", monospace';
+        ctx.fillText("SURPRISE VISITOR!", 0, 0);
+        ctx.fillStyle = '#eab308';
+        ctx.shadowColor = '#ff00ff';
+        ctx.shadowBlur = 8;
+        ctx.fillText("SURPRISE VISITOR!", -2, -2);
+        ctx.restore();
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffd166';
+        ctx.font = '10px monospace';
+        ctx.fillText("An unannounced boss is stepping onto the floor...", canvas.width / 2, 148);
+        ctx.fillStyle = '#fff';
+        ctx.fillText("Simon braces: tighten PPE, breathe, and stand tall.", canvas.width / 2, 166);
+
+        ctx.fillStyle = '#ff00ff';
+        ctx.font = '10px monospace';
+        ctx.fillText("[PRESS SPACE TO CONTINUE]", canvas.width / 2, 204);
+        ctx.textAlign = 'left';
         ctx.restore(); return;
     }
     if (GAME.state === 'BOSS_INTRO' && GAME.boss) {
