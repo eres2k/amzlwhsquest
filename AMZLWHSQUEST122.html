@@ -300,6 +300,19 @@ const BEZOS_TAUNTS = [
     "Automation never complains!"
 ];
 
+const BEZOS_YARD_BANTER = [
+    "Bro, that's not how you push rate.",
+    "Even I could find hazards faster than that.",
+    "You call that a power walk?",
+    "Associate hustle, Bezos shuffle.",
+    "Clip the cones, lose your phone.",
+    "Prime pace, not prime panic.",
+    "Stay in the lanes, champ.",
+    "I audit with style, do you?",
+    "Watch the lines, not your DMs.",
+    "Thought you were faster than that van?",
+];
+
 // --- AI STATUS HELPERS ---
 const aiStatusEl = document.getElementById('ai-status');
 let aiStatus = "init";
@@ -1301,6 +1314,10 @@ const GAME = {
     froggerVehicles: [], // Frogger level vehicles
     bezosTaunt: "", // Current Bezos taunt
     bezosTauntTimer: 0, // Timer for taunt display
+    warehouseReturnPos: null, // Return point before entering yard
+    dialogOptions: null, // Active dialog options
+    dialogSelection: 0, // Selected dialog option
+    dialogOnClose: null, // Optional callback after dialog closes
 
     bossTypes: [
         { name: "Labour Inspector", sprite: "boss_inspector", hp: 10, speed: 1.2, attackDelay: 50, title: "The Enforcer", desc: "Checks every corner.", attackName: "Citation Storm" },
@@ -1453,6 +1470,18 @@ function pickRandomFloorTile() {
 // --- INPUT ---
 const KEYS = { up: false, down: false, left: false, right: false, action: false };
 window.addEventListener('keydown', e => {
+    if (GAME.state === 'DIALOG' && GAME.dialogOptions && GAME.dialogVisible.length === GAME.dialogText.length) {
+        if (e.key === 'w' || e.key === 'ArrowUp') {
+            GAME.dialogSelection = (GAME.dialogSelection - 1 + GAME.dialogOptions.length) % GAME.dialogOptions.length;
+            renderDialog();
+            return;
+        }
+        if (e.key === 's' || e.key === 'ArrowDown') {
+            GAME.dialogSelection = (GAME.dialogSelection + 1) % GAME.dialogOptions.length;
+            renderDialog();
+            return;
+        }
+    }
     if(e.key==='w'||e.key==='ArrowUp') KEYS.up=true;
     if(e.key==='s'||e.key==='ArrowDown') KEYS.down=true;
     if(e.key==='a'||e.key==='ArrowLeft') KEYS.left=true;
@@ -1478,7 +1507,9 @@ function handleAction() {
     else if (GAME.state === 'SELECT') { AudioSys.sfx.select(); GAME.selectedChar = GAME.charList[GAME.charIndex]; resetGame(); }
     else if (GAME.state === 'DIALOG') {
         if (GAME.dialogVisible.length < GAME.dialogText.length) {
-            GAME.dialogVisible = GAME.dialogText; document.getElementById('text-content').innerText = GAME.dialogVisible;
+            GAME.dialogVisible = GAME.dialogText; renderDialog();
+        } else if (GAME.dialogOptions && GAME.dialogOptions.length > 0) {
+            if (activateDialogOption()) return;
         } else {
             closeDialog();
             // Check if transitioning to hidden level
@@ -1529,7 +1560,8 @@ function resetGame() {
     GAME.entities = []; GAME.projectiles = []; GAME.particles = []; GAME.floatingTexts = [];
     GAME.activeIssues = []; GAME.clutter = [];
     GAME.issuesFixed = 0; GAME.lives = stats.lives; GAME.simonHits = 0; GAME.boss = null; GAME.pendingBossIntro = false;
-    GAME.hiddenDoor = null; GAME.yard = null; GAME.mecha = null;
+    GAME.hiddenDoor = null; GAME.yard = null; GAME.mecha = null; GAME.warehouseReturnPos = null;
+    GAME.dialogOptions = null; GAME.dialogSelection = 0; GAME.dialogOnClose = null;
     GAME.nextState = 'PLAY'; GAME.aiResultText = null;
     GAME.startTime = Date.now(); GAME.booksFired = 0; GAME.opsPushed = 0;
     
@@ -1621,11 +1653,15 @@ function startYardLevel() {
     GAME.state = 'YARD_LEVEL';
     GAME.stateTimer = 0;
     const h = 520;
+    const startX = canvas.width / 2 - 8;
+    const startY = h - 32;
     GAME.yard = {
         height: h,
         cameraY: 0,
-        playerX: canvas.width / 2 - 8,
-        playerY: h - 32,
+        startX,
+        startY,
+        playerX: startX,
+        playerY: startY,
         speed: getCharStats(GAME.selectedChar).speed * 0.9,
         vehicles: [],
         flying: [],
@@ -1643,7 +1679,14 @@ function startYardLevel() {
             { y: h - 150, dir: -1, speed: 0.9, timer: 95 },
             { y: h - 210, dir: 1, speed: 1.0, timer: 100 },
             { y: h - 270, dir: -1, speed: 0.85, timer: 105 }
-        ]
+        ],
+        jeff: {
+            x: canvas.width / 2 - 12,
+            y: 20,
+            banter: BEZOS_YARD_BANTER[Math.floor(Math.random() * BEZOS_YARD_BANTER.length)],
+            timer: 240,
+            transformed: false
+        }
     };
     GAME.player.speed = GAME.yard.speed;
     GAME.projectiles = [];
@@ -2066,7 +2109,7 @@ function update() {
         if (GAME.dialogVisible.length < GAME.dialogText.length) {
             if (GAME.ticks % 2 === 0) {
                 GAME.dialogVisible += GAME.dialogText[GAME.dialogVisible.length];
-                document.getElementById('text-content').innerText = GAME.dialogVisible;
+                renderDialog();
                 AudioSys.sfx.text();
             }
         }
@@ -2082,6 +2125,13 @@ function update() {
             GAME.state = 'TITLE';
             updateMusicForState();
         }
+        return;
+    }
+
+    if (GAME.state === 'YARD_LEVEL') {
+        updateYardLevel();
+        updateParticles();
+        updateFloatingTexts();
         return;
     }
 
@@ -2113,6 +2163,67 @@ function updatePlayer() {
         }
         if (GAME.ticks % 20 === 0) { AudioSys.sfx.step(); spawnParticle(p.x+8, p.y+16, '#555', 0); }
     }
+}
+
+function returnToWarehouse() {
+    GAME.state = 'PLAY';
+    GAME.nextState = 'PLAY';
+    GAME.yard = null;
+    GAME.player.speed = getCharStats(GAME.selectedChar).speed;
+    GAME.player.iframe = 0;
+
+    if (GAME.warehouseReturnPos) {
+        GAME.player.x = GAME.warehouseReturnPos.x;
+        GAME.player.y = GAME.warehouseReturnPos.y;
+    }
+
+    updateCamera();
+    updateHud();
+    updateMusicForState();
+}
+
+function triggerYardCollision(source, applyPenalty = true) {
+    if (!GAME.yard) return;
+    const y = GAME.yard;
+    y.playerX = y.startX;
+    y.playerY = y.startY;
+    y.cameraY = Math.max(0, y.height - canvas.height);
+    GAME.player.x = y.playerX;
+    GAME.player.y = y.playerY;
+
+    if (!applyPenalty) return;
+
+    GAME.player.iframe = 90;
+    GAME.flash = source === 'air' ? 10 : 8;
+    if (GAME.lives > 0) GAME.lives--;
+    AudioSys.sfx.hurt();
+    updateHud();
+
+    if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
+
+    const baseLine = "Simon’s Unglaube says: If the van hits you, the van ALWAYS wins. Respect the yard lines, champ.";
+    const promptSource = source === 'air' ? 'flying yard cargo' : 'yard vehicle';
+    const currentGen = GAME.genId;
+
+    const stayOption = { label: 'Stay in Yard', onSelect: () => { GAME.nextState = 'YARD_LEVEL'; closeDialog(); } };
+    const returnOption = { label: 'Return to Warehouse', onSelect: () => { GAME.nextState = 'PLAY'; GAME.dialogOnClose = returnToWarehouse; closeDialog(); } };
+    const options = GAME.warehouseReturnPos ? [returnOption, stayOption] : [stayOption];
+
+    GAME.nextState = 'YARD_LEVEL';
+    showThinking('Simon Unglaube', GFX.simonFace);
+
+    callGemini(
+        `You are Simon Unglaube, WHS Senior Regional Manager. Coordinator was clipped by a ${promptSource} in the Amazon yard. Deliver one quick, witty associate-style safety reminder about yard awareness. Max 28 words.`,
+        'yard_collision',
+        { source: promptSource }
+    ).then(text => {
+        if (GAME.genId !== currentGen) return;
+        const dialogText = `${baseLine}\n\n${text}`;
+        showDialog(dialogText, 'Simon Unglaube', GFX.simonFace, true, options, null);
+    }).catch(() => {
+        if (GAME.genId !== currentGen) return;
+        showDialog(baseLine, 'Simon Unglaube', GFX.simonFace, false, options, null);
+    });
 }
 
 function updateYardLevel() {
@@ -2167,6 +2278,24 @@ function updateYardLevel() {
         y.tauntTimer = Math.max(y.tauntTimer, 120);
     }
 
+    if (y.jeff) {
+        y.jeff.timer--;
+        if (y.jeff.timer <= 0) {
+            y.jeff.banter = BEZOS_YARD_BANTER[Math.floor(Math.random() * BEZOS_YARD_BANTER.length)];
+            y.jeff.timer = 220 + Math.floor(Math.random() * 120);
+        }
+        const jeffW = y.jeff.transformed ? 48 : 24;
+        const jeffH = y.jeff.transformed ? 48 : 24;
+        const jeffCenterX = y.jeff.x + jeffW / 2;
+        const jeffCenterY = y.jeff.y + jeffH / 2;
+        const touchingJeff = Math.abs((y.playerX + 8) - jeffCenterX) < (8 + jeffW / 2) && Math.abs((y.playerY + 8) - jeffCenterY) < (8 + jeffH / 2);
+        if (touchingJeff && !y.jeff.transformed) {
+            y.jeff.transformed = true;
+            y.jeff.banter = 'MECHA MODE: OBSERVING YOUR FORM.';
+            AudioSys.sfx.alert();
+        }
+    }
+
     y.lanes.forEach(lane => {
         lane.timer--;
         if (lane.timer <= 0) {
@@ -2184,11 +2313,9 @@ function updateYardLevel() {
         v.x += v.dir * v.speed;
         if (v.x < -80 || v.x > canvas.width + 80) { y.vehicles.splice(i,1); continue; }
         if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 6) && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 6)) {
-            if (GAME.player.iframe <= 0) {
-                GAME.lives--; GAME.player.iframe = 90; GAME.flash = 8; AudioSys.sfx.hurt(); updateHud();
-                y.playerX = canvas.width / 2 - 8; y.playerY = y.height - 32; y.cameraY = Math.max(0, y.height - canvas.height);
-                if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
-            }
+            const applyPenalty = GAME.player.iframe <= 0;
+            triggerYardCollision('van', applyPenalty);
+            if (GAME.state === 'DIALOG' || GAME.gameOverTriggered) return;
         }
     }
 
@@ -2199,11 +2326,9 @@ function updateYardLevel() {
         f.y += Math.sin(f.t / 12) * 0.4 + f.vy;
         if (f.x < -32 || f.x > canvas.width + 32 || f.y > 180) { y.flying.splice(i,1); continue; }
         if (Math.abs((f.x + f.w/2) - (y.playerX + 8)) < (f.w/2 + 6) && Math.abs((f.y + f.h/2) - (y.playerY + 8)) < (f.h/2 + 6)) {
-            if (GAME.player.iframe <= 0) {
-                GAME.lives--; GAME.player.iframe = 90; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
-                y.playerX = canvas.width / 2 - 8; y.playerY = Math.min(y.height - 32, y.playerY + 60); y.cameraY = Math.max(0, y.height - canvas.height);
-                if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
-            }
+            const applyPenalty = GAME.player.iframe <= 0;
+            triggerYardCollision('air', applyPenalty);
+            if (GAME.state === 'DIALOG' || GAME.gameOverTriggered) return;
         }
     }
 
@@ -2580,6 +2705,7 @@ function tryInteract() {
         const dx = GAME.player.x - GAME.hiddenDoor.doorX * TILE_SIZE;
         const dy = GAME.player.y - GAME.hiddenDoor.doorY * TILE_SIZE;
         if (Math.hypot(dx, dy) < 18) {
+            GAME.warehouseReturnPos = { x: GAME.player.x, y: GAME.player.y };
             GAME.state = 'YARD_INTRO';
             GAME.stateTimer = 0;
             GAME.nextState = 'YARD_LEVEL';
@@ -2626,10 +2752,35 @@ function checkCol(x, y) {
 
 function updateHud() { document.getElementById('life-val').innerText = "❤️".repeat(Math.max(0, GAME.lives)); document.getElementById('score-val').innerText = GAME.issuesFixed + "/5"; }
 
-function showDialog(text, speaker, portrait, isAI = false) {
+function renderDialog() {
+    const textEl = document.getElementById('text-content');
+    let text = GAME.dialogVisible;
+
+    if (GAME.dialogOptions && GAME.dialogVisible.length === GAME.dialogText.length) {
+        const optionsText = GAME.dialogOptions
+            .map((opt, idx) => `${idx === GAME.dialogSelection ? '▶' : ' '} ${opt.label}`)
+            .join('\n');
+        text += `\n\n${optionsText}`;
+    }
+
+    textEl.innerText = text;
+}
+
+function activateDialogOption() {
+    if (!GAME.dialogOptions || GAME.dialogVisible.length < GAME.dialogText.length) return false;
+    const option = GAME.dialogOptions[GAME.dialogSelection];
+    if (option && typeof option.onSelect === 'function') {
+        option.onSelect();
+        return true;
+    }
+    return false;
+}
+
+function showDialog(text, speaker, portrait, isAI = false, options = null, onClose = null) {
     GAME.state = 'DIALOG'; GAME.dialogText = (speaker ? speaker + ":\n" : "") + text; GAME.dialogVisible = "";
+    GAME.dialogOptions = options; GAME.dialogSelection = 0; GAME.dialogOnClose = onClose;
     const box = document.getElementById('dialog-box'); const badge = document.getElementById('gemini-badge'); const port = document.getElementById('portrait'); const pCtx = port.getContext('2d');
-    box.style.display = 'flex'; document.getElementById('text-content').innerText = ""; 
+    box.style.display = 'flex'; document.getElementById('text-content').innerText = "";
     badge.style.display = isAI ? 'block' : 'none';
     badge.innerHTML = isAI ? "✨ SIMON IS ANALYZING..." : ""; // Reset badge text
     pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,32,32);
@@ -2643,6 +2794,9 @@ function showThinking(speaker, portrait) {
     GAME.state = 'DIALOG';
     GAME.dialogText = ""; // No typed text yet
     GAME.dialogVisible = "";
+    GAME.dialogOptions = null;
+    GAME.dialogSelection = 0;
+    GAME.dialogOnClose = null;
     const box = document.getElementById('dialog-box');
     const badge = document.getElementById('gemini-badge');
     const port = document.getElementById('portrait');
@@ -2662,11 +2816,15 @@ function showThinking(speaker, portrait) {
 
 function closeDialog() {
     TTSSys.cancel(); AudioSys.sfx.step(); document.getElementById('dialog-box').style.display = 'none';
+    const dialogCallback = GAME.dialogOnClose;
+    GAME.dialogOptions = null;
+    GAME.dialogSelection = 0;
+    GAME.dialogOnClose = null;
     GAME.state = GAME.nextState;
 
     if (GAME.state === 'VISITOR_SPLASH') { showVisitorSplash(); return; }
 
-    if (GAME.state === 'YARD_LEVEL') { startYardLevel(); return; }
+    if (GAME.state === 'YARD_LEVEL') { if (!GAME.yard) startYardLevel(); return; }
     if (GAME.state === 'MECHA_BOSS_INTRO') { beginMechaEncounter(); return; }
     if (GAME.state === 'CREDITS') { startCredits(); return; }
 
@@ -2681,6 +2839,7 @@ function closeDialog() {
     }
 
     updateMusicForState();
+    if (dialogCallback) dialogCallback();
 }
 
 function updateMusicForState() {
@@ -2842,6 +3001,23 @@ function drawYardLevel() {
                 ctx.beginPath(); ctx.ellipse(th.x + 8, th.y + 18, 7, 3, 0, 0, Math.PI*2); ctx.fill();
                 ctx.drawImage(GFX.assoc, th.x, th.y);
             });
+        }
+        if (y.jeff) {
+            const jeffImg = y.jeff.transformed ? GFX.mechaJeff : GFX.bezosHead;
+            const jeffW = y.jeff.transformed ? 48 : 24;
+            const jeffH = y.jeff.transformed ? 48 : 24;
+            ctx.drawImage(jeffImg, y.jeff.x, y.jeff.y, jeffW, jeffH);
+            const bubbleX = y.jeff.x + jeffW / 2 - 54;
+            const bubbleY = y.jeff.y - 18;
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.fillRect(bubbleX, bubbleY, 108, 20);
+            ctx.strokeStyle = '#0ea5e9';
+            ctx.strokeRect(bubbleX, bubbleY, 108, 20);
+            ctx.fillStyle = '#0ea5e9';
+            ctx.font = '7px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(y.jeff.banter.toUpperCase(), bubbleX + 54, bubbleY + 14);
+            ctx.textAlign = 'left';
         }
         if ((y.tauntShown || y.playerY < 120) && y.tauntLine) {
             ctx.drawImage(GFX.mechaJeff, canvas.width/2 - 32, y.cameraY + 2, 64, 64);
