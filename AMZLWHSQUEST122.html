@@ -374,6 +374,27 @@ const BEZOS_YARD_TAUNTS = [
     "Prime membership doesn't cover SURVIVAL!"
 ];
 
+// --- BEZOS FLOATING BANTER (like OPS) ---
+const BEZOS_BANTER = [
+    "My net worth!", "Weak!", "TOT!", "Prime time!",
+    "Faster!", "Day One!", "NO BREAKS!", "Automate!",
+    "Metrics!", "PATHETIC!", "Work!", "Deliver!",
+    "Crush them!", "My yard!", "Too slow!", "Fired!",
+    "Drone strike!", "Customer!", "Package!", "Rate!"
+];
+
+// --- SIMON YARD VEHICLE COLLISION TIPS ---
+const SIMON_VEHICLE_TIPS = [
+    "OUCH! Yard vehicles have massive blind spots. Never assume a driver sees you!",
+    "CLOSE CALL! DSP drivers are under extreme time pressure. They can't always stop in time.",
+    "YIKES! The yard isn't a shortcut. Use designated walkways or become a statistic.",
+    "DANGEROUS! Those vans weigh 10,000 lbs loaded. You weigh... less. Do the math.",
+    "WARNING! Reversing trucks can't see directly behind them. Stay clear of the backup zone!",
+    "ALERT! High-vis vest or not, speed + distraction = disaster. Stay vigilant!",
+    "CRITICAL! Never walk between parked vehicles. Drivers pulling out won't see you.",
+    "REMINDER! Earbuds out in the yard! You need all your senses to survive out here."
+];
+
 // --- BEZOS TAUNTS FOR FROGGER LEVEL ---
 const BEZOS_TAUNTS = [
     "Work harder, not smarter!",
@@ -1666,6 +1687,10 @@ window.addEventListener('keydown', e => {
     if(e.key==='a'||e.key==='ArrowLeft') KEYS.left=true;
     if(e.key==='d'||e.key==='ArrowRight') KEYS.right=true;
     if(e.code==='Space') { if(!KEYS.action) handleAction(); KEYS.action=true; }
+    // 'R' key to return to warehouse from yard when option available
+    if((e.key==='r'||e.key==='R') && GAME.state === 'DIALOG' && GAME.yardReturnOption) {
+        handleReturnToWarehouse();
+    }
 });
 window.addEventListener('keyup', e => {
     if(e.key==='w'||e.key==='ArrowUp') KEYS.up=false;
@@ -1698,14 +1723,23 @@ function handleAction() {
     else if (GAME.state === 'VISITOR_SPLASH') { initBossEncounter(); }
     else if (GAME.state === 'BOSS_INTRO') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
     else if (GAME.state === 'BEZOS_INTRO') { GAME.state = 'BEZOS_BOSS'; GAME.nextState = 'BEZOS_BOSS'; updateMusicForState(); }
+    else if (GAME.state === 'BEZOS_CONFRONTATION') {
+        // Only allow skip after dialogue has played
+        if (GAME.stateTimer > 280) {
+            GAME.state = 'MECHA_TRANSFORM';
+            GAME.stateTimer = 0;
+            GAME.nextState = 'BEZOS_INTRO';
+            AudioSys.sfx.bossIntro();
+        }
+    }
     else if (GAME.state === 'MECHA_TRANSFORM') {
         // Only allow skip after animation has played for a bit
         if (GAME.stateTimer > 200) {
             // Check which boss fight to go to
             if (GAME.nextState === 'BEZOS_INTRO') {
-                initMechaBezos(); // Frogger path
+                initMechaBezos(); // Frogger path or Yard path
             } else {
-                beginMechaEncounter(); // Yard level path
+                beginMechaEncounter(); // Old Mecha path
             }
         }
     }
@@ -1840,7 +1874,7 @@ function initBossEncounter() {
 function startYardLevel() {
     GAME.state = 'YARD_LEVEL';
     GAME.stateTimer = 0;
-    const h = 520;
+    const h = 720; // Bigger yard!
     GAME.yard = {
         height: h,
         cameraY: 0,
@@ -1856,6 +1890,9 @@ function startYardLevel() {
         bezosTaunt: BEZOS_YARD_TAUNTS[Math.floor(Math.random() * BEZOS_YARD_TAUNTS.length)],
         bezosTauntTimer: 0,
         bezosAnimFrame: 0, // Animation frame for Bezos
+        bezosBanterTimer: 0, // Timer for floating banter
+        bezosFloatingBanter: null, // Current floating banter text
+        bezosBanterLife: 0, // How long banter shows
         tauntLine: ['You dare clock out without my permission?', 'Prime compliance at 0%. Unacceptable.', 'Little coordinator, big mistake.'][Math.floor(Math.random()*3)],
         tauntTimer: 260,
         maxAirBoxes: 7,
@@ -1863,12 +1900,23 @@ function startYardLevel() {
             { x: 10, y: 26, cooldown: 70, variance: 40, timer: 60 },
             { x: canvas.width - 26, y: 26, cooldown: 70, variance: 40, timer: 80 }
         ],
+        // BIGGER YARD: First VAN lanes (faster, smaller), then TRUCK lanes (slower, bigger)
         lanes: [
-            { y: h - 90, dir: 1, speed: 0.8, timer: 90 },
-            { y: h - 150, dir: -1, speed: 0.9, timer: 95 },
-            { y: h - 210, dir: 1, speed: 1.0, timer: 100 },
-            { y: h - 270, dir: -1, speed: 0.85, timer: 105 }
-        ]
+            // === VAN SECTION (closer to start, faster vehicles) ===
+            { y: h - 70, dir: 1, speed: 1.1, timer: 70, type: 'van' },
+            { y: h - 120, dir: -1, speed: 1.2, timer: 65, type: 'van' },
+            { y: h - 170, dir: 1, speed: 1.0, timer: 75, type: 'van' },
+            { y: h - 220, dir: -1, speed: 1.15, timer: 68, type: 'van' },
+            // === TRUCK SECTION (further up, slower but bigger vehicles) ===
+            { y: h - 300, dir: 1, speed: 0.7, timer: 110, type: 'truck' },
+            { y: h - 370, dir: -1, speed: 0.65, timer: 120, type: 'truck' },
+            { y: h - 440, dir: 1, speed: 0.75, timer: 105, type: 'truck' },
+            { y: h - 510, dir: -1, speed: 0.6, timer: 130, type: 'truck' }
+        ],
+        // Bezos physical character position
+        bezosX: canvas.width / 2 - 24,
+        bezosY: 8,
+        bezosPhysical: true // Flag indicating Bezos is a physical character at top
     };
     GAME.player.speed = GAME.yard.speed;
     GAME.projectiles = [];
@@ -2063,10 +2111,10 @@ function initMechaBezos() {
     GAME.boss = {
         name: "MECHA JEFF BEZOS",
         sprite: "mechaBezos",
-        hp: 40,
-        maxHp: 40,
-        speed: 1.2,
-        attackDelay: 50,
+        hp: 25, // Lower HP - less challenging
+        maxHp: 25,
+        speed: 0.8, // Slower movement
+        attackDelay: 70, // Slower attacks
         title: "THE ULTIMATE BOSS",
         desc: "Automation has gone too far!",
         attackName: "AUTOMATION PROTOCOL",
@@ -2075,11 +2123,15 @@ function initMechaBezos() {
         w: 48,
         h: 48,
         timer: 0,
-        attackPhase: 0, // Tracks which attack pattern (0-2)
+        attackPhase: 0, // Tracks which attack pattern (0-3)
         laserAngle: 0, // For laser sweep attack
         droneSpawnTimer: 0,
         tauntsTriggered: [],
-        tauntThresholds: [0.75, 0.5, 0.25]
+        tauntThresholds: [0.8, 0.6, 0.4, 0.2], // More taunt thresholds for dialogue
+        currentTaunt: null,
+        tauntLife: 0,
+        phaseAnnounced: false, // Track if phase announcement shown
+        vulnerableTimer: 0 // Vulnerability window after certain attacks
     };
 
     GAME.player.x = 120;
@@ -2099,124 +2151,192 @@ function updateMechaBezos() {
     if (!b) return;
 
     b.timer++;
+    if (b.tauntLife > 0) b.tauntLife--;
+    if (b.vulnerableTimer > 0) b.vulnerableTimer--;
 
-    // Move toward player
+    // === BEZOS TAUNTS DURING FIGHT ===
+    const BEZOS_FIGHT_TAUNTS = [
+        "Your performance review is INCOMING!",
+        "Two-day delivery... of PAIN!",
+        "Customer obsession means YOUR destruction!",
+        "My algorithms predicted this!",
+        "You cannot escape PRIME!",
+        "Frugality means NO mercy!",
+        "Think BIG? Think DEAD!",
+        "Day One of your TERMINATION!"
+    ];
+
+    // Check HP thresholds for taunts
+    const hpPercent = b.hp / b.maxHp;
+    for (let i = 0; i < b.tauntThresholds.length; i++) {
+        if (hpPercent <= b.tauntThresholds[i] && !b.tauntsTriggered.includes(i)) {
+            b.tauntsTriggered.push(i);
+            b.currentTaunt = BEZOS_FIGHT_TAUNTS[Math.floor(Math.random() * BEZOS_FIGHT_TAUNTS.length)];
+            b.tauntLife = 120;
+            AudioSys.sfx.alert();
+        }
+    }
+
+    // Move toward player (slower, more predictable)
     const dx = GAME.player.x - b.x;
     const dy = GAME.player.y - b.y;
     const dist = Math.hypot(dx, dy);
 
-    if (dist > 60) {
+    // Don't move during vulnerability window (gives player opening)
+    if (dist > 70 && b.vulnerableTimer <= 0) {
         b.x += (dx / dist) * b.speed;
         b.y += (dy / dist) * b.speed;
     }
 
-    // Switch attack phases based on HP
-    if (b.hp > 26) b.attackPhase = 0; // Phase 1: Missile Spread
-    else if (b.hp > 13) b.attackPhase = 1; // Phase 2: Laser Sweep
-    else b.attackPhase = 2; // Phase 3: Drone Swarm
+    // Determine attack phase based on HP (4 phases now)
+    const prevPhase = b.attackPhase;
+    if (b.hp > 18) b.attackPhase = 0; // Phase 1: Slow Prime Packages
+    else if (b.hp > 12) b.attackPhase = 1; // Phase 2: Predictable Laser
+    else if (b.hp > 6) b.attackPhase = 2; // Phase 3: Drone Delivery (fewer drones)
+    else b.attackPhase = 3; // Phase 4: Desperation - all attacks weaker
 
-    // === ATTACK PHASE 1: PRIME MISSILE SPREAD ===
-    if (b.attackPhase === 0 && b.timer % b.attackDelay === 0) {
-        // Fire missiles in a spread pattern
-        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
-            const vx = Math.cos(angle) * 3;
-            const vy = Math.sin(angle) * 3;
+    // Phase change announcement
+    if (prevPhase !== b.attackPhase) {
+        b.phaseAnnounced = false;
+        const phaseNames = ["PRIME PACKAGES!", "LASER AUDIT!", "DRONE DELIVERY!", "DESPERATION MODE!"];
+        spawnFloatingText(b.x + 24, b.y - 10, phaseNames[b.attackPhase], '#ff9900');
+        b.vulnerableTimer = 60; // Vulnerability window on phase change!
+        AudioSys.sfx.bossHit();
+    }
+
+    // === ATTACK PHASE 1: PRIME PACKAGES (Slow, predictable) ===
+    if (b.attackPhase === 0 && b.timer % 90 === 0) { // Slower interval
+        // Fire 4 missiles in cardinal directions (easier to dodge)
+        for (let i = 0; i < 4; i++) {
+            const angle = (i * Math.PI / 2) + (b.timer * 0.01); // Slow rotation
+            const vx = Math.cos(angle) * 2; // Slower missiles
+            const vy = Math.sin(angle) * 2;
             GAME.projectiles.push({
                 type: 'bezos_missile',
                 x: b.x + 24,
                 y: b.y + 24,
                 vx: vx,
                 vy: vy,
-                life: 120,
+                life: 100,
                 boss: true
             });
         }
         AudioSys.sfx.throw();
+        b.vulnerableTimer = 30; // Brief vulnerable window after attack
     }
 
-    // === ATTACK PHASE 2: LASER SWEEP ===
+    // === ATTACK PHASE 2: LASER AUDIT (Telegraphed, predictable sweep) ===
     if (b.attackPhase === 1) {
-        b.laserAngle += 0.05;
-        // Fire laser beam every few frames
-        if (b.timer % 8 === 0) {
-            const laserDist = 150;
-            const vx = Math.cos(b.laserAngle) * 4;
-            const vy = Math.sin(b.laserAngle) * 4;
+        b.laserAngle += 0.03; // Slower rotation
+        // Fire laser every 12 frames (slower)
+        if (b.timer % 12 === 0) {
+            const vx = Math.cos(b.laserAngle) * 3;
+            const vy = Math.sin(b.laserAngle) * 3;
             GAME.projectiles.push({
                 type: 'bezos_laser',
                 x: b.x + 24,
                 y: b.y + 24,
                 vx: vx,
                 vy: vy,
-                life: 40,
+                life: 30,
                 boss: true
             });
-            if (b.timer % 16 === 0) AudioSys.sfx.alert();
+        }
+        // Pause and become vulnerable every 2 seconds
+        if (b.timer % 120 === 0) {
+            b.vulnerableTimer = 45;
+            spawnFloatingText(b.x + 24, b.y - 10, "RECALIBRATING...", '#00ffff');
         }
     }
 
-    // === ATTACK PHASE 3: DRONE SWARM ===
+    // === ATTACK PHASE 3: DRONE DELIVERY (Fewer, slower drones) ===
     if (b.attackPhase === 2) {
         b.droneSpawnTimer++;
-        if (b.droneSpawnTimer > 50) {
+        const activeDrones = GAME.entities.filter(e => e.type === 'drone').length;
+        if (b.droneSpawnTimer > 80 && activeDrones < 2) { // Fewer drones, longer interval
             b.droneSpawnTimer = 0;
-            // Spawn a drone that homes in on player
             const angle = Math.random() * Math.PI * 2;
-            const spawnDist = 100;
+            const spawnDist = 80;
             GAME.entities.push({
                 type: 'drone',
                 x: b.x + 24 + Math.cos(angle) * spawnDist,
                 y: b.y + 24 + Math.sin(angle) * spawnDist,
                 w: 16,
                 h: 16,
-                speed: 1.5,
-                hp: 2
+                speed: 1.0, // Slower drones
+                hp: 1 // Easier to destroy
             });
             AudioSys.sfx.pop();
+            spawnFloatingText(b.x + 24, b.y - 10, "DRONE DEPLOYED!", '#ff00ff');
         }
+    }
 
-        // Update drones - they home in on player
-        GAME.entities.forEach(drone => {
-            if (drone.type === 'drone') {
-                const dx = GAME.player.x - drone.x;
-                const dy = GAME.player.y - drone.y;
-                const dist = Math.hypot(dx, dy);
-                if (dist > 0) {
-                    drone.x += (dx / dist) * drone.speed;
-                    drone.y += (dy / dist) * drone.speed;
-                }
+    // === ATTACK PHASE 4: DESPERATION (Weak, erratic) ===
+    if (b.attackPhase === 3) {
+        // Random weak attacks, boss is clearly struggling
+        if (b.timer % 100 === 0) {
+            // Single slow missile
+            const angle = Math.atan2(GAME.player.y - b.y, GAME.player.x - b.x);
+            GAME.projectiles.push({
+                type: 'bezos_missile',
+                x: b.x + 24,
+                y: b.y + 24,
+                vx: Math.cos(angle) * 1.5,
+                vy: Math.sin(angle) * 1.5,
+                life: 80,
+                boss: true
+            });
+            AudioSys.sfx.throw();
+        }
+        // Frequently vulnerable in this phase
+        if (b.timer % 60 === 0) {
+            b.vulnerableTimer = 40;
+            const desperateTaunts = ["NO! THIS CAN'T BE!", "MY METRICS!", "IMPOSSIBLE!", "REBOOT FAILED!"];
+            spawnFloatingText(b.x + 24, b.y - 10, desperateTaunts[Math.floor(Math.random() * desperateTaunts.length)], '#ff4444');
+        }
+    }
 
-                // Drone collision with player
-                if (GAME.player.iframe === 0 && Math.hypot(drone.x - GAME.player.x, drone.y - GAME.player.y) < 14) {
-                    GAME.lives--;
-                    GAME.player.iframe = 60;
-                    updateHud();
-                    AudioSys.sfx.hurt();
-                    GAME.shake = 8;
-                    drone.hp = 0; // Destroy drone on impact
+    // Update drones - they home in on player (slower)
+    GAME.entities.forEach(drone => {
+        if (drone.type === 'drone') {
+            const dx = GAME.player.x - drone.x;
+            const dy = GAME.player.y - drone.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist > 0) {
+                drone.x += (dx / dist) * drone.speed;
+                drone.y += (dy / dist) * drone.speed;
+            }
 
-                    if (GAME.lives <= 0) {
-                        triggerGameOver("AUTOMATED OUT OF EXISTENCE!");
-                    }
+            // Drone collision with player
+            if (GAME.player.iframe === 0 && Math.hypot(drone.x - GAME.player.x, drone.y - GAME.player.y) < 14) {
+                GAME.lives--;
+                GAME.player.iframe = 60;
+                updateHud();
+                AudioSys.sfx.hurt();
+                GAME.shake = 8;
+                drone.hp = 0; // Destroy drone on impact
+
+                if (GAME.lives <= 0) {
+                    triggerGameOver("AUTOMATED OUT OF EXISTENCE!");
                 }
             }
-        });
+        }
+    });
 
-        // Player can destroy drones
-        for (let i = GAME.projectiles.length - 1; i >= 0; i--) {
-            const proj = GAME.projectiles[i];
-            if (proj.type === 'attack') {
-                for (let j = GAME.entities.length - 1; j >= 0; j--) {
-                    const drone = GAME.entities[j];
-                    if (drone.type === 'drone' && Math.hypot(proj.x - drone.x, proj.y - drone.y) < 12) {
-                        drone.hp--;
-                        if (drone.hp <= 0) {
-                            GAME.entities.splice(j, 1);
-                            AudioSys.sfx.hit();
-                        }
-                        GAME.projectiles.splice(i, 1);
-                        break;
+    // Player can destroy drones
+    for (let i = GAME.projectiles.length - 1; i >= 0; i--) {
+        const proj = GAME.projectiles[i];
+        if (proj.type === 'attack') {
+            for (let j = GAME.entities.length - 1; j >= 0; j--) {
+                const drone = GAME.entities[j];
+                if (drone.type === 'drone' && Math.hypot(proj.x - drone.x, proj.y - drone.y) < 12) {
+                    drone.hp--;
+                    if (drone.hp <= 0) {
+                        GAME.entities.splice(j, 1);
+                        AudioSys.sfx.hit();
                     }
+                    GAME.projectiles.splice(i, 1);
+                    break;
                 }
             }
         }
@@ -2322,7 +2442,7 @@ function update() {
         return;
     }
 
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM'].includes(GAME.state)) return;
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM', 'BEZOS_CONFRONTATION'].includes(GAME.state)) return;
 
     // Bezos victory screen
     if (GAME.state === 'BEZOS_WIN') {
@@ -2369,13 +2489,34 @@ function updateYardLevel() {
     const y = GAME.yard;
     GAME.player.x = y.playerX; GAME.player.y = y.playerY;
 
-    // Update Bezos taunt at top
+    // Update Bezos taunt at top (in speech bubble)
     y.bezosTauntTimer++;
     y.bezosAnimFrame++;
     if (y.bezosTauntTimer > 150) { // Change taunt every 2.5 seconds
         y.bezosTaunt = BEZOS_YARD_TAUNTS[Math.floor(Math.random() * BEZOS_YARD_TAUNTS.length)];
         y.bezosTauntTimer = 0;
         AudioSys.sfx.pop();
+    }
+
+    // === BEZOS FLOATING BANTER (like OPS) ===
+    y.bezosBanterTimer++;
+    if (y.bezosBanterLife > 0) {
+        y.bezosBanterLife--;
+    }
+    // Trigger new floating banter every 2-4 seconds
+    if (y.bezosBanterTimer > 120 + Math.random() * 120) {
+        y.bezosBanterTimer = 0;
+        y.bezosFloatingBanter = BEZOS_BANTER[Math.floor(Math.random() * BEZOS_BANTER.length)];
+        y.bezosBanterLife = 90; // Show for 1.5 seconds
+        // Try AI-generated banter 20% of the time
+        if (Math.random() < 0.2 && apiKey) {
+            callGemini("Short, evil bark (max 3 words) from Jeff Bezos taunting a warehouse worker. Be menacing and corporate.", "banter_bezos").then(text => {
+                if (text && text.length < 25) {
+                    y.bezosFloatingBanter = text.toUpperCase();
+                    y.bezosBanterLife = 90;
+                }
+            });
+        }
     }
 
     let dx = 0, dy = 0;
@@ -2425,19 +2566,21 @@ function updateYardLevel() {
         y.tauntTimer = Math.max(y.tauntTimer, 120);
     }
 
+    // Spawn vehicles based on lane type (van or truck)
     y.lanes.forEach(lane => {
         lane.timer--;
         if (lane.timer <= 0) {
-            const type = Math.random() < 0.6 ? 'van' : 'truck';
+            const type = lane.type || (Math.random() < 0.6 ? 'van' : 'truck');
             const w = type === 'van' ? 34 : 52;
-            const h = type === 'van' ? 16 : 20;
+            const h = type === 'van' ? 16 : 24;
             const x = lane.dir === 1 ? -w : canvas.width + w;
             y.vehicles.push({ type, x, y: lane.y - h/2, w, h, dir: lane.dir, speed: lane.speed + Math.random()*0.2 });
-            lane.timer = 90 + Math.random() * 90;
+            // Different spawn timers for vans vs trucks
+            lane.timer = type === 'van' ? (60 + Math.random() * 50) : (90 + Math.random() * 70);
         }
     });
 
-    // Vehicle collision - FULL RESET to starting position
+    // Vehicle collision - FULL RESET with SIMON SAFETY DIALOG
     for (let i = y.vehicles.length - 1; i >= 0; i--) {
         const v = y.vehicles[i];
         v.x += v.dir * v.speed;
@@ -2449,8 +2592,24 @@ function updateYardLevel() {
                 y.playerX = canvas.width / 2 - 8;
                 y.playerY = y.startY; // Reset to start
                 y.cameraY = Math.max(0, y.height - canvas.height);
-                // Show Simon safety reminder
-                spawnFloatingText(y.playerX, y.playerY - 20, "WATCH THE TRAFFIC!", "#ff4444");
+
+                // Show Simon safety dialog with return option
+                if (GAME.lives > 0) {
+                    const vehicleType = v.type === 'van' ? 'DSP van' : 'delivery truck';
+                    let safetyTip = SIMON_VEHICLE_TIPS[Math.floor(Math.random() * SIMON_VEHICLE_TIPS.length)];
+
+                    // Try AI-generated tip 30% of the time
+                    if (Math.random() < 0.3 && apiKey) {
+                        callGemini(`You are Simon Unglaube, WHS Manager. The player just got hit by a ${vehicleType} in the yard. Give a short, dry safety tip (max 20 words) about yard vehicle safety. Be sarcastic but educational.`, "yard_safety").then(text => {
+                            if (text && text.length < 150) {
+                                showYardSafetyDialog(text, GAME.lives);
+                            }
+                        });
+                    } else {
+                        showYardSafetyDialog(safetyTip, GAME.lives);
+                    }
+                }
+
                 if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('FLATTENED BY LOGISTICS!'); return; }
             }
         }
@@ -2472,15 +2631,47 @@ function updateYardLevel() {
         }
     }
 
-    // Trigger MECHA TRANSFORMATION CUTSCENE when player approaches top
+    // Trigger MECHA TRANSFORMATION CUTSCENE when player approaches top (encounters Bezos)
     if (y.playerY <= 60 && !y.transformationTriggered) {
         y.transformationTriggered = true;
-        GAME.state = 'MECHA_TRANSFORM';
+        // Trigger confrontation with physical Bezos
+        GAME.state = 'BEZOS_CONFRONTATION';
         GAME.stateTimer = 0;
-        GAME.nextState = 'MECHA_BOSS_INTRO';
+        GAME.nextState = 'MECHA_TRANSFORM';
         AudioSys.sfx.bossIntro();
         return;
     }
+}
+
+// Show Simon's yard safety dialog with option to return to warehouse
+function showYardSafetyDialog(tip, livesRemaining) {
+    const returnOption = livesRemaining <= 2 ? "\n\n[SPACE] Continue | [R] Return to Warehouse" : "\n\n[PRESS SPACE TO CONTINUE]";
+    const fullTip = tip + returnOption;
+    showDialog(fullTip, "Simon Unglaube", GFX.simonFace, true);
+    GAME.nextState = 'YARD_LEVEL';
+    GAME.yardReturnOption = livesRemaining <= 2; // Enable return option if low on lives
+}
+
+// Handle returning to warehouse from yard level
+function handleReturnToWarehouse() {
+    closeDialog();
+    GAME.yardReturnOption = false;
+    GAME.yard = null;
+    // Reset to warehouse level
+    GAME.state = 'PLAY';
+    GAME.nextState = 'PLAY';
+    // Restore some health for returning
+    GAME.lives = Math.min(GAME.lives + 1, 5);
+    updateHud();
+    // Generate new map to reset the warehouse
+    generateMap();
+    GAME.entities.push({ type: 'simon', x: 100, y: 80, w: 16, h: 16 });
+    for(let i=0; i<8; i++) spawnEntity('ops');
+    for(let i=0; i<10; i++) spawnEntity('assoc');
+    updateMusicForState();
+    // Show Simon message about returning
+    showDialog("Smart choice. The yard can wait. Let's focus on the warehouse audit first.", "Simon Unglaube", GFX.simonFace, true);
+    GAME.nextState = 'PLAY';
 }
 
 function updateMechaBattle() {
@@ -3032,7 +3223,7 @@ function drawYardLevel() {
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, canvas.width, 100);
 
-    // === VISIBLE JEFF BEZOS AT TOP ===
+    // === VISIBLE JEFF BEZOS AT TOP (Physical Character) ===
     if (y) {
         const bezosX = canvas.width / 2 - 24;
         const bezosY = 8;
@@ -3049,8 +3240,24 @@ function drawYardLevel() {
         ctx.arc(bezosX + 24, bezosY + 24 + bobY, glowSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw Bezos (visible at top taunting)
+        // Draw Bezos (visible at top taunting - physical character like OPS)
         ctx.drawImage(GFX.bezosYard, bezosX, bezosY + bobY);
+
+        // === BEZOS FLOATING BANTER (like OPS) ===
+        if (y.bezosBanterLife > 0 && y.bezosFloatingBanter) {
+            const banterX = bezosX + 24;
+            const banterY = bezosY - 8 + bobY;
+            const banterAlpha = Math.min(1, y.bezosBanterLife / 30); // Fade out
+            ctx.save();
+            ctx.globalAlpha = banterAlpha;
+            ctx.fillStyle = '#ff9900';
+            ctx.font = '6px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            // Floating animation
+            const floatY = banterY - (90 - y.bezosBanterLife) * 0.15;
+            ctx.fillText(y.bezosFloatingBanter, banterX, floatY);
+            ctx.restore();
+        }
 
         // Speech bubble with taunt
         const tauntX = 10;
@@ -3111,11 +3318,38 @@ function drawYardLevel() {
 
     // lane bands and markings
     if (y) {
+        // === ZONE LABELS ===
+        const h = yardHeight;
+        // Van Zone label (bottom section)
+        ctx.fillStyle = 'rgba(0, 100, 200, 0.3)';
+        ctx.fillRect(0, h - 240, canvas.width, 180);
+        ctx.fillStyle = '#0ea5e9';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('DSP VAN ZONE', canvas.width / 2, h - 235);
+        ctx.font = '6px monospace';
+        ctx.fillText('FAST & NIMBLE', canvas.width / 2, h - 222);
+
+        // Truck Zone label (upper section)
+        ctx.fillStyle = 'rgba(200, 100, 0, 0.3)';
+        ctx.fillRect(0, h - 530, canvas.width, 240);
+        ctx.fillStyle = '#f97316';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillText('TRUCK ZONE', canvas.width / 2, h - 520);
+        ctx.font = '6px monospace';
+        ctx.fillText('HEAVY TRAFFIC', canvas.width / 2, h - 507);
+        ctx.textAlign = 'left';
+
         ctx.setLineDash([8, 10]);
         ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2;
         y.lanes.forEach(lane => {
-            ctx.fillStyle = '#0f172a'; ctx.fillRect(0, lane.y - 20, canvas.width, 40);
-            ctx.fillStyle = '#111827'; ctx.fillRect(0, lane.y - 14, canvas.width, 28);
+            // Different lane colors for van vs truck
+            const isVan = lane.type === 'van';
+            ctx.fillStyle = isVan ? '#0f172a' : '#1a0f0a';
+            ctx.fillRect(0, lane.y - 20, canvas.width, 40);
+            ctx.fillStyle = isVan ? '#111827' : '#1f1510';
+            ctx.fillRect(0, lane.y - 14, canvas.width, 28);
+            ctx.strokeStyle = isVan ? '#0ea5e9' : '#f97316';
             ctx.beginPath(); ctx.moveTo(0, lane.y); ctx.lineTo(canvas.width, lane.y); ctx.stroke();
             ctx.fillStyle = '#1e293b'; ctx.fillRect(0, lane.y - 22, canvas.width, 2);
             ctx.fillStyle = '#1e293b'; ctx.fillRect(0, lane.y + 20, canvas.width, 2);
@@ -3317,6 +3551,85 @@ function drawMechaTransform() {
             const blink = Math.sin(t * 0.15) > 0;
             if (blink) ctx.fillText('[PRESS SPACE]', canvas.width / 2, 215);
         }
+    }
+
+    ctx.textAlign = 'left';
+}
+
+// === BEZOS CONFRONTATION - Physical encounter before transformation ===
+function drawBezosConfrontation() {
+    const t = GAME.stateTimer;
+
+    // Dark dramatic background
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, '#0a0a0a');
+    grad.addColorStop(0.5, '#1a0a0a');
+    grad.addColorStop(1, '#000');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Ominous particles
+    for (let i = 0; i < 20; i++) {
+        const x = (i * 47 + t * 0.5) % canvas.width;
+        const y = (i * 31 + t * 0.3) % canvas.height;
+        ctx.fillStyle = `rgba(255, 153, 0, ${0.2 + Math.sin(t * 0.05 + i) * 0.1})`;
+        ctx.fillRect(x, y, 2, 2);
+    }
+
+    // Bezos physical character in center
+    const bezosX = canvas.width / 2 - 24;
+    const bezosY = 40;
+    const bobY = Math.sin(t * 0.05) * 3;
+
+    // Massive glow behind Bezos
+    const glowSize = 60 + Math.sin(t * 0.08) * 10;
+    const glowGrad = ctx.createRadialGradient(bezosX + 24, bezosY + 24 + bobY, 15, bezosX + 24, bezosY + 24 + bobY, glowSize);
+    glowGrad.addColorStop(0, 'rgba(255, 153, 0, 0.6)');
+    glowGrad.addColorStop(0.5, 'rgba(220, 38, 38, 0.3)');
+    glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = glowGrad;
+    ctx.beginPath();
+    ctx.arc(bezosX + 24, bezosY + 24 + bobY, glowSize, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Draw Bezos sprite
+    ctx.drawImage(GFX.bezosYard, bezosX, bezosY + bobY);
+
+    // Dialogue phases
+    ctx.textAlign = 'center';
+    const dialogues = [
+        { time: 0, text: "So... you made it.", color: '#ff9900' },
+        { time: 60, text: "I'm impressed.", color: '#ff9900' },
+        { time: 120, text: "But you won't leave.", color: '#ff4444' },
+        { time: 180, text: "This is MY yard.", color: '#ff4444' },
+        { time: 240, text: "Time for... AUTOMATION.", color: '#ff0000' }
+    ];
+
+    let currentDialog = dialogues[0];
+    for (let d of dialogues) {
+        if (t >= d.time) currentDialog = d;
+    }
+
+    // Speech bubble
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+    ctx.fillRect(20, 110, canvas.width - 40, 30);
+    ctx.strokeStyle = currentDialog.color;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(20, 110, canvas.width - 40, 30);
+
+    ctx.fillStyle = currentDialog.color;
+    ctx.font = '9px "Press Start 2P"';
+    ctx.fillText(currentDialog.text, canvas.width / 2, 130);
+
+    // Player at bottom
+    ctx.drawImage(GFX.chars[GAME.selectedChar], canvas.width / 2 - 8, 170);
+
+    // Press space prompt after dialogue
+    if (t > 280) {
+        ctx.fillStyle = '#fff';
+        ctx.font = '8px "Press Start 2P"';
+        const blink = Math.sin(t * 0.15) > 0;
+        if (blink) ctx.fillText('[PRESS SPACE]', canvas.width / 2, 210);
     }
 
     ctx.textAlign = 'left';
@@ -3590,6 +3903,7 @@ function draw() {
         ctx.restore(); return;
     }
     if (GAME.state === 'MECHA_BOSS') { drawMechaBattle(); ctx.restore(); return; }
+    if (GAME.state === 'BEZOS_CONFRONTATION') { drawBezosConfrontation(); ctx.restore(); return; }
     if (GAME.state === 'MECHA_TRANSFORM') { drawMechaTransform(); ctx.restore(); return; }
     if (GAME.state === 'CREDITS') { drawCredits(); ctx.restore(); return; }
     if (GAME.state === 'BOSS_INTRO' && GAME.boss) {
@@ -3838,55 +4152,108 @@ function draw() {
 
     // Bezos boss fight rendering
     if (GAME.state === 'BEZOS_BOSS') {
-        // Space background
-        ctx.fillStyle = '#0a0a14'; ctx.fillRect(0, 0, 256, 224);
+        // Space background with gradient
+        const bgGrad = ctx.createLinearGradient(0, 0, 0, 224);
+        bgGrad.addColorStop(0, '#0a0a14');
+        bgGrad.addColorStop(0.5, '#0f0a1a');
+        bgGrad.addColorStop(1, '#140a0a');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, 256, 224);
 
-        // Stars
+        // Animated stars
         for (let i = 0; i < 50; i++) {
-            const x = (i * 37) % 256;
+            const x = (i * 37 + GAME.ticks * 0.1) % 256;
             const y = (i * 61) % 224;
-            ctx.fillStyle = '#fff';
+            const alpha = 0.5 + Math.sin(GAME.ticks * 0.05 + i) * 0.3;
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
             ctx.fillRect(x, y, 1, 1);
         }
 
         // Boss
         if (GAME.boss) {
-            ctx.drawImage(GFX.mechaBezos, GAME.boss.x, GAME.boss.y);
+            const b = GAME.boss;
 
-            // Boss attack indicator
-            ctx.font = '8px "Press Start 2P"';
-            ctx.textAlign = 'center';
-            if (GAME.boss.attackPhase === 0) {
-                ctx.fillStyle = '#ff9900';
-                ctx.fillText('MISSILES', GAME.boss.x + 24, GAME.boss.y - 8);
-            } else if (GAME.boss.attackPhase === 1) {
-                ctx.fillStyle = '#00ffff';
-                ctx.fillText('LASER SWEEP', GAME.boss.x + 24, GAME.boss.y - 8);
-            } else if (GAME.boss.attackPhase === 2) {
-                ctx.fillStyle = '#ff00ff';
-                ctx.fillText('DRONE SWARM', GAME.boss.x + 24, GAME.boss.y - 8);
+            // Vulnerability indicator - pulsing glow when vulnerable
+            if (b.vulnerableTimer > 0) {
+                const pulse = Math.sin(GAME.ticks * 0.3) * 0.3 + 0.7;
+                const vulnGrad = ctx.createRadialGradient(b.x + 24, b.y + 24, 10, b.x + 24, b.y + 24, 50);
+                vulnGrad.addColorStop(0, `rgba(0, 255, 100, ${pulse * 0.5})`);
+                vulnGrad.addColorStop(0.5, `rgba(0, 255, 0, ${pulse * 0.3})`);
+                vulnGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = vulnGrad;
+                ctx.beginPath();
+                ctx.arc(b.x + 24, b.y + 24, 50, 0, Math.PI * 2);
+                ctx.fill();
+
+                // "VULNERABLE!" text
+                ctx.fillStyle = '#00ff00';
+                ctx.font = '6px "Press Start 2P"';
+                ctx.textAlign = 'center';
+                ctx.fillText('ATTACK NOW!', b.x + 24, b.y + 55);
             }
+
+            // Draw Mecha Bezos
+            ctx.drawImage(GFX.mechaBezos, b.x, b.y);
+
+            // Boss attack phase indicator with new phase names
+            ctx.font = '7px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            const phaseNames = ['PRIME PACKAGES', 'LASER AUDIT', 'DRONE DELIVERY', 'DESPERATION!'];
+            const phaseColors = ['#ff9900', '#00ffff', '#ff00ff', '#ff4444'];
+            ctx.fillStyle = phaseColors[b.attackPhase] || '#fff';
+            ctx.fillText(phaseNames[b.attackPhase] || '', b.x + 24, b.y - 8);
+
+            // Display taunt if active
+            if (b.tauntLife > 0 && b.currentTaunt) {
+                const tauntAlpha = Math.min(1, b.tauntLife / 30);
+                ctx.save();
+                ctx.globalAlpha = tauntAlpha;
+
+                // Taunt bubble at bottom
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+                ctx.fillRect(10, 195, 236, 25);
+                ctx.strokeStyle = '#ff9900';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(10, 195, 236, 25);
+
+                ctx.fillStyle = '#ff9900';
+                ctx.font = '6px "Press Start 2P"';
+                ctx.fillText(b.currentTaunt, 128, 212);
+                ctx.restore();
+            }
+
+            ctx.textAlign = 'left';
         }
 
-        // Drones
+        // Drones with glow effect
         GAME.entities.forEach(e => {
             if (e.type === 'drone') {
+                // Drone glow
+                ctx.fillStyle = 'rgba(255, 0, 255, 0.3)';
+                ctx.beginPath();
+                ctx.arc(e.x + 8, e.y + 8, 12, 0, Math.PI * 2);
+                ctx.fill();
                 ctx.drawImage(GFX.drone, e.x, e.y);
             }
         });
 
-        // Player
+        // Player with shadow
         const p = GAME.player;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(p.x + 4, p.y + 14, 8, 3);
         if (p.iframe % 4 < 2) {
             ctx.drawImage(GFX.chars[GAME.selectedChar], p.x, p.y);
         }
 
-        // Projectiles
+        // Projectiles with enhanced effects
         GAME.projectiles.forEach(proj => {
             if (proj.type === 'bezos_missile') {
+                // Missile trail
+                ctx.fillStyle = 'rgba(255, 153, 0, 0.3)';
+                ctx.fillRect(proj.x - proj.vx * 3, proj.y - proj.vy * 3, 8, 8);
                 ctx.drawImage(GFX.bezosProj, proj.x, proj.y);
             } else if (proj.type === 'bezos_laser') {
-                // Render laser beam
+                // Laser with glow
                 ctx.fillStyle = '#00ffff';
                 ctx.shadowColor = '#00ffff';
                 ctx.shadowBlur = 10;
@@ -3897,6 +4264,15 @@ function draw() {
                 ctx.drawImage(sprite, proj.x, proj.y);
             }
         });
+
+        // Floating texts
+        GAME.floatingTexts.forEach(t => {
+            ctx.fillStyle = t.color;
+            ctx.font = '6px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText(t.text, t.x, t.y);
+        });
+        ctx.textAlign = 'left';
 
         ctx.restore();
         return;
