@@ -2323,21 +2323,20 @@ function updateMechaBezos() {
         }
     });
 
-        // Player can destroy drones
-        for (let i = GAME.projectiles.length - 1; i >= 0; i--) {
-            const proj = GAME.projectiles[i];
-            if (proj.type === 'attack') {
-                for (let j = GAME.entities.length - 1; j >= 0; j--) {
-                    const drone = GAME.entities[j];
-                    if (drone.type === 'drone' && Math.hypot(proj.x - drone.x, proj.y - drone.y) < 12) {
-                        drone.hp--;
-                        if (drone.hp <= 0) {
-                            GAME.entities.splice(j, 1);
-                            AudioSys.sfx.hit();
-                        }
-                        GAME.projectiles.splice(i, 1);
-                        break;
+    // Player can destroy drones
+    for (let i = GAME.projectiles.length - 1; i >= 0; i--) {
+        const proj = GAME.projectiles[i];
+        if (proj.type === 'attack') {
+            for (let j = GAME.entities.length - 1; j >= 0; j--) {
+                const drone = GAME.entities[j];
+                if (drone.type === 'drone' && Math.hypot(proj.x - drone.x, proj.y - drone.y) < 12) {
+                    drone.hp--;
+                    if (drone.hp <= 0) {
+                        GAME.entities.splice(j, 1);
+                        AudioSys.sfx.hit();
                     }
+                    GAME.projectiles.splice(i, 1);
+                    break;
                 }
             }
         }
