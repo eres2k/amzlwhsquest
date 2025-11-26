@@ -1701,7 +1701,12 @@ function handleAction() {
     else if (GAME.state === 'MECHA_TRANSFORM') {
         // Only allow skip after animation has played for a bit
         if (GAME.stateTimer > 200) {
-            beginMechaEncounter();
+            // Check which boss fight to go to
+            if (GAME.nextState === 'BEZOS_INTRO') {
+                initMechaBezos(); // Frogger path
+            } else {
+                beginMechaEncounter(); // Yard level path
+            }
         }
     }
     else if (GAME.state === 'YARD_INTRO') { startYardLevel(); }
@@ -1932,9 +1937,11 @@ function initFroggerLevel() {
     GAME.nextState = 'FROGGER';
     GAME.player.x = 128;
     GAME.player.y = 200; // Start at bottom
+    GAME.froggerStartY = 200; // Remember starting position for reset
     GAME.froggerVehicles = [];
     GAME.entities = [];
     GAME.projectiles = [];
+    GAME.froggerTransformTriggered = false; // Track transformation cutscene
 
     // Spawn fewer vehicles with lane-changing AI for more natural traffic
     const vehicleTypes = ['van', 'truck', 'van', 'truck', 'van'];
@@ -1958,20 +1965,27 @@ function initFroggerLevel() {
         });
     }
 
-    // Initialize Bezos taunts
-    GAME.bezosTaunt = BEZOS_TAUNTS[Math.floor(Math.random() * BEZOS_TAUNTS.length)];
+    // Initialize Bezos taunts - use YARD taunts
+    GAME.bezosTaunt = BEZOS_YARD_TAUNTS[Math.floor(Math.random() * BEZOS_YARD_TAUNTS.length)];
     GAME.bezosTauntTimer = 0;
+    GAME.bezosAnimFrame = 0;
 
     updateMusicForState();
+
+    // Show Simon's yard safety tip
+    const safetyTip = SIMON_YARD_TIPS[Math.floor(Math.random() * SIMON_YARD_TIPS.length)];
+    showDialog(safetyTip, "Simon Unglaube", GFX.simonFace, true);
+    GAME.nextState = 'FROGGER';
 }
 
 function updateFrogger() {
     const p = GAME.player;
 
-    // Update Bezos taunt timer
+    // Update Bezos taunt timer and animation
     GAME.bezosTauntTimer++;
-    if (GAME.bezosTauntTimer > 180) { // Change taunt every 3 seconds
-        GAME.bezosTaunt = BEZOS_TAUNTS[Math.floor(Math.random() * BEZOS_TAUNTS.length)];
+    GAME.bezosAnimFrame++;
+    if (GAME.bezosTauntTimer > 150) { // Change taunt every 2.5 seconds
+        GAME.bezosTaunt = BEZOS_YARD_TAUNTS[Math.floor(Math.random() * BEZOS_YARD_TAUNTS.length)];
         GAME.bezosTauntTimer = 0;
         AudioSys.sfx.pop(); // Sound when new taunt appears
     }
@@ -2009,25 +2023,35 @@ function updateFrogger() {
             if (v.y === targetY) v.lane = v.targetLane;
         }
 
-        // Check collision with player
+        // Check collision with player - RESET TO START
         if (p.iframe === 0 &&
             p.x < v.x + v.w && p.x + 16 > v.x &&
             p.y < v.y + v.h && p.y + 16 > v.y) {
-            p.iframe = 60;
+            p.iframe = 90;
             GAME.lives--;
             updateHud();
             AudioSys.sfx.hurt();
-            GAME.shake = 10;
+            GAME.shake = 15;
+            GAME.flash = 12;
+
+            // FULL RESET - player goes back to starting position
+            p.x = 128;
+            p.y = GAME.froggerStartY || 200;
+            spawnFloatingText(p.x, p.y - 20, "WATCH THE TRAFFIC!", "#ff4444");
 
             if (GAME.lives <= 0) {
-                triggerGameOver("FLATTENED BY AMAZON LOGISTICS!");
+                triggerGameOver("FLATTENED BY LOGISTICS!");
             }
         }
     });
 
-    // Check if player reached the top (victory!)
-    if (p.y < 30) {
-        initMechaBezos();
+    // Check if player reached the top - trigger TRANSFORMATION CUTSCENE
+    if (p.y < 42 && !GAME.froggerTransformTriggered) {
+        GAME.froggerTransformTriggered = true;
+        GAME.state = 'MECHA_TRANSFORM';
+        GAME.stateTimer = 0;
+        GAME.nextState = 'BEZOS_INTRO';
+        AudioSys.sfx.bossIntro();
     }
 }
 
@@ -3717,43 +3741,58 @@ function draw() {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.fillRect(p.x + 4, p.y + 14, 8, 2);
 
-        // === BEZOS HEAD AND TAUNT ===
-        // Dark banner overlay
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-        ctx.fillRect(0, 0, 256, 30);
+        // === VISIBLE JEFF BEZOS AT TOP ===
+        // Dark dramatic sky
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, 42);
+        skyGrad.addColorStop(0, '#0a0a14');
+        skyGrad.addColorStop(0.7, '#1a1a2e');
+        skyGrad.addColorStop(1, '#2a2a2a');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, 256, 42);
 
-        // Bezos head (larger)
-        ctx.drawImage(GFX.bezosHead, 3, 3);
+        // Bezos with animated glow
+        const bezosX = canvas.width / 2 - 24;
+        const bezosY = -8;
+        const bobY = Math.sin((GAME.bezosAnimFrame || 0) * 0.05) * 2;
 
-        // Speech bubble
-        const tauntX = 32;
-        const tauntY = 5;
-        const tauntW = 218;
-        const tauntH = 20;
-
-        // Bubble with drop shadow
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.fillRect(tauntX + 2, tauntY + 2, tauntW, tauntH);
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(tauntX, tauntY, tauntW, tauntH);
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(tauntX, tauntY, tauntW, tauntH);
-
-        // Bubble pointer
-        ctx.fillStyle = '#fff';
+        // Ominous glow behind Bezos
+        const glowSize = 35 + Math.sin((GAME.bezosAnimFrame || 0) * 0.08) * 6;
+        const glowGrad = ctx.createRadialGradient(bezosX + 24, bezosY + 28 + bobY, 8, bezosX + 24, bezosY + 28 + bobY, glowSize);
+        glowGrad.addColorStop(0, 'rgba(255, 153, 0, 0.5)');
+        glowGrad.addColorStop(0.5, 'rgba(220, 38, 38, 0.25)');
+        glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = glowGrad;
         ctx.beginPath();
-        ctx.moveTo(tauntX, tauntY + 10);
-        ctx.lineTo(tauntX - 5, tauntY + 8);
-        ctx.lineTo(tauntX, tauntY + 13);
+        ctx.arc(bezosX + 24, bezosY + 28 + bobY, glowSize, 0, Math.PI * 2);
         ctx.fill();
-        ctx.stroke();
+
+        // Draw large Bezos sprite
+        ctx.drawImage(GFX.bezosYard, bezosX, bezosY + bobY);
+
+        // Warning stripes at goal line
+        ctx.fillStyle = '#facc15';
+        for (let i = 0; i < 256; i += 16) {
+            ctx.fillRect(i, 35, 8, 7);
+        }
+        ctx.fillStyle = '#0f0f0f';
+        for (let i = 8; i < 256; i += 16) {
+            ctx.fillRect(i, 35, 8, 7);
+        }
+
+        // Speech bubble at bottom
+        const tauntY = 210;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+        ctx.fillRect(4, tauntY, 248, 14);
+        ctx.strokeStyle = '#ff9900';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(4, tauntY, 248, 14);
 
         // Taunt text
-        ctx.fillStyle = '#000';
-        ctx.font = '7px "Press Start 2P"';
+        ctx.fillStyle = '#ff9900';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText(GAME.bezosTaunt, canvas.width / 2, tauntY + 10);
         ctx.textAlign = 'left';
-        ctx.fillText(GAME.bezosTaunt, tauntX + 4, tauntY + 14);
 
         ctx.restore();
         return;
