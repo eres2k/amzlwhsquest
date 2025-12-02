@@ -143,16 +143,19 @@
         @keyframes blink { 50% { opacity: 0; } }
 
         .hud-text {
-            position: absolute; top: 20px; right: 20px; color: white;
-            text-align: right; text-shadow: 2px 2px 4px black; font-size: 12px;
-            background: linear-gradient(135deg, rgba(10, 20, 40, 0.9) 0%, rgba(5, 10, 25, 0.95) 100%);
-            padding: 12px 16px; border: 2px solid #3b82f6; border-radius: 8px;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.5);
+            position: absolute; top: 12px; right: 12px; color: white;
+            text-align: right; text-shadow: 0 0 8px rgba(0,0,0,0.8), 2px 2px 4px black; font-size: 11px;
+            font-family: 'Press Start 2P', monospace;
+            background: linear-gradient(135deg, rgba(10, 15, 30, 0.95) 0%, rgba(5, 8, 20, 0.98) 100%);
+            padding: 10px 14px; border: 2px solid #fbbf24; border-radius: 6px;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.4), inset 0 0 15px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5);
         }
+        .hud-text div:first-child { color: #ef4444; margin-bottom: 6px; letter-spacing: 1px; }
+        .hud-text div:last-child { color: #22c55e; letter-spacing: 1px; }
 
         #boss-hud {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            width: 60%; display: none;
+            position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+            width: 65%; display: none;
             background: linear-gradient(180deg, rgba(40, 10, 10, 0.9) 0%, rgba(20, 5, 5, 0.95) 100%);
             padding: 10px 16px; border-radius: 10px;
             border: 2px solid #dc2626;
@@ -660,104 +663,549 @@ const GFX = {};
 function generateAssets() {
     const c = (w,h,f) => { const c=document.createElement('canvas');c.width=w;c.height=h;f(c.getContext('2d'));return c;};
 
-    GFX.logo = c(40, 40, ctx => { ctx.fillStyle = '#eab308'; ctx.fillRect(0, 0, 40, 40); ctx.fillStyle = '#fff'; ctx.font = '24px monospace'; ctx.fillText("EE", 5, 28); });
-
-    GFX.chars = {
-        "Carrie": c(16,16, ctx => {
-            ctx.fillStyle = '#0f172a'; ctx.fillRect(2,1,12,5); ctx.fillRect(3,2,10,2); // black hair
-            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,6,6,5); // face
-            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); // eyes
-            ctx.fillStyle = '#22c55e'; ctx.fillRect(5,11,6,1); // headset band
-            ctx.fillStyle = '#a855f7'; ctx.fillRect(3,11,10,5); // robe
-            ctx.fillStyle = '#c4b5fd'; ctx.fillRect(7,12,2,2); // sash highlight
-            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1); // boots
-        }),
-        "Nevena": c(16,16, ctx => {
-            ctx.fillStyle = '#7c2d12'; ctx.fillRect(3,2,10,4); ctx.fillRect(2,3,2,5); // brown hair
-            ctx.fillStyle = '#f5c89a'; ctx.fillRect(5,6,6,5); // face
-            ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); // eyes
-            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,3,8,2); // headband
-            ctx.fillStyle = '#7f1d1d'; ctx.fillRect(3,11,10,5); // jacket
-            ctx.fillStyle = '#eab308'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); // clipboard corners
-            ctx.fillStyle = '#334155'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // boots
-        }),
-        "Joao": c(16,16, ctx => {
-            ctx.fillStyle = '#0f172a'; ctx.fillRect(4,1,8,3); ctx.fillRect(6,0,4,1); // black hair
-            ctx.fillStyle = '#f0a16b'; ctx.fillRect(5,4,6,5); // face
-            ctx.fillStyle = '#000'; ctx.fillRect(6,6,1,1); ctx.fillRect(9,6,1,1); // eyes
-            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,9,8,1); // mic wire
-            ctx.fillStyle = '#fb923c'; ctx.fillRect(3,10,10,6); // vest
-            ctx.fillStyle = '#f97316'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); // armbands
-            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); // shoes
-        }),
-        "Roman": c(16,16, ctx => {
-            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,4,6,6); // bald head/face
-            ctx.fillStyle = '#000'; ctx.fillRect(6,7,1,1); ctx.fillRect(9,7,1,1); // eyes
-            ctx.fillStyle = '#1f2937'; ctx.fillRect(4,10,8,2); // collar shadow
-            ctx.fillStyle = '#111827'; ctx.fillRect(3,11,10,5); // stealth coat
-            ctx.fillStyle = '#94a3b8'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2); // cuffs
-            ctx.fillStyle = '#0b1224'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1); // boots
-        }),
-        "Erwin": c(16,16, ctx => {
-            ctx.fillStyle = '#6b7280'; ctx.fillRect(2,9,12,5); // Tesla body
-            ctx.fillStyle = '#9ca3af'; ctx.fillRect(1,12,3,2); ctx.fillRect(12,12,3,2); // wheels
-            ctx.fillStyle = '#d1d5db'; ctx.fillRect(3,8,10,2); // hood line
-            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,10,8,2); // windshield glow
-            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(6,5,4,3); // face
-            ctx.fillStyle = '#111827'; ctx.fillRect(5,4,6,3); // black hair
-            ctx.fillStyle = '#0b1224'; ctx.fillRect(6,6,4,2); // beard
-            ctx.fillStyle = '#000'; ctx.fillRect(7,6,1,1); ctx.fillRect(9,6,1,1); // eyes
-            ctx.fillStyle = '#eab308'; ctx.fillRect(7,7,2,1); // smirk
-            ctx.fillStyle = '#0b1224'; ctx.fillRect(4,14,8,2); // bumper
-        })
-    };
-
-    GFX.attacks = {
-        "Carrie": c(12,12, ctx => {
-            ctx.fillStyle = '#a855f7'; ctx.fillRect(1,4,10,4);
-            ctx.fillStyle = '#c4b5fd'; ctx.fillRect(2,5,8,2);
-            ctx.fillStyle = '#10b981'; ctx.fillRect(5,3,2,6);
-        }),
-        "Nevena": c(12,12, ctx => {
-            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(2,2,8,8);
-            ctx.fillStyle = '#f8fafc'; ctx.fillRect(3,3,6,6);
-            ctx.fillStyle = '#334155'; ctx.fillRect(4,4,4,1);
-            ctx.fillStyle = '#94a3b8'; ctx.fillRect(5,7,2,2);
-        }),
-        "Joao": c(12,12, ctx => {
-            ctx.fillStyle = '#f97316'; ctx.beginPath(); ctx.moveTo(1,6); ctx.lineTo(5,2); ctx.lineTo(5,10); ctx.fill();
-            ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.moveTo(4,6); ctx.lineTo(9,1); ctx.lineTo(9,11); ctx.fill();
-            ctx.fillStyle = '#22d3ee'; ctx.beginPath(); ctx.moveTo(8,6); ctx.lineTo(11,3); ctx.lineTo(11,9); ctx.fill();
-        }),
-        "Roman": c(12,12, ctx => {
-            ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(6,6,4,0,Math.PI*2); ctx.stroke();
-            ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.arc(6,6,2,0,Math.PI*2); ctx.fill();
-        }),
-        "Erwin": c(12,12, ctx => {
-            ctx.fillStyle = '#9ca3af'; ctx.fillRect(1,5,10,4);
-            ctx.fillStyle = '#6b7280'; ctx.fillRect(2,4,8,3);
-            ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,5,6,2);
-            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(0,6,3,2); ctx.fillRect(9,6,3,2);
-        })
-    };
-    GFX.simon = c(16,16, ctx => { ctx.fillStyle = '#222'; ctx.fillRect(4,1,8,5); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,4); ctx.fillStyle = '#000'; ctx.fillRect(4,7,8,1); ctx.fillStyle = '#aaddff'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); ctx.fillStyle = '#eab308'; ctx.fillRect(3,9,10,6); ctx.fillStyle = '#fff'; ctx.fillRect(6,11,4,4); });
-    GFX.simonFace = c(32,32, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simon,0,0,16,16,0,0,32,32); });
-    
-    GFX.simonBoss = c(32,32, ctx => { 
-        ctx.fillStyle = '#222'; ctx.fillRect(8,2,16,10); ctx.fillStyle = '#ffcc99'; ctx.fillRect(8,12,16,8);
-        ctx.fillStyle = '#000'; ctx.fillRect(8,14,16,2); ctx.fillStyle = '#ff0000'; ctx.fillRect(10,14,4,2); ctx.fillRect(18,14,4,2);
-        ctx.fillStyle = '#eab308'; ctx.fillRect(6,20,20,12);
+    // Enhanced logo with gradient and glow
+    GFX.logo = c(48, 48, ctx => {
+        // Gradient background
+        const grad = ctx.createLinearGradient(0, 0, 48, 48);
+        grad.addColorStop(0, '#ffd700');
+        grad.addColorStop(0.5, '#f59e0b');
+        grad.addColorStop(1, '#d97706');
+        ctx.fillStyle = grad;
+        ctx.fillRect(2, 2, 44, 44);
+        // Border
+        ctx.strokeStyle = '#92400e';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(2, 2, 44, 44);
+        // Inner shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.fillRect(4, 4, 40, 40);
+        // Text with shadow
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 28px monospace';
+        ctx.fillText("EE", 9, 35);
+        ctx.fillStyle = '#fff';
+        ctx.fillText("EE", 7, 33);
     });
 
-    GFX.ops = c(16,16, ctx => { ctx.fillStyle = '#333'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#dc2626'; ctx.fillRect(3,10,10,5); ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); });
-    GFX.boss_manager = c(16,16, ctx => { ctx.fillStyle = '#0f172a'; ctx.fillRect(2,1,12,5); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,5); ctx.fillStyle = '#111827'; ctx.fillRect(3,10,10,6); ctx.fillStyle = '#ef4444'; ctx.fillRect(7,11,2,3); ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); });
-    GFX.boss_inspector = c(16,16, ctx => { ctx.fillStyle = '#9ca3af'; ctx.fillRect(3,1,10,4); ctx.fillStyle = '#f5cba7'; ctx.fillRect(4,5,8,5); ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); ctx.fillStyle = '#facc15'; ctx.fillRect(3,10,10,6); ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,11,2,2); ctx.fillRect(10,11,2,2); ctx.fillStyle = '#1f2937'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); });
-    GFX.boss_compliance = c(16,16, ctx => { ctx.fillStyle = '#0b162a'; ctx.fillRect(3,1,10,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(5,5,6,5); ctx.fillStyle = '#000'; ctx.fillRect(6,7,1,1); ctx.fillRect(9,7,1,1); ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,10,10,6); ctx.fillStyle = '#14b8a6'; ctx.fillRect(7,11,2,3); ctx.fillStyle = '#c084fc'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); });
-    GFX.boss_regional = c(16,16, ctx => { ctx.fillStyle = '#312e81'; ctx.fillRect(2,1,12,5); ctx.fillStyle = '#f5d0a0'; ctx.fillRect(4,6,8,5); ctx.fillStyle = '#000'; ctx.fillRect(6,8,1,1); ctx.fillRect(9,8,1,1); ctx.fillStyle = '#581c87'; ctx.fillRect(3,10,10,6); ctx.fillStyle = '#fbbf24'; ctx.fillRect(7,11,2,3); ctx.fillStyle = '#cbd5e1'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1); });
-    GFX.boss_sebastian = c(16,16, ctx => { ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,2,6,6); ctx.fillStyle = '#1d4ed8'; ctx.fillRect(3,8,10,1); ctx.fillStyle = '#2563eb'; ctx.fillRect(2,9,12,6); ctx.fillStyle = '#f97316'; ctx.fillRect(7,11,2,2); ctx.fillStyle = '#000'; ctx.fillRect(6,4,1,1); ctx.fillRect(9,4,1,1); ctx.fillStyle = '#eab308'; ctx.fillRect(3,1,10,2); });
-    GFX.boss_jelly = c(16,16, ctx => { ctx.fillStyle = '#ec4899'; ctx.fillRect(3,1,10,5); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,5); ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1); ctx.fillStyle = '#22c55e'; ctx.fillRect(3,10,10,6); ctx.fillStyle = '#f5f5f5'; ctx.fillRect(6,12,4,2); ctx.fillStyle = '#10b981'; ctx.fillRect(2,9,2,2); });
-    GFX.boss_avetta = c(16,16, ctx => { ctx.fillStyle = '#0f172a'; ctx.fillRect(2,2,12,12); ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,3,10,10); ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,5,6,2); ctx.fillRect(5,9,6,2); ctx.fillStyle = '#34d399'; ctx.fillRect(4,7,8,1); ctx.fillStyle = '#fcd34d'; ctx.fillRect(7,6,2,4); });
-    GFX.boss_bot = c(16,16, ctx => { ctx.fillStyle = '#475569'; ctx.fillRect(2,2,12,12); ctx.fillStyle = '#1e293b'; ctx.fillRect(3,3,10,2); ctx.fillStyle = '#7dd3fc'; ctx.fillRect(5,6,2,2); ctx.fillRect(9,6,2,2); ctx.fillStyle = '#22c55e'; ctx.fillRect(4,10,8,3); ctx.fillStyle = '#9ca3af'; ctx.fillRect(7,0,2,2); ctx.fillStyle = '#ef4444'; ctx.fillRect(7,12,2,2); });
+    // PREMIUM CHARACTER SPRITES - 16x16 with full detail
+    GFX.chars = {
+        "Carrie": c(16,16, ctx => {
+            // Shadow base
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Hair with highlight
+            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(2,0,12,6);
+            ctx.fillStyle = '#1a2744'; ctx.fillRect(3,1,10,3);
+            ctx.fillStyle = '#2a3755'; ctx.fillRect(4,1,3,2); // Hair shine
+            // Face with contour
+            ctx.fillStyle = '#d4a574'; ctx.fillRect(4,5,8,6);
+            ctx.fillStyle = '#e8c49a'; ctx.fillRect(5,6,6,4);
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(6,6,4,3); // Highlight
+            // Eyes with detail
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,7,2,2); ctx.fillRect(9,7,2,2);
+            ctx.fillStyle = '#fff'; ctx.fillRect(5,7,1,1); ctx.fillRect(9,7,1,1);
+            // Eyebrows
+            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(5,6,2,1); ctx.fillRect(9,6,2,1);
+            // Mouth
+            ctx.fillStyle = '#c17b5f'; ctx.fillRect(7,9,2,1);
+            // Headset
+            ctx.fillStyle = '#22c55e'; ctx.fillRect(4,10,8,1);
+            ctx.fillStyle = '#16a34a'; ctx.fillRect(3,8,1,3); ctx.fillRect(12,8,1,3);
+            // Purple robe with shading
+            ctx.fillStyle = '#7c3aed'; ctx.fillRect(2,11,12,5);
+            ctx.fillStyle = '#8b5cf6'; ctx.fillRect(3,11,10,3);
+            ctx.fillStyle = '#a78bfa'; ctx.fillRect(5,12,6,2); // Highlight
+            // Sash
+            ctx.fillStyle = '#c4b5fd'; ctx.fillRect(7,11,2,4);
+            // Boots
+            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(3,15,4,1); ctx.fillRect(9,15,4,1);
+            ctx.fillStyle = '#3b82f6'; ctx.fillRect(4,15,2,1); ctx.fillRect(10,15,2,1);
+        }),
+        "Nevena": c(16,16, ctx => {
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Brown hair with wave
+            ctx.fillStyle = '#5c2d12'; ctx.fillRect(2,1,12,5);
+            ctx.fillStyle = '#7c3d1a'; ctx.fillRect(3,2,10,3);
+            ctx.fillStyle = '#9a5a32'; ctx.fillRect(2,2,3,4); // Side wave
+            ctx.fillStyle = '#b8784a'; ctx.fillRect(3,2,2,2); // Highlight
+            // Headband
+            ctx.fillStyle = '#0284c7'; ctx.fillRect(3,2,10,2);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,2,8,1);
+            // Face
+            ctx.fillStyle = '#d4a574'; ctx.fillRect(4,5,8,6);
+            ctx.fillStyle = '#e8c49a'; ctx.fillRect(5,6,6,4);
+            ctx.fillStyle = '#f5c89a'; ctx.fillRect(6,6,4,3);
+            // Eyes
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,7,2,2); ctx.fillRect(9,7,2,2);
+            ctx.fillStyle = '#fff'; ctx.fillRect(5,7,1,1); ctx.fillRect(9,7,1,1);
+            // Glasses frame
+            ctx.strokeStyle = '#475569'; ctx.lineWidth = 0.5;
+            ctx.strokeRect(5,7,2,2); ctx.strokeRect(9,7,2,2);
+            ctx.fillStyle = '#475569'; ctx.fillRect(7,8,2,0.5);
+            // Mouth
+            ctx.fillStyle = '#c17b5f'; ctx.fillRect(7,9,2,1);
+            // Red jacket with detail
+            ctx.fillStyle = '#991b1b'; ctx.fillRect(2,11,12,5);
+            ctx.fillStyle = '#b91c1c'; ctx.fillRect(3,11,10,3);
+            ctx.fillStyle = '#dc2626'; ctx.fillRect(4,12,8,2);
+            // Clipboard
+            ctx.fillStyle = '#fbbf24'; ctx.fillRect(12,12,3,3);
+            ctx.fillStyle = '#fcd34d'; ctx.fillRect(12,12,2,2);
+            ctx.fillStyle = '#92400e'; ctx.fillRect(13,13,1,1);
+            // Boots
+            ctx.fillStyle = '#1f2937'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1);
+            ctx.fillStyle = '#374151'; ctx.fillRect(5,15,1,1); ctx.fillRect(10,15,1,1);
+        }),
+        "Joao": c(16,16, ctx => {
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Spiky black hair
+            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(4,0,8,4);
+            ctx.fillStyle = '#1a2744'; ctx.fillRect(5,1,6,2);
+            ctx.fillRect(5,-1,2,2); ctx.fillRect(9,-1,2,2); // Spikes
+            // Face
+            ctx.fillStyle = '#c4956a'; ctx.fillRect(4,4,8,6);
+            ctx.fillStyle = '#d4a574'; ctx.fillRect(5,5,6,4);
+            ctx.fillStyle = '#e8b888'; ctx.fillRect(6,5,4,3);
+            // Eyes with energy
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,6,2,2); ctx.fillRect(9,6,2,2);
+            ctx.fillStyle = '#fff'; ctx.fillRect(5,6,1,1); ctx.fillRect(9,6,1,1);
+            // Eyebrows (expressive)
+            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(5,5,2,1); ctx.fillRect(9,5,2,1);
+            // Open mouth (shouting)
+            ctx.fillStyle = '#8b4513'; ctx.fillRect(6,8,4,2);
+            ctx.fillStyle = '#fff'; ctx.fillRect(7,8,2,1);
+            // Mic headset
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,8,1,3);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(2,10,2,2);
+            // Orange hi-vis vest
+            ctx.fillStyle = '#c2410c'; ctx.fillRect(2,10,12,6);
+            ctx.fillStyle = '#ea580c'; ctx.fillRect(3,10,10,4);
+            ctx.fillStyle = '#f97316'; ctx.fillRect(4,11,8,2);
+            // Reflective strips
+            ctx.fillStyle = '#fef08a'; ctx.fillRect(3,11,10,1);
+            ctx.fillStyle = '#fef08a'; ctx.fillRect(3,13,10,1);
+            // Shoes
+            ctx.fillStyle = '#0369a1'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,15,1,1); ctx.fillRect(10,15,1,1);
+        }),
+        "Roman": c(16,16, ctx => {
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Bald head with shine
+            ctx.fillStyle = '#c4956a'; ctx.fillRect(4,2,8,8);
+            ctx.fillStyle = '#d4a574'; ctx.fillRect(5,3,6,6);
+            ctx.fillStyle = '#e8c49a'; ctx.fillRect(6,3,4,4);
+            ctx.fillStyle = '#f5deb3'; ctx.fillRect(6,2,3,2); // Shine
+            // Eyes (narrow, mysterious)
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,5,2,1); ctx.fillRect(9,5,2,1);
+            ctx.fillStyle = '#64748b'; ctx.fillRect(5,5,1,1); ctx.fillRect(9,5,1,1);
+            // Stern mouth
+            ctx.fillStyle = '#8b6b5a'; ctx.fillRect(6,7,4,1);
+            // Dark stealth coat
+            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(2,10,12,6);
+            ctx.fillStyle = '#1a2744'; ctx.fillRect(3,10,10,4);
+            ctx.fillStyle = '#2a3755'; ctx.fillRect(4,11,8,2);
+            // Collar
+            ctx.fillStyle = '#374151'; ctx.fillRect(5,10,6,1);
+            // Silver cuffs
+            ctx.fillStyle = '#6b7280'; ctx.fillRect(2,13,3,2); ctx.fillRect(11,13,3,2);
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(3,13,1,1); ctx.fillRect(12,13,1,1);
+            // Dark boots
+            ctx.fillStyle = '#0b1224'; ctx.fillRect(3,15,4,1); ctx.fillRect(9,15,4,1);
+        }),
+        "Erwin": c(16,16, ctx => {
+            // Shadow under Tesla
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.fillRect(1,14,14,2);
+            // Tesla body - sleek design
+            ctx.fillStyle = '#3f3f46'; ctx.fillRect(1,8,14,6);
+            ctx.fillStyle = '#52525b'; ctx.fillRect(2,9,12,4);
+            ctx.fillStyle = '#71717a'; ctx.fillRect(3,9,10,2);
+            // Hood with reflection
+            ctx.fillStyle = '#4b5563'; ctx.fillRect(2,7,12,3);
+            ctx.fillStyle = '#6b7280'; ctx.fillRect(4,7,8,2);
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(5,7,3,1);
+            // Windshield glow
+            ctx.fillStyle = '#0891b2'; ctx.fillRect(3,9,10,2);
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,9,8,1);
+            ctx.fillStyle = '#67e8f9'; ctx.fillRect(6,9,4,1);
+            // Wheels with detail
+            ctx.fillStyle = '#000'; ctx.fillRect(1,12,4,3); ctx.fillRect(11,12,4,3);
+            ctx.fillStyle = '#27272a'; ctx.fillRect(2,12,2,2); ctx.fillRect(12,12,2,2);
+            ctx.fillStyle = '#71717a'; ctx.fillRect(2,13,1,1); ctx.fillRect(13,13,1,1);
+            // Headlights
+            ctx.fillStyle = '#fef08a'; ctx.fillRect(1,10,1,2); ctx.fillRect(14,10,1,2);
+            // Erwin face above
+            ctx.fillStyle = '#d4a574'; ctx.fillRect(5,3,6,5);
+            ctx.fillStyle = '#e8c49a'; ctx.fillRect(6,4,4,3);
+            // Hair
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,2,6,3);
+            ctx.fillStyle = '#2d2d2d'; ctx.fillRect(6,2,4,2);
+            // Beard
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(6,6,4,2);
+            // Eyes with smirk
+            ctx.fillStyle = '#000'; ctx.fillRect(6,4,1,1); ctx.fillRect(9,4,1,1);
+            ctx.fillStyle = '#fff'; ctx.fillRect(6,4,1,1);
+            // Smirk
+            ctx.fillStyle = '#f59e0b'; ctx.fillRect(7,5,2,1);
+        })
+    };
+
+    // ENHANCED ATTACK PROJECTILES
+    GFX.attacks = {
+        "Carrie": c(14,14, ctx => {
+            // Label maker projectile with glow
+            const grad = ctx.createRadialGradient(7, 7, 1, 7, 7, 7);
+            grad.addColorStop(0, '#e879f9');
+            grad.addColorStop(0.5, '#a855f7');
+            grad.addColorStop(1, '#7c3aed');
+            ctx.fillStyle = grad;
+            ctx.fillRect(1,4,12,6);
+            ctx.fillStyle = '#c4b5fd';
+            ctx.fillRect(2,5,10,4);
+            ctx.fillStyle = '#10b981';
+            ctx.fillRect(6,2,2,10);
+            // Label detail
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(4,6,6,2);
+        }),
+        "Nevena": c(14,14, ctx => {
+            // Clipboard shockwave
+            ctx.fillStyle = '#0369a1';
+            ctx.fillRect(2,2,10,10);
+            const grad = ctx.createLinearGradient(0, 0, 14, 14);
+            grad.addColorStop(0, '#f8fafc');
+            grad.addColorStop(1, '#e2e8f0');
+            ctx.fillStyle = grad;
+            ctx.fillRect(3,3,8,8);
+            // Paper lines
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(4,4,6,1);
+            ctx.fillRect(4,6,5,1);
+            ctx.fillRect(4,8,4,1);
+            // Checkmark
+            ctx.fillStyle = '#22c55e';
+            ctx.fillRect(8,7,2,3);
+            ctx.fillRect(6,9,2,1);
+        }),
+        "Joao": c(14,14, ctx => {
+            // Sonic shout waves
+            const grad = ctx.createLinearGradient(0, 0, 14, 0);
+            grad.addColorStop(0, '#ea580c');
+            grad.addColorStop(0.5, '#f97316');
+            grad.addColorStop(1, '#fb923c');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.moveTo(0,7); ctx.lineTo(6,2); ctx.lineTo(6,12); ctx.fill();
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath(); ctx.moveTo(4,7); ctx.lineTo(10,1); ctx.lineTo(10,13); ctx.fill();
+            ctx.fillStyle = '#22d3ee';
+            ctx.beginPath(); ctx.moveTo(8,7); ctx.lineTo(14,3); ctx.lineTo(14,11); ctx.fill();
+            // Inner ring
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(7,7,2,0,Math.PI*2); ctx.stroke();
+        }),
+        "Roman": c(14,14, ctx => {
+            // Stealth audit pulse
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(7,7,6,0,Math.PI*2); ctx.stroke();
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(7,7,4,0,Math.PI*2); ctx.stroke();
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath(); ctx.arc(7,7,2,0,Math.PI*2); ctx.fill();
+            // Crosshair
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(6,0,2,3); ctx.fillRect(6,11,2,3);
+            ctx.fillRect(0,6,3,2); ctx.fillRect(11,6,3,2);
+        }),
+        "Erwin": c(14,14, ctx => {
+            // Tesla energy pulse
+            const grad = ctx.createRadialGradient(7, 7, 1, 7, 7, 7);
+            grad.addColorStop(0, '#67e8f9');
+            grad.addColorStop(0.5, '#22d3ee');
+            grad.addColorStop(1, '#0891b2');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(7, 7, 6, 0, Math.PI*2); ctx.fill();
+            // Electric arcs
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(7, 1); ctx.lineTo(5, 4); ctx.lineTo(9, 6); ctx.lineTo(7, 9);
+            ctx.stroke();
+            // Center core
+            ctx.fillStyle = '#f0f9ff';
+            ctx.beginPath(); ctx.arc(7, 7, 2, 0, Math.PI*2); ctx.fill();
+        })
+    };
+    // IMPROVED SIMON SPRITE
+    GFX.simon = c(16,16, ctx => {
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+        // Hair with detail
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(3,0,10,5);
+        ctx.fillStyle = '#2d2d2d'; ctx.fillRect(4,1,8,3);
+        ctx.fillStyle = '#3d3d3d'; ctx.fillRect(5,1,3,2); // Highlight
+        // Face
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(4,5,8,5);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(5,6,6,3);
+        // Glasses
+        ctx.fillStyle = '#000'; ctx.fillRect(4,6,3,2); ctx.fillRect(9,6,3,2);
+        ctx.fillStyle = '#87ceeb'; ctx.fillRect(5,6,1,1); ctx.fillRect(10,6,1,1);
+        ctx.fillStyle = '#475569'; ctx.fillRect(7,7,2,1);
+        // Serious mouth
+        ctx.fillStyle = '#8b6b5a'; ctx.fillRect(6,8,4,1);
+        // Gold WHS jacket
+        ctx.fillStyle = '#b45309'; ctx.fillRect(2,10,12,6);
+        ctx.fillStyle = '#d97706'; ctx.fillRect(3,10,10,4);
+        ctx.fillStyle = '#f59e0b'; ctx.fillRect(4,11,8,2);
+        // WHS badge
+        ctx.fillStyle = '#fff'; ctx.fillRect(5,12,6,2);
+        ctx.fillStyle = '#000'; ctx.font = '3px monospace';
+        // Boots
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1);
+    });
+    GFX.simonFace = c(32,32, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simon,0,0,16,16,0,0,32,32); });
+
+    // ENHANCED SIMON BOSS - 32x32 detailed sprite
+    GFX.simonBoss = c(32,32, ctx => {
+        // Dark background aura
+        const aura = ctx.createRadialGradient(16, 16, 4, 16, 16, 16);
+        aura.addColorStop(0, 'rgba(234, 179, 8, 0.3)');
+        aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = aura;
+        ctx.fillRect(0, 0, 32, 32);
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        ctx.beginPath(); ctx.ellipse(16, 30, 10, 3, 0, 0, Math.PI*2); ctx.fill();
+        // Hair
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(8,2,16,8);
+        ctx.fillStyle = '#2d2d2d'; ctx.fillRect(10,3,12,5);
+        // Face
+        ctx.fillStyle = '#c4956a'; ctx.fillRect(8,8,16,10);
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(10,10,12,6);
+        // Angry eyebrows
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(10,10,4,2); ctx.fillRect(18,10,4,2);
+        // Glasses (glowing red)
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(10,12,5,4); ctx.fillRect(17,12,5,4);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(11,13,3,2); ctx.fillRect(18,13,3,2);
+        ctx.fillStyle = '#475569'; ctx.fillRect(15,14,2,1);
+        // Stern mouth
+        ctx.fillStyle = '#5c4033'; ctx.fillRect(12,17,8,2);
+        // Gold WHS uniform
+        ctx.fillStyle = '#92400e'; ctx.fillRect(6,18,20,14);
+        ctx.fillStyle = '#b45309'; ctx.fillRect(8,18,16,10);
+        ctx.fillStyle = '#d97706'; ctx.fillRect(10,20,12,6);
+        // Large badge
+        ctx.fillStyle = '#fff'; ctx.fillRect(11,22,10,4);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(13,23,6,2);
+    });
+
+    // IMPROVED OPS MANAGER NPC
+    GFX.ops = c(16,16, ctx => {
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+        // Slicked hair
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(4,1,8,4);
+        ctx.fillStyle = '#2d2d2d'; ctx.fillRect(5,2,6,2);
+        // Face
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(4,5,8,5);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(5,6,6,3);
+        // Beady eyes
+        ctx.fillStyle = '#000'; ctx.fillRect(5,6,2,2); ctx.fillRect(9,6,2,2);
+        ctx.fillStyle = '#fff'; ctx.fillRect(5,6,1,1); ctx.fillRect(9,6,1,1);
+        // Frown
+        ctx.fillStyle = '#8b6b5a'; ctx.fillRect(6,8,4,1);
+        // Red manager polo
+        ctx.fillStyle = '#991b1b'; ctx.fillRect(2,10,12,6);
+        ctx.fillStyle = '#b91c1c'; ctx.fillRect(3,10,10,4);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(4,11,8,2);
+        // Collar
+        ctx.fillStyle = '#fff'; ctx.fillRect(6,10,4,1);
+        // Boots
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1);
+    });
+
+    // ENHANCED BOSS SPRITES
+    GFX.boss_manager = c(16,16, ctx => {
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#0a0f1f'; ctx.fillRect(2,0,12,6);
+        ctx.fillStyle = '#1a2744'; ctx.fillRect(3,1,10,4);
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(4,5,8,6);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(5,6,6,4);
+        ctx.fillStyle = '#000'; ctx.fillRect(5,7,2,2); ctx.fillRect(9,7,2,2);
+        ctx.fillStyle = '#fff'; ctx.fillRect(5,7,1,1); ctx.fillRect(9,7,1,1);
+        ctx.fillStyle = '#0a0f1f'; ctx.fillRect(2,11,12,5);
+        ctx.fillStyle = '#1a2744'; ctx.fillRect(3,11,10,3);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(7,11,2,4);
+        ctx.fillStyle = '#1e3a8a'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1);
+    });
+
+    GFX.boss_inspector = c(16,16, ctx => {
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+        // Grey hair
+        ctx.fillStyle = '#6b7280'; ctx.fillRect(3,0,10,5);
+        ctx.fillStyle = '#9ca3af'; ctx.fillRect(4,1,8,3);
+        ctx.fillStyle = '#d4d4d4'; ctx.fillRect(5,1,3,2);
+        // Face
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(4,5,8,5);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(5,6,6,3);
+        // Stern eyes
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,6,2,2); ctx.fillRect(9,6,2,2);
+        ctx.fillStyle = '#fff'; ctx.fillRect(5,6,1,1); ctx.fillRect(9,6,1,1);
+        // Yellow inspector jacket
+        ctx.fillStyle = '#ca8a04'; ctx.fillRect(2,10,12,6);
+        ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,4);
+        ctx.fillStyle = '#fbbf24'; ctx.fillRect(4,11,8,2);
+        // Badge
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(6,12,4,2);
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1);
+    });
+
+    GFX.boss_compliance = c(16,16, ctx => {
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+        // Dark hair
+        ctx.fillStyle = '#0a0f1f'; ctx.fillRect(3,0,10,5);
+        ctx.fillStyle = '#1a2744'; ctx.fillRect(4,1,8,3);
+        // Face
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(5,4,6,6);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(6,5,4,4);
+        // Calculating eyes
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(6,6,1,2); ctx.fillRect(9,6,1,2);
+        // Cyan suit
+        ctx.fillStyle = '#0891b2'; ctx.fillRect(3,10,10,6);
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,10,8,4);
+        ctx.fillStyle = '#22d3ee'; ctx.fillRect(5,11,6,2);
+        // Tie
+        ctx.fillStyle = '#14b8a6'; ctx.fillRect(7,10,2,5);
+        ctx.fillStyle = '#a855f7'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+    });
+
+    GFX.boss_regional = c(16,16, ctx => {
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+        // Styled hair
+        ctx.fillStyle = '#1e1b4b'; ctx.fillRect(2,0,12,6);
+        ctx.fillStyle = '#312e81'; ctx.fillRect(3,1,10,4);
+        // Face
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(4,5,8,6);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(5,6,6,4);
+        // Eyes
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,7,2,2); ctx.fillRect(9,7,2,2);
+        ctx.fillStyle = '#fff'; ctx.fillRect(5,7,1,1); ctx.fillRect(9,7,1,1);
+        // Purple exec suit
+        ctx.fillStyle = '#4c1d95'; ctx.fillRect(3,10,10,6);
+        ctx.fillStyle = '#6d28d9'; ctx.fillRect(4,10,8,4);
+        ctx.fillStyle = '#8b5cf6'; ctx.fillRect(5,11,6,2);
+        // Gold tie
+        ctx.fillStyle = '#fbbf24'; ctx.fillRect(7,10,2,5);
+        ctx.fillStyle = '#94a3b8'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1);
+    });
+
+    GFX.boss_sebastian = c(16,16, ctx => {
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+        // Bald/short hair
+        ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,1,6,7);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(6,2,4,5);
+        ctx.fillStyle = '#faebd7'; ctx.fillRect(6,1,3,2); // Shine
+        // Eyes
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(6,4,1,1); ctx.fillRect(9,4,1,1);
+        // Smile
+        ctx.fillStyle = '#8b6b5a'; ctx.fillRect(7,6,2,1);
+        // Blue Amazon polo
+        ctx.fillStyle = '#1d4ed8'; ctx.fillRect(2,8,12,8);
+        ctx.fillStyle = '#2563eb'; ctx.fillRect(3,8,10,6);
+        ctx.fillStyle = '#3b82f6'; ctx.fillRect(4,9,8,4);
+        // Orange smile logo
+        ctx.fillStyle = '#f97316'; ctx.fillRect(6,11,4,2);
+        ctx.fillStyle = '#fb923c'; ctx.fillRect(9,10,2,3);
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1);
+    });
+
+    GFX.boss_jelly = c(16,16, ctx => {
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+        // Pink hair
+        ctx.fillStyle = '#be185d'; ctx.fillRect(3,0,10,6);
+        ctx.fillStyle = '#db2777'; ctx.fillRect(4,1,8,4);
+        ctx.fillStyle = '#ec4899'; ctx.fillRect(5,1,3,2);
+        // Face
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(4,5,8,5);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(5,6,6,3);
+        // Friendly eyes
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,6,2,2); ctx.fillRect(9,6,2,2);
+        ctx.fillStyle = '#fff'; ctx.fillRect(5,6,1,1); ctx.fillRect(9,6,1,1);
+        // Smile
+        ctx.fillStyle = '#c17b5f'; ctx.fillRect(6,8,4,1);
+        // Green HR jacket
+        ctx.fillStyle = '#166534'; ctx.fillRect(3,10,10,6);
+        ctx.fillStyle = '#22c55e'; ctx.fillRect(4,10,8,4);
+        ctx.fillStyle = '#4ade80'; ctx.fillRect(5,11,6,2);
+        // Badge
+        ctx.fillStyle = '#fff'; ctx.fillRect(5,12,6,2);
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1);
+    });
+
+    GFX.boss_avetta = c(16,16, ctx => {
+        // AI platform - robotic look
+        ctx.fillStyle = 'rgba(34, 211, 238, 0.3)';
+        ctx.beginPath(); ctx.ellipse(8, 15, 6, 2, 0, 0, Math.PI*2); ctx.fill();
+        // Main body
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(2,2,12,12);
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(3,3,10,10);
+        // Glowing screen
+        const screenGrad = ctx.createLinearGradient(4, 4, 12, 12);
+        screenGrad.addColorStop(0, '#0ea5e9');
+        screenGrad.addColorStop(1, '#22d3ee');
+        ctx.fillStyle = screenGrad;
+        ctx.fillRect(4,4,8,8);
+        // Data lines
+        ctx.fillStyle = '#67e8f9';
+        ctx.fillRect(5,5,6,1);
+        ctx.fillRect(5,7,5,1);
+        ctx.fillRect(5,9,4,1);
+        // Center indicator
+        ctx.fillStyle = '#34d399';
+        ctx.fillRect(9,7,2,3);
+        // Warning light
+        ctx.fillStyle = '#fcd34d';
+        ctx.fillRect(7,10,2,1);
+    });
+
+    GFX.boss_bot = c(16,16, ctx => {
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+        // Robot body
+        ctx.fillStyle = '#374151'; ctx.fillRect(2,2,12,12);
+        ctx.fillStyle = '#4b5563'; ctx.fillRect(3,3,10,10);
+        ctx.fillStyle = '#6b7280'; ctx.fillRect(4,4,8,8);
+        // Visor
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(3,5,10,3);
+        // Glowing eyes
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,6,3,2);
+        ctx.fillStyle = '#22d3ee'; ctx.fillRect(5,6,1,1);
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(9,6,3,2);
+        ctx.fillStyle = '#22d3ee'; ctx.fillRect(10,6,1,1);
+        // Mouth grille
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(5,10,6,2);
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(6,10,1,2); ctx.fillRect(8,10,1,2); ctx.fillRect(10,10,1,2);
+        // Antenna
+        ctx.fillStyle = '#9ca3af'; ctx.fillRect(7,0,2,3);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(7,0,2,1);
+    });
 
     GFX.mechaJeff = c(64,64, ctx => {
         // Dark background plate
@@ -808,8 +1256,87 @@ function generateAssets() {
         ctx.fillStyle = '#374151'; ctx.fillRect(18,56,10,8); ctx.fillRect(36,56,10,8);
         ctx.fillStyle = '#4b5563'; ctx.fillRect(20,58,6,6); ctx.fillRect(38,58,6,6);
     });
-    GFX.assoc = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,5); });
-    GFX.runner = c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(4,2,8,4); ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,6,8,4); ctx.fillStyle = '#eab308'; ctx.fillRect(3,10,10,5); ctx.fillStyle = '#fff'; ctx.fillRect(1, 12, 2, 1); ctx.fillRect(14, 10, 2, 1); });
+    // IMPROVED ASSOCIATE NPC
+    GFX.assoc = c(16,16, ctx => {
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+        // Hair
+        ctx.fillStyle = '#3f3f46';
+        ctx.fillRect(4,1,8,4);
+        ctx.fillStyle = '#52525b';
+        ctx.fillRect(5,2,6,2);
+        // Face
+        ctx.fillStyle = '#d4a574';
+        ctx.fillRect(4,5,8,5);
+        ctx.fillStyle = '#e8c49a';
+        ctx.fillRect(5,6,6,3);
+        // Eyes
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(5,6,2,2);
+        ctx.fillRect(9,6,2,2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(5,6,1,1);
+        ctx.fillRect(9,6,1,1);
+        // Yellow safety vest
+        ctx.fillStyle = '#ca8a04';
+        ctx.fillRect(2,10,12,6);
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(3,10,10,4);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(4,11,8,2);
+        // Reflective strips
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(3,11,10,1);
+        ctx.fillRect(3,13,10,1);
+        // Boots
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(4,15,3,1);
+        ctx.fillRect(9,15,3,1);
+    });
+
+    // IMPROVED RUNNER NPC (with motion blur effect)
+    GFX.runner = c(16,16, ctx => {
+        // Motion blur shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.fillRect(0, 14, 16, 2);
+        // Motion lines
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.fillRect(0, 8, 3, 1);
+        ctx.fillRect(0, 11, 2, 1);
+        ctx.fillRect(13, 6, 3, 1);
+        ctx.fillRect(14, 9, 2, 1);
+        // Hair (windswept)
+        ctx.fillStyle = '#3f3f46';
+        ctx.fillRect(3,1,10,4);
+        ctx.fillStyle = '#52525b';
+        ctx.fillRect(4,2,8,2);
+        // Face (leaning forward)
+        ctx.fillStyle = '#d4a574';
+        ctx.fillRect(5,5,8,5);
+        ctx.fillStyle = '#e8c49a';
+        ctx.fillRect(6,6,6,3);
+        // Wide eyes
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(6,6,2,2);
+        ctx.fillRect(10,6,2,2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(7,6,1,1);
+        ctx.fillRect(11,6,1,1);
+        // Yellow vest
+        ctx.fillStyle = '#ca8a04';
+        ctx.fillRect(3,10,11,6);
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(4,10,9,4);
+        // Reflective strips
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(4,11,9,1);
+        ctx.fillRect(4,13,9,1);
+        // Running legs
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(3,14,3,2);
+        ctx.fillRect(11,14,3,2);
+    });
 
     GFX.van = c(34,18, ctx => {
         ctx.fillStyle = '#020617'; ctx.fillRect(0,12,34,6);
@@ -1270,35 +1797,218 @@ function generateAssets() {
         ctx.fillRect(11,9,3,1);
     })
 };
+    // ENHANCED FIRE EXIT DOOR
     GFX.door = c(16,16, ctx => {
-        ctx.fillStyle = '#0d5c0d'; ctx.fillRect(2,1,12,14);
-        ctx.fillStyle = '#16a34a'; ctx.fillRect(3,2,10,12);
-        ctx.fillStyle = '#22c55e'; ctx.fillRect(4,3,8,3);
-        ctx.fillStyle = '#fff'; ctx.fillRect(4,4,8,1);
-        ctx.fillStyle = '#fbbf24'; ctx.fillRect(11,8,2,2);
+        // Door frame shadow
+        ctx.fillStyle = '#064e3b';
+        ctx.fillRect(1,0,14,16);
+        // Door frame
+        ctx.fillStyle = '#065f46';
+        ctx.fillRect(2,1,12,14);
+        // Main door panel
+        const doorGrad = ctx.createLinearGradient(3, 0, 13, 0);
+        doorGrad.addColorStop(0, '#10b981');
+        doorGrad.addColorStop(0.5, '#34d399');
+        doorGrad.addColorStop(1, '#10b981');
+        ctx.fillStyle = doorGrad;
+        ctx.fillRect(3,2,10,12);
+        // Window with glow
+        ctx.fillStyle = '#0d9488';
+        ctx.fillRect(4,3,8,4);
+        ctx.fillStyle = '#5eead4';
+        ctx.fillRect(5,4,6,2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(5,4,3,1);
+        // Handle
+        ctx.fillStyle = '#ca8a04';
+        ctx.fillRect(10,8,3,2);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(11,8,1,2);
+        // EXIT text indicator
+        ctx.fillStyle = '#ecfdf5';
+        ctx.fillRect(5,10,6,2);
     });
+
+    // ENHANCED WAREHOUSE FLOOR - industrial concrete look
     GFX.floor = c(16,16, ctx => {
-        ctx.fillStyle = '#3a3a44'; ctx.fillRect(0,0,16,16);
-        ctx.fillStyle = '#32323a'; ctx.fillRect(0,0,8,8); ctx.fillRect(8,8,8,8);
-        ctx.fillStyle = '#424250'; ctx.fillRect(2,2,4,4); ctx.fillRect(10,10,4,4);
-        ctx.fillStyle = '#2a2a32'; ctx.fillRect(0,15,16,1); ctx.fillRect(15,0,1,16);
+        // Base concrete
+        const floorGrad = ctx.createLinearGradient(0, 0, 16, 16);
+        floorGrad.addColorStop(0, '#44444f');
+        floorGrad.addColorStop(0.5, '#3c3c47');
+        floorGrad.addColorStop(1, '#38383f');
+        ctx.fillStyle = floorGrad;
+        ctx.fillRect(0,0,16,16);
+        // Tile pattern
+        ctx.fillStyle = '#3a3a42';
+        ctx.fillRect(0,0,8,8);
+        ctx.fillRect(8,8,8,8);
+        // Subtle texture
+        ctx.fillStyle = '#4a4a55';
+        ctx.fillRect(2,2,4,4);
+        ctx.fillRect(10,10,4,4);
+        // Grout lines
+        ctx.fillStyle = '#2d2d35';
+        ctx.fillRect(7,0,2,16);
+        ctx.fillRect(0,7,16,2);
+        // Wear marks
+        ctx.fillStyle = '#35353d';
+        ctx.fillRect(4,4,2,2);
+        ctx.fillRect(11,3,1,1);
+        ctx.fillRect(3,12,2,1);
+        // Edge shadow
+        ctx.fillStyle = '#28282e';
+        ctx.fillRect(0,15,16,1);
+        ctx.fillRect(15,0,1,16);
     });
+
+    // ENHANCED WAREHOUSE WALL - industrial cinder block
     GFX.wall = c(16,16, ctx => {
-        ctx.fillStyle = '#2a1f1a'; ctx.fillRect(0,0,16,16);
-        ctx.fillStyle = '#3e2d25'; ctx.fillRect(1,1,14,14);
-        ctx.fillStyle = '#5d4037'; ctx.fillRect(0,6,16,10);
-        ctx.fillStyle = '#4e342e'; ctx.fillRect(2,8,12,6);
-        ctx.fillStyle = '#6d4c41'; ctx.fillRect(4,9,4,4); ctx.fillRect(10,9,4,4);
+        // Base wall color
+        const wallGrad = ctx.createLinearGradient(0, 0, 0, 16);
+        wallGrad.addColorStop(0, '#3d3530');
+        wallGrad.addColorStop(0.5, '#4a4138');
+        wallGrad.addColorStop(1, '#3a322c');
+        ctx.fillStyle = wallGrad;
+        ctx.fillRect(0,0,16,16);
+        // Cinder block pattern
+        ctx.fillStyle = '#4e443c';
+        ctx.fillRect(1,1,6,6);
+        ctx.fillRect(9,1,6,6);
+        ctx.fillRect(1,9,6,6);
+        ctx.fillRect(9,9,6,6);
+        // Block highlights
+        ctx.fillStyle = '#5d5248';
+        ctx.fillRect(2,2,4,4);
+        ctx.fillRect(10,2,4,4);
+        ctx.fillRect(2,10,4,4);
+        ctx.fillRect(10,10,4,4);
+        // Block texture
+        ctx.fillStyle = '#6d6258';
+        ctx.fillRect(3,3,2,2);
+        ctx.fillRect(11,3,2,2);
+        ctx.fillRect(3,11,2,2);
+        ctx.fillRect(11,11,2,2);
+        // Mortar lines
+        ctx.fillStyle = '#2a241f';
+        ctx.fillRect(0,0,16,1);
+        ctx.fillRect(0,8,16,1);
+        ctx.fillRect(7,0,2,16);
+        // Shadow effects
+        ctx.fillStyle = '#1a1612';
+        ctx.fillRect(0,7,16,1);
+        ctx.fillRect(0,15,16,1);
     });
+    // ENHANCED WAREHOUSE SHELF - industrial racking
     GFX.shelf = c(16,16, ctx => {
-        ctx.fillStyle = '#b45309'; ctx.fillRect(1,0,3,16); ctx.fillRect(12,0,3,16);
-        ctx.fillStyle = '#f59e0b'; ctx.fillRect(2,0,2,16); ctx.fillRect(13,0,2,16);
-        ctx.fillStyle = '#d97706'; ctx.fillRect(1,4,14,3); ctx.fillRect(1,10,14,3);
+        // Vertical posts with shading
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(0,0,4,16);
+        ctx.fillRect(12,0,4,16);
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(1,0,3,16);
+        ctx.fillRect(13,0,3,16);
+        ctx.fillStyle = '#d97706';
+        ctx.fillRect(2,0,1,16);
+        ctx.fillRect(13,0,1,16);
+        // Horizontal shelves with depth
+        ctx.fillStyle = '#a16207';
+        ctx.fillRect(0,4,16,4);
+        ctx.fillRect(0,11,16,4);
+        ctx.fillStyle = '#ca8a04';
+        ctx.fillRect(1,5,14,2);
+        ctx.fillRect(1,12,14,2);
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(2,5,12,1);
+        ctx.fillRect(2,12,12,1);
+        // Shelf items
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(4,2,3,2);
+        ctx.fillRect(9,2,3,2);
+        ctx.fillRect(5,9,4,2);
+        // Safety labels
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(6,6,4,1);
         ctx.fillStyle = '#fbbf24'; ctx.fillRect(2,5,12,1); ctx.fillRect(2,11,12,1);
     });
-    GFX.book = c(8,8, ctx => { ctx.fillStyle = '#fff'; ctx.fillRect(0,0,8,8); ctx.fillStyle='green'; ctx.fillRect(2,2,4,4); });
-    GFX.req = c(10,10, ctx => { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(5,0); ctx.lineTo(10,5); ctx.lineTo(5,10); ctx.lineTo(0,5); ctx.fill(); ctx.fillStyle='red'; ctx.font='8px sans'; ctx.fillText("!",3,8); });
-    GFX.bossProj = c(12,12, ctx => { ctx.fillStyle = '#ff00ff'; ctx.beginPath(); ctx.arc(6,6,5,0,Math.PI*2); ctx.fill(); });
+    // ENHANCED RULE BOOK projectile
+    GFX.book = c(10,10, ctx => {
+        // Book shadow
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(2,2,8,8);
+        // Book cover
+        ctx.fillStyle = '#16a34a';
+        ctx.fillRect(0,0,8,8);
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(1,1,6,6);
+        // Book spine
+        ctx.fillStyle = '#15803d';
+        ctx.fillRect(0,0,2,8);
+        // Pages
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(2,1,5,6);
+        // Text lines
+        ctx.fillStyle = '#64748b';
+        ctx.fillRect(3,2,3,1);
+        ctx.fillRect(3,4,2,1);
+        // WHS badge
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(3,5,2,2);
+    });
+
+    // ENHANCED REQUEST projectile (from ops managers)
+    GFX.req = c(12,12, ctx => {
+        // Glow effect
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.4)';
+        ctx.beginPath();
+        ctx.arc(6, 6, 6, 0, Math.PI * 2);
+        ctx.fill();
+        // Diamond shape
+        ctx.fillStyle = '#fef2f2';
+        ctx.beginPath();
+        ctx.moveTo(6,0);
+        ctx.lineTo(12,6);
+        ctx.lineTo(6,12);
+        ctx.lineTo(0,6);
+        ctx.closePath();
+        ctx.fill();
+        // Inner diamond
+        ctx.fillStyle = '#fecaca';
+        ctx.beginPath();
+        ctx.moveTo(6,2);
+        ctx.lineTo(10,6);
+        ctx.lineTo(6,10);
+        ctx.lineTo(2,6);
+        ctx.closePath();
+        ctx.fill();
+        // Exclamation mark
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(5,3,2,4);
+        ctx.fillRect(5,8,2,2);
+    });
+    // ENHANCED BOSS PROJECTILE
+    GFX.bossProj = c(14,14, ctx => {
+        // Outer glow
+        const grad = ctx.createRadialGradient(7, 7, 1, 7, 7, 7);
+        grad.addColorStop(0, '#f5d0fe');
+        grad.addColorStop(0.3, '#e879f9');
+        grad.addColorStop(0.6, '#c026d3');
+        grad.addColorStop(1, '#86198f');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(7, 7, 6, 0, Math.PI * 2);
+        ctx.fill();
+        // Core
+        ctx.fillStyle = '#fdf4ff';
+        ctx.beginPath();
+        ctx.arc(7, 7, 2, 0, Math.PI * 2);
+        ctx.fill();
+        // Sparkle effect
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(6, 1, 2, 2);
+        ctx.fillRect(6, 11, 2, 2);
+        ctx.fillRect(1, 6, 2, 2);
+        ctx.fillRect(11, 6, 2, 2);
+    });
 
     // Hidden level assets - HIGH QUALITY SNES style
     GFX.van = c(32,22, ctx => {
@@ -1834,6 +2544,9 @@ function initBossEncounter() {
     const bossData = GAME.bossTypes[Math.floor(Math.random() * GAME.bossTypes.length)];
     GAME.boss = { ...bossData, x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, w: 32, h: 32, maxHp: bossData.hp, timer: 0, tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25] };
     GAME.entities = []; GAME.projectiles = [];
+    document.getElementById('boss-name-el').innerText = GAME.boss.name;
+    document.getElementById('boss-hud').style.display = 'block';
+    updateBossHud();
     updateMusicForState();
 }
 
@@ -2754,8 +3467,56 @@ function updateFloatingTexts() {
     }
 }
 
-function spawnParticle(x, y, color, forceY = 0) { 
-    GAME.particles.push({ x:x, y:y, color:color, life:40, vx: (Math.random() - 0.5) * 2, vy: forceY || (Math.random() * -2), groundY: y + 5 }); 
+function spawnParticle(x, y, color, forceY = 0) {
+    GAME.particles.push({
+        x: x,
+        y: y,
+        color: color,
+        life: 50 + Math.random() * 20,
+        vx: (Math.random() - 0.5) * 3,
+        vy: forceY || (Math.random() * -3 - 1),
+        groundY: y + 5,
+        size: 1 + Math.random() * 2,
+        alpha: 1
+    });
+}
+
+// Enhanced particle burst for special effects
+function spawnParticleBurst(x, y, colors, count) {
+    for (let i = 0; i < count; i++) {
+        const angle = (i / count) * Math.PI * 2;
+        const speed = 1 + Math.random() * 2;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        GAME.particles.push({
+            x: x,
+            y: y,
+            color: color,
+            life: 30 + Math.random() * 30,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 1,
+            groundY: y + 20,
+            size: 1 + Math.random() * 2,
+            alpha: 1
+        });
+    }
+}
+
+// Sparkle effect for special moments
+function spawnSparkles(x, y, color) {
+    for (let i = 0; i < 8; i++) {
+        GAME.particles.push({
+            x: x + (Math.random() - 0.5) * 10,
+            y: y + (Math.random() - 0.5) * 10,
+            color: color,
+            life: 20 + Math.random() * 20,
+            vx: (Math.random() - 0.5) * 4,
+            vy: -Math.random() * 3,
+            groundY: y + 30,
+            size: 1 + Math.random(),
+            alpha: 1,
+            sparkle: true
+        });
+    }
 }
 
 function throwBook() {
@@ -3186,7 +3947,18 @@ function drawMechaBattle() {
         }
     }
 
-    GAME.particles.forEach(p => { ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 2, 2); });
+    GAME.particles.forEach(p => {
+        const alpha = p.alpha || (p.life / 50);
+        ctx.globalAlpha = Math.min(1, alpha);
+        if (p.sparkle) {
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(p.x - 1, p.y, 3, 1);
+            ctx.fillRect(p.x, p.y - 1, 1, 3);
+        }
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size || 2, p.size || 2);
+        ctx.globalAlpha = 1;
+    });
     GAME.floatingTexts.forEach(t => { ctx.fillStyle = t.color; ctx.fillText(t.text, t.x, t.y); });
 }
 
@@ -3380,81 +4152,230 @@ function draw() {
         ctx.fillText("- Deal with 'visitors'", 20, 150); ctx.fillStyle='#888'; ctx.fillText("[PRESS SPACE]", 80, 200); ctx.restore(); return;
     }
     if (GAME.state === 'TITLE') {
-        // Animated grid background
         const t = GAME.stateTimer;
+
+        // Premium animated background
         const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        grad.addColorStop(0, '#0a0a14');
-        grad.addColorStop(0.5, '#0f172a');
-        grad.addColorStop(1, '#1a1a2e');
+        grad.addColorStop(0, '#050510');
+        grad.addColorStop(0.3, '#0a1525');
+        grad.addColorStop(0.6, '#0f172a');
+        grad.addColorStop(1, '#0a0a18');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Animated grid lines
-        let offset = (t * 1.5) % 32;
-        ctx.strokeStyle = 'rgba(0, 100, 50, 0.3)';
+        // Animated stars
+        for (let i = 0; i < 30; i++) {
+            const x = (i * 37 + t * 0.3) % canvas.width;
+            const y = (i * 61) % canvas.height;
+            const twinkle = Math.sin(t * 0.1 + i) * 0.5 + 0.5;
+            ctx.fillStyle = `rgba(255,255,255,${twinkle * 0.6})`;
+            ctx.fillRect(x, y, 1, 1);
+        }
+
+        // Animated grid lines with perspective
+        const offset = (t * 1.2) % 32;
+        ctx.strokeStyle = 'rgba(34, 211, 238, 0.15)';
         ctx.lineWidth = 1;
-        for (let i = -1; i < 15; i++) {
+        for (let i = -1; i < 16; i++) {
+            const y = i * 16 + offset;
+            const alpha = 0.1 + (y / canvas.height) * 0.2;
+            ctx.strokeStyle = `rgba(34, 211, 238, ${alpha})`;
             ctx.beginPath();
-            ctx.moveTo(0, i * 16 + offset);
-            ctx.lineTo(256, i * 16 + offset);
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
             ctx.stroke();
         }
         for (let i = 0; i < 17; i++) {
+            ctx.strokeStyle = 'rgba(34, 211, 238, 0.1)';
             ctx.beginPath();
             ctx.moveTo(i * 16, 0);
-            ctx.lineTo(i * 16, 224);
+            ctx.lineTo(i * 16, canvas.height);
             ctx.stroke();
         }
 
-        // Title with glow
-        ctx.textAlign = 'center';
-        ctx.font = '18px "Press Start 2P"';
-
-        // Title shadow/glow
-        ctx.fillStyle = '#ff6600';
-        ctx.fillText('AMZL WHS QUEST', canvas.width / 2 + 2, 52);
-        ctx.fillStyle = '#ffd700';
-        ctx.fillText('AMZL WHS QUEST', canvas.width / 2, 50);
-
-        // Subtitle
-        ctx.fillStyle = '#00ffff';
-        ctx.font = '8px "Press Start 2P"';
-        ctx.fillText('SAFETY COORDINATOR EDITION', canvas.width / 2, 70);
-
-        // Animated prompt
-        const blink = Math.sin(t * 0.12) > 0;
-        if (blink) {
-            ctx.fillStyle = '#fff';
-            ctx.font = '10px "Press Start 2P"';
-            ctx.fillText('PRESS SPACE TO START', canvas.width / 2, 130);
+        // Warehouse silhouette at bottom
+        ctx.fillStyle = '#0a0a14';
+        ctx.fillRect(0, 180, canvas.width, 44);
+        ctx.fillStyle = '#1a1a2e';
+        for (let i = 0; i < 8; i++) {
+            ctx.fillRect(i * 32 + 4, 185, 24, 35);
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(i * 32 + 8, 190, 16, 12);
+            ctx.fillStyle = '#1a1a2e';
         }
 
-        // Credits
-        ctx.fillStyle = '#666';
-        ctx.font = '8px monospace';
-        ctx.fillText('Code by Erwin Esener', canvas.width / 2, 200);
+        ctx.textAlign = 'center';
+
+        // Title glow effect
+        const glowIntensity = Math.sin(t * 0.08) * 0.3 + 0.7;
+        ctx.shadowColor = '#ff9900';
+        ctx.shadowBlur = 15 * glowIntensity;
+
+        // Title with multiple layers
+        ctx.font = '16px "Press Start 2P"';
+        ctx.fillStyle = '#7c2d12';
+        ctx.fillText('AMZL WHS QUEST', canvas.width / 2 + 2, 44);
+        ctx.fillStyle = '#ea580c';
+        ctx.fillText('AMZL WHS QUEST', canvas.width / 2 + 1, 43);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText('AMZL WHS QUEST', canvas.width / 2, 42);
+        ctx.shadowBlur = 0;
+
+        // Subtitle with glow
+        ctx.shadowColor = '#22d3ee';
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = '7px "Press Start 2P"';
+        ctx.fillText('SAFETY COORDINATOR EDITION', canvas.width / 2, 60);
+        ctx.shadowBlur = 0;
+
+        // Animated character showcase
+        const charIdx = Math.floor(t / 90) % 5;
+        const chars = ['Carrie', 'Nevena', 'Joao', 'Roman', 'Erwin'];
+        const charName = chars[charIdx];
+        const charBounce = Math.sin(t * 0.15) * 3;
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(GFX.chars[charName], canvas.width / 2 - 16, 85 + charBounce, 32, 32);
+        ctx.restore();
+
+        // Animated prompt with pulse
+        const blink = Math.sin(t * 0.12) > 0;
+        const pulseScale = 1 + Math.sin(t * 0.1) * 0.05;
+        if (blink) {
+            ctx.fillStyle = '#fff';
+            ctx.font = '9px "Press Start 2P"';
+            ctx.fillText('PRESS SPACE', canvas.width / 2, 140);
+        }
+
+        // Decorative lines
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(40, 155, 176, 2);
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillRect(60, 160, 136, 1);
+
+        // Credits with style
+        ctx.fillStyle = '#64748b';
+        ctx.font = '7px monospace';
+        ctx.fillText('CREATED BY ERWIN ESENER', canvas.width / 2, 175);
+        ctx.fillStyle = '#475569';
+        ctx.font = '6px monospace';
+        ctx.fillText('© 2024 ERWIN ESENER PRODUCTIONS', canvas.width / 2, 220);
 
         ctx.textAlign = 'left';
         ctx.restore(); return;
     }
     if (GAME.state === 'HOWTO') {
-        ctx.fillStyle='#fff'; ctx.font='12px monospace'; ctx.fillText("HOW TO PLAY", 80, 30); ctx.font='10px monospace';
-        ctx.fillStyle='#eab308'; ctx.fillText("WASD / ARROWS : MOVE", 20, 60); ctx.fillStyle='#aaa'; ctx.fillText("Navigate the warehouse.", 20, 75);
-        ctx.fillStyle='#eab308'; ctx.fillText("SPACE : INTERACT / SHOOT", 20, 100); ctx.fillStyle='#aaa'; ctx.fillText("Fix hazards or throw rules.", 20, 115);
-        ctx.fillStyle='#eab308'; ctx.fillText("GOAL: FIND 5 HAZARDS", 20, 140); ctx.fillStyle='#aaa'; ctx.fillText("Then defeat the boss!", 20, 155);
-        ctx.fillStyle='#fff'; ctx.fillText("[PRESS SPACE]", 80, 190); ctx.restore(); return;
+        const t = GAME.stateTimer;
+        // Background gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        grad.addColorStop(0, '#0a1525');
+        grad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Panel background
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(10, 10, canvas.width - 20, canvas.height - 20);
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+        // Title with glow
+        ctx.textAlign = 'center';
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '14px "Press Start 2P"';
+        ctx.fillText('HOW TO PLAY', canvas.width / 2, 35);
+        ctx.shadowBlur = 0;
+
+        ctx.textAlign = 'left';
+        ctx.font = '9px "Press Start 2P"';
+
+        // Controls section
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillText('WASD / ARROWS', 25, 65);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '8px monospace';
+        ctx.fillText('Navigate the warehouse floor', 25, 80);
+
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = '9px "Press Start 2P"';
+        ctx.fillText('SPACE', 25, 105);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '8px monospace';
+        ctx.fillText('Interact with hazards / Attack', 25, 120);
+
+        // Goal section
+        ctx.fillStyle = '#ef4444';
+        ctx.font = '9px "Press Start 2P"';
+        ctx.fillText('YOUR MISSION:', 25, 150);
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '8px monospace';
+        ctx.fillText('1. Find and fix 5 safety hazards', 25, 165);
+        ctx.fillText('2. Dodge crazy Ops requests!', 25, 180);
+        ctx.fillText('3. Defeat the surprise visitor', 25, 195);
+
+        // Animated prompt
+        const blink = Math.sin(t * 0.12) > 0;
+        if (blink) {
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#fff';
+            ctx.font = '8px "Press Start 2P"';
+            ctx.fillText('[PRESS SPACE TO CONTINUE]', canvas.width / 2, 215);
+        }
+        ctx.textAlign = 'left';
+        ctx.restore(); return;
     }
     if (GAME.state === 'SELECT') {
-        const frameX = 14, frameY = 28, frameW = 228, frameH = 168;
-        ctx.fillStyle = '#0a0a0a'; ctx.fillRect(frameX, frameY, frameW, frameH);
-        ctx.strokeStyle = '#222'; ctx.lineWidth = 2; ctx.strokeRect(frameX - 2, frameY - 2, frameW + 4, frameH + 4);
-        ctx.fillStyle = '#111'; ctx.fillRect(frameX + 6, frameY + 30, frameW - 12, frameH - 44);
+        const t = GAME.stateTimer;
+        const frameX = 14, frameY = 22, frameW = 228, frameH = 180;
+
+        // Background gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        grad.addColorStop(0, '#050510');
+        grad.addColorStop(0.5, '#0a1525');
+        grad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Animated background particles
+        for (let i = 0; i < 20; i++) {
+            const x = (i * 31 + t * 0.2) % canvas.width;
+            const y = (i * 47 + t * 0.1) % canvas.height;
+            ctx.fillStyle = `rgba(251, 191, 36, ${0.1 + Math.sin(t * 0.05 + i) * 0.1})`;
+            ctx.fillRect(x, y, 2, 2);
+        }
+
+        // Main frame with glow
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = '#0a0a14';
+        ctx.fillRect(frameX, frameY, frameW, frameH);
+        ctx.shadowBlur = 0;
+
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(frameX, frameY, frameW, frameH);
+        ctx.strokeStyle = '#92400e';
+        ctx.strokeRect(frameX + 2, frameY + 2, frameW - 4, frameH - 4);
+
+        // Inner panel
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+        ctx.fillRect(frameX + 6, frameY + 35, frameW - 12, frameH - 50);
 
         ctx.textAlign = 'center';
-        ctx.fillStyle='#eab308'; ctx.font='12px monospace';
-        ctx.fillText("CHOOSE COORDINATOR", frameX + frameW / 2, frameY + 16);
-        ctx.fillStyle='#888'; ctx.font='8px monospace';
-        ctx.fillText("ARROWS TO BROWSE | SPACE TO START", frameX + frameW / 2, frameY + 28);
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '11px "Press Start 2P"';
+        ctx.fillText("SELECT COORDINATOR", frameX + frameW / 2, frameY + 18);
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '7px monospace';
+        ctx.fillText("< ARROWS TO BROWSE > | SPACE TO START", frameX + frameW / 2, frameY + 30);
 
         let name = GAME.charList[GAME.charIndex]; let data = CHAR_DATA[name];
         const portraitX = frameX + 18, portraitY = frameY + 46;
@@ -4015,7 +4936,18 @@ function draw() {
         }
     });
 
-    GAME.particles.forEach(p => { ctx.fillStyle = p.color; ctx.fillRect(p.x-cx, p.y-cy, 2, 2); });
+    GAME.particles.forEach(p => {
+        const alpha = p.alpha || (p.life / 50);
+        ctx.globalAlpha = Math.min(1, alpha);
+        if (p.sparkle) {
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(p.x - cx - 1, p.y - cy, 3, 1);
+            ctx.fillRect(p.x - cx, p.y - cy - 1, 1, 3);
+        }
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x - cx, p.y - cy, p.size || 2, p.size || 2);
+        ctx.globalAlpha = 1;
+    });
 
     // Render Floating Text
     ctx.font = '8px "Press Start 2P"'; ctx.textAlign = 'center';
