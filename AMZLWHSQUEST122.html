@@ -2544,6 +2544,9 @@ function initBossEncounter() {
     const bossData = GAME.bossTypes[Math.floor(Math.random() * GAME.bossTypes.length)];
     GAME.boss = { ...bossData, x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, w: 32, h: 32, maxHp: bossData.hp, timer: 0, tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25] };
     GAME.entities = []; GAME.projectiles = [];
+    document.getElementById('boss-name-el').innerText = GAME.boss.name;
+    document.getElementById('boss-hud').style.display = 'block';
+    updateBossHud();
     updateMusicForState();
 }
 
