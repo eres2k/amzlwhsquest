@@ -363,18 +363,20 @@ const SIMON_YARD_TIPS = [
     "AUDIT NOTE: The yard claims more near-misses than I have patience. Stay alert, stay alive."
 ];
 
-// --- BEZOS YARD TAUNTS ---
-const BEZOS_YARD_TAUNTS = [
-    "Think you can reach me? PATHETIC!",
-    "Your TOT is INFINITE down there!",
-    "Day One for YOU means Day DONE!",
-    "I have DRONES watching your every move!",
-    "Productivity means CRUSHING pedestrians!",
-    "Two-day delivery... to the MORGUE!",
-    "Come closer... I DARE you!",
-    "Your safety metrics are LAUGHABLE!",
-    "The yard is MY domain!",
-    "Prime membership doesn't cover SURVIVAL!"
+// --- JEFF YARD TAUNTS ---
+const JEFF_YARD_TAUNTS = [
+    "Come on then! I haven't got all day!",
+    "You call that speed? My grandmother moves faster!",
+    "The yard separates the workers from the WIMPS!",
+    "Every second you waste costs the company money!",
+    "I built this empire from NOTHING!",
+    "You want a raise? EARN IT!",
+    "Keep dodging! It's good entertainment!",
+    "I've seen better coordination from interns!",
+    "Tick tock! Your shift is almost OVER!",
+    "Almost there... just kidding, you'll never make it!",
+    "This is YOUR performance review!",
+    "The trucks don't stop for ANYONE!"
 ];
 
 // --- BEZOS TAUNTS FOR FROGGER LEVEL ---
@@ -2108,36 +2110,56 @@ function generateAssets() {
         ctx.fillStyle = '#d4a574'; ctx.fillRect(2,11,3,5); ctx.fillRect(19,11,3,5);
         ctx.fillStyle = '#e8c49a'; ctx.fillRect(3,12,2,3); ctx.fillRect(19,12,2,3);
     });
-    // Large Bezos for yard level (visible at top taunting)
-    GFX.bezosYard = c(48,48, ctx => {
+    // Jeff character for yard level - full body standing with arms crossed
+    GFX.jeffYard = c(48,48, ctx => {
         // Background
         ctx.fillStyle = '#0a0a14'; ctx.fillRect(0,0,48,48);
-        // Head outline
-        ctx.fillStyle = '#c4956a'; ctx.fillRect(8,4,32,38);
-        // Bald dome
-        ctx.fillStyle = '#e8c49a'; ctx.fillRect(10,6,28,34);
-        ctx.fillStyle = '#f5deb3'; ctx.fillRect(12,8,24,30);
-        // Shine on dome
-        ctx.fillStyle = '#faebd7'; ctx.fillRect(14,6,16,8);
-        ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(16,7,10,4);
-        // Evil eyebrows
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(14,18,8,3); ctx.fillRect(26,18,8,3);
-        ctx.fillRect(12,20,2,2); ctx.fillRect(34,20,2,2);
-        // Sinister eyes
-        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(16,24,6,5); ctx.fillRect(26,24,6,5);
-        ctx.fillStyle = '#4a1a1a'; ctx.fillRect(17,25,4,3); ctx.fillRect(27,25,4,3);
-        ctx.fillStyle = '#fff'; ctx.fillRect(18,26,2,1); ctx.fillRect(28,26,2,1);
-        // Evil grin
-        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(16,34,16,4);
-        ctx.fillStyle = '#fff'; ctx.fillRect(18,35,12,2);
-        ctx.fillStyle = '#dc2626'; ctx.fillRect(24,35,1,2);
+        // Legs (dark pants)
+        ctx.fillStyle = '#1a1f2e'; ctx.fillRect(16,38,6,10); ctx.fillRect(26,38,6,10);
+        ctx.fillStyle = '#2d3748'; ctx.fillRect(17,39,4,9); ctx.fillRect(27,39,4,9);
+        // Shoes
+        ctx.fillStyle = '#0f0f0f'; ctx.fillRect(15,46,8,2); ctx.fillRect(25,46,8,2);
+        // Body (expensive suit jacket)
+        ctx.fillStyle = '#1a2744'; ctx.fillRect(12,22,24,18);
+        ctx.fillStyle = '#223050'; ctx.fillRect(14,24,20,14);
+        // Suit lapels
+        ctx.fillStyle = '#0f1a2e'; ctx.fillRect(20,24,2,12); ctx.fillRect(26,24,2,12);
+        // White shirt underneath
+        ctx.fillStyle = '#e8e8e8'; ctx.fillRect(21,24,6,10);
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(22,25,4,8);
+        // Tie
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(23,25,2,8);
+        ctx.fillStyle = '#b91c1c'; ctx.fillRect(23,33,2,3);
+        // Arms crossed (in front of body)
+        ctx.fillStyle = '#1a2744'; ctx.fillRect(10,26,28,8);
+        ctx.fillStyle = '#223050'; ctx.fillRect(11,27,26,6);
+        // Hands (flesh tone)
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(10,28,4,4); ctx.fillRect(34,28,4,4);
+        ctx.fillStyle = '#f5deb3'; ctx.fillRect(11,29,2,2); ctx.fillRect(35,29,2,2);
+        // Neck
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(20,18,8,6);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(21,19,6,4);
+        // Head (bald)
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(14,2,20,18);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(16,3,16,15);
+        ctx.fillStyle = '#f5deb3'; ctx.fillRect(18,4,12,12);
+        // Dome shine
+        ctx.fillStyle = '#faebd7'; ctx.fillRect(20,3,8,4);
+        ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillRect(22,3,4,2);
+        // Eyebrows (arrogant raised)
+        ctx.fillStyle = '#3f3f46'; ctx.fillRect(18,8,5,2); ctx.fillRect(25,8,5,2);
+        // Eyes (looking down smugly)
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(19,11,4,3); ctx.fillRect(25,11,4,3);
+        ctx.fillStyle = '#3b82f6'; ctx.fillRect(20,12,2,2); ctx.fillRect(26,12,2,2);
+        ctx.fillStyle = '#fff'; ctx.fillRect(20,12,1,1); ctx.fillRect(26,12,1,1);
+        // Smug smirk
+        ctx.fillStyle = '#b45a3c'; ctx.fillRect(20,16,8,2);
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(21,16,6,1);
+        // One corner raised (smirk)
+        ctx.fillStyle = '#b45a3c'; ctx.fillRect(26,15,3,1);
         // Ears
-        ctx.fillStyle = '#d4a574'; ctx.fillRect(4,22,6,10); ctx.fillRect(38,22,6,10);
-        ctx.fillStyle = '#e8c49a'; ctx.fillRect(5,24,4,6); ctx.fillRect(39,24,4,6);
-        // Suit collar hint
-        ctx.fillStyle = '#1a1f2e'; ctx.fillRect(8,40,32,8);
-        ctx.fillStyle = '#2d3748'; ctx.fillRect(10,42,28,6);
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(12,10,3,6); ctx.fillRect(33,10,3,6);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(13,11,2,4); ctx.fillRect(33,11,2,4);
     });
     GFX.mechaBezos = c(48,48, ctx => {
         // Base plate
@@ -2557,8 +2579,8 @@ const GAME = {
     lastAIBanterTime: 0, // Throttle AI requests
     fireExitDoor: null, // Hidden level door position
     froggerVehicles: [], // Frogger level vehicles
-    bezosTaunt: "", // Current Bezos taunt
-    bezosTauntTimer: 0, // Timer for taunt display
+    jeffTaunt: "", // Current Jeff taunt
+    jeffTauntTimer: 0, // Timer for taunt display
 
     // === NEW WAREHOUSE ATMOSPHERE ===
     conveyorBelts: [], // Animated conveyor belt positions
@@ -2892,20 +2914,6 @@ function generateMap() {
         });
     }
 
-    // === SPAWN KIVA ROBOTS ===
-    for (let i = 0; i < 5; i++) {
-        const { tx, ty } = pickRandomFloorTile();
-        GAME.kivaRobots.push({
-            x: tx * TILE_SIZE,
-            y: ty * TILE_SIZE,
-            targetX: tx * TILE_SIZE,
-            targetY: ty * TILE_SIZE,
-            hasPod: Math.random() < 0.6, // 60% carry pods
-            speed: 0.4 + Math.random() * 0.3,
-            waitTimer: 0,
-            state: 'moving' // moving, waiting, turning
-        });
-    }
 
     // === SPAWN CART WORKERS ===
     for (let i = 0; i < 4; i++) {
@@ -3010,27 +3018,22 @@ function startYardLevel() {
         playerX: canvas.width / 2 - 8,
         playerY: h - 32,
         startY: h - 32, // Remember starting position for reset
-        speed: getCharStats(GAME.selectedChar).speed * 0.9,
+        speed: getCharStats(GAME.selectedChar).speed * 0.95,
         vehicles: [],
-        flying: [],
-        flyTimer: 120,
-        tauntShown: false,
         transformationTriggered: false, // Track if Mecha transformation cutscene started
-        bezosTaunt: BEZOS_YARD_TAUNTS[Math.floor(Math.random() * BEZOS_YARD_TAUNTS.length)],
-        bezosTauntTimer: 0,
-        bezosAnimFrame: 0, // Animation frame for Bezos
-        tauntLine: ['You dare clock out without my permission?', 'Prime compliance at 0%. Unacceptable.', 'Little coordinator, big mistake.'][Math.floor(Math.random()*3)],
-        tauntTimer: 260,
-        maxAirBoxes: 7,
-        throwers: [
-            { x: 10, y: 26, cooldown: 70, variance: 40, timer: 60 },
-            { x: canvas.width - 26, y: 26, cooldown: 70, variance: 40, timer: 80 }
-        ],
+        // Jeff taunting system
+        jeffTaunt: JEFF_YARD_TAUNTS[Math.floor(Math.random() * JEFF_YARD_TAUNTS.length)],
+        jeffTauntTimer: 0,
+        jeffAnimFrame: 0, // Animation frame for Jeff
+        // Vehicle lanes - challenging gauntlet of traffic
         lanes: [
-            { y: h - 90, dir: 1, speed: 0.8, timer: 90 },
-            { y: h - 150, dir: -1, speed: 0.9, timer: 95 },
-            { y: h - 210, dir: 1, speed: 1.0, timer: 100 },
-            { y: h - 270, dir: -1, speed: 0.85, timer: 105 }
+            { y: h - 70, dir: 1, speed: 0.9, timer: 70 },
+            { y: h - 120, dir: -1, speed: 1.0, timer: 65 },
+            { y: h - 170, dir: 1, speed: 1.1, timer: 60 },
+            { y: h - 220, dir: -1, speed: 0.95, timer: 75 },
+            { y: h - 270, dir: 1, speed: 1.15, timer: 55 },
+            { y: h - 320, dir: -1, speed: 1.0, timer: 70 },
+            { y: h - 370, dir: 1, speed: 1.2, timer: 50 }
         ]
     };
     GAME.player.speed = GAME.yard.speed;
@@ -3173,10 +3176,10 @@ function initFroggerLevel() {
         speed: -0.5
     });
 
-    // Initialize Bezos taunts - use YARD taunts
-    GAME.bezosTaunt = BEZOS_YARD_TAUNTS[Math.floor(Math.random() * BEZOS_YARD_TAUNTS.length)];
-    GAME.bezosTauntTimer = 0;
-    GAME.bezosAnimFrame = 0;
+    // Initialize Jeff taunts
+    GAME.jeffTaunt = JEFF_YARD_TAUNTS[Math.floor(Math.random() * JEFF_YARD_TAUNTS.length)];
+    GAME.jeffTauntTimer = 0;
+    GAME.jeffAnimFrame = 0;
 
     updateMusicForState();
 
@@ -3189,12 +3192,12 @@ function initFroggerLevel() {
 function updateFrogger() {
     const p = GAME.player;
 
-    // Update Bezos taunt timer and animation
-    GAME.bezosTauntTimer++;
-    GAME.bezosAnimFrame++;
-    if (GAME.bezosTauntTimer > 150) { // Change taunt every 2.5 seconds
-        GAME.bezosTaunt = BEZOS_YARD_TAUNTS[Math.floor(Math.random() * BEZOS_YARD_TAUNTS.length)];
-        GAME.bezosTauntTimer = 0;
+    // Update Jeff taunt timer and animation
+    GAME.jeffTauntTimer++;
+    GAME.jeffAnimFrame++;
+    if (GAME.jeffTauntTimer > 120) { // Change taunt every 2 seconds
+        GAME.jeffTaunt = JEFF_YARD_TAUNTS[Math.floor(Math.random() * JEFF_YARD_TAUNTS.length)];
+        GAME.jeffTauntTimer = 0;
         AudioSys.sfx.pop(); // Sound when new taunt appears
     }
 
@@ -3611,39 +3614,6 @@ function updateWarehouseAtmosphere() {
         }
     });
 
-    // Update Kiva robots
-    GAME.kivaRobots.forEach(kiva => {
-        if (kiva.state === 'waiting') {
-            kiva.waitTimer--;
-            if (kiva.waitTimer <= 0) {
-                kiva.state = 'moving';
-                // Pick new random target
-                const { tx, ty } = pickRandomFloorTile();
-                kiva.targetX = tx * TILE_SIZE;
-                kiva.targetY = ty * TILE_SIZE;
-            }
-        } else if (kiva.state === 'moving') {
-            const dx = kiva.targetX - kiva.x;
-            const dy = kiva.targetY - kiva.y;
-            const dist = Math.hypot(dx, dy);
-
-            if (dist < 2) {
-                // Reached target, wait for a bit
-                kiva.x = kiva.targetX;
-                kiva.y = kiva.targetY;
-                kiva.state = 'waiting';
-                kiva.waitTimer = 60 + Math.random() * 120; // 1-3 seconds
-            } else {
-                // Move toward target (move one axis at a time for grid-like movement)
-                if (Math.abs(dx) > Math.abs(dy)) {
-                    kiva.x += Math.sign(dx) * kiva.speed;
-                } else {
-                    kiva.y += Math.sign(dy) * kiva.speed;
-                }
-            }
-        }
-    });
-
     // Update cart workers
     GAME.cartWorkers.forEach(worker => {
         if (worker.pauseTimer > 0) {
@@ -3851,12 +3821,12 @@ function updateYardLevel() {
     const y = GAME.yard;
     GAME.player.x = y.playerX; GAME.player.y = y.playerY;
 
-    // Update Bezos taunt at top
-    y.bezosTauntTimer++;
-    y.bezosAnimFrame++;
-    if (y.bezosTauntTimer > 150) { // Change taunt every 2.5 seconds
-        y.bezosTaunt = BEZOS_YARD_TAUNTS[Math.floor(Math.random() * BEZOS_YARD_TAUNTS.length)];
-        y.bezosTauntTimer = 0;
+    // Update Jeff taunt at top
+    y.jeffTauntTimer++;
+    y.jeffAnimFrame++;
+    if (y.jeffTauntTimer > 120) { // Change taunt every 2 seconds
+        y.jeffTaunt = JEFF_YARD_TAUNTS[Math.floor(Math.random() * JEFF_YARD_TAUNTS.length)];
+        y.jeffTauntTimer = 0;
         AudioSys.sfx.pop();
     }
 
@@ -3870,52 +3840,16 @@ function updateYardLevel() {
     const viewAnchor = y.playerY - canvas.height * 0.55;
     y.cameraY = Math.max(0, Math.min(y.height - canvas.height, viewAnchor));
 
-    // flying package gauntlet near the top
-    y.flyTimer--;
-    const inSky = y.playerY < 200;
-    if (inSky) {
-        y.throwers.forEach(th => {
-            th.timer--;
-            if (th.timer <= 0 && y.flying.length < y.maxAirBoxes) {
-                const target = y.playerX + 8 + (Math.random() * 16 - 8);
-                const horiz = Math.max(-1.45, Math.min(1.45, (target - th.x) / 70));
-                const rise = 0.85 + Math.random() * 0.25;
-                y.flying.push({ x: th.x, y: th.y + 6, vx: horiz, vy: rise, w: 14, h: 14, t: 0 });
-                th.timer = th.cooldown + Math.random() * th.variance;
-            }
-        });
-        if (y.flyTimer <= 0 && y.flying.length < y.maxAirBoxes) {
-            const fromLeft = Math.random() < 0.5;
-            const startX = fromLeft ? -18 : canvas.width + 4;
-            const speedX = (fromLeft ? 1 : -1) * (0.65 + Math.random() * 0.35);
-            const wobble = 0.45 + Math.random() * 0.25;
-            y.flying.push({ x: startX, y: 44 + Math.random() * 32, vx: speedX, vy: wobble, w: 14, h: 14, t: 0 });
-            y.flyTimer = 70 + Math.random() * 40;
-        }
-        y.tauntTimer--;
-        if (y.tauntTimer <= 0) {
-            const jeffLines = [
-                'Still climbing? I have prime time to waste.',
-                'The skyboxes belong to me.',
-                'You are late. Again.'
-            ];
-            y.tauntLine = jeffLines[Math.floor(Math.random() * jeffLines.length)];
-            y.tauntTimer = 260;
-        }
-    } else {
-        y.flyTimer = Math.min(y.flyTimer, 50);
-        y.tauntTimer = Math.max(y.tauntTimer, 120);
-    }
-
+    // Spawn vehicles in lanes
     y.lanes.forEach(lane => {
         lane.timer--;
         if (lane.timer <= 0) {
-            const type = Math.random() < 0.6 ? 'van' : 'truck';
+            const type = Math.random() < 0.55 ? 'van' : 'truck';
             const w = type === 'van' ? 34 : 52;
             const h = type === 'van' ? 16 : 20;
             const x = lane.dir === 1 ? -w : canvas.width + w;
-            y.vehicles.push({ type, x, y: lane.y - h/2, w, h, dir: lane.dir, speed: lane.speed + Math.random()*0.2 });
-            lane.timer = 90 + Math.random() * 90;
+            y.vehicles.push({ type, x, y: lane.y - h/2, w, h, dir: lane.dir, speed: lane.speed + Math.random()*0.25 });
+            lane.timer = 60 + Math.random() * 70;
         }
     });
 
@@ -3924,37 +3858,20 @@ function updateYardLevel() {
         const v = y.vehicles[i];
         v.x += v.dir * v.speed;
         if (v.x < -80 || v.x > canvas.width + 80) { y.vehicles.splice(i,1); continue; }
-        if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 6) && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 6)) {
+        if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 5) && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 5)) {
             if (GAME.player.iframe <= 0) {
                 GAME.lives--; GAME.player.iframe = 90; GAME.flash = 12; GAME.shake = 15; AudioSys.sfx.hurt(); updateHud();
                 // FULL RESET - player goes back to starting position
                 y.playerX = canvas.width / 2 - 8;
-                y.playerY = y.startY; // Reset to start
+                y.playerY = y.startY;
                 y.cameraY = Math.max(0, y.height - canvas.height);
-                // Show Simon safety reminder
                 spawnFloatingText(y.playerX, y.playerY - 20, "WATCH THE TRAFFIC!", "#ff4444");
                 if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('FLATTENED BY LOGISTICS!'); return; }
             }
         }
     }
 
-    // Flying box collision - partial reset
-    for (let i = y.flying.length - 1; i >= 0; i--) {
-        const f = y.flying[i];
-        f.t++;
-        f.x += f.vx;
-        f.y += Math.sin(f.t / 12) * 0.4 + f.vy;
-        if (f.x < -32 || f.x > canvas.width + 32 || f.y > 180) { y.flying.splice(i,1); continue; }
-        if (Math.abs((f.x + f.w/2) - (y.playerX + 8)) < (f.w/2 + 6) && Math.abs((f.y + f.h/2) - (y.playerY + 8)) < (f.h/2 + 6)) {
-            if (GAME.player.iframe <= 0) {
-                GAME.lives--; GAME.player.iframe = 90; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
-                y.playerX = canvas.width / 2 - 8; y.playerY = Math.min(y.height - 32, y.playerY + 60); y.cameraY = Math.max(0, y.height - canvas.height);
-                if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
-            }
-        }
-    }
-
-    // Trigger MECHA TRANSFORMATION CUTSCENE when player approaches top
+    // Trigger MECHA TRANSFORMATION CUTSCENE when player reaches Jeff
     if (y.playerY <= 60 && !y.transformationTriggered) {
         y.transformationTriggered = true;
         GAME.state = 'MECHA_TRANSFORM';
@@ -4562,44 +4479,50 @@ function drawYardLevel() {
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, canvas.width, 100);
 
-    // === VISIBLE JEFF BEZOS AT TOP ===
+    // === JEFF CHARACTER AT TOP ===
     if (y) {
-        const bezosX = canvas.width / 2 - 24;
-        const bezosY = 8;
-        const bobY = Math.sin(y.bezosAnimFrame * 0.05) * 3;
+        const jeffX = canvas.width / 2 - 24;
+        const jeffY = 4;
+        const bobY = Math.sin(y.jeffAnimFrame * 0.04) * 2;
 
-        // Ominous glow behind Bezos
-        const glowSize = 40 + Math.sin(y.bezosAnimFrame * 0.08) * 8;
-        const glowGrad = ctx.createRadialGradient(bezosX + 24, bezosY + 24 + bobY, 10, bezosX + 24, bezosY + 24 + bobY, glowSize);
-        glowGrad.addColorStop(0, 'rgba(255, 153, 0, 0.4)');
-        glowGrad.addColorStop(0.5, 'rgba(255, 0, 0, 0.2)');
+        // Spotlight effect behind Jeff
+        const glowSize = 36 + Math.sin(y.jeffAnimFrame * 0.06) * 6;
+        const glowGrad = ctx.createRadialGradient(jeffX + 24, jeffY + 24 + bobY, 8, jeffX + 24, jeffY + 24 + bobY, glowSize);
+        glowGrad.addColorStop(0, 'rgba(255, 200, 100, 0.35)');
+        glowGrad.addColorStop(0.6, 'rgba(200, 100, 50, 0.15)');
         glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
-        ctx.arc(bezosX + 24, bezosY + 24 + bobY, glowSize, 0, Math.PI * 2);
+        ctx.arc(jeffX + 24, jeffY + 28 + bobY, glowSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw Bezos (visible at top taunting)
-        ctx.drawImage(GFX.bezosYard, bezosX, bezosY + bobY);
+        // Draw Jeff (standing at top, arms crossed, taunting)
+        ctx.drawImage(GFX.jeffYard, jeffX, jeffY + bobY);
 
         // Speech bubble with taunt
-        const tauntX = 10;
-        const tauntY = 62;
-        const tauntW = canvas.width - 20;
-        const tauntH = 18;
+        const tauntX = 6;
+        const tauntY = 56;
+        const tauntW = canvas.width - 12;
+        const tauntH = 20;
 
         // Bubble background
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillStyle = 'rgba(20, 20, 40, 0.9)';
         ctx.fillRect(tauntX, tauntY, tauntW, tauntH);
-        ctx.strokeStyle = '#ff9900';
+        ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 2;
         ctx.strokeRect(tauntX, tauntY, tauntW, tauntH);
 
+        // "JEFF:" label
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.textAlign = 'left';
+        ctx.fillText('JEFF:', tauntX + 4, tauntY + 12);
+
         // Taunt text
-        ctx.fillStyle = '#ff9900';
-        ctx.font = '7px "Press Start 2P"';
-        ctx.textAlign = 'center';
-        ctx.fillText(y.bezosTaunt, canvas.width / 2, tauntY + 12);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.textAlign = 'left';
+        ctx.fillText(y.jeffTaunt, tauntX + 42, tauntY + 12);
         ctx.textAlign = 'left';
     }
 
@@ -4663,28 +4586,11 @@ function drawYardLevel() {
     ctx.fillStyle = '#f8fafc'; for (let x=14; x<canvas.width; x+=36) ctx.fillRect(x, 64, 6, 2);
 
     if (y) {
+        // Draw vehicles
         y.vehicles.forEach(v => {
             const sprite = v.type === 'van' ? GFX.van : GFX.truck;
             ctx.drawImage(sprite, v.x, v.y);
         });
-        y.flying.forEach(f => {
-            ctx.fillStyle = 'rgba(0,0,0,0.3)';
-            ctx.beginPath(); ctx.ellipse(f.x + 7, f.y + 14, 8, 3, 0, 0, Math.PI*2); ctx.fill();
-            ctx.drawImage(GFX.flyingBox, f.x, f.y);
-        });
-        if (y.throwers) {
-            y.throwers.forEach(th => {
-                ctx.fillStyle = 'rgba(0,0,0,0.25)';
-                ctx.beginPath(); ctx.ellipse(th.x + 8, th.y + 18, 7, 3, 0, 0, Math.PI*2); ctx.fill();
-                ctx.drawImage(GFX.assoc, th.x, th.y);
-            });
-        }
-        if ((y.tauntShown || y.playerY < 120) && y.tauntLine) {
-            ctx.drawImage(GFX.mechaJeff, canvas.width/2 - 32, y.cameraY + 2, 64, 64);
-            ctx.fillStyle = '#0ea5e9'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
-            ctx.fillText(y.tauntLine.toUpperCase(), canvas.width/2, y.cameraY + 70);
-            ctx.textAlign = 'left';
-        }
     }
 
     ctx.drawImage(GFX.chars[GAME.selectedChar], GAME.player.x, GAME.player.y);
@@ -4760,7 +4666,7 @@ function drawMechaTransform() {
     }
     ctx.restore();
 
-    // Phase 1: Normal Bezos (frames 0-80)
+    // Phase 1: Normal Jeff (frames 0-80)
     if (t < 80) {
         const scale = 1 + Math.sin(t * 0.2) * 0.1;
         const shakeX = (Math.random() - 0.5) * (t / 20);
@@ -4769,13 +4675,13 @@ function drawMechaTransform() {
         ctx.save();
         ctx.translate(canvas.width / 2, canvas.height / 2 - 20);
         ctx.scale(scale, scale);
-        ctx.drawImage(GFX.bezosYard, -24 + shakeX, -24 + shakeY);
+        ctx.drawImage(GFX.jeffYard, -24 + shakeX, -24 + shakeY);
         ctx.restore();
 
-        ctx.fillStyle = '#ff9900';
+        ctx.fillStyle = '#38bdf8';
         ctx.font = '12px "Press Start 2P"';
         ctx.textAlign = 'center';
-        ctx.fillText('ENOUGH!', canvas.width / 2, 180);
+        ctx.fillText('YOU MADE IT...', canvas.width / 2, 180);
     }
     // Phase 2: Transformation (frames 80-160)
     else if (t < 160) {
@@ -4803,7 +4709,7 @@ function drawMechaTransform() {
         // Draw morphing sprites
         if (progress < 0.5) {
             ctx.globalAlpha = 1 - progress * 2;
-            ctx.drawImage(GFX.bezosYard, -24 + shakeX, -24 + shakeY);
+            ctx.drawImage(GFX.jeffYard, -24 + shakeX, -24 + shakeY);
         }
         ctx.globalAlpha = Math.min(1, progress * 2);
         ctx.drawImage(GFX.mechaBezos, -24 + shakeX, -24 + shakeY);
@@ -4812,7 +4718,7 @@ function drawMechaTransform() {
         ctx.restore();
 
         // Text
-        const texts = ['INITIATING...', 'PRIME PROTOCOL...', 'AUTOMATION MODE!'];
+        const texts = ['NOW WITNESS...', 'TRUE POWER...', 'FINAL FORM!'];
         const textIdx = Math.min(2, Math.floor(progress * 3));
         ctx.fillStyle = progress > 0.7 ? '#ff4444' : '#ff9900';
         ctx.font = '11px "Press Start 2P"';
@@ -5502,24 +5408,24 @@ function draw() {
         ctx.fillStyle = skyGrad;
         ctx.fillRect(0, 0, 256, 42);
 
-        // Bezos with animated glow
-        const bezosX = canvas.width / 2 - 24;
-        const bezosY = -8;
-        const bobY = Math.sin((GAME.bezosAnimFrame || 0) * 0.05) * 2;
+        // Jeff with animated glow
+        const jeffX = canvas.width / 2 - 24;
+        const jeffY = -12;
+        const bobY = Math.sin((GAME.jeffAnimFrame || 0) * 0.04) * 2;
 
-        // Ominous glow behind Bezos
-        const glowSize = 35 + Math.sin((GAME.bezosAnimFrame || 0) * 0.08) * 6;
-        const glowGrad = ctx.createRadialGradient(bezosX + 24, bezosY + 28 + bobY, 8, bezosX + 24, bezosY + 28 + bobY, glowSize);
-        glowGrad.addColorStop(0, 'rgba(255, 153, 0, 0.5)');
-        glowGrad.addColorStop(0.5, 'rgba(220, 38, 38, 0.25)');
+        // Spotlight behind Jeff
+        const glowSize = 35 + Math.sin((GAME.jeffAnimFrame || 0) * 0.06) * 6;
+        const glowGrad = ctx.createRadialGradient(jeffX + 24, jeffY + 28 + bobY, 8, jeffX + 24, jeffY + 28 + bobY, glowSize);
+        glowGrad.addColorStop(0, 'rgba(255, 200, 100, 0.4)');
+        glowGrad.addColorStop(0.6, 'rgba(200, 100, 50, 0.2)');
         glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
-        ctx.arc(bezosX + 24, bezosY + 28 + bobY, glowSize, 0, Math.PI * 2);
+        ctx.arc(jeffX + 24, jeffY + 28 + bobY, glowSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw large Bezos sprite
-        ctx.drawImage(GFX.bezosYard, bezosX, bezosY + bobY);
+        // Draw Jeff sprite
+        ctx.drawImage(GFX.jeffYard, jeffX, jeffY + bobY);
 
         // Warning stripes at goal line
         ctx.fillStyle = '#facc15';
@@ -5533,17 +5439,19 @@ function draw() {
 
         // Speech bubble at bottom
         const tauntY = 210;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+        ctx.fillStyle = 'rgba(20, 20, 40, 0.9)';
         ctx.fillRect(4, tauntY, 248, 14);
-        ctx.strokeStyle = '#ff9900';
+        ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 2;
         ctx.strokeRect(4, tauntY, 248, 14);
 
-        // Taunt text
-        ctx.fillStyle = '#ff9900';
+        // Taunt text with label
+        ctx.fillStyle = '#f59e0b';
         ctx.font = '6px "Press Start 2P"';
-        ctx.textAlign = 'center';
-        ctx.fillText(GAME.bezosTaunt, canvas.width / 2, tauntY + 10);
+        ctx.textAlign = 'left';
+        ctx.fillText('JEFF:', 8, tauntY + 10);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(GAME.jeffTaunt || '', 46, tauntY + 10);
         ctx.textAlign = 'left';
 
         ctx.restore();
@@ -5851,24 +5759,6 @@ function draw() {
                 if (sign.type === 'pick') ctx.drawImage(GFX.signPick, dx, dy);
                 else if (sign.type === 'pack') ctx.drawImage(GFX.signPack, dx, dy);
                 else if (sign.type === 'ship') ctx.drawImage(GFX.signShip, dx, dy);
-            }
-        });
-
-        // Draw Kiva robots (with blue light animation)
-        GAME.kivaRobots.forEach(kiva => {
-            const dx = kiva.x - cx;
-            const dy = kiva.y - cy;
-            if (dx > -20 && dx < 272 && dy > -24 && dy < 240) {
-                if (kiva.hasPod) {
-                    ctx.drawImage(GFX.kivaWithPod, dx, dy - 4);
-                } else {
-                    ctx.drawImage(GFX.kivaRobot, dx, dy);
-                }
-                // Blinking sensor light
-                if (Math.sin(GAME.ticks * 0.2 + kiva.x) > 0.5) {
-                    ctx.fillStyle = '#22d3ee';
-                    ctx.fillRect(dx + 6, dy + 3, 4, 1);
-                }
             }
         });
 
