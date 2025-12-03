@@ -353,14 +353,14 @@ const SIMULATED_AI = {
 
 // --- SIMON'S YARD SAFETY TIPS ---
 const SIMON_YARD_TIPS = [
-    "YARD SAFETY ALERT: Always use designated crosswalks. DSP vans have blind spots bigger than their ambition.",
-    "CAUTION: The yard is NOT a shortcut. One associate versus a Prime van equals paperwork I don't want to file.",
-    "REMINDER: Look both ways. Then look again. Those DSP drivers run on caffeine and impossible deadlines.",
-    "YARD PROTOCOL: High-vis vests exist for a reason. Be seen or be statistics.",
-    "CRITICAL: Vehicles have right of way. Your skeleton does not outweigh a delivery quota.",
-    "SAFETY FIRST: If you hear a horn, MOVE. Don't stand there contemplating the meaning of life.",
-    "PRO TIP: Headphones off in the yard. Music won't cushion the blow of a reversing semi.",
-    "AUDIT NOTE: The yard claims more near-misses than I have patience. Stay alert, stay alive."
+    "Watch for vans. They can't see you.",
+    "Use crosswalks. Always.",
+    "Look both ways. Then again.",
+    "High-vis saves lives.",
+    "Vehicles first. You second.",
+    "Horn means MOVE.",
+    "No headphones in the yard.",
+    "Stay alert. Stay alive."
 ];
 
 // --- JEFF YARD TAUNTS ---
@@ -2799,7 +2799,7 @@ function resetGame() {
     GAME.entities = []; GAME.projectiles = []; GAME.particles = []; GAME.floatingTexts = [];
     GAME.activeIssues = []; GAME.clutter = [];
     GAME.issuesFixed = 0; GAME.lives = stats.lives; GAME.simonHits = 0; GAME.boss = null; GAME.pendingBossIntro = false;
-    GAME.hiddenDoor = null; GAME.yard = null; GAME.mecha = null;
+    GAME.yard = null; GAME.mecha = null;
     GAME.nextState = 'PLAY'; GAME.aiResultText = null;
     GAME.startTime = Date.now(); GAME.booksFired = 0; GAME.opsPushed = 0;
     
@@ -2812,7 +2812,7 @@ function resetGame() {
     const currentGen = GAME.genId;
     showThinking("Simon Unglaube", GFX.simonFace); // Shows "..." dialog
 
-    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Greet ${GAME.selectedChar} with dry humor and one quick, relevant safety reminder for starting the shift. Keep it witty. Max 18 words.`, "intro").then(text => {
+    callGemini(`Simon greets ${GAME.selectedChar} for shift. Dry humor. Max 10 words.`, "intro").then(text => {
         if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
              let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
              showDialog(finalText, "Simon Unglaube", GFX.simonFace, true);
@@ -3001,11 +3001,6 @@ function startYardLevel() {
     GAME.particles = [];
     GAME.floatingTexts = [];
     updateMusicForState();
-
-    // Show Simon's yard safety tip
-    const safetyTip = SIMON_YARD_TIPS[Math.floor(Math.random() * SIMON_YARD_TIPS.length)];
-    showDialog(safetyTip, "Simon Unglaube", GFX.simonFace, true);
-    GAME.nextState = 'YARD_LEVEL';
 }
 
 function beginMechaEncounter() {
@@ -3403,7 +3398,7 @@ function updateBoss() {
     if (b.tauntThresholds.length > 0 && hpPct < b.tauntThresholds[0]) {
          b.tauntThresholds.shift(); 
          const currentGen = GAME.genId;
-         let prompt = b.name === "SIMON UNGLAUBE" ? "Simon Unglaube final warning. Max 25 words." : `Taunt from boss ${b.name}. Max 25 words.`;
+         let prompt = b.name === "SIMON UNGLAUBE" ? "Simon final warning. Max 10 words." : `Boss ${b.name} taunts. Max 10 words.`;
          
          let portrait = b.name.includes("Simon") ? GFX.simonBoss : GFX.boss_manager;
          
@@ -3582,12 +3577,9 @@ function tryInteract() {
     // Check if player is near fire exit door after 4+ hazards cleared - leads to yard level
     if (GAME.issuesFixed >= 4 && GAME.fireExitDoor && Math.hypot(p.x - GAME.fireExitDoor.x, p.y - GAME.fireExitDoor.y) < 20) {
         AudioSys.sfx.alert();
-        showDialog("You found the exit!\n\nYou step through the fire door into the Amazon yard...", "System", null, false);
-        GAME.state = 'YARD_INTRO';
-        GAME.stateTimer = 0;
-        GAME.nextState = 'YARD_LEVEL';
+        GAME.nextState = 'YARD_LEVEL'; // Set before dialog so closeDialog transitions correctly
         GAME.projectiles = [];
-        updateMusicForState();
+        showDialog("Entering the yard. Watch for traffic!", "Simon", GFX.simonFace, false);
         return true;
     }
 
@@ -3606,7 +3598,7 @@ function tryInteract() {
              showThinking("Simon Unglaube", GFX.simonFace);
 
              callGemini(
-                 "You are Simon Unglaube, WHS Senior Regional Manager. The player stopped a runner. Praise the player with dry, professional humor and add a witty safety reminder about slowing down. Max 22 words.",
+                 "Simon Unglaube praises stopping a runner. Dry humor. Max 10 words.",
                  "runners"
              ).then(tip => {
                 if (GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
@@ -3617,7 +3609,6 @@ function tryInteract() {
     for(let h of GAME.activeIssues) {
         if (!h.fixed && Math.hypot(p.x-h.x, p.y-h.y) < 20) {
             h.fixed = true; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
-            if (h.hiddenDoor && GAME.hiddenDoor) GAME.hiddenDoor.unlocked = true;
             spawnFloatingText(h.x, h.y, "Fixed!", "#00ff00");
 
             if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
@@ -3629,24 +3620,12 @@ function tryInteract() {
             showThinking("Simon Unglaube", GFX.simonFace);
 
             callGemini(
-                `You are Simon Unglaube, WHS Senior Regional Manager. A hazard "${h.data.name}" was fixed. Praise the player with dry, professional humor and share one specific safety tip tied to that hazard. Max 32 words.`,
+                `Simon praises fixing "${h.data.name}". Dry humor. Max 10 words.`,
                 "hazard",
                 { hazardName: h.data.name }
             ).then(tip => {
                 if (GAME.genId === currentGen) showDialog(`Fixed: ${h.data.name}!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
             });
-            return true;
-        }
-    }
-    if (GAME.hiddenDoor && GAME.hiddenDoor.unlocked) {
-        const dx = GAME.player.x - GAME.hiddenDoor.doorX * TILE_SIZE;
-        const dy = GAME.player.y - GAME.hiddenDoor.doorY * TILE_SIZE;
-        if (Math.hypot(dx, dy) < 18) {
-            GAME.state = 'YARD_INTRO';
-            GAME.stateTimer = 0;
-            GAME.nextState = 'YARD_LEVEL';
-            GAME.projectiles = [];
-            updateMusicForState();
             return true;
         }
     }
@@ -3661,7 +3640,7 @@ function triggerGameOver(reason) {
     if (reason === "FIRED!") { GAME.aiResultText = "Terminated for unsafe behavior."; }
     else {
         const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
-        callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator failed after ${time}s with ${GAME.issuesFixed}/5 hazards fixed, ${GAME.booksFired} rule books thrown, ${GAME.opsPushed} ops pushed. Deliver a scathing yet funny performance review that weaves those stats into a safety lesson. Max 50 words.`, "reviews_loss", { stats }).then(review => {
+        callGemini(`Simon reviews failure: ${GAME.issuesFixed}/5 hazards in ${time}s. Sarcastic. Max 15 words.`, "reviews_loss", { stats }).then(review => {
              if (GAME.genId === currentGen) { GAME.aiResultText = review; }
         });
     }
@@ -3673,7 +3652,7 @@ function winGame() {
     document.getElementById('hud-layer').style.display = 'none';
     const currentGen = GAME.genId; const time = Math.floor((Date.now() - GAME.startTime)/1000);
     const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
-    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator won in ${time}s clearing ${GAME.issuesFixed}/5 hazards, tossing ${GAME.booksFired} rule books, redirecting ${GAME.opsPushed} ops. Give warm but witty praise plus one practical safety takeaway using those stats. Max 55 words.`, "reviews_win", { stats }).then(praise => {
+    callGemini(`Simon praises victory: ${GAME.issuesFixed}/5 hazards in ${time}s. Dry wit. Max 15 words.`, "reviews_win", { stats }).then(praise => {
         if (GAME.genId === currentGen) GAME.aiResultText = praise;
     });
 }
