@@ -379,7 +379,7 @@ const JEFF_YARD_TAUNTS = [
     "The trucks don't stop for ANYONE!"
 ];
 
-// --- BEZOS TAUNTS FOR FROGGER LEVEL ---
+// --- BEZOS TAUNTS FOR BOSS FIGHT ---
 const BEZOS_TAUNTS = [
     "Work harder, not smarter!",
     "Day One? Try Day DONE!",
@@ -1797,6 +1797,40 @@ function generateAssets() {
         // blade edge line
         ctx.fillStyle = '#9ca3af';
         ctx.fillRect(11,9,3,1);
+    }),
+
+    // --- KIVA Robot Pod / Drive Unit ---
+    kiva: c(16,16, ctx => {
+        // Pod shadow
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(2,11,12,4);
+        // Drive unit (orange base)
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(3,12,10,3);
+        // Drive unit top
+        ctx.fillStyle = '#fb923c';
+        ctx.fillRect(4,11,8,2);
+        // Pod body (yellow/orange shelf unit)
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(2,2,12,10);
+        // Pod shelves
+        ctx.fillStyle = '#d97706';
+        ctx.fillRect(3,3,10,2);
+        ctx.fillRect(3,6,10,2);
+        ctx.fillRect(3,9,10,2);
+        // Items on shelves
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(4,3,3,2);
+        ctx.fillRect(8,6,4,2);
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(9,3,3,2);
+        // Warning light (blinking indicator)
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(7,1,2,1);
+        // Drive wheels
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(3,14,3,1);
+        ctx.fillRect(10,14,3,1);
     })
 };
     // ENHANCED FIRE EXIT DOOR
@@ -2578,7 +2612,7 @@ const GAME = {
     startTime: 0, booksFired: 0, opsPushed: 0,
     lastAIBanterTime: 0, // Throttle AI requests
     fireExitDoor: null, // Hidden level door position
-    froggerVehicles: [], // Frogger level vehicles
+    froggerVehicles: [], // Vehicles array (deprecated, kept for compatibility)
     jeffTaunt: "", // Current Jeff taunt
     jeffTauntTimer: 0, // Timer for taunt display
 
@@ -2611,90 +2645,121 @@ const GAME = {
 };
 
 const HAZARD_POOL = [
-    // Cages, carts & equipment
-    { name: "Runaway Roller Cage", type: "cage" },
-    { name: "Rogue Blue Cart", type: "cart" },
-    { name: "Poorly Parked Pump Truck", type: "jack" },
-    { name: "Untrained Pallet Jack Driver", type: "jack" },
-    { name: "Associate Riding Pallet Jack Like Scooter", type: "jack" },
+    // === POWERED INDUSTRIAL TRUCKS (PITs) ===
+    { name: "Speeding PIT Operator", type: "forklift" },
+    { name: "Forklift With Blocked View", type: "forklift" },
+    { name: "Reach Truck Cutting Corner", type: "forklift" },
+    { name: "Order Picker Too High", type: "forklift" },
+    { name: "Turret Truck Near Pedestrians", type: "forklift" },
+    { name: "Clamp Truck Overloaded", type: "forklift" },
+    { name: "PIT Operator Without Seatbelt", type: "forklift" },
 
-    // Spills & floor hazards
-    { name: "Mysterious Wet Spot", type: "spill" },
-    { name: "Leaking Ice Pack", type: "spill" },
-    { name: "Slippery Floor Tape", type: "spill" },
-    { name: "Coffee Lake at Standup", type: "spill" },
-    { name: "Mysterious Lunchbox Leak", type: "spill" },
-    { name: "Breakroom Soup Catastrophe", type: "spill" },
-    { name: "Sweaty Floor From Peak Shift", type: "spill" },
-    { name: "Gift Wrap Glitter Spill", type: "spill" },
-    { name: "Candy Cane Slippage Hazard", type: "spill" },
-    { name: "Random Banana Peel", type: "spill" },
+    // === AMNESTY & ROBOTICS (AR Floors) ===
+    { name: "Stray KIVA Pod Off Track", type: "kiva" },
+    { name: "Fallen Item on Drive Floor", type: "kiva" },
+    { name: "Jammed ARSAW Station", type: "kiva" },
+    { name: "Worker Stepping on Drive", type: "kiva" },
+    { name: "Pod Collision Debris", type: "kiva" },
+    { name: "Amnesty Item in Pathway", type: "kiva" },
+    { name: "Runaway Roomba (Just Kidding)", type: "kiva" },
 
-    // Fire & facility
-    { name: "Misplaced Fire Door Wedge", type: "door" },
-    { name: "Fallen Exit Sign", type: "facility" },
-    { name: "Half-Dead Emergency Light", type: "facility" },
-    { name: "Random Orange Cone", type: "facility" },
-    { name: "DIY Stair Railing", type: "facility" },
-    { name: "The Forbidden Shortcut", type: "facility" },
+    // === PACK & SHIP HAZARDS ===
+    { name: "Overflowing SLAM Line", type: "conveyor" },
+    { name: "Jammed AFE Chute", type: "conveyor" },
+    { name: "SIOC Avalanche", type: "box" },
+    { name: "Crushed Jiffy Mailer Pile", type: "debris" },
+    { name: "Tape Gun Left Running", type: "blade" },
+    { name: "Poly Bag Explosion", type: "wrap" },
+    { name: "Gift Wrap Station Chaos", type: "debris" },
+    { name: "Dunnage Bag Mountain", type: "debris" },
 
-    // Docks (indoor)
-    { name: "Unplugged Dock Plate Sensor", type: "dock" },
-    { name: "Dock Door That Won’t Stay Open", type: "dock" },
-    { name: "Dock Door That Won’t Stay Closed", type: "dock" },
+    // === INBOUND & RECEIVE ===
+    { name: "Unbroken-Down Gaylord", type: "tall_pallet" },
+    { name: "Vendor Pallet Leaning", type: "tall_pallet" },
+    { name: "Receive Dock Gap", type: "dock" },
+    { name: "Trailer Without Wheel Chocks", type: "dock" },
+    { name: "Dock Plate Not Secured", type: "dock" },
+    { name: "Mixed SKU Nightmare Pallet", type: "tall_pallet" },
+    { name: "Shrink Wrap Tornado", type: "wrap" },
 
-    // Tall stacks / storage chaos
-    { name: "Crumbling Pallet Kingdom", type: "tall_pallet" },
-    { name: "Forbidden Pallet Tower of Vienna", type: "tall_pallet" },
-    { name: "Leaning Tower of Mis-Sorted Packages", type: "tall_pallet" },
-    { name: "Stack Held Together by Hope", type: "tall_pallet" },
-    { name: "Stack of Empty Pallets Too High", type: "tall_pallet" },
+    // === PROBLEM SOLVE CHAOS ===
+    { name: "Problem Solve Cart Avalanche", type: "cart" },
+    { name: "ASIN Research Black Hole", type: "tote" },
+    { name: "Damaged Out Pile Growing", type: "box" },
+    { name: "Research Bin Overflow", type: "tote" },
+    { name: "Missing Label Saga", type: "compliance" },
 
-    // Conveyors & chutes
-    { name: "Jammed Chute Monster", type: "conveyor" },
-    { name: "Employee Who Thinks He’s Faster Than Conveyor", type: "npc" },
-    { name: "Loose Conveyor Guard Screw", type: "conveyor" },
+    // === FLOOR HAZARDS ===
+    { name: "Ice Pack Leak Trail", type: "spill" },
+    { name: "Crushed Fragile Item Spill", type: "spill" },
+    { name: "Leaking Liquid Hazmat", type: "spill" },
+    { name: "Sweeper Missed This Spot", type: "spill" },
+    { name: "Energy Drink Explosion", type: "spill" },
+    { name: "Smoothie Shrapnel Zone", type: "spill" },
+    { name: "Coffee Ring of Standup Past", type: "spill" },
+    { name: "Wet Floor No Sign", type: "spill" },
 
-    // Debris
-    { name: "Stray Shipping Label", type: "debris" },
-    { name: "Bag of Air Pillows on the Loose", type: "debris" },
-    { name: "Wet Packaging Foam Bits", type: "debris" },
-    { name: "Overloaded Recycling Bin", type: "debris" },
+    // === STOW & STORAGE ===
+    { name: "Overstuffed Prime Bin", type: "tote" },
+    { name: "Top Stock About to Fall", type: "tall_pallet" },
+    { name: "Heavy Item Stowed High", type: "tall_pallet" },
+    { name: "Bin Capacity Ignored", type: "box" },
+    { name: "Leaning Pod Wall", type: "kiva" },
+    { name: "Random Cage Contents", type: "cage" },
 
-    // Totes & boxes
-    { name: "The Legendary Flying Tote", type: "tote" },
-    { name: "Overfilled Holiday Tote", type: "tote" },
-    { name: "Bermuda Triangle of Missing Totes", type: "tote" },
-    { name: "Box with Surprises (Unknown Contents)", type: "box" },
-    { name: "Box Labelled 'Definitely Not Dangerous'", type: "box" },
+    // === PICK & COUNT ===
+    { name: "Scanner Cord Trip Wire", type: "cord" },
+    { name: "Pick Cart Wheel Failure", type: "cart" },
+    { name: "Tote Stack Too Tall", type: "tote" },
+    { name: "Mystery SKU in Wrong Bin", type: "box" },
+    { name: "Cycle Count Chaos", type: "compliance" },
 
-    // Tools / cords / blades
-    { name: "Beeping Scanner of Doom", type: "cord" },
-    { name: "Frayed Box Cutter Lanyard", type: "cord" },
-    { name: "Glitching Voice Pick Headset", type: "cord" },
-    { name: "Scanner That Randomly Reboots", type: "cord" },
-    { name: "Mystery Bluetooth Interference", type: "cord" },
-    { name: "Charging Cable Across Walkway", type: "cord" },
-    { name: "Open Knife Left on Cart", type: "blade" },
+    // === EQUIPMENT & TOOLS ===
+    { name: "Box Cutter Without Guard", type: "blade" },
+    { name: "Frayed Scanner Holster", type: "cord" },
+    { name: "Broken Safety Ladder", type: "facility" },
+    { name: "Missing Step Stool", type: "facility" },
+    { name: "Unsecured Extension Cord", type: "cord" },
+    { name: "Charging Station Overload", type: "battery" },
+    { name: "Dead Battery Pile", type: "battery" },
 
-    // NPC-related hazards
-    { name: "Associate Napping Behind OB Cart", type: "npc" },
-    { name: "Speedwalking Manager", type: "npc" },
-    { name: "New Hire in Wrong Area", type: "npc" },
-    { name: "Stower Dancing to Headphones", type: "npc" },
-    { name: "Driver With 8 Empty Coffee Cups", type: "npc" },
+    // === FIRE & EMERGENCY ===
+    { name: "Blocked Fire Exit", type: "door" },
+    { name: "Fire Extinguisher Hidden", type: "door" },
+    { name: "Emergency Shower Blocked", type: "facility" },
+    { name: "First Aid Kit Empty", type: "compliance" },
+    { name: "AED Signage Covered", type: "facility" },
 
-    // WHS / compliance chaos (boss fight pool)
-    { name: "SIR Spike on Whiteboard", type: "compliance" },
-    { name: "Outdated Risk Assessment", type: "compliance" },
-    { name: "Unapproved Process Change", type: "compliance" },
+    // === ERGONOMIC HAZARDS ===
+    { name: "Overreaching Associate", type: "npc" },
+    { name: "Improper Lifting Technique", type: "npc" },
+    { name: "Continuous Repetitive Motion", type: "npc" },
+    { name: "Standing Mat Missing", type: "facility" },
+    { name: "Keyboard at Wrong Height", type: "facility" },
 
-    // New realistic indoor DS hazards
-    { name: "Unsecured OB Cart Edge", type: "facility" },
-    { name: "Compactor Area Blocked", type: "facility" },
-    { name: "Fire Extinguisher Partially Obstructed", type: "facility" },
-    { name: "Broken Roller on Cage", type: "cage" },
-    { name: "Misaligned Floor Marking", type: "facility" },
+    // === PEOPLE & BEHAVIOR ===
+    { name: "Phone Walker on Floor", type: "npc" },
+    { name: "Manager Speed Walk Mode", type: "npc" },
+    { name: "New Hire Wrong Way Traffic", type: "npc" },
+    { name: "Peak Season Burnout Zone", type: "npc" },
+    { name: "Ambassador Training Cluster", type: "npc" },
+    { name: "VTO Line Blocking Path", type: "npc" },
+
+    // === OUTBOUND & SHIPPING ===
+    { name: "Trailer Loaded Unevenly", type: "dock" },
+    { name: "Smalls Bag Landslide", type: "debris" },
+    { name: "Rollers Not Locked", type: "cage" },
+    { name: "Cart Wall Collapse Risk", type: "cart" },
+    { name: "CPT Rush Hour Chaos", type: "conveyor" },
+    { name: "Sortation System Jam", type: "conveyor" },
+
+    // === COMPLIANCE & DOCUMENTATION ===
+    { name: "Safety Audit Due Tomorrow", type: "compliance" },
+    { name: "Training Expired Badge", type: "compliance" },
+    { name: "PPE Checklist Skipped", type: "compliance" },
+    { name: "Incident Near-Miss Unreported", type: "compliance" },
+    { name: "OSHA Log Update Pending", type: "compliance" },
+    { name: "Lockout Tagout Forgotten", type: "compliance" },
 ];
 
 function shuffleArray(arr) {
@@ -2779,9 +2844,11 @@ function handleAction() {
             GAME.dialogVisible = GAME.dialogText; document.getElementById('text-content').innerText = GAME.dialogVisible;
         } else {
             closeDialog();
-            // Check if transitioning to hidden level
-            if (GAME.nextState === 'FROGGER_INTRO') {
-                initFroggerLevel();
+            // Check if transitioning to yard level
+            if (GAME.nextState === 'YARD_INTRO') {
+                GAME.state = 'YARD_INTRO';
+                GAME.stateTimer = 0;
+                startYardLevel();
             }
         }
     }
@@ -2791,12 +2858,7 @@ function handleAction() {
     else if (GAME.state === 'MECHA_TRANSFORM') {
         // Only allow skip after animation has played for a bit
         if (GAME.stateTimer > 200) {
-            // Check which boss fight to go to
-            if (GAME.nextState === 'BEZOS_INTRO') {
-                initMechaBezos(); // Frogger path
-            } else {
-                beginMechaEncounter(); // Yard level path
-            }
+            beginMechaEncounter(); // Proceed to Mecha boss fight
         }
     }
     else if (GAME.state === 'YARD_INTRO') { startYardLevel(); }
@@ -2806,9 +2868,9 @@ function handleAction() {
     else if (GAME.state === 'BEZOS_WIN') {
         GAME.state = 'TITLE'; updateMusicForState();
     }
-    else if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') {
+    else if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'BEZOS_BOSS') {
         if (GAME.state === 'PLAY' && tryInteract()) return;
-        if (GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') throwBook();
+        if (GAME.state === 'BEZOS_BOSS') throwBook();
         else if (GAME.state === 'BOSS') throwBook();
         else throwBook();
     }
@@ -3095,175 +3157,6 @@ function showVisitorSplash() {
     GAME.nextState = 'BOSS_INTRO';
     AudioSys.sfx.bossIntro();
     updateMusicForState();
-}
-
-// --- HIDDEN LEVEL FUNCTIONS ---
-function initFroggerLevel() {
-    GAME.state = 'FROGGER';
-    GAME.nextState = 'FROGGER';
-    GAME.player.x = 128;
-    GAME.player.y = 200; // Start at bottom
-    GAME.froggerStartY = 200; // Remember starting position for reset
-    GAME.froggerVehicles = [];
-    GAME.entities = [];
-    GAME.projectiles = [];
-    GAME.froggerTransformTriggered = false; // Track transformation cutscene
-
-    // Reset yard level enhancements
-    GAME.powerUps = [];
-    GAME.collectibles = [];
-    GAME.forklifts = [];
-    GAME.playerPowerUp = null;
-    GAME.powerUpTimer = 0;
-    GAME.score = 0;
-
-    // Spawn fewer vehicles with lane-changing AI for more natural traffic
-    const vehicleTypes = ['van', 'truck', 'van', 'truck', 'van'];
-    for (let i = 0; i < 7; i++) { // Only 7 vehicles total
-        const lane = Math.floor(Math.random() * 5);
-        const y = 42 + lane * 32;
-        const type = vehicleTypes[lane];
-        const isVan = type === 'van';
-        const baseSpeed = lane % 2 === 0 ? 0.7 : -0.8;
-
-        GAME.froggerVehicles.push({
-            x: Math.random() * 256,
-            y: y,
-            lane: lane,
-            targetLane: lane,
-            laneChangeTimer: Math.floor(Math.random() * 120) + 120,
-            w: isVan ? 32 : 42,
-            h: isVan ? 22 : 26,
-            speed: baseSpeed * (0.9 + Math.random() * 0.4), // Varying speeds
-            type: type
-        });
-    }
-
-    // === SPAWN POWER-UPS ===
-    // Speed boost in middle lanes
-    GAME.powerUps.push({ x: 60, y: 100, type: 'speed' });
-    GAME.powerUps.push({ x: 190, y: 140, type: 'speed' });
-    // Shield near dangerous top area
-    GAME.powerUps.push({ x: 128, y: 70, type: 'shield' });
-    // Extra life in a tricky spot
-    if (Math.random() < 0.5) {
-        GAME.powerUps.push({ x: 40 + Math.random() * 180, y: 90, type: 'life' });
-    }
-
-    // === SPAWN COLLECTIBLE PACKAGES ===
-    for (let i = 0; i < 6; i++) {
-        GAME.collectibles.push({
-            x: 30 + Math.random() * 200,
-            y: 60 + Math.random() * 130,
-            bobOffset: Math.random() * Math.PI * 2 // For bobbing animation
-        });
-    }
-
-    // === SPAWN FORKLIFT OBSTACLES ===
-    // Forklifts move horizontally across specific lanes
-    GAME.forklifts.push({
-        x: -30,
-        y: 175, // Bottom area near spawn
-        w: 24,
-        h: 18,
-        speed: 0.6
-    });
-    GAME.forklifts.push({
-        x: 280,
-        y: 55, // Upper area
-        w: 24,
-        h: 18,
-        speed: -0.5
-    });
-
-    // Initialize Jeff taunts
-    GAME.jeffTaunt = JEFF_YARD_TAUNTS[Math.floor(Math.random() * JEFF_YARD_TAUNTS.length)];
-    GAME.jeffTauntTimer = 0;
-    GAME.jeffAnimFrame = 0;
-
-    updateMusicForState();
-
-    // Show Simon's yard safety tip
-    const safetyTip = SIMON_YARD_TIPS[Math.floor(Math.random() * SIMON_YARD_TIPS.length)];
-    showDialog(safetyTip, "Simon Unglaube", GFX.simonFace, true);
-    GAME.nextState = 'FROGGER';
-}
-
-function updateFrogger() {
-    const p = GAME.player;
-
-    // Update Jeff taunt timer and animation
-    GAME.jeffTauntTimer++;
-    GAME.jeffAnimFrame++;
-    if (GAME.jeffTauntTimer > 120) { // Change taunt every 2 seconds
-        GAME.jeffTaunt = JEFF_YARD_TAUNTS[Math.floor(Math.random() * JEFF_YARD_TAUNTS.length)];
-        GAME.jeffTauntTimer = 0;
-        AudioSys.sfx.pop(); // Sound when new taunt appears
-    }
-
-    // Update vehicles with lane-changing AI
-    GAME.froggerVehicles.forEach(v => {
-        // Horizontal movement
-        v.x += v.speed;
-        if (v.speed > 0 && v.x > 256) v.x = -v.w;
-        if (v.speed < 0 && v.x < -v.w) v.x = 256;
-
-        // Lane changing logic
-        v.laneChangeTimer--;
-        if (v.laneChangeTimer <= 0) {
-            // Pick a new target lane (adjacent lanes only)
-            const canGoUp = v.lane > 0;
-            const canGoDown = v.lane < 4;
-            if (canGoUp && canGoDown) {
-                v.targetLane = v.lane + (Math.random() < 0.5 ? -1 : 1);
-            } else if (canGoUp) {
-                v.targetLane = v.lane - 1;
-            } else if (canGoDown) {
-                v.targetLane = v.lane + 1;
-            }
-            v.laneChangeTimer = Math.floor(Math.random() * 180) + 180; // 3-6 seconds
-        }
-
-        // Smooth lane transition
-        const targetY = 42 + v.targetLane * 32;
-        if (v.y < targetY) {
-            v.y = Math.min(v.y + 0.5, targetY);
-            if (v.y === targetY) v.lane = v.targetLane;
-        } else if (v.y > targetY) {
-            v.y = Math.max(v.y - 0.5, targetY);
-            if (v.y === targetY) v.lane = v.targetLane;
-        }
-
-        // Check collision with player - RESET TO START
-        if (p.iframe === 0 &&
-            p.x < v.x + v.w && p.x + 16 > v.x &&
-            p.y < v.y + v.h && p.y + 16 > v.y) {
-            p.iframe = 90;
-            GAME.lives--;
-            updateHud();
-            AudioSys.sfx.hurt();
-            GAME.shake = 15;
-            GAME.flash = 12;
-
-            // FULL RESET - player goes back to starting position
-            p.x = 128;
-            p.y = GAME.froggerStartY || 200;
-            spawnFloatingText(p.x, p.y - 20, "WATCH THE TRAFFIC!", "#ff4444");
-
-            if (GAME.lives <= 0) {
-                triggerGameOver("FLATTENED BY LOGISTICS!");
-            }
-        }
-    });
-
-    // Check if player reached the top - trigger TRANSFORMATION CUTSCENE
-    if (p.y < 42 && !GAME.froggerTransformTriggered) {
-        GAME.froggerTransformTriggered = true;
-        GAME.state = 'MECHA_TRANSFORM';
-        GAME.stateTimer = 0;
-        GAME.nextState = 'BEZOS_INTRO';
-        AudioSys.sfx.bossIntro();
-    }
 }
 
 function initMechaBezos() {
@@ -3708,7 +3601,7 @@ function updateYardPowerUps() {
             GAME.shake = 15;
             GAME.flash = 12;
             p.x = 128;
-            p.y = GAME.froggerStartY || 200;
+            p.y = 200;
             spawnFloatingText(p.x, p.y - 20, "FORKLIFT!", "#fbbf24");
             if (GAME.lives <= 0) {
                 triggerGameOver("RUN OVER BY FORKLIFT!");
@@ -3780,9 +3673,9 @@ function update() {
         return;
     }
 
-    if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') {
+    if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'BEZOS_BOSS') {
         updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts();
-        if (GAME.state !== 'FROGGER') updateCamera(); // Frogger has fixed camera
+        updateCamera();
     }
 
     if (GAME.state === 'PLAY') {
@@ -3790,10 +3683,6 @@ function update() {
         updateWarehouseAtmosphere(); // Update warehouse atmosphere (packages, kivas, cart workers)
     }
     if (GAME.state === 'BOSS') updateBoss();
-    if (GAME.state === 'FROGGER') {
-        updateFrogger();
-        updateYardPowerUps(); // Update power-ups, collectibles, forklifts
-    }
     if (GAME.state === 'BEZOS_BOSS') updateMechaBezos();
 }
 
@@ -3804,8 +3693,8 @@ function updatePlayer() {
     if (KEYS.up) dy = -p.speed; if (KEYS.down) dy = p.speed; if (KEYS.left) dx = -p.speed; if (KEYS.right) dx = p.speed;
     if (dx!==0 && dy!==0) { dx *= 0.707; dy *= 0.707; }
     if (dx!==0 || dy!==0) {
-        // In Frogger mode, no collision detection with walls
-        if (GAME.state === 'FROGGER' || GAME.state === 'BEZOS_BOSS') {
+        // In Bezos boss mode, no collision detection with walls
+        if (GAME.state === 'BEZOS_BOSS') {
             p.x = Math.max(0, Math.min(240, p.x + dx));
             p.y = Math.max(0, Math.min(208, p.y + dy));
         } else {
@@ -4081,8 +3970,8 @@ function updateProjectiles() {
     for(let i=GAME.projectiles.length-1; i>=0; i--) {
         let p = GAME.projectiles[i];
         p.x += p.vx; p.y += p.vy; p.life--; if(p.grace > 0) p.grace--;
-        // Skip wall collision check in Frogger and Bezos levels
-        if (GAME.state !== 'FROGGER' && GAME.state !== 'BEZOS_BOSS') {
+        // Skip wall collision check in Bezos boss level
+        if (GAME.state !== 'BEZOS_BOSS') {
             if (p.grace <= 0 && checkCol(p.x, p.y)) { GAME.projectiles.splice(i,1); continue; }
         }
         if (p.life <= 0) { GAME.projectiles.splice(i,1); continue; }
@@ -4229,7 +4118,7 @@ function tryInteract() {
     if (GAME.issuesFixed >= 3 && GAME.fireExitDoor && Math.hypot(p.x - GAME.fireExitDoor.x, p.y - GAME.fireExitDoor.y) < 20) {
         AudioSys.sfx.alert();
         showDialog("You found the hidden exit!\n\nYou step through the fire door into the Amazon yard...", "System", null, false);
-        GAME.nextState = 'FROGGER_INTRO';
+        GAME.nextState = 'YARD_INTRO';
         return true;
     }
 
@@ -5206,256 +5095,6 @@ function draw() {
         ctx.restore();
         ctx.fillStyle = '#eab308'; ctx.fillText("ATTACK: " + GAME.boss.attackName, 20, 160);
         ctx.fillStyle = '#fff'; ctx.fillText("[PRESS SPACE TO FIGHT]", 50, 200); ctx.restore(); return;
-    }
-
-    // FROGGER LEVEL - PREMIUM GRAPHICS
-    if (GAME.state === 'FROGGER') {
-        // === WAREHOUSE BUILDING AT TOP ===
-        // Building base
-        ctx.fillStyle = '#2a2a2a'; ctx.fillRect(0, 0, 256, 35);
-        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, 256, 3); // Roof
-
-        // Loading dock doors
-        for (let i = 0; i < 4; i++) {
-            const dockX = 20 + i * 60;
-            // Door frame
-            ctx.fillStyle = '#444'; ctx.fillRect(dockX, 8, 36, 24);
-            // Door panels (yellow/orange)
-            ctx.fillStyle = '#cd7f32'; ctx.fillRect(dockX + 2, 10, 32, 20);
-            // Door lines
-            ctx.fillStyle = '#8b5a2b';
-            for (let j = 0; j < 3; j++) {
-                ctx.fillRect(dockX + 2 + j * 11, 10, 2, 20);
-            }
-            // Window at top of door
-            ctx.fillStyle = '#4a5f7f'; ctx.fillRect(dockX + 8, 12, 20, 6);
-        }
-
-        // Warehouse windows
-        for (let i = 0; i < 8; i++) {
-            ctx.fillStyle = '#4a5f7f';
-            ctx.fillRect(8 + i * 30, 4, 12, 6);
-        }
-
-        // Amazon smile logo on building
-        ctx.fillStyle = '#ff9900';
-        ctx.fillRect(118, 5, 20, 3);
-        ctx.fillRect(134, 5, 4, 5);
-
-        // === SIDEWALK (TOP) ===
-        ctx.fillStyle = '#6b7280'; ctx.fillRect(0, 35, 256, 7);
-        // Sidewalk cracks
-        ctx.fillStyle = '#4b5563';
-        for (let i = 0; i < 8; i++) {
-            ctx.fillRect(i * 32 + 10, 36, 1, 5);
-        }
-
-        // === MAIN ROAD ===
-        // Base road color
-        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 42, 256, 160);
-
-        // Asphalt texture (random dark spots)
-        ctx.fillStyle = '#0a0a0a';
-        for (let i = 0; i < 30; i++) {
-            const x = (i * 37) % 256;
-            const y = 42 + (i * 61) % 160;
-            ctx.fillRect(x, y, 3, 2);
-        }
-
-        // Oil stains
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-        ctx.fillRect(40, 80, 12, 8);
-        ctx.fillRect(180, 120, 15, 10);
-        ctx.fillRect(90, 150, 10, 6);
-
-        // Lane markers with animation
-        for (let lane = 0; lane < 5; lane++) {
-            const y = 50 + lane * 32;
-            // Dashed center lines
-            ctx.fillStyle = '#ffff00';
-            for (let i = 0; i < 20; i++) {
-                const offset = (GAME.ticks * 0.5) % 24;
-                ctx.fillRect(i * 24 - offset, y + 13, 14, 3);
-            }
-            // Lane edges (subtle)
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-            ctx.fillRect(0, y, 256, 1);
-            ctx.fillRect(0, y + 28, 256, 1);
-        }
-
-        // Road arrows (keep right/left indicators)
-        ctx.fillStyle = '#fff';
-        // Left arrows
-        for (let i = 0; i < 3; i++) {
-            const y = 60 + i * 64;
-            ctx.fillRect(20, y, 12, 3);
-            ctx.fillRect(20, y, 3, 8);
-        }
-        // Right arrows
-        for (let i = 0; i < 3; i++) {
-            const y = 92 + i * 64;
-            ctx.fillRect(224, y, 12, 3);
-            ctx.fillRect(233, y, 3, 8);
-        }
-
-        // === SIDEWALK (BOTTOM) ===
-        ctx.fillStyle = '#6b7280'; ctx.fillRect(0, 202, 256, 7);
-        // Sidewalk cracks
-        ctx.fillStyle = '#4b5563';
-        for (let i = 0; i < 8; i++) {
-            ctx.fillRect(i * 32 + 15, 203, 1, 5);
-        }
-
-        // === GRASS/CURB (BOTTOM) ===
-        ctx.fillStyle = '#0d5c0d'; ctx.fillRect(0, 209, 256, 15);
-        // Grass tufts
-        ctx.fillStyle = '#16a34a';
-        for (let i = 0; i < 25; i++) {
-            const x = (i * 11) % 256;
-            ctx.fillRect(x, 210, 3, 2);
-            ctx.fillRect(x + 5, 212, 2, 3);
-        }
-
-        // === VEHICLES ===
-        GAME.froggerVehicles.forEach(v => {
-            const img = v.type === 'van' ? GFX.van : GFX.truck;
-            ctx.drawImage(img, v.x, v.y);
-
-            // Headlights glow
-            if (v.speed > 0) {
-                ctx.fillStyle = 'rgba(255, 255, 200, 0.3)';
-                ctx.fillRect(v.x - 8, v.y + 8, 8, 6);
-            }
-        });
-
-        // === FORKLIFTS ===
-        GAME.forklifts.forEach(fl => {
-            ctx.drawImage(GFX.forkliftMoving, fl.x, fl.y);
-        });
-
-        // === POWER-UPS (bobbing animation) ===
-        GAME.powerUps.forEach(pu => {
-            const bobY = Math.sin(GAME.ticks * 0.1 + pu.x) * 3;
-            if (pu.type === 'speed') {
-                ctx.drawImage(GFX.powerSpeed, pu.x, pu.y + bobY);
-            } else if (pu.type === 'shield') {
-                ctx.drawImage(GFX.powerShield, pu.x, pu.y + bobY);
-            } else if (pu.type === 'life') {
-                ctx.drawImage(GFX.powerLife, pu.x, pu.y + bobY);
-            }
-        });
-
-        // === COLLECTIBLE PACKAGES (sparkle effect) ===
-        GAME.collectibles.forEach(col => {
-            const bobY = Math.sin(GAME.ticks * 0.08 + col.bobOffset) * 2;
-            ctx.drawImage(GFX.collectPackage, col.x, col.y + bobY);
-        });
-
-        // === PLAYER ===
-        const p = GAME.player;
-        // Shield visual effect
-        if (GAME.playerPowerUp === 'shield') {
-            const shieldPulse = Math.sin(GAME.ticks * 0.2) * 3 + 12;
-            const shieldGrad = ctx.createRadialGradient(p.x + 8, p.y + 8, 4, p.x + 8, p.y + 8, shieldPulse);
-            shieldGrad.addColorStop(0, 'rgba(168, 85, 247, 0.1)');
-            shieldGrad.addColorStop(0.7, 'rgba(168, 85, 247, 0.3)');
-            shieldGrad.addColorStop(1, 'rgba(168, 85, 247, 0)');
-            ctx.fillStyle = shieldGrad;
-            ctx.beginPath();
-            ctx.arc(p.x + 8, p.y + 8, shieldPulse, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        // Speed boost visual effect
-        if (GAME.playerPowerUp === 'speed') {
-            ctx.fillStyle = 'rgba(34, 211, 238, 0.4)';
-            ctx.fillRect(p.x - 4, p.y + 12, 4, 4);
-            ctx.fillRect(p.x + 16, p.y + 12, 4, 4);
-        }
-        if (p.iframe % 4 < 2) {
-            ctx.drawImage(GFX.chars[GAME.selectedChar], p.x, p.y);
-        }
-        // Player shadow
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.fillRect(p.x + 4, p.y + 14, 8, 2);
-
-        // === SCORE DISPLAY ===
-        if (GAME.score > 0) {
-            ctx.fillStyle = '#ffd700';
-            ctx.font = '8px "Press Start 2P"';
-            ctx.textAlign = 'right';
-            ctx.fillText('SCORE: ' + GAME.score, 250, 220);
-            ctx.textAlign = 'left';
-        }
-
-        // === POWER-UP TIMER BAR ===
-        if (GAME.playerPowerUp && GAME.powerUpTimer > 0) {
-            const barWidth = 50;
-            const barX = 4;
-            const barY = 218;
-            const fillWidth = (GAME.powerUpTimer / 300) * barWidth;
-            ctx.fillStyle = '#333';
-            ctx.fillRect(barX, barY, barWidth, 4);
-            ctx.fillStyle = GAME.playerPowerUp === 'speed' ? '#22d3ee' : '#a855f7';
-            ctx.fillRect(barX, barY, fillWidth, 4);
-        }
-
-        // === VISIBLE JEFF BEZOS AT TOP ===
-        // Dark dramatic sky
-        const skyGrad = ctx.createLinearGradient(0, 0, 0, 42);
-        skyGrad.addColorStop(0, '#0a0a14');
-        skyGrad.addColorStop(0.7, '#1a1a2e');
-        skyGrad.addColorStop(1, '#2a2a2a');
-        ctx.fillStyle = skyGrad;
-        ctx.fillRect(0, 0, 256, 42);
-
-        // Jeff with animated glow
-        const jeffX = canvas.width / 2 - 24;
-        const jeffY = -12;
-        const bobY = Math.sin((GAME.jeffAnimFrame || 0) * 0.04) * 2;
-
-        // Spotlight behind Jeff
-        const glowSize = 35 + Math.sin((GAME.jeffAnimFrame || 0) * 0.06) * 6;
-        const glowGrad = ctx.createRadialGradient(jeffX + 24, jeffY + 28 + bobY, 8, jeffX + 24, jeffY + 28 + bobY, glowSize);
-        glowGrad.addColorStop(0, 'rgba(255, 200, 100, 0.4)');
-        glowGrad.addColorStop(0.6, 'rgba(200, 100, 50, 0.2)');
-        glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = glowGrad;
-        ctx.beginPath();
-        ctx.arc(jeffX + 24, jeffY + 28 + bobY, glowSize, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Draw Jeff sprite
-        ctx.drawImage(GFX.jeffYard, jeffX, jeffY + bobY);
-
-        // Warning stripes at goal line
-        ctx.fillStyle = '#facc15';
-        for (let i = 0; i < 256; i += 16) {
-            ctx.fillRect(i, 35, 8, 7);
-        }
-        ctx.fillStyle = '#0f0f0f';
-        for (let i = 8; i < 256; i += 16) {
-            ctx.fillRect(i, 35, 8, 7);
-        }
-
-        // Speech bubble at bottom
-        const tauntY = 210;
-        ctx.fillStyle = 'rgba(20, 20, 40, 0.9)';
-        ctx.fillRect(4, tauntY, 248, 14);
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(4, tauntY, 248, 14);
-
-        // Taunt text with label
-        ctx.fillStyle = '#f59e0b';
-        ctx.font = '6px "Press Start 2P"';
-        ctx.textAlign = 'left';
-        ctx.fillText('JEFF:', 8, tauntY + 10);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(GAME.jeffTaunt || '', 46, tauntY + 10);
-        ctx.textAlign = 'left';
-
-        ctx.restore();
-        return;
     }
 
     // Bezos intro screen
