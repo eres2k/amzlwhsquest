@@ -376,7 +376,17 @@ const JEFF_YARD_TAUNTS = [
     "Tick tock! Your shift is almost OVER!",
     "Almost there... just kidding, you'll never make it!",
     "This is YOUR performance review!",
-    "The trucks don't stop for ANYONE!"
+    "The trucks don't stop for ANYONE!",
+    "MY DELIVERY FLEET IS UNSTOPPABLE!",
+    "SAFETY? THAT'S NOT IN THE METRICS!",
+    "PRODUCTIVITY OR TERMINATION!",
+    "I CAN SEE YOUR TOT FROM HERE!",
+    "YOUR RATE IS UNACCEPTABLE!",
+    "CUSTOMER OBSESSION DEMANDS SACRIFICE!",
+    "THINK BIG, DIE TRYING!",
+    "NO BATHROOM BREAKS IN MY YARD!",
+    "BIAS FOR ACTION MEANS RUN FASTER!",
+    "I OWN THE CLOUDS AND THE GROUND!"
 ];
 
 // --- BEZOS TAUNTS FOR BOSS FIGHT ---
@@ -3142,7 +3152,7 @@ function initBossEncounter() {
 function startYardLevel() {
     GAME.state = 'YARD_LEVEL';
     GAME.stateTimer = 0;
-    const h = 520;
+    const h = 720; // Extended yard height for more exploration
     GAME.yard = {
         height: h,
         cameraY: 0,
@@ -3151,20 +3161,39 @@ function startYardLevel() {
         startY: h - 32, // Remember starting position for reset
         speed: getCharStats(GAME.selectedChar).speed * 0.95,
         vehicles: [],
+        forklifts: [], // Forklift hazards
+        hazardZones: [], // Environmental hazard zones
         transformationTriggered: false, // Track if Mecha transformation cutscene started
-        // Jeff taunting system
+        // Jeff taunting system - now more dynamic
         jeffTaunt: JEFF_YARD_TAUNTS[Math.floor(Math.random() * JEFF_YARD_TAUNTS.length)],
         jeffTauntTimer: 0,
         jeffAnimFrame: 0, // Animation frame for Jeff
-        // Vehicle lanes - challenging gauntlet of traffic
+        progressTaunt: "", // Special taunt based on player progress
+        // Extended vehicle lanes - more challenging gauntlet with varied patterns
         lanes: [
-            { y: h - 70, dir: 1, speed: 0.9, timer: 70 },
-            { y: h - 120, dir: -1, speed: 1.0, timer: 65 },
-            { y: h - 170, dir: 1, speed: 1.1, timer: 60 },
-            { y: h - 220, dir: -1, speed: 0.95, timer: 75 },
-            { y: h - 270, dir: 1, speed: 1.15, timer: 55 },
-            { y: h - 320, dir: -1, speed: 1.0, timer: 70 },
-            { y: h - 370, dir: 1, speed: 1.2, timer: 50 }
+            { y: h - 70, dir: 1, speed: 0.85, timer: 75, type: 'truck' },
+            { y: h - 120, dir: -1, speed: 1.0, timer: 65, type: 'van' },
+            { y: h - 170, dir: 1, speed: 1.1, timer: 55, type: 'mixed' },
+            { y: h - 230, dir: -1, speed: 0.9, timer: 80, type: 'truck' },
+            { y: h - 290, dir: 1, speed: 1.2, timer: 50, type: 'van' },
+            { y: h - 350, dir: -1, speed: 1.0, timer: 60, type: 'mixed' },
+            { y: h - 410, dir: 1, speed: 1.15, timer: 55, type: 'van' },
+            { y: h - 470, dir: -1, speed: 0.95, timer: 70, type: 'truck' },
+            { y: h - 530, dir: 1, speed: 1.25, timer: 45, type: 'van' },
+            { y: h - 590, dir: -1, speed: 1.1, timer: 50, type: 'mixed' }
+        ],
+        // Forklift crossing zones
+        forkliftZones: [
+            { y: h - 200, timer: 180, active: false },
+            { y: h - 380, timer: 240, active: false },
+            { y: h - 520, timer: 200, active: false }
+        ],
+        // Static hazard areas (puddles, debris)
+        staticHazards: [
+            { x: 30, y: h - 150, type: 'puddle' },
+            { x: 180, y: h - 260, type: 'debris' },
+            { x: 80, y: h - 440, type: 'puddle' },
+            { x: 150, y: h - 550, type: 'debris' }
         ]
     };
     GAME.player.speed = GAME.yard.speed;
@@ -3182,21 +3211,54 @@ function startYardLevel() {
 function beginMechaEncounter() {
     GAME.state = 'MECHA_BOSS_INTRO';
     GAME.stateTimer = 0;
+    // Completely redesigned Mecha Boss with multiple phases
     GAME.mecha = {
-        hp: 36,
-        maxHp: 36,
+        hp: 48,
+        maxHp: 48,
         x: canvas.width / 2 - 32,
         y: 18,
+        baseY: 18,
         timer: 0,
-        attackPhase: 0,
-        attackTimer: 0,
+        // Phase system: 0=Prime Missiles, 1=Drone Swarm, 2=Package Rain, 3=Laser Grid, 4=Ground Slam
+        currentPhase: 0,
+        phaseTimer: 0,
+        phaseDuration: 280,
+        phaseTransition: false,
+        transitionTimer: 0,
+        // Attack state
+        attackCooldown: 0,
         projectiles: [],
         shadows: [],
-        beam: null
+        beam: null,
+        beams: [], // Multiple beams for laser grid
+        // Movement pattern
+        moveDir: 1,
+        moveTimer: 0,
+        bobOffset: 0,
+        // Enrage at low HP
+        enraged: false,
+        enrageFlash: 0,
+        // Dash attack
+        dashing: false,
+        dashTarget: null,
+        dashSpeed: 0,
+        // Ground slam
+        slamming: false,
+        slamTimer: 0,
+        slamY: 18,
+        // Phase names for announcements
+        phaseNames: ['PRIME STRIKE', 'DRONE SWARM', 'PACKAGE STORM', 'LASER GRID', 'GROUND SLAM'],
+        phaseTaunts: [
+            "PRIME DELIVERY INCOMING!",
+            "RELEASE THE DRONES!",
+            "BOXES FROM THE SKY!",
+            "LASER PRECISION!",
+            "FEEL THE EARTH SHAKE!"
+        ]
     };
     GAME.player.x = canvas.width / 2 - 8;
     GAME.player.y = canvas.height - 28;
-    GAME.boss = { name: 'MECHA JEFF', hp: 36, maxHp: 36 };
+    GAME.boss = { name: 'MECHA JEFF', hp: 48, maxHp: 48 };
     document.getElementById('boss-name-el').innerText = 'MECHA JEFF';
     document.getElementById('boss-hud').style.display = 'block';
     updateBossHud();
@@ -3753,6 +3815,10 @@ function update() {
     }
     if (GAME.state === 'BOSS') updateBoss();
     if (GAME.state === 'BEZOS_BOSS') updateMechaBezos();
+
+    // Yard level and Mecha boss updates
+    if (GAME.state === 'YARD_LEVEL') updateYardLevel();
+    if (GAME.state === 'MECHA_BOSS') updateMechaBattle();
 }
 
 function updatePlayer() {
@@ -3779,10 +3845,21 @@ function updateYardLevel() {
     const y = GAME.yard;
     GAME.player.x = y.playerX; GAME.player.y = y.playerY;
 
-    // Update Jeff taunt at top
+    // Update Jeff taunt at top - now with progress-based taunts
     y.jeffTauntTimer++;
     y.jeffAnimFrame++;
-    if (y.jeffTauntTimer > 120) { // Change taunt every 2 seconds
+
+    // Progress-based dynamic taunts
+    const progress = 1 - (y.playerY / y.height);
+    if (progress > 0.8 && !y.nearTauntShown) {
+        y.nearTauntShown = true;
+        y.jeffTaunt = "YOU'RE ALMOST HERE! TOO BAD I'M ABOUT TO CRUSH YOU!";
+        AudioSys.sfx.alert();
+    } else if (progress > 0.5 && !y.halfwayTauntShown) {
+        y.halfwayTauntShown = true;
+        y.jeffTaunt = "HALFWAY? IMPRESSIVE! NOW FACE THE REAL CHALLENGE!";
+        AudioSys.sfx.pop();
+    } else if (y.jeffTauntTimer > 100) { // Regular taunt rotation
         y.jeffTaunt = JEFF_YARD_TAUNTS[Math.floor(Math.random() * JEFF_YARD_TAUNTS.length)];
         y.jeffTauntTimer = 0;
         AudioSys.sfx.pop();
@@ -3791,6 +3868,20 @@ function updateYardLevel() {
     let dx = 0, dy = 0;
     if (KEYS.up) dy = -y.speed; if (KEYS.down) dy = y.speed; if (KEYS.left) dx = -y.speed; if (KEYS.right) dx = y.speed;
     if (dx!==0 && dy!==0) { dx *= 0.707; dy *= 0.707; }
+
+    // Check for static hazard slowdown (puddles slow you down)
+    let inHazard = false;
+    if (y.staticHazards) {
+        y.staticHazards.forEach(h => {
+            if (Math.abs(y.playerX - h.x) < 20 && Math.abs(y.playerY - h.y) < 20) {
+                if (h.type === 'puddle') {
+                    dx *= 0.5; dy *= 0.5; // Slow down in puddles
+                    inHazard = true;
+                }
+            }
+        });
+    }
+
     y.playerX = Math.max(0, Math.min(canvas.width - 16, y.playerX + dx));
     y.playerY = Math.max(10, Math.min(y.height - 22, y.playerY + dy));
     GAME.player.x = y.playerX; GAME.player.y = y.playerY;
@@ -3798,18 +3889,63 @@ function updateYardLevel() {
     const viewAnchor = y.playerY - canvas.height * 0.55;
     y.cameraY = Math.max(0, Math.min(y.height - canvas.height, viewAnchor));
 
-    // Spawn vehicles in lanes
+    // Spawn vehicles in lanes with varied types
     y.lanes.forEach(lane => {
         lane.timer--;
         if (lane.timer <= 0) {
-            const type = Math.random() < 0.55 ? 'van' : 'truck';
+            let type;
+            if (lane.type === 'truck') type = 'truck';
+            else if (lane.type === 'van') type = 'van';
+            else type = Math.random() < 0.55 ? 'van' : 'truck';
+
             const w = type === 'van' ? 34 : 52;
             const h = type === 'van' ? 16 : 20;
             const x = lane.dir === 1 ? -w : canvas.width + w;
             y.vehicles.push({ type, x, y: lane.y - h/2, w, h, dir: lane.dir, speed: lane.speed + Math.random()*0.25 });
-            lane.timer = 60 + Math.random() * 70;
+            lane.timer = 50 + Math.random() * 60;
         }
     });
+
+    // Update forklift zones
+    if (y.forkliftZones) {
+        y.forkliftZones.forEach(zone => {
+            zone.timer--;
+            if (zone.timer <= 0) {
+                zone.active = !zone.active;
+                zone.timer = zone.active ? 60 : (150 + Math.random() * 100);
+                if (zone.active && Math.abs(y.playerY - zone.y) < 100) {
+                    // Spawn a forklift
+                    const dir = Math.random() < 0.5 ? 1 : -1;
+                    y.forklifts.push({
+                        x: dir === 1 ? -30 : canvas.width + 30,
+                        y: zone.y - 10,
+                        dir: dir,
+                        speed: 1.5 + Math.random() * 0.5,
+                        w: 28, h: 20
+                    });
+                    AudioSys.sfx.alert();
+                }
+            }
+        });
+    }
+
+    // Update forklifts
+    for (let i = y.forklifts.length - 1; i >= 0; i--) {
+        const f = y.forklifts[i];
+        f.x += f.dir * f.speed;
+        if (f.x < -60 || f.x > canvas.width + 60) { y.forklifts.splice(i, 1); continue; }
+        // Forklift collision
+        if (Math.abs((f.x + f.w/2) - (y.playerX + 8)) < (f.w/2 + 4) && Math.abs((f.y + f.h/2) - (y.playerY + 8)) < (f.h/2 + 4)) {
+            if (GAME.player.iframe <= 0) {
+                GAME.lives--; GAME.player.iframe = 90; GAME.flash = 15; GAME.shake = 20; AudioSys.sfx.hurt(); updateHud();
+                y.playerX = canvas.width / 2 - 8;
+                y.playerY = y.startY;
+                y.cameraY = Math.max(0, y.height - canvas.height);
+                spawnFloatingText(y.playerX, y.playerY - 20, "FORKLIFT! NO PEDESTRIANS!", "#ff4444");
+                if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('FORKLIFT INCIDENT!'); return; }
+            }
+        }
+    }
 
     // Vehicle collision - FULL RESET to starting position
     for (let i = y.vehicles.length - 1; i >= 0; i--) {
@@ -3845,80 +3981,293 @@ function updateMechaBattle() {
     const p = GAME.player;
     if (p.iframe>0) p.iframe--; if (p.cooldown>0) p.cooldown--;
 
+    // Player movement
     let dx = 0, dy = 0;
     if (KEYS.up) dy = -p.speed; if (KEYS.down) dy = p.speed; if (KEYS.left) dx = -p.speed; if (KEYS.right) dx = p.speed;
     if (dx!==0 && dy!==0) { dx *= 0.707; dy *= 0.707; }
     p.x = Math.max(4, Math.min(canvas.width - 20, p.x + dx));
-    p.y = Math.max(20, Math.min(canvas.height - 20, p.y + dy));
+    p.y = Math.max(40, Math.min(canvas.height - 20, p.y + dy));
 
     m.timer++;
-    m.attackTimer++;
-    if (m.attackTimer > 320) { m.attackTimer = 0; m.attackPhase = (m.attackPhase + 1) % 3; m.shadows = []; m.beam = null; }
+    m.bobOffset = Math.sin(m.timer * 0.05) * 3;
+    if (m.attackCooldown > 0) m.attackCooldown--;
 
-    if (m.attackPhase === 0 && m.timer % 90 === 0) {
-        const activeDrones = m.projectiles.filter(pr => pr.type === 'drone').length;
-        if (activeDrones < 2) {
-            m.projectiles.push({ type: 'drone', x: m.x + 32, y: m.y + 24, vx: 0, vy: 0.35, life: 320 });
+    // Enrage mode at low HP
+    if (m.hp <= 12 && !m.enraged) {
+        m.enraged = true;
+        m.phaseDuration = 200; // Faster phases
+        GAME.shake = 20;
+        spawnFloatingText(m.x + 32, m.y, "ENRAGED!", "#ff0000");
+        AudioSys.sfx.bossIntro();
+    }
+    if (m.enraged) m.enrageFlash = (m.enrageFlash + 1) % 20;
+
+    // Phase transition handling
+    if (m.phaseTransition) {
+        m.transitionTimer++;
+        if (m.transitionTimer >= 60) {
+            m.phaseTransition = false;
+            m.transitionTimer = 0;
+            m.phaseTimer = 0;
+            // Announce new phase
+            spawnFloatingText(canvas.width / 2 - 40, 60, m.phaseNames[m.currentPhase], "#ff9900");
+        }
+        return; // Pause attacks during transition
+    }
+
+    m.phaseTimer++;
+
+    // Boss movement - sway side to side
+    m.moveTimer++;
+    if (m.moveTimer > 60) {
+        m.moveTimer = 0;
+        m.moveDir *= -1;
+    }
+    if (!m.slamming && !m.dashing) {
+        const targetX = canvas.width / 2 - 32 + m.moveDir * 60;
+        m.x += (targetX - m.x) * 0.02;
+        m.y = m.baseY + m.bobOffset;
+    }
+
+    // Phase-specific attack patterns
+    const attackRate = m.enraged ? 0.7 : 1.0;
+
+    // PHASE 0: Prime Missiles - Homing missiles from shoulders
+    if (m.currentPhase === 0) {
+        if (m.timer % Math.floor(70 * attackRate) === 0 && m.attackCooldown <= 0) {
+            const angle = Math.atan2(p.y - m.y, p.x - m.x);
+            for (let i = -1; i <= 1; i += 2) {
+                m.projectiles.push({
+                    type: 'missile',
+                    x: m.x + 32 + i * 24,
+                    y: m.y + 20,
+                    vx: Math.cos(angle + i * 0.3) * 1.5,
+                    vy: Math.sin(angle + i * 0.3) * 1.5,
+                    life: 180,
+                    trail: []
+                });
+            }
+            AudioSys.sfx.throw();
         }
     }
-    if (m.attackPhase === 1 && m.timer % 65 === 0) {
-        m.shadows.push({ x: Math.random() * (canvas.width - 20) + 4, timer: 50 });
-    }
-    if (m.attackPhase === 2 && !m.beam && m.timer % 150 === 0) {
-        m.beam = { x: Math.random() * (canvas.width - 30) + 10, telegraph: 80, active: 28 };
+
+    // PHASE 1: Drone Swarm - Multiple homing drones
+    if (m.currentPhase === 1) {
+        const activeDrones = m.projectiles.filter(pr => pr.type === 'drone').length;
+        if (m.timer % Math.floor(50 * attackRate) === 0 && activeDrones < (m.enraged ? 5 : 3)) {
+            m.projectiles.push({
+                type: 'drone',
+                x: m.x + 32 + (Math.random() - 0.5) * 40,
+                y: m.y + 24,
+                vx: 0, vy: 0.3,
+                life: 400,
+                pulseTimer: 0
+            });
+            AudioSys.sfx.pop();
+        }
     }
 
+    // PHASE 2: Package Rain - Boxes rain from above with shadows
+    if (m.currentPhase === 2) {
+        if (m.timer % Math.floor(35 * attackRate) === 0) {
+            const targetX = p.x + (Math.random() - 0.5) * 80;
+            m.shadows.push({ x: Math.max(10, Math.min(canvas.width - 30, targetX)), timer: 45 });
+        }
+    }
+
+    // PHASE 3: Laser Grid - Multiple sweeping beams
+    if (m.currentPhase === 3) {
+        if (m.timer % Math.floor(100 * attackRate) === 0 && m.beams.length < 3) {
+            const beamCount = m.enraged ? 3 : 2;
+            for (let i = 0; i < beamCount; i++) {
+                m.beams.push({
+                    x: (canvas.width / (beamCount + 1)) * (i + 1) - 7,
+                    telegraph: 50,
+                    active: 35,
+                    sweepDir: i % 2 === 0 ? 1 : -1,
+                    sweepSpeed: 0.8
+                });
+            }
+            AudioSys.sfx.alert();
+        }
+    }
+
+    // PHASE 4: Ground Slam - Boss slams down and creates shockwave
+    if (m.currentPhase === 4) {
+        if (!m.slamming && m.timer % Math.floor(120 * attackRate) === 0) {
+            m.slamming = true;
+            m.slamTimer = 0;
+            m.slamY = m.y;
+            AudioSys.sfx.alert();
+        }
+
+        if (m.slamming) {
+            m.slamTimer++;
+            if (m.slamTimer < 30) {
+                // Wind up
+                m.y = m.slamY - m.slamTimer * 0.5;
+            } else if (m.slamTimer < 45) {
+                // Slam down
+                m.y = m.slamY - 15 + (m.slamTimer - 30) * 4;
+                if (m.slamTimer === 44) {
+                    GAME.shake = 25;
+                    AudioSys.sfx.hurt();
+                    // Create shockwave
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (i / 8) * Math.PI * 2;
+                        m.projectiles.push({
+                            type: 'shockwave',
+                            x: m.x + 32,
+                            y: canvas.height - 20,
+                            vx: Math.cos(angle) * 2.5,
+                            vy: Math.sin(angle) * 0.5 - 0.5,
+                            life: 80
+                        });
+                    }
+                }
+            } else if (m.slamTimer < 80) {
+                // Recovery
+                m.y = m.baseY + 30 - (m.slamTimer - 45) * 0.85;
+            } else {
+                m.slamming = false;
+                m.y = m.baseY;
+            }
+        }
+    }
+
+    // Phase cycling
+    if (m.phaseTimer >= m.phaseDuration) {
+        m.currentPhase = (m.currentPhase + 1) % 5;
+        m.phaseTransition = true;
+        m.shadows = [];
+        m.beams = [];
+        m.slamming = false;
+    }
+
+    // Update projectiles
     for (let i = m.projectiles.length - 1; i >= 0; i--) {
         const pr = m.projectiles[i];
-        if (pr.type === 'drone') {
+
+        if (pr.type === 'missile') {
+            // Slight homing
             const angle = Math.atan2(p.y - pr.y, p.x - pr.x);
-            const targetVx = Math.cos(angle) * 0.45;
-            const targetVy = Math.sin(angle) * 0.45;
-            pr.vx = pr.vx * 0.88 + targetVx * 0.12;
-            pr.vy = pr.vy * 0.88 + targetVy * 0.12;
+            pr.vx = pr.vx * 0.95 + Math.cos(angle) * 0.08;
+            pr.vy = pr.vy * 0.95 + Math.sin(angle) * 0.08;
+            pr.trail.push({ x: pr.x, y: pr.y });
+            if (pr.trail.length > 8) pr.trail.shift();
+        } else if (pr.type === 'drone') {
+            pr.pulseTimer = (pr.pulseTimer || 0) + 1;
+            const angle = Math.atan2(p.y - pr.y, p.x - pr.x);
+            const targetVx = Math.cos(angle) * 0.5;
+            const targetVy = Math.sin(angle) * 0.5;
+            pr.vx = pr.vx * 0.92 + targetVx * 0.08;
+            pr.vy = pr.vy * 0.92 + targetVy * 0.08;
         } else if (pr.type === 'box') {
-            pr.vy += 0.04;
+            pr.vy += 0.06;
+            pr.rotation = (pr.rotation || 0) + 0.1;
+        } else if (pr.type === 'shockwave') {
+            pr.vy += 0.1; // Gravity
         }
-        pr.x += pr.vx || 0; pr.y += pr.vy || 0; pr.life = (pr.life || 200) - 1;
-        if (pr.y > canvas.height + 40 || pr.life <= 0) { m.projectiles.splice(i,1); continue; }
-        if (Math.abs((pr.x + 8) - (p.x + 8)) < 10 && Math.abs((pr.y + 8) - (p.y + 8)) < 12) {
+
+        pr.x += pr.vx || 0;
+        pr.y += pr.vy || 0;
+        pr.life = (pr.life || 200) - 1;
+
+        if (pr.y > canvas.height + 40 || pr.x < -40 || pr.x > canvas.width + 40 || pr.life <= 0) {
+            m.projectiles.splice(i, 1);
+            continue;
+        }
+
+        // Collision with player
+        const hitW = pr.type === 'shockwave' ? 8 : 10;
+        const hitH = pr.type === 'shockwave' ? 6 : 10;
+        if (Math.abs((pr.x + hitW/2) - (p.x + 8)) < (hitW/2 + 6) && Math.abs((pr.y + hitH/2) - (p.y + 8)) < (hitH/2 + 6)) {
             if (p.iframe <= 0) {
-                GAME.lives--; p.iframe = 90; GAME.flash = 8; AudioSys.sfx.hurt(); updateHud();
-                if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
+                GAME.lives--;
+                p.iframe = 90;
+                GAME.flash = 10;
+                GAME.shake = 8;
+                AudioSys.sfx.hurt();
+                updateHud();
+                if (GAME.lives <= 0 && !GAME.gameOverTriggered) {
+                    triggerGameOver('OVERWHELMED BY MECHA JEFF!');
+                    return;
+                }
             }
-            m.projectiles.splice(i,1);
+            if (pr.type !== 'shockwave') m.projectiles.splice(i, 1);
         }
     }
 
+    // Update shadows (package warning indicators)
     for (let i = m.shadows.length - 1; i >= 0; i--) {
         m.shadows[i].timer--;
         if (m.shadows[i].timer <= 0) {
             const x = m.shadows[i].x;
-            m.projectiles.push({ type: 'box', x, y: -16, vy: 1.2, vx: 0, life: 260 });
-            m.shadows.splice(i,1);
+            m.projectiles.push({
+                type: 'box',
+                x, y: -16,
+                vy: 1.8,
+                vx: (Math.random() - 0.5) * 0.5,
+                life: 200,
+                rotation: 0
+            });
+            m.shadows.splice(i, 1);
+            AudioSys.sfx.throw();
         }
     }
 
-    if (m.beam) {
-        if (m.beam.telegraph > 0) m.beam.telegraph--;
-        else if (m.beam.active > 0) {
-            m.beam.active--;
-            if (p.x + 8 > m.beam.x && p.x + 8 < m.beam.x + 14 && p.iframe <= 0) {
-                GAME.lives--; p.iframe = 90; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
-                if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED!'); return; }
+    // Update beams (laser grid)
+    for (let i = m.beams.length - 1; i >= 0; i--) {
+        const beam = m.beams[i];
+        if (beam.telegraph > 0) {
+            beam.telegraph--;
+        } else if (beam.active > 0) {
+            beam.active--;
+            beam.x += beam.sweepDir * beam.sweepSpeed;
+            // Collision
+            if (p.x + 12 > beam.x && p.x < beam.x + 14 && p.iframe <= 0) {
+                GAME.lives--;
+                p.iframe = 90;
+                GAME.flash = 12;
+                AudioSys.sfx.hurt();
+                updateHud();
+                if (GAME.lives <= 0 && !GAME.gameOverTriggered) {
+                    triggerGameOver('VAPORIZED!');
+                    return;
+                }
             }
-        } else { m.beam = null; }
+        } else {
+            m.beams.splice(i, 1);
+        }
     }
 
+    // Player projectile hits on boss
     for (let i = GAME.projectiles.length - 1; i >= 0; i--) {
         const a = GAME.projectiles[i];
-        a.x += a.vx; a.y += a.vy; a.life--;
-        if (a.x < -20 || a.x > canvas.width + 20 || a.y < -20 || a.y > canvas.height + 20 || a.life <= 0) { GAME.projectiles.splice(i,1); continue; }
-        if (Math.abs((a.x + 6) - (m.x + 32)) < 32 && Math.abs((a.y + 6) - (m.y + 32)) < 32) {
-            m.hp--; GAME.boss.hp = m.hp; updateBossHud(); GAME.projectiles.splice(i,1); AudioSys.sfx.bossHit(); spawnFloatingText(m.x+32, m.y+12, 'Hit!', '#ff2e63');
+        a.x += a.vx;
+        a.y += a.vy;
+        a.life--;
+        if (a.x < -20 || a.x > canvas.width + 20 || a.y < -20 || a.y > canvas.height + 20 || a.life <= 0) {
+            GAME.projectiles.splice(i, 1);
+            continue;
+        }
+        // Hit detection on boss
+        if (Math.abs((a.x + 6) - (m.x + 32)) < 36 && Math.abs((a.y + 6) - (m.y + 32)) < 36) {
+            m.hp--;
+            GAME.boss.hp = m.hp;
+            updateBossHud();
+            GAME.projectiles.splice(i, 1);
+            AudioSys.sfx.bossHit();
+            spawnFloatingText(m.x + 32, m.y + 12, 'HIT!', '#ff2e63');
+
+            // Spawn hit particles
+            for (let j = 0; j < 4; j++) {
+                spawnParticle(m.x + 32 + (Math.random() - 0.5) * 20, m.y + 32 + (Math.random() - 0.5) * 20, '#ff9900', 1);
+            }
+
             if (m.hp <= 0) {
                 GAME.nextState = 'CREDITS';
-                showDialog('Impressive. You actually crushed Evil Jeff Bezos. Audit notes: flawless.', 'Simon Unglaube', GFX.simonFace);
+                showDialog('Impressive. You actually crushed Evil Jeff Bezos. Audit notes: flawless. The warehouse is safe... for now.', 'Simon Unglaube', GFX.simonFace);
                 return;
             }
         }
@@ -4183,8 +4532,8 @@ function throwBook() {
 function tryInteract() {
     const p = GAME.player;
 
-    // Check if player is near fire exit door after 3+ hazards cleared
-    if (GAME.issuesFixed >= 3 && GAME.fireExitDoor && Math.hypot(p.x - GAME.fireExitDoor.x, p.y - GAME.fireExitDoor.y) < 20) {
+    // Check if player is near fire exit door after exactly 4 hazards cleared
+    if (GAME.issuesFixed >= 4 && GAME.fireExitDoor && Math.hypot(p.x - GAME.fireExitDoor.x, p.y - GAME.fireExitDoor.y) < 20) {
         AudioSys.sfx.alert();
         showDialog("You found the hidden exit!\n\nYou step through the fire door into the Amazon yard...", "System", null, false);
         GAME.nextState = 'YARD_INTRO';
@@ -4545,42 +4894,341 @@ function drawYardLevel() {
     ctx.fillStyle = '#f8fafc'; for (let x=14; x<canvas.width; x+=36) ctx.fillRect(x, 64, 6, 2);
 
     if (y) {
+        // Draw static hazards (puddles, debris)
+        if (y.staticHazards) {
+            y.staticHazards.forEach(h => {
+                if (h.type === 'puddle') {
+                    // Oil/water puddle
+                    ctx.fillStyle = 'rgba(30, 64, 175, 0.6)';
+                    ctx.beginPath();
+                    ctx.ellipse(h.x + 12, h.y + 8, 18, 8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = 'rgba(96, 165, 250, 0.3)';
+                    ctx.beginPath();
+                    ctx.ellipse(h.x + 10, h.y + 6, 8, 4, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Warning icon
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.font = '6px "Press Start 2P"';
+                    ctx.fillText('!', h.x + 10, h.y - 2);
+                } else if (h.type === 'debris') {
+                    // Debris pile
+                    ctx.fillStyle = '#78716c';
+                    ctx.fillRect(h.x, h.y + 8, 24, 8);
+                    ctx.fillStyle = '#a8a29e';
+                    ctx.fillRect(h.x + 2, h.y + 4, 8, 10);
+                    ctx.fillRect(h.x + 12, h.y + 6, 10, 8);
+                    ctx.fillStyle = '#d6d3d1';
+                    ctx.fillRect(h.x + 4, h.y + 6, 4, 4);
+                }
+            });
+        }
+
+        // Draw forklift zone warnings
+        if (y.forkliftZones) {
+            y.forkliftZones.forEach(zone => {
+                if (zone.active || zone.timer < 40) {
+                    const pulse = Math.sin(GAME.ticks * 0.2) * 0.3 + 0.5;
+                    ctx.fillStyle = `rgba(234, 179, 8, ${pulse * 0.3})`;
+                    ctx.fillRect(0, zone.y - 15, canvas.width, 30);
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([4, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(0, zone.y);
+                    ctx.lineTo(canvas.width, zone.y);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            });
+        }
+
         // Draw vehicles
         y.vehicles.forEach(v => {
             const sprite = v.type === 'van' ? GFX.van : GFX.truck;
             ctx.drawImage(sprite, v.x, v.y);
         });
-    }
 
-    ctx.drawImage(GFX.chars[GAME.selectedChar], GAME.player.x, GAME.player.y);
-    ctx.fillStyle = '#facc15'; ctx.font = '8px monospace'; ctx.fillText('GOAL', 8, 8);
-    ctx.restore();
-}
-
-function drawMechaBattle() {
-    ctx.fillStyle = '#0b1020'; ctx.fillRect(0,0,canvas.width, canvas.height);
-    for (let i=0; i<80; i++) { ctx.fillStyle = `rgba(255,255,255,${Math.random()*0.2})`; ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 1,1); }
-    ctx.fillStyle = '#1f2937'; ctx.fillRect(0,30,canvas.width, canvas.height-30);
-    ctx.fillStyle = '#0ea5e9'; ctx.fillRect(0,30,canvas.width,2);
-
-    const m = GAME.mecha;
-    if (m) ctx.drawImage(GFX.mechaJeff, m.x, m.y);
-
-    ctx.drawImage(GFX.chars[GAME.selectedChar], GAME.player.x, GAME.player.y);
-
-    if (m) {
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        m.shadows.forEach(s => { ctx.beginPath(); ctx.ellipse(s.x+8, canvas.height-18, 10, 4, 0, 0, Math.PI*2); ctx.fill(); });
-        m.projectiles.forEach(pr => {
-            if (pr.type === 'drone') { ctx.fillStyle = '#22d3ee'; ctx.fillRect(pr.x, pr.y, 12, 12); ctx.fillStyle = '#0ea5e9'; ctx.fillRect(pr.x+2, pr.y+2, 8,8); }
-            if (pr.type === 'box') { ctx.fillStyle = '#f59e0b'; ctx.fillRect(pr.x, pr.y, 14,14); ctx.fillStyle = '#92400e'; ctx.fillRect(pr.x+2, pr.y+10, 10,2); }
-        });
-        if (m.beam) {
-            if (m.beam.telegraph > 0) { ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(m.beam.x, 30, 14, canvas.height-30); }
-            else { ctx.fillStyle = 'rgba(14,165,233,0.5)'; ctx.fillRect(m.beam.x, 30, 14, canvas.height-30); ctx.fillStyle = '#38bdf8'; ctx.fillRect(m.beam.x+4, 30, 6, canvas.height-30); }
+        // Draw forklifts
+        if (y.forklifts) {
+            y.forklifts.forEach(f => {
+                // Forklift body
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(f.x, f.y, 28, 16);
+                ctx.fillStyle = '#d97706';
+                ctx.fillRect(f.x + 2, f.y + 2, 24, 12);
+                // Cage
+                ctx.fillStyle = '#1f2937';
+                ctx.fillRect(f.x + 4, f.y + 2, 8, 10);
+                ctx.fillStyle = '#374151';
+                ctx.fillRect(f.x + 5, f.y + 3, 6, 8);
+                // Forks
+                ctx.fillStyle = '#6b7280';
+                const forkX = f.dir === 1 ? f.x + 24 : f.x - 8;
+                ctx.fillRect(forkX, f.y + 12, 10, 3);
+                ctx.fillRect(forkX, f.y + 8, 10, 3);
+                // Wheels
+                ctx.fillStyle = '#1f2937';
+                ctx.fillRect(f.x + 4, f.y + 14, 6, 4);
+                ctx.fillRect(f.x + 18, f.y + 14, 6, 4);
+                // Warning light
+                const lightPulse = Math.sin(GAME.ticks * 0.3) > 0;
+                ctx.fillStyle = lightPulse ? '#ef4444' : '#7f1d1d';
+                ctx.fillRect(f.x + 12, f.y - 2, 4, 4);
+            });
         }
     }
 
+    // Draw player
+    if (GAME.player.iframe > 0 && GAME.player.iframe % 6 < 3) {
+        ctx.globalAlpha = 0.5;
+    }
+    ctx.drawImage(GFX.chars[GAME.selectedChar], GAME.player.x, GAME.player.y);
+    ctx.globalAlpha = 1;
+
+    // Goal text
+    ctx.fillStyle = '#facc15';
+    ctx.font = '8px "Press Start 2P"';
+    ctx.fillText('GOAL', 8, 8);
+
+    ctx.restore();
+
+    // Progress indicator (fixed position, not scrolling)
+    if (y) {
+        const progress = 1 - (y.playerY / y.height);
+        const barWidth = 8;
+        const barHeight = canvas.height - 40;
+        const barX = canvas.width - 14;
+        const barY = 20;
+
+        // Background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4);
+
+        // Track
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+
+        // Progress fill
+        const fillHeight = barHeight * progress;
+        const gradient = ctx.createLinearGradient(0, barY + barHeight - fillHeight, 0, barY + barHeight);
+        gradient.addColorStop(0, '#22c55e');
+        gradient.addColorStop(1, '#16a34a');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(barX, barY + barHeight - fillHeight, barWidth, fillHeight);
+
+        // Player marker
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(barX - 3, barY + barHeight - fillHeight - 2, barWidth + 6, 4);
+
+        // Labels
+        ctx.fillStyle = '#facc15';
+        ctx.font = '4px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('JEFF', barX + barWidth / 2, barY - 4);
+        ctx.fillStyle = '#22c55e';
+        ctx.fillText('START', barX + barWidth / 2, barY + barHeight + 10);
+        ctx.textAlign = 'left';
+    }
+}
+
+function drawMechaBattle() {
+    const m = GAME.mecha;
+
+    // Dynamic background based on phase and enrage
+    let bgColor = '#0b1020';
+    if (m && m.enraged) {
+        const pulse = Math.sin(GAME.ticks * 0.1) * 0.1;
+        bgColor = `rgb(${Math.floor(20 + pulse * 30)}, ${Math.floor(10 + pulse * 10)}, ${Math.floor(20 + pulse * 20)})`;
+    }
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Stars with parallax
+    for (let i = 0; i < 80; i++) {
+        const twinkle = Math.sin(GAME.ticks * 0.05 + i) * 0.1 + 0.15;
+        ctx.fillStyle = `rgba(255,255,255,${twinkle})`;
+        const x = (i * 47 + GAME.ticks * 0.1) % canvas.width;
+        const y = (i * 23) % 30;
+        ctx.fillRect(x, y, 1, 1);
+    }
+
+    // Arena floor with grid pattern
+    ctx.fillStyle = '#1a1f2e';
+    ctx.fillRect(0, 35, canvas.width, canvas.height - 35);
+
+    // Grid lines for depth
+    ctx.strokeStyle = '#2d3748';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < canvas.width; x += 20) {
+        ctx.beginPath();
+        ctx.moveTo(x, 35);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+    }
+    for (let y = 35; y < canvas.height; y += 16) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+    }
+
+    // Arena edge glow
+    ctx.fillStyle = m && m.enraged ? '#dc2626' : '#0ea5e9';
+    ctx.fillRect(0, 33, canvas.width, 3);
+
+    // Phase transition overlay
+    if (m && m.phaseTransition) {
+        const alpha = Math.min(0.6, m.transitionTimer / 30);
+        ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Phase name announcement
+        if (m.transitionTimer > 20) {
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.font = '10px "Press Start 2P"';
+            ctx.fillStyle = '#ff9900';
+            const shake = Math.sin(m.transitionTimer * 0.5) * 2;
+            ctx.fillText(m.phaseNames[m.currentPhase], canvas.width / 2 + shake, canvas.height / 2 - 10);
+            ctx.font = '6px "Press Start 2P"';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(m.phaseTaunts[m.currentPhase], canvas.width / 2, canvas.height / 2 + 10);
+            ctx.restore();
+        }
+    }
+
+    // Draw boss with enrage glow
+    if (m) {
+        // Enrage aura
+        if (m.enraged && m.enrageFlash < 10) {
+            ctx.fillStyle = 'rgba(220, 38, 38, 0.3)';
+            ctx.beginPath();
+            ctx.arc(m.x + 32, m.y + 32, 45 + Math.sin(GAME.ticks * 0.1) * 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.drawImage(GFX.mechaJeff, m.x, m.y);
+
+        // Current phase indicator
+        ctx.fillStyle = '#ff9900';
+        ctx.font = '5px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText(m.phaseNames[m.currentPhase], m.x + 32, m.y - 6);
+        ctx.textAlign = 'left';
+    }
+
+    // Draw player
+    if (GAME.player.iframe > 0 && GAME.player.iframe % 6 < 3) {
+        ctx.globalAlpha = 0.5;
+    }
+    ctx.drawImage(GFX.chars[GAME.selectedChar], GAME.player.x, GAME.player.y);
+    ctx.globalAlpha = 1;
+
+    if (m) {
+        // Draw shadows (package warning indicators)
+        m.shadows.forEach(s => {
+            const pulse = Math.sin(s.timer * 0.2) * 0.3 + 0.5;
+            ctx.fillStyle = `rgba(239, 68, 68, ${pulse})`;
+            ctx.beginPath();
+            ctx.ellipse(s.x + 8, canvas.height - 16, 12 - s.timer * 0.15, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Warning X
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(s.x + 2, canvas.height - 22);
+            ctx.lineTo(s.x + 14, canvas.height - 10);
+            ctx.moveTo(s.x + 14, canvas.height - 22);
+            ctx.lineTo(s.x + 2, canvas.height - 10);
+            ctx.stroke();
+        });
+
+        // Draw projectiles
+        m.projectiles.forEach(pr => {
+            if (pr.type === 'missile') {
+                // Draw trail
+                if (pr.trail) {
+                    for (let i = 0; i < pr.trail.length; i++) {
+                        const t = pr.trail[i];
+                        const alpha = i / pr.trail.length * 0.6;
+                        ctx.fillStyle = `rgba(255, 100, 50, ${alpha})`;
+                        ctx.fillRect(t.x + 3, t.y + 3, 4, 4);
+                    }
+                }
+                // Missile body
+                ctx.fillStyle = '#dc2626';
+                ctx.fillRect(pr.x, pr.y, 10, 10);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(pr.x + 2, pr.y + 2, 6, 6);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(pr.x + 4, pr.y + 4, 2, 2);
+            }
+            if (pr.type === 'drone') {
+                const pulse = Math.sin((pr.pulseTimer || 0) * 0.1) * 2;
+                ctx.fillStyle = '#22d3ee';
+                ctx.fillRect(pr.x - pulse/2, pr.y - pulse/2, 12 + pulse, 12 + pulse);
+                ctx.fillStyle = '#0ea5e9';
+                ctx.fillRect(pr.x + 2, pr.y + 2, 8, 8);
+                // Propeller animation
+                ctx.fillStyle = '#ffffff';
+                const propAngle = (pr.pulseTimer || 0) % 4;
+                if (propAngle < 2) {
+                    ctx.fillRect(pr.x - 3, pr.y + 5, 4, 2);
+                    ctx.fillRect(pr.x + 11, pr.y + 5, 4, 2);
+                } else {
+                    ctx.fillRect(pr.x + 4, pr.y - 3, 4, 2);
+                    ctx.fillRect(pr.x + 4, pr.y + 13, 4, 2);
+                }
+            }
+            if (pr.type === 'box') {
+                ctx.save();
+                ctx.translate(pr.x + 7, pr.y + 7);
+                ctx.rotate(pr.rotation || 0);
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(-7, -7, 14, 14);
+                ctx.fillStyle = '#92400e';
+                ctx.fillRect(-5, 3, 10, 2);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(-5, -5, 10, 3);
+                ctx.restore();
+            }
+            if (pr.type === 'shockwave') {
+                ctx.fillStyle = '#a855f7';
+                ctx.beginPath();
+                ctx.arc(pr.x, pr.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#e879f9';
+                ctx.beginPath();
+                ctx.arc(pr.x, pr.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+
+        // Draw beams (laser grid)
+        m.beams.forEach(beam => {
+            if (beam.telegraph > 0) {
+                // Telegraph warning line
+                const pulse = Math.sin(beam.telegraph * 0.3) * 0.2 + 0.3;
+                ctx.fillStyle = `rgba(255, 255, 255, ${pulse})`;
+                ctx.fillRect(beam.x, 35, 14, canvas.height - 35);
+                // Warning text
+                ctx.fillStyle = '#ff0000';
+                ctx.font = '4px "Press Start 2P"';
+                ctx.fillText('!', beam.x + 5, 50);
+            } else {
+                // Active beam
+                ctx.fillStyle = 'rgba(14, 165, 233, 0.6)';
+                ctx.fillRect(beam.x - 2, 35, 18, canvas.height - 35);
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(beam.x + 2, 35, 10, canvas.height - 35);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(beam.x + 5, 35, 4, canvas.height - 35);
+            }
+        });
+    }
+
+    // Particles
     GAME.particles.forEach(p => {
         const alpha = p.alpha || (p.life / 50);
         ctx.globalAlpha = Math.min(1, alpha);
@@ -4593,7 +5241,13 @@ function drawMechaBattle() {
         ctx.fillRect(p.x, p.y, p.size || 2, p.size || 2);
         ctx.globalAlpha = 1;
     });
-    GAME.floatingTexts.forEach(t => { ctx.fillStyle = t.color; ctx.fillText(t.text, t.x, t.y); });
+
+    // Floating texts
+    GAME.floatingTexts.forEach(t => {
+        ctx.fillStyle = t.color;
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText(t.text, t.x, t.y);
+    });
 }
 
 // === MECHA TRANSFORMATION CUTSCENE ===
@@ -5400,8 +6054,8 @@ function draw() {
                 if (t===3) {
                     ctx.drawImage(GFX.wall, dx, dy);
                     ctx.drawImage(GFX.door, dx, dy);
-                    // Glow effect when door is accessible (3+ hazards cleared)
-                    if (GAME.issuesFixed >= 3 && GAME.fireExitDoor) {
+                    // Glow effect when door is accessible (4+ hazards cleared)
+                    if (GAME.issuesFixed >= 4 && GAME.fireExitDoor) {
                         const pulse = Math.sin(GAME.ticks * 0.1) * 0.3 + 0.7;
                         ctx.fillStyle = `rgba(255, 215, 0, ${pulse * 0.4})`;
                         ctx.fillRect(dx - 2, dy - 2, 20, 20);
