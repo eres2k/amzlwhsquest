@@ -2934,6 +2934,7 @@ function handleAction() {
     else if (GAME.state === 'VISITOR_SPLASH') { initBossEncounter(); }
     else if (GAME.state === 'BOSS_INTRO') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
     else if (GAME.state === 'BEZOS_INTRO') { GAME.state = 'BEZOS_BOSS'; GAME.nextState = 'BEZOS_BOSS'; updateMusicForState(); }
+    else if (GAME.state === 'MECHA_BOSS_INTRO') { GAME.state = 'MECHA_BOSS'; GAME.nextState = 'MECHA_BOSS'; updateMusicForState(); }
     else if (GAME.state === 'MECHA_TRANSFORM') {
         // Only allow skip after animation has played for a bit
         if (GAME.stateTimer > 200) {
@@ -3937,7 +3938,8 @@ function updateYardLevel() {
         // Forklift collision
         if (Math.abs((f.x + f.w/2) - (y.playerX + 8)) < (f.w/2 + 4) && Math.abs((f.y + f.h/2) - (y.playerY + 8)) < (f.h/2 + 4)) {
             if (GAME.player.iframe <= 0) {
-                GAME.lives--; GAME.player.iframe = 90; GAME.flash = 15; GAME.shake = 20; AudioSys.sfx.hurt(); updateHud();
+                GAME.lives--; GAME.flash = 15; GAME.shake = 20; AudioSys.sfx.hurt(); updateHud();
+                // Teleport to start - no iframe needed since player is repositioned
                 y.playerX = canvas.width / 2 - 8;
                 y.playerY = y.startY;
                 y.cameraY = Math.max(0, y.height - canvas.height);
@@ -3954,8 +3956,8 @@ function updateYardLevel() {
         if (v.x < -80 || v.x > canvas.width + 80) { y.vehicles.splice(i,1); continue; }
         if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 5) && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 5)) {
             if (GAME.player.iframe <= 0) {
-                GAME.lives--; GAME.player.iframe = 90; GAME.flash = 12; GAME.shake = 15; AudioSys.sfx.hurt(); updateHud();
-                // FULL RESET - player goes back to starting position
+                GAME.lives--; GAME.flash = 12; GAME.shake = 15; AudioSys.sfx.hurt(); updateHud();
+                // FULL RESET - player goes back to starting position, no iframe since teleporting
                 y.playerX = canvas.width / 2 - 8;
                 y.playerY = y.startY;
                 y.cameraY = Math.max(0, y.height - canvas.height);
@@ -6205,7 +6207,28 @@ function updateCamera() {
     GAME.camera.y = Math.max(0, Math.min(GAME.player.y - 100, MAP_H*TILE_SIZE - 224));
 }
 
-function loop() { update(); draw(); requestAnimationFrame(loop); }
+// Frame rate independence - target 60 FPS
+let lastFrameTime = performance.now();
+const TARGET_FPS = 60;
+const TARGET_FRAME_TIME = 1000 / TARGET_FPS;
+
+function loop() {
+    const now = performance.now();
+    const elapsed = now - lastFrameTime;
+
+    // Only update game logic when enough time has passed (targeting 60 FPS)
+    if (elapsed >= TARGET_FRAME_TIME) {
+        // Handle multiple frames if we're running behind (but cap at 3 to prevent spiral)
+        const framesToRun = Math.min(Math.floor(elapsed / TARGET_FRAME_TIME), 3);
+        for (let i = 0; i < framesToRun; i++) {
+            update();
+        }
+        lastFrameTime = now - (elapsed % TARGET_FRAME_TIME);
+    }
+
+    draw();
+    requestAnimationFrame(loop);
+}
 init();
 </script>
 </body>
