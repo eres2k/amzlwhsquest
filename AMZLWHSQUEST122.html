@@ -1384,453 +1384,531 @@ function generateAssets() {
     
     GFX.clutter = { cart: c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(2,6,12,8); ctx.fillStyle = '#8b4513'; ctx.fillRect(4,4,8,6); }), coffee: c(8,8, ctx => { ctx.fillStyle='#fff'; ctx.fillRect(2,2,4,5); }), paper: c(8,8, ctx => { ctx.fillStyle='#eee'; ctx.fillRect(1,3,6,4); }), tape: c(8,8, ctx => { ctx.fillStyle='#d97706'; ctx.beginPath(); ctx.arc(4,4,3,0,Math.PI*2); ctx.fill(); }) };
    GFX.hazards = {
-    // --- Liquids / Spills ---
+    // --- Liquids / Spills (Amazon yellow warning) ---
     spill: c(16,16, ctx => {
-        // dark base
-        ctx.fillStyle = '#15803d';
-        ctx.beginPath();
-        ctx.ellipse(8,10,7,5,0,0,Math.PI*2);
-        ctx.fill();
-        // main puddle
-        ctx.fillStyle = '#16a34a';
-        ctx.beginPath();
-        ctx.ellipse(8,9,6,4,0,0,Math.PI*2);
-        ctx.fill();
-        // highlight
-        ctx.fillStyle = '#22c55e';
-        ctx.beginPath();
-        ctx.ellipse(6,7,3.5,2.5,0,0,Math.PI*2);
-        ctx.fill();
-        // shiny reflection
-        ctx.fillStyle = '#bbf7d0';
-        ctx.fillRect(9,10,3,2);
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath(); ctx.ellipse(8,11,7,4,0,0,Math.PI*2); ctx.fill();
+        // Dark base
+        ctx.fillStyle = '#b91c1c';
+        ctx.beginPath(); ctx.ellipse(8,10,6,4,0,0,Math.PI*2); ctx.fill();
+        // Main puddle (red hazmat)
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath(); ctx.ellipse(8,9,5,3,0,0,Math.PI*2); ctx.fill();
+        // Highlight
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath(); ctx.ellipse(6,8,2,1.5,0,0,Math.PI*2); ctx.fill();
+        // Warning reflection
+        ctx.fillStyle = '#fecaca';
+        ctx.fillRect(9,9,2,1);
     }),
 
-    // --- Boxes / Generic obstacles ---
+    // --- Amazon Box ---
     box: c(16,16, ctx => {
-        // shadow
-        ctx.fillStyle = '#78350f';
-        ctx.fillRect(1,5,14,9);
-        // front face
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(2,6,13,10);
+        // Main box (Amazon brown)
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(1,4,13,10);
+        // Front face
         ctx.fillStyle = '#a16207';
-        ctx.fillRect(2,4,12,9);
-        // top flap layers
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(2,3,12,2);
+        ctx.fillRect(2,5,11,8);
+        // Top flaps
         ctx.fillStyle = '#ca8a04';
-        ctx.fillRect(2,5,12,1);
-        // tape
-        ctx.fillStyle = '#0ea5e9';
-        ctx.fillRect(5,8,6,2);
-        // label
+        ctx.fillRect(2,3,11,2);
+        // Amazon tape (Prime blue)
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(4,7,6,2);
+        // Smile arrow
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(5,10,4,1);
+        ctx.fillRect(8,9,1,1);
+        // Barcode label
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(9,5,3,3);
         ctx.fillStyle = '#111';
-        ctx.fillRect(7,6,2,2);
+        ctx.fillRect(10,6,1,1);
     }),
 
-    // --- Chemical drum / unlabeled chem ---
+    // --- Chemical drum / hazmat ---
     drum: c(16,16, ctx => {
-        // body
-        ctx.fillStyle = '#1d4ed8';
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(8,14,5,2,0,0,Math.PI*2); ctx.fill();
+        // Body (safety blue)
+        ctx.fillStyle = '#1e40af';
         ctx.fillRect(4,3,8,10);
-        // top ellipse
+        // Top
         ctx.fillStyle = '#3b82f6';
-        ctx.beginPath();
-        ctx.ellipse(8,3,4,2,0,0,Math.PI*2);
-        ctx.fill();
-        // bands
-        ctx.fillRect(4,6,8,2);
-        ctx.fillRect(4,10,8,2);
-        // hazard label
-        ctx.fillStyle = '#f97373';
-        ctx.fillRect(6,7,4,3);
-        ctx.fillStyle = '#111';
-        ctx.fillRect(7,8,2,1);
+        ctx.beginPath(); ctx.ellipse(8,3,4,2,0,0,Math.PI*2); ctx.fill();
+        // Bands
+        ctx.fillStyle = '#60a5fa';
+        ctx.fillRect(4,5,8,1);
+        ctx.fillRect(4,10,8,1);
+        // Hazard diamond
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(6,6,4,3);
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(7,7,2,1);
     }),
 
     // --- Tall pallet stacks ---
     tall_pallet: c(16,16, ctx => {
-        // main stack
-        ctx.fillStyle = '#d97706';
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(4,14,10,2);
+        // Main stack (Amazon orange)
+        ctx.fillStyle = '#c2410c';
         ctx.fillRect(3,1,10,13);
-        // box layers
+        // Box layers
         ctx.fillStyle = '#ea580c';
-        ctx.fillRect(4,2,8,2);
-        ctx.fillRect(4,6,8,2);
-        ctx.fillRect(4,10,8,2);
-        // vertical slats
-        ctx.fillStyle = '#b45309';
-        ctx.fillRect(5,1,1,13);
-        ctx.fillRect(10,1,1,13);
-        // pallet base
-        ctx.fillStyle = '#f59e0b';
-        ctx.fillRect(3,14,10,1);
+        ctx.fillRect(4,2,8,3);
+        ctx.fillRect(4,6,8,3);
+        ctx.fillRect(4,10,8,3);
+        // Tape highlights
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(5,3,2,1); ctx.fillRect(9,3,2,1);
+        ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1);
+        // Pallet base (wood)
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(2,13,12,2);
+        ctx.fillStyle = '#a16207';
+        ctx.fillRect(3,13,2,2); ctx.fillRect(7,13,2,2); ctx.fillRect(11,13,2,2);
     }),
 
     // --- Debris / broken pallets ---
     debris: c(16,16, ctx => {
+        // Scattered packing material
+        ctx.fillStyle = '#d6d3d1';
+        ctx.fillRect(2,8,4,2); ctx.fillRect(10,10,3,2);
+        // Main broken plank
         ctx.save();
-        ctx.translate(8,9);
-        ctx.rotate(0.4);
-        // main plank
+        ctx.translate(8,8);
+        ctx.rotate(0.35);
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(-6,-2,12,4);
         ctx.fillStyle = '#92400e';
-        ctx.fillRect(-7,-2,14,4);
-        // broken edge
-        ctx.fillStyle = '#f97316';
-        ctx.fillRect(-3,-2,3,4);
+        ctx.fillRect(-5,-1,10,2);
         ctx.restore();
-
-        // extra small chunks
-        ctx.fillStyle = '#b45309';
-        ctx.fillRect(3,12,2,2);
-        ctx.fillRect(11,11,2,2);
+        // Scattered nails/screws
+        ctx.fillStyle = '#71717a';
+        ctx.fillRect(4,12,1,2); ctx.fillRect(11,11,2,1);
+        // Cardboard chunk
+        ctx.fillStyle = '#a16207';
+        ctx.fillRect(1,4,3,3);
     }),
 
-    // --- Pallet jack / pump truck ---
-    jack: c(16,16, ctx => {
-        // base
-        ctx.fillStyle = '#e11d48';
-        ctx.fillRect(2,9,12,3);
-        ctx.fillStyle = '#fca5a5';
-        ctx.fillRect(4,8,8,2);
-        // handle
-        ctx.strokeStyle = '#111';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(5,8);
-        ctx.lineTo(5,4);
-        ctx.lineTo(8,3);
-        ctx.stroke();
-        // wheels
-        ctx.fillStyle = '#111';
-        ctx.fillRect(3,11,3,3);
-        ctx.fillRect(10,11,3,3);
-    }),
-
-    // --- Conveyor / chute ---
+    // --- Conveyor / chute (Amazon FC style) ---
     conveyor: c(16,16, ctx => {
-        // frame
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(1,5,14,7);
-        // belt
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(2,6,12,5);
-        // rollers
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillRect(2,5,3,2);
-        ctx.fillRect(11,5,3,2);
-        // package jam indicator
-        ctx.fillStyle = '#ef4444';
-        ctx.fillRect(7,6,2,4);
-        // tiny package on top
-        ctx.fillStyle = '#eab308';
-        ctx.fillRect(6,4,4,2);
-    }),
-
-    // --- Batteries / acid trail ---
-    battery: c(16,16, ctx => {
-        // body
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(2,12,13,3);
+        // Frame (industrial gray)
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(3,5,10,7);
-        // terminals
-        ctx.fillStyle = '#facc15';
-        ctx.fillRect(5,4,2,2);
-        ctx.fillRect(9,4,2,2);
-        // lightning symbol
-        ctx.fillStyle = '#fbbf24';
-        ctx.beginPath();
-        ctx.moveTo(8,6);
-        ctx.lineTo(6,10);
-        ctx.lineTo(8,10);
-        ctx.lineTo(7,13);
-        ctx.lineTo(10,9);
-        ctx.lineTo(8,9);
-        ctx.closePath();
-        ctx.fill();
-        // leak puddle
-        ctx.fillStyle = '#34d399';
-        ctx.beginPath();
-        ctx.arc(8,13,4,Math.PI,Math.PI*2);
-        ctx.fill();
-    }),
-
-    // --- Cords / cables / scanner ---
-    cord: c(16,16, ctx => {
-        // curly cable
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(2,3);
-        ctx.bezierCurveTo(6,7,10,1,14,6);
-        ctx.stroke();
-        // plug body
-        ctx.fillStyle = '#111827';
-        ctx.fillRect(10,6,4,5);
-        // prongs
-        ctx.fillStyle = '#e5e7eb';
-        ctx.fillRect(11,11,1,2);
-        ctx.fillRect(13,11,1,2);
-    }),
-
-    // --- Tote / bin ---
-    tote: c(16,16, ctx => {
-        // body
-        ctx.fillStyle = '#1d4ed8';
-        ctx.fillRect(2,6,12,7);
-        // rim
-        ctx.fillStyle = '#2563eb';
-        ctx.fillRect(2,4,12,3);
-        // inner line
-        ctx.fillStyle = '#60a5fa';
-        ctx.fillRect(3,7,10,2);
-        // label
-        ctx.fillStyle = '#0ea5e9';
-        ctx.fillRect(6,9,4,3);
-        // handles
-        ctx.fillStyle = '#bfdbfe';
-        ctx.fillRect(3,5,2,1);
-        ctx.fillRect(11,5,2,1);
-    }),
-
-    // --- Stretch wrap / loose foil ---
-    wrap: c(16,16, ctx => {
-        // main crumpled foil
-        ctx.fillStyle = '#e5e7eb';
-        ctx.beginPath();
-        ctx.moveTo(3,4);
-        ctx.lineTo(13,6);
-        ctx.lineTo(10,13);
-        ctx.lineTo(4,12);
-        ctx.closePath();
-        ctx.fill();
-        // tension stripe
-        ctx.fillStyle = '#9ca3af';
-        ctx.fillRect(5,6,6,2);
-        // torn edge
-        ctx.fillStyle = '#d1d5db';
-        ctx.fillRect(8,11,3,2);
-    }),
-
-    // --- Roller cage / cart cage ---
-    cage: c(16,16, ctx => {
-        // frame
+        ctx.fillRect(1,5,14,8);
+        // Belt surface
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(2,6,12,6);
+        // Belt segments
         ctx.fillStyle = '#4b5563';
-        ctx.fillRect(3,2,10,11);
-        // bars
+        ctx.fillRect(3,7,2,4); ctx.fillRect(7,7,2,4); ctx.fillRect(11,7,2,4);
+        // Rollers
         ctx.fillStyle = '#9ca3af';
-        for (let x = 4; x <= 11; x += 2) {
-            ctx.fillRect(x,3,1,9);
-        }
-        ctx.fillRect(3,6,10,1);
-        ctx.fillRect(3,9,10,1);
-        // wheels
-        ctx.fillStyle = '#111827';
-        ctx.fillRect(4,13,3,2);
-        ctx.fillRect(9,13,3,2);
+        ctx.fillRect(2,5,3,1); ctx.fillRect(11,5,3,1);
+        // Jammed package (Amazon brown)
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(5,3,6,4);
+        ctx.fillStyle = '#a16207';
+        ctx.fillRect(6,4,4,2);
+        // Warning light
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(1,4,2,2);
     }),
 
-    // --- Flat cart / blue cart ---
+    // --- Scanner Battery / charging station ---
+    battery: c(16,16, ctx => {
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(4,13,9,3);
+        // Battery body
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(3,5,10,8);
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(4,6,8,6);
+        // Terminals (yellow)
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(5,3,2,3); ctx.fillRect(9,3,2,3);
+        // Lightning symbol
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(7,6,2,1); ctx.fillRect(6,7,1,2); ctx.fillRect(7,8,2,1); ctx.fillRect(9,9,1,2);
+        // Warning label
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(5,10,6,2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(7,11,2,1);
+    }),
+
+    // --- Extension Cord / scanner cord ---
+    cord: c(16,16, ctx => {
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath(); ctx.ellipse(8,13,6,2,0,0,Math.PI*2); ctx.fill();
+        // Coiled yellow cable
+        ctx.strokeStyle = '#eab308';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(2,4);
+        ctx.bezierCurveTo(5,10,8,2,11,8);
+        ctx.bezierCurveTo(13,12,15,6,14,10);
+        ctx.stroke();
+        // Cable highlight
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(3,3); ctx.bezierCurveTo(6,8,9,2,12,6);
+        ctx.stroke();
+        // Plug
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(12,8,3,4);
+        ctx.fillStyle = '#9ca3af';
+        ctx.fillRect(13,12,1,2);
+    }),
+
+    // --- Amazon Tote / bin ---
+    tote: c(16,16, ctx => {
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(3,13,11,3);
+        // Main body (Amazon yellow)
+        ctx.fillStyle = '#ca8a04';
+        ctx.fillRect(2,5,12,9);
+        // Front face
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(3,6,10,7);
+        // Rim
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(2,4,12,2);
+        // Handle cutouts
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(4,5,3,1); ctx.fillRect(9,5,3,1);
+        // Label area
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(5,8,6,3);
+        // Barcode
+        ctx.fillStyle = '#111';
+        ctx.fillRect(6,9,4,1);
+    }),
+
+    // --- Stretch wrap / shrink wrap ---
+    wrap: c(16,16, ctx => {
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.fillRect(3,12,10,3);
+        // Crumpled wrap
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath();
+        ctx.moveTo(2,5); ctx.lineTo(14,4); ctx.lineTo(13,12); ctx.lineTo(3,13);
+        ctx.closePath(); ctx.fill();
+        // Texture lines
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(4,6,8,1); ctx.fillRect(5,9,6,1);
+        // Stretched tension
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillRect(6,7,4,2);
+        // Torn edge
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(10,10,3,2);
+    }),
+
+    // --- Roller cage / Gaylord cage ---
+    cage: c(16,16, ctx => {
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(4,14,9,2);
+        // Frame (blue warehouse cage)
+        ctx.fillStyle = '#1e40af';
+        ctx.fillRect(2,2,12,12);
+        // Wire mesh pattern
+        ctx.fillStyle = '#3b82f6';
+        for (let x = 3; x <= 12; x += 2) { ctx.fillRect(x,3,1,10); }
+        for (let y = 4; y <= 11; y += 2) { ctx.fillRect(3,y,10,1); }
+        // Contents visible
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(5,6,3,4); ctx.fillRect(9,7,3,3);
+        // Caster wheels
+        ctx.fillStyle = '#111';
+        ctx.fillRect(3,13,2,2); ctx.fillRect(11,13,2,2);
+    }),
+
+    // --- Flat cart / Amazon blue cart ---
     cart: c(16,16, ctx => {
-        // platform
-        ctx.fillStyle = '#1d4ed8';
-        ctx.fillRect(2,9,12,3);
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(3,13,11,3);
+        // Platform (Amazon blue)
+        ctx.fillStyle = '#1e40af';
+        ctx.fillRect(2,9,12,4);
         ctx.fillStyle = '#3b82f6';
         ctx.fillRect(2,8,12,2);
-        // handle
+        // Handle frame
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(3,4,2,4);
-        ctx.fillRect(3,4,8,2);
-        // wheels
+        ctx.fillRect(3,3,2,6);
+        ctx.fillRect(3,3,9,2);
+        ctx.fillRect(11,3,2,3);
+        // Grip
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(4,3,7,1);
+        // Wheels
         ctx.fillStyle = '#111';
-        ctx.fillRect(3,12,3,3);
-        ctx.fillRect(10,12,3,3);
+        ctx.fillRect(3,12,3,3); ctx.fillRect(10,12,3,3);
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(4,13,1,1); ctx.fillRect(11,13,1,1);
     }),
 
-    // --- Fire door + wedge hazard ---
+    // --- Fire door / emergency exit ---
     door: c(16,16, ctx => {
-        // door leaf
-        ctx.fillStyle = '#e5e7eb';
+        // Frame
+        ctx.fillStyle = '#991b1b';
+        ctx.fillRect(3,1,10,14);
+        // Door panel (safety green)
+        ctx.fillStyle = '#15803d';
         ctx.fillRect(4,2,8,12);
-        // frame
-        ctx.strokeStyle = '#9ca3af';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(4.5,2.5,7,11);
-        // push bar
-        ctx.fillStyle = '#64748b';
-        ctx.fillRect(6,8,4,1);
-        // wedge
-        ctx.fillStyle = '#ef4444';
+        ctx.fillStyle = '#16a34a';
+        ctx.fillRect(5,3,6,10);
+        // Window
+        ctx.fillStyle = '#0c4a6e';
+        ctx.fillRect(6,3,4,3);
+        ctx.fillStyle = '#0ea5e9';
+        ctx.fillRect(7,4,2,1);
+        // Push bar
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(5,8,6,2);
+        // EXIT sign
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(6,11,4,2);
+        // Wedge blocking (hazard!)
+        ctx.fillStyle = '#fbbf24';
         ctx.beginPath();
-        ctx.moveTo(5,14);
-        ctx.lineTo(8,14);
-        ctx.lineTo(8,12);
-        ctx.closePath();
+        ctx.moveTo(4,14); ctx.lineTo(8,14); ctx.lineTo(8,12); ctx.closePath();
         ctx.fill();
     }),
 
-    // --- Dock area / dock plate ---
+    // --- Loading dock ---
     dock: c(16,16, ctx => {
-        // pit
+        // Shadow/pit
         ctx.fillStyle = '#020617';
-        ctx.fillRect(2,6,12,7);
-        // plate
-        ctx.fillStyle = '#1f2937';
-        ctx.fillRect(3,7,10,5);
-        // yellow safety edge
+        ctx.fillRect(1,8,14,7);
+        // Dock plate
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(2,9,12,5);
+        // Diamond plate texture
+        ctx.fillStyle = '#4b5563';
+        ctx.fillRect(3,10,2,1); ctx.fillRect(6,10,2,1); ctx.fillRect(9,10,2,1); ctx.fillRect(12,10,2,1);
+        ctx.fillRect(4,12,2,1); ctx.fillRect(7,12,2,1); ctx.fillRect(10,12,2,1);
+        // Yellow safety edge
         ctx.fillStyle = '#eab308';
-        ctx.fillRect(3,7,10,1);
-        ctx.fillRect(3,11,10,1);
-        // warning stripes
+        ctx.fillRect(2,8,12,2);
+        // Warning stripes
+        ctx.fillStyle = '#111';
+        ctx.fillRect(4,8,2,2); ctx.fillRect(8,8,2,2); ctx.fillRect(12,8,2,2);
+        // Edge bumper
         ctx.fillStyle = '#f97316';
-        ctx.fillRect(3,5,3,1);
-        ctx.fillRect(10,5,3,1);
+        ctx.fillRect(1,6,3,2); ctx.fillRect(12,6,3,2);
     }),
 
-    // --- General facility hazard (bollard, column, etc.) ---
+    // --- Facility hazard / bollard ---
     facility: c(16,16, ctx => {
-        // column
-        ctx.fillStyle = '#e5e7eb';
-        ctx.fillRect(6,2,4,11);
-        // yellow/black stripes
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(8,15,4,2,0,0,Math.PI*2); ctx.fill();
+        // Column base
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(5,12,6,3);
+        // Main column (safety yellow)
         ctx.fillStyle = '#eab308';
-        ctx.fillRect(5,9,6,4);
-        ctx.fillStyle = '#111827';
-        ctx.fillRect(5,10,6,1);
-        ctx.fillRect(5,12,6,1);
-        // small crack
-        ctx.fillStyle = '#9ca3af';
-        ctx.fillRect(7,5,2,1);
+        ctx.fillRect(5,2,6,11);
+        // Warning stripes
+        ctx.fillStyle = '#111';
+        ctx.fillRect(5,4,6,2); ctx.fillRect(5,8,6,2); ctx.fillRect(5,12,6,1);
+        // Top cap
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(5,1,6,2);
+        // Reflector
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(6,5,4,1);
     }),
 
-    // --- NPC / associate ---
+    // --- Unsafe worker behavior ---
     npc: c(16,16, ctx => {
-        // head
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.25)';
+        ctx.beginPath(); ctx.ellipse(8,15,5,2,0,0,Math.PI*2); ctx.fill();
+        // Head
         ctx.fillStyle = '#facc15';
         ctx.beginPath();
         ctx.arc(8,4,3,0,Math.PI*2);
         ctx.fill();
-        // body (vest)
-        ctx.fillStyle = '#0ea5e9';
-        ctx.fillRect(5,7,6,6);
-        // hi-vis stripes
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(5,8,6,1);
-        ctx.fillRect(5,10,6,1);
-        // legs
+        // Body (Amazon hi-vis vest)
+        ctx.fillStyle = '#ca8a04';
+        ctx.fillRect(5,7,6,7);
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(6,8,4,5);
+        // Hi-vis reflective stripes
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(5,8,6,1); ctx.fillRect(5,11,6,1);
+        // Phone in hand (distracted!)
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(5,13,2,2);
-        ctx.fillRect(9,13,2,2);
+        ctx.fillRect(11,6,3,5);
+        ctx.fillStyle = '#60a5fa';
+        ctx.fillRect(12,7,1,3);
+        // Legs
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillRect(6,13,2,2); ctx.fillRect(8,13,2,2);
     }),
 
-    // --- Forklift / FLT ---
+    // --- PIT Forklift ---
     forklift: c(16,16, ctx => {
-        // body
-        ctx.fillStyle = '#f59e0b';
-        ctx.fillRect(4,7,7,5);
-        // cabin
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(4,5,5,3);
-        ctx.fillStyle = '#e5e7eb';
-        ctx.fillRect(5,6,3,2);
-        // mast
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(5,13,10,3);
+        // Main body (Amazon orange)
+        ctx.fillStyle = '#c2410c';
+        ctx.fillRect(3,7,8,6);
+        ctx.fillStyle = '#ea580c';
+        ctx.fillRect(4,8,6,4);
+        // Cabin/cage
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(10,3,2,9);
-        // forks
-        ctx.fillRect(11,11,3,1);
-        ctx.fillRect(11,12,3,1);
-        // wheels
-        ctx.fillStyle = '#111827';
-        ctx.fillRect(4,11,3,3);
-        ctx.fillRect(8,11,3,3);
-    }),
-
-    // --- Yard / van area ---
-    yard: c(16,16, ctx => {
-        // road
-        ctx.fillStyle = '#020617';
-        ctx.fillRect(1,4,14,10);
-        // lane markings
-        ctx.fillStyle = '#e5e7eb';
-        ctx.fillRect(4,9,2,1);
-        ctx.fillRect(7,9,2,1);
-        ctx.fillRect(10,9,2,1);
-        // van silhouette
-        ctx.fillStyle = '#1d4ed8';
-        ctx.fillRect(4,5,8,4);
-        ctx.fillStyle = '#3b82f6';
-        ctx.fillRect(5,6,6,2);
-        // wheels
-        ctx.fillStyle = '#111827';
-        ctx.fillRect(5,9,2,2);
-        ctx.fillRect(9,9,2,2);
-    }),
-
-    // --- Compliance / documentation / SIR spike ---
-    compliance: c(16,16, ctx => {
-        // paper sheet
-        ctx.fillStyle = '#e5e7eb';
-        ctx.fillRect(4,2,8,12);
-        // folded corner
-        ctx.fillStyle = '#cbd5f5';
-        ctx.fillRect(9,2,3,3);
-        // lines
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillRect(5,5,6,1);
-        ctx.fillRect(5,7,5,1);
-        ctx.fillRect(5,9,4,1);
-        // exclamation mark
-        ctx.fillStyle = '#ef4444';
-        ctx.fillRect(8,10,1,3);
-        ctx.fillRect(8,14,1,1);
-    }),
-
-    // --- Box cutter / blade hazard ---
-    blade: c(16,16, ctx => {
-        // handle
-        ctx.fillStyle = '#ef4444';
-        ctx.fillRect(3,7,8,4);
-        // grip
-        ctx.fillStyle = '#b91c1c';
-        ctx.fillRect(4,8,2,2);
-        // blade
-        ctx.fillStyle = '#e5e7eb';
-        ctx.fillRect(10,8,4,2);
-        // blade edge line
-        ctx.fillStyle = '#9ca3af';
-        ctx.fillRect(11,9,3,1);
-    }),
-
-    // --- KIVA Robot Pod / Drive Unit ---
-    kiva: c(16,16, ctx => {
-        // Pod shadow
-        ctx.fillStyle = '#1f2937';
-        ctx.fillRect(2,11,12,4);
-        // Drive unit (orange base)
+        ctx.fillRect(3,4,7,4);
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(4,5,5,2);
+        // Windshield
+        ctx.fillStyle = '#0c4a6e';
+        ctx.fillRect(5,5,3,2);
+        // Mast
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(10,2,2,11);
+        ctx.fillStyle = '#4b5563';
+        ctx.fillRect(11,3,1,9);
+        // Forks
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(11,11,4,1); ctx.fillRect(11,13,4,1);
+        // Wheels
+        ctx.fillStyle = '#111';
+        ctx.fillRect(3,12,3,3); ctx.fillRect(7,12,3,3);
+        // Warning light
         ctx.fillStyle = '#f97316';
-        ctx.fillRect(3,12,10,3);
-        // Drive unit top
-        ctx.fillStyle = '#fb923c';
-        ctx.fillRect(4,11,8,2);
-        // Pod body (yellow/orange shelf unit)
+        ctx.fillRect(5,4,2,1);
+    }),
+
+    // --- DSP Van / yard hazard ---
+    yard: c(16,16, ctx => {
+        // Asphalt
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(0,6,16,10);
+        // Lane markings
         ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(2,2,12,10);
-        // Pod shelves
-        ctx.fillStyle = '#d97706';
-        ctx.fillRect(3,3,10,2);
-        ctx.fillRect(3,6,10,2);
-        ctx.fillRect(3,9,10,2);
-        // Items on shelves
+        ctx.fillRect(2,10,3,1); ctx.fillRect(7,10,3,1); ctx.fillRect(12,10,3,1);
+        // Prime van body
+        ctx.fillStyle = '#1e40af';
+        ctx.fillRect(3,3,10,7);
         ctx.fillStyle = '#3b82f6';
-        ctx.fillRect(4,3,3,2);
-        ctx.fillRect(8,6,4,2);
-        ctx.fillStyle = '#10b981';
-        ctx.fillRect(9,3,3,2);
-        // Warning light (blinking indicator)
+        ctx.fillRect(4,4,8,5);
+        // Windshield
+        ctx.fillStyle = '#0c4a6e';
+        ctx.fillRect(10,4,3,3);
+        // Prime smile logo
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(5,6,4,1); ctx.fillRect(8,5,1,1);
+        // Wheels
+        ctx.fillStyle = '#111';
+        ctx.fillRect(4,9,2,3); ctx.fillRect(10,9,2,3);
+        // Headlights
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(11,8,2,1);
+    }),
+
+    // --- Compliance / audit clipboard ---
+    compliance: c(16,16, ctx => {
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.fillRect(4,13,9,3);
+        // Clipboard board
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(3,2,10,13);
+        ctx.fillStyle = '#a16207';
+        ctx.fillRect(4,3,8,11);
+        // Metal clip
+        ctx.fillStyle = '#9ca3af';
+        ctx.fillRect(6,1,4,3);
+        ctx.fillStyle = '#d4d4d8';
+        ctx.fillRect(7,2,2,1);
+        // Paper
+        ctx.fillStyle = '#f5f5f4';
+        ctx.fillRect(5,4,6,9);
+        // Checklist lines
+        ctx.fillStyle = '#71717a';
+        ctx.fillRect(6,5,4,1); ctx.fillRect(6,7,4,1); ctx.fillRect(6,9,3,1);
+        // Red X marks (violations!)
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(10,5,1,1); ctx.fillRect(10,7,1,1);
+        // Warning stamp
         ctx.fillStyle = '#ef4444';
-        ctx.fillRect(7,1,2,1);
-        // Drive wheels
+        ctx.fillRect(6,10,4,2);
+    }),
+
+    // --- Box cutter / safety blade ---
+    blade: c(16,16, ctx => {
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.fillRect(4,12,10,3);
+        // Handle (safety orange)
+        ctx.fillStyle = '#ea580c';
+        ctx.fillRect(2,7,9,4);
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(3,8,7,2);
+        // Grip ridges
+        ctx.fillStyle = '#c2410c';
+        ctx.fillRect(4,8,1,2); ctx.fillRect(6,8,1,2); ctx.fillRect(8,8,1,2);
+        // Blade (exposed!)
+        ctx.fillStyle = '#d4d4d8';
+        ctx.fillRect(10,8,4,2);
+        ctx.fillStyle = '#a1a1aa';
+        ctx.fillRect(11,8,3,1);
+        // Blade edge (sharp!)
+        ctx.fillStyle = '#e4e4e7';
+        ctx.fillRect(13,8,1,2);
+        // Guard tab
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(10,7,1,4);
+    }),
+
+    // --- Pallet Jack / Manual Pump Truck ---
+    jack: c(16,16, ctx => {
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(8, 14, 6, 2, 0, 0, Math.PI*2); ctx.fill();
+        // Fork base (yellow safety color)
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(2,10,12,3);
+        // Fork tines
+        ctx.fillStyle = '#ca8a04';
+        ctx.fillRect(2,12,3,2);
+        ctx.fillRect(11,12,3,2);
+        // Main body/pump
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(6,5,4,6);
+        // Handle
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(7,2,2,4);
+        ctx.fillRect(6,2,4,1);
+        // Wheels
         ctx.fillStyle = '#111827';
-        ctx.fillRect(3,14,3,1);
-        ctx.fillRect(10,14,3,1);
+        ctx.fillRect(3,13,2,2);
+        ctx.fillRect(11,13,2,2);
+        // Small steering wheel
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(7,8,2,1);
     })
 };
     // ENHANCED FIRE EXIT DOOR
@@ -2288,41 +2366,41 @@ function generateAssets() {
         ctx.fillStyle = '#111'; ctx.fillRect(7,8,2,2); // barcode
     });
 
-    // Amazon Kiva Robot (orange drive unit)
-    GFX.kivaRobot = c(16,16, ctx => {
+    // Manual Pallet Jack
+    GFX.palletJack = c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
         ctx.beginPath(); ctx.ellipse(8, 14, 6, 2, 0, 0, Math.PI*2); ctx.fill();
-        // Main body
-        ctx.fillStyle = '#ea580c'; ctx.fillRect(2,4,12,8);
-        ctx.fillStyle = '#f97316'; ctx.fillRect(3,5,10,6);
-        ctx.fillStyle = '#fb923c'; ctx.fillRect(4,6,8,4);
-        // Top sensors
-        ctx.fillStyle = '#1f2937'; ctx.fillRect(5,2,6,3);
-        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(6,3,4,1); // sensor light
+        // Fork tines (yellow safety)
+        ctx.fillStyle = '#eab308'; ctx.fillRect(2,10,12,3);
+        ctx.fillStyle = '#ca8a04'; ctx.fillRect(2,12,3,2); ctx.fillRect(11,12,3,2);
+        // Main pump body (red)
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(6,5,4,6);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(7,6,2,4);
+        // Handle
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(7,2,2,4);
+        ctx.fillStyle = '#374151'; ctx.fillRect(6,2,4,1);
         // Wheels
-        ctx.fillStyle = '#111'; ctx.fillRect(2,11,3,3); ctx.fillRect(11,11,3,3);
-        ctx.fillStyle = '#333'; ctx.fillRect(3,12,1,1); ctx.fillRect(12,12,1,1);
-        // Amazon logo
-        ctx.fillStyle = '#000'; ctx.fillRect(6,7,4,2);
+        ctx.fillStyle = '#111'; ctx.fillRect(3,13,2,2); ctx.fillRect(11,13,2,2);
     });
 
-    // Kiva carrying pod/shelf
-    GFX.kivaWithPod = c(16,20, ctx => {
-        // Pod/shelf on top
-        ctx.fillStyle = '#fbbf24'; ctx.fillRect(1,0,14,8);
-        ctx.fillStyle = '#f59e0b'; ctx.fillRect(2,1,12,6);
-        // Shelves
-        ctx.fillStyle = '#d97706'; ctx.fillRect(2,2,12,1); ctx.fillRect(2,5,12,1);
-        // Small packages on pod
-        ctx.fillStyle = '#78350f'; ctx.fillRect(3,3,4,2); ctx.fillRect(9,3,4,2);
-        // Kiva body below
-        ctx.fillStyle = '#ea580c'; ctx.fillRect(2,10,12,6);
-        ctx.fillStyle = '#f97316'; ctx.fillRect(3,11,10,4);
+    // Pallet Jack with Load
+    GFX.palletJackLoaded = c(16,20, ctx => {
+        // Pallet on top
+        ctx.fillStyle = '#92400e'; ctx.fillRect(1,0,14,3);
+        ctx.fillStyle = '#a16207'; ctx.fillRect(2,1,12,2);
+        // Boxes on pallet
+        ctx.fillStyle = '#78350f'; ctx.fillRect(2,3,6,6);
+        ctx.fillStyle = '#a16207'; ctx.fillRect(3,4,4,4);
+        ctx.fillStyle = '#fbbf24'; ctx.fillRect(3,3,4,1); // tape
+        ctx.fillStyle = '#78350f'; ctx.fillRect(8,4,6,5);
+        ctx.fillStyle = '#a16207'; ctx.fillRect(9,5,4,3);
+        // Fork tines
+        ctx.fillStyle = '#eab308'; ctx.fillRect(2,10,12,3);
+        // Pump body
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(6,13,4,4);
         // Wheels
-        ctx.fillStyle = '#111'; ctx.fillRect(2,15,3,3); ctx.fillRect(11,15,3,3);
-        // Blue light
-        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(6,12,4,1);
+        ctx.fillStyle = '#111'; ctx.fillRect(3,16,2,2); ctx.fillRect(11,16,2,2);
     });
 
     // Worker pushing cart
@@ -2619,7 +2697,7 @@ const GAME = {
     // === NEW WAREHOUSE ATMOSPHERE ===
     conveyorBelts: [], // Animated conveyor belt positions
     packages: [], // Moving packages on conveyors
-    kivaRobots: [], // Moving kiva robots
+    palletJacks: [], // Moving pallet jacks
     cartWorkers: [], // Workers pushing carts
     palletStacks: [], // Static pallet stacks
     sortStations: [], // Sorting station positions
@@ -2653,15 +2731,6 @@ const HAZARD_POOL = [
     { name: "Turret Truck Near Pedestrians", type: "forklift" },
     { name: "Clamp Truck Overloaded", type: "forklift" },
     { name: "PIT Operator Without Seatbelt", type: "forklift" },
-
-    // === AMNESTY & ROBOTICS (AR Floors) ===
-    { name: "Stray KIVA Pod Off Track", type: "kiva" },
-    { name: "Fallen Item on Drive Floor", type: "kiva" },
-    { name: "Jammed ARSAW Station", type: "kiva" },
-    { name: "Worker Stepping on Drive", type: "kiva" },
-    { name: "Pod Collision Debris", type: "kiva" },
-    { name: "Amnesty Item in Pathway", type: "kiva" },
-    { name: "Runaway Roomba (Just Kidding)", type: "kiva" },
 
     // === PACK & SHIP HAZARDS ===
     { name: "Overflowing SLAM Line", type: "conveyor" },
@@ -2704,7 +2773,7 @@ const HAZARD_POOL = [
     { name: "Top Stock About to Fall", type: "tall_pallet" },
     { name: "Heavy Item Stowed High", type: "tall_pallet" },
     { name: "Bin Capacity Ignored", type: "box" },
-    { name: "Leaning Pod Wall", type: "kiva" },
+    { name: "Unstable Rack Section", type: "tall_pallet" },
     { name: "Random Cage Contents", type: "cage" },
 
     // === PICK & COUNT ===
@@ -2928,7 +2997,7 @@ function generateMap() {
     // Reset warehouse atmosphere arrays
     GAME.conveyorBelts = [];
     GAME.packages = [];
-    GAME.kivaRobots = [];
+    GAME.palletJacks = [];
     GAME.cartWorkers = [];
     GAME.palletStacks = [];
     GAME.sortStations = [];
@@ -3027,7 +3096,7 @@ function generateMap() {
 
     spawnEntity('runner'); spawnEntity('runner');
 
-    const hazardList = pickRandomHazards(3);
+    const hazardList = pickRandomHazards(5);
     hazardList.forEach(rHazard => {
         const { tx, ty } = pickRandomFloorTile();
         GAME.activeIssues.push({ x: tx*TILE_SIZE, y: ty*TILE_SIZE, data: rHazard, fixed: false });
@@ -4259,7 +4328,8 @@ function closeDialog() {
 
     if (GAME.state === 'VISITOR_SPLASH') { showVisitorSplash(); return; }
 
-    if (GAME.state === 'YARD_LEVEL') { startYardLevel(); return; }
+    // Only start yard level if not already initialized (prevents infinite loop)
+    if (GAME.state === 'YARD_LEVEL' && !GAME.yard) { startYardLevel(); return; }
     if (GAME.state === 'MECHA_BOSS_INTRO') { beginMechaEncounter(); return; }
     if (GAME.state === 'CREDITS') { startCredits(); return; }
 
