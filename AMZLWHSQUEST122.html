@@ -2553,6 +2553,7 @@ const GAME = {
     splashTimer: 0, aiResultText: null,
     startTime: 0, booksFired: 0, opsPushed: 0,
     lastAIBanterTime: 0, // Throttle AI requests
+    fireExitDoor: null, // Door position for yard level access
     jeffTaunt: "", // Current Jeff taunt
     jeffTauntTimer: 0, // Timer for taunt display
 
@@ -2919,6 +2920,7 @@ function generateMap() {
     const door = randomDoorPlacement();
     GAME.map[door.doorY][door.doorX] = 3;
     GAME.map[door.hazardY][door.hazardX] = 0;
+    GAME.fireExitDoor = { x: door.doorX * TILE_SIZE, y: door.doorY * TILE_SIZE }; // Store door position for yard level access
     GAME.activeIssues.push({ x: door.hazardX*TILE_SIZE, y: door.hazardY*TILE_SIZE, data: {name: "Blocked Exit", type: "box"}, fixed: false });
 
     spawnEntity('runner'); spawnEntity('runner');
@@ -3576,6 +3578,18 @@ function throwBook() {
 
 function tryInteract() {
     const p = GAME.player;
+
+    // Check if player is near fire exit door after 4+ hazards cleared - leads to yard level
+    if (GAME.issuesFixed >= 4 && GAME.fireExitDoor && Math.hypot(p.x - GAME.fireExitDoor.x, p.y - GAME.fireExitDoor.y) < 20) {
+        AudioSys.sfx.alert();
+        showDialog("You found the exit!\n\nYou step through the fire door into the Amazon yard...", "System", null, false);
+        GAME.state = 'YARD_INTRO';
+        GAME.stateTimer = 0;
+        GAME.nextState = 'YARD_LEVEL';
+        GAME.projectiles = [];
+        updateMusicForState();
+        return true;
+    }
 
     for (let i=0; i<GAME.entities.length; i++) {
         let e = GAME.entities[i];
@@ -4563,6 +4577,12 @@ function draw() {
                 if (t===3) {
                     ctx.drawImage(GFX.wall, dx, dy);
                     ctx.drawImage(GFX.door, dx, dy);
+                    // Glow effect when door is accessible (4+ hazards cleared)
+                    if (GAME.issuesFixed >= 4 && GAME.fireExitDoor) {
+                        const pulse = Math.sin(GAME.ticks * 0.1) * 0.3 + 0.7;
+                        ctx.fillStyle = `rgba(255, 215, 0, ${pulse * 0.4})`;
+                        ctx.fillRect(dx - 2, dy - 2, 20, 20);
+                    }
                 }
             }
         }
