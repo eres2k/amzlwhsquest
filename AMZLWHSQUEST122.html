@@ -2957,6 +2957,38 @@ function handleAction() {
     else if (GAME.state === 'BOSS_INTRO') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
     else if (GAME.state === 'BEZOS_INTRO') { GAME.state = 'BEZOS_BOSS'; GAME.nextState = 'BEZOS_BOSS'; updateMusicForState(); }
     else if (GAME.state === 'MECHA_BOSS_INTRO') { GAME.state = 'MECHA_BOSS'; GAME.nextState = 'MECHA_BOSS'; updateMusicForState(); }
+    else if (GAME.state === 'THRONE_CONFRONTATION') {
+        // Throne confrontation cutscene with dialogue
+        const scene = GAME.throneScene;
+        if (!scene) return;
+
+        scene.dialogueTimer++;
+
+        // Phase 0: Zoom in / setup (frames 0-60)
+        if (scene.phase === 0 && GAME.stateTimer >= 60) {
+            scene.phase = 1; // Move to dialogue phase
+            scene.dialogueTimer = 0;
+        }
+        // Phase 1: Dialogue sequence
+        else if (scene.phase === 1) {
+            // Advance dialogue every 90 frames (or on button press after minimum time)
+            if (scene.dialogueTimer >= 90) {
+                scene.dialogueIndex++;
+                scene.dialogueTimer = 0;
+
+                // Check if dialogue is complete
+                if (scene.dialogueIndex >= scene.dialogues.length) {
+                    scene.phase = 2; // Move to transformation
+                    GAME.stateTimer = 0;
+                }
+            }
+        }
+        // Phase 2: Transition to transformation
+        else if (scene.phase === 2 && GAME.stateTimer >= 30) {
+            GAME.state = 'MECHA_TRANSFORM';
+            GAME.stateTimer = 0;
+        }
+    }
     else if (GAME.state === 'MECHA_TRANSFORM') {
         // Only allow skip after animation has played for a bit
         if (GAME.stateTimer > 200) {
@@ -4175,73 +4207,26 @@ function updateYardLevel() {
             }
         }
 
-        // === BEZOS PACKAGE THROWING FROM THRONE ===
-        // Bezos throws packages at the player when they're in the castle
-        if (!y.bezosPackages) y.bezosPackages = [];
-        if (!y.bezosPackageTimer) y.bezosPackageTimer = 0;
-        y.bezosPackageTimer++;
-
-        // Throw packages more frequently as player gets closer
-        const distToThrone = y.playerY; // Lower Y = closer to throne
-        const throwInterval = Math.max(40, Math.floor(distToThrone / 5)); // More frequent as player approaches
-
-        if (y.bezosPackageTimer >= throwInterval && distToThrone < 500) {
-            y.bezosPackageTimer = 0;
-            // Jeff throws package from top of screen toward player
-            const jeffX = canvas.width / 2;
-            const jeffY = 40;
-            const angle = Math.atan2(y.playerY - jeffY, y.playerX - jeffX);
-            const speed = 2.0 + Math.random() * 0.5;
-            y.bezosPackages.push({
-                x: jeffX,
-                y: jeffY,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                rotation: 0,
-                life: 300
-            });
-            // Taunt when throwing
-            if (Math.random() < 0.15) {
-                const tauntIdx = Math.floor(Math.random() * BEZOS_TAUNTS.length);
-                y.jeffTaunt = BEZOS_TAUNTS[tauntIdx];
-                AudioSys.sfx.throw();
-            }
-        }
-
-        // Update Bezos packages
-        for (let i = y.bezosPackages.length - 1; i >= 0; i--) {
-            const pkg = y.bezosPackages[i];
-            pkg.x += pkg.vx;
-            pkg.y += pkg.vy;
-            pkg.vy += 0.03; // Slight gravity arc
-            pkg.rotation += 0.1;
-            pkg.life--;
-
-            // Remove if off screen or expired
-            if (pkg.life <= 0 || pkg.y > y.height + 20 || pkg.x < -30 || pkg.x > canvas.width + 30) {
-                y.bezosPackages.splice(i, 1);
-                continue;
-            }
-
-            // Collision with player
-            if (Math.abs(pkg.x - (y.playerX + 8)) < 14 && Math.abs(pkg.y - (y.playerY + 8)) < 14) {
-                if (GAME.player.iframe <= 0) {
-                    GAME.lives--; GAME.flash = 10; GAME.shake = 8; AudioSys.sfx.hurt(); updateHud();
-                    GAME.player.iframe = 60;
-                    y.bezosPackages.splice(i, 1);
-                    spawnFloatingText(y.playerX, y.playerY - 20, "PRIME DELIVERY!", "#f59e0b");
-                    if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED BY PACKAGES!'); return; }
-                }
-            }
-        }
     }
 
-    // Trigger MECHA TRANSFORMATION CUTSCENE when player reaches Jeff
-    if (y.playerY <= 60 && !y.transformationTriggered) {
+    // Trigger THRONE CONFRONTATION CUTSCENE when player approaches Jeff
+    if (y.playerY <= 120 && !y.transformationTriggered) {
         y.transformationTriggered = true;
-        GAME.state = 'MECHA_TRANSFORM';
+        GAME.state = 'THRONE_CONFRONTATION';
         GAME.stateTimer = 0;
-        GAME.nextState = 'MECHA_BOSS_INTRO';
+        GAME.throneScene = {
+            phase: 0, // 0=zoom in, 1=dialogue, 2=transformation
+            dialogueIndex: 0,
+            dialogues: [
+                { speaker: 'BEZOS', text: "SO... YOU MADE IT THROUGH MY GAUNTLET.", color: '#ff9900' },
+                { speaker: 'BEZOS', text: "IMPRESSIVE. BUT FUTILE.", color: '#ff9900' },
+                { speaker: 'PLAYER', text: "YOUR REIGN OF TERROR ENDS HERE, BEZOS!", color: '#38bdf8' },
+                { speaker: 'BEZOS', text: "YOU THINK YOU CAN STOP ME?", color: '#ff9900' },
+                { speaker: 'BEZOS', text: "I AM THE PRIME! THE ALPHA! THE OMEGA!", color: '#dc2626' },
+                { speaker: 'BEZOS', text: "WITNESS MY TRUE FORM!", color: '#dc2626' }
+            ],
+            dialogueTimer: 0
+        };
         AudioSys.sfx.bossIntro();
         return;
     }
@@ -4986,7 +4971,7 @@ function updateMusicForState() {
     else if (['PLAY', 'YARD_INTRO', 'YARD_LEVEL'].includes(GAME.state)) track = 'ingame';
     else if (GAME.state === 'VISITOR_SPLASH') track = 'boss';
     else if (GAME.state === 'BOSS' || GAME.state === 'BOSS_INTRO') track = 'boss';
-    else if (GAME.state === 'MECHA_BOSS' || GAME.state === 'MECHA_BOSS_INTRO' || GAME.state === 'MECHA_TRANSFORM') { track = 'boss'; rate = 0.85; }
+    else if (GAME.state === 'MECHA_BOSS' || GAME.state === 'MECHA_BOSS_INTRO' || GAME.state === 'MECHA_TRANSFORM' || GAME.state === 'THRONE_CONFRONTATION') { track = 'boss'; rate = 0.85; }
     else if (GAME.state === 'CREDITS') track = 'victory';
 
     MusicSys.play(track, rate);
@@ -5478,32 +5463,6 @@ function drawYardLevel() {
                 });
             }
 
-            // Draw Bezos packages (thrown by Jeff from throne)
-            if (y.bezosPackages) {
-                y.bezosPackages.forEach(pkg => {
-                    ctx.save();
-                    ctx.translate(pkg.x, pkg.y);
-                    ctx.rotate(pkg.rotation);
-                    // Package with glow
-                    ctx.fillStyle = 'rgba(255, 153, 0, 0.3)';
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 12, 0, Math.PI * 2);
-                    ctx.fill();
-                    // Package body
-                    ctx.fillStyle = '#a16207';
-                    ctx.fillRect(-8, -8, 16, 16);
-                    ctx.fillStyle = '#78350f';
-                    ctx.fillRect(-6, -6, 12, 12);
-                    // Tape
-                    ctx.fillStyle = '#0ea5e9';
-                    ctx.fillRect(-6, -2, 12, 4);
-                    // Amazon smile
-                    ctx.fillStyle = '#ff9900';
-                    ctx.fillRect(-4, 2, 8, 2);
-                    ctx.fillRect(2, 0, 2, 4);
-                    ctx.restore();
-                });
-            }
         }
     }
 
@@ -5846,6 +5805,180 @@ function drawMechaBattle() {
     });
 }
 
+// === THRONE CONFRONTATION CUTSCENE ===
+function drawThroneConfrontation() {
+    const t = GAME.stateTimer;
+    const scene = GAME.throneScene;
+    if (!scene) return;
+
+    // Dark throne room background
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bgGrad.addColorStop(0, '#050510');
+    bgGrad.addColorStop(0.3, '#0a0a18');
+    bgGrad.addColorStop(0.7, '#1a1a2e');
+    bgGrad.addColorStop(1, '#0b1224');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Dramatic torchlight flicker
+    const flickerIntensity = 0.1 + Math.sin(t * 0.15) * 0.05;
+    ctx.fillStyle = `rgba(255, 120, 40, ${flickerIntensity})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw the massive throne in the center-top
+    const throneX = canvas.width / 2;
+    const throneY = 40;
+
+    // Throne backing - massive golden structure
+    ctx.fillStyle = '#2d1810';
+    ctx.fillRect(throneX - 60, throneY - 15, 120, 80);
+    ctx.fillStyle = '#4a2818';
+    ctx.fillRect(throneX - 55, throneY - 10, 110, 70);
+
+    // Throne spires (taller, more imposing)
+    ctx.fillStyle = '#ff9900';
+    ctx.fillRect(throneX - 58, throneY - 40, 10, 35);
+    ctx.fillRect(throneX + 48, throneY - 40, 10, 35);
+    ctx.fillStyle = '#fbbf24';
+    ctx.beginPath();
+    ctx.moveTo(throneX - 58, throneY - 40);
+    ctx.lineTo(throneX - 53, throneY - 55);
+    ctx.lineTo(throneX - 48, throneY - 40);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(throneX + 48, throneY - 40);
+    ctx.lineTo(throneX + 53, throneY - 55);
+    ctx.lineTo(throneX + 58, throneY - 40);
+    ctx.fill();
+
+    // Amazon logo on throne (glowing and pulsing)
+    const logoPulse = Math.sin(t * 0.08) * 0.2 + 0.8;
+    ctx.fillStyle = `rgba(255, 153, 0, ${logoPulse})`;
+    ctx.fillRect(throneX - 25, throneY + 5, 50, 20);
+    ctx.fillStyle = '#ffb347';
+    ctx.fillRect(throneX - 20, throneY + 8, 40, 14);
+    // Amazon arrow/smile
+    ctx.fillStyle = '#ff6600';
+    ctx.beginPath();
+    ctx.moveTo(throneX - 15, throneY + 18);
+    ctx.quadraticCurveTo(throneX, throneY + 28, throneX + 15, throneY + 15);
+    ctx.lineTo(throneX + 20, throneY + 18);
+    ctx.quadraticCurveTo(throneX, throneY + 32, throneX - 18, throneY + 20);
+    ctx.fill();
+
+    // Ornate throne armrests
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillRect(throneX - 52, throneY + 40, 16, 25);
+    ctx.fillRect(throneX + 36, throneY + 40, 16, 25);
+
+    // Menacing glow behind Bezos
+    const glowSize = 60 + Math.sin(t * 0.06) * 10;
+    const glowGrad = ctx.createRadialGradient(throneX, throneY + 45, 10, throneX, throneY + 45, glowSize);
+    glowGrad.addColorStop(0, 'rgba(255, 100, 0, 0.6)');
+    glowGrad.addColorStop(0.4, 'rgba(220, 38, 38, 0.3)');
+    glowGrad.addColorStop(0.7, 'rgba(139, 0, 0, 0.15)');
+    glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = glowGrad;
+    ctx.beginPath();
+    ctx.arc(throneX, throneY + 45, glowSize, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Draw Jeff Bezos on throne (larger, more imposing)
+    const jeffBob = Math.sin(t * 0.04) * 2;
+    ctx.save();
+    ctx.translate(throneX, throneY + 35 + jeffBob);
+    ctx.scale(1.5, 1.5);
+    ctx.drawImage(GFX.jeffYard, -24, -24);
+    ctx.restore();
+
+    // Draw player character at bottom facing Bezos
+    const playerY = canvas.height - 50;
+    const playerX = canvas.width / 2;
+    const playerBob = Math.sin(t * 0.06) * 1;
+    ctx.save();
+    ctx.translate(playerX, playerY + playerBob);
+    ctx.scale(1.3, 1.3);
+    ctx.drawImage(GFX.chars[GAME.selectedChar], -8, -8);
+    ctx.restore();
+
+    // VS text or confrontation indicator
+    if (scene.phase >= 1) {
+        ctx.fillStyle = '#dc2626';
+        ctx.font = '14px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        const vsFlash = Math.sin(t * 0.1) > 0 ? '#ff4444' : '#dc2626';
+        ctx.fillStyle = vsFlash;
+        ctx.fillText('VS', canvas.width / 2, canvas.height / 2 - 10);
+    }
+
+    // Dialogue box
+    if (scene.phase >= 1 && scene.dialogueIndex < scene.dialogues.length) {
+        const dialogue = scene.dialogues[scene.dialogueIndex];
+
+        // Dialogue box background
+        const boxY = canvas.height - 70;
+        const boxH = 55;
+        ctx.fillStyle = 'rgba(10, 5, 15, 0.95)';
+        ctx.fillRect(10, boxY, canvas.width - 20, boxH);
+
+        // Border color based on speaker
+        ctx.strokeStyle = dialogue.speaker === 'BEZOS' ? '#ff9900' : '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, boxY, canvas.width - 20, boxH);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(12, boxY + 2, canvas.width - 24, boxH - 4);
+
+        // Speaker name
+        ctx.fillStyle = dialogue.color;
+        ctx.font = '7px "Press Start 2P"';
+        ctx.textAlign = 'left';
+        ctx.fillText(dialogue.speaker + ':', 18, boxY + 16);
+
+        // Dialogue text (with typewriter effect)
+        const charCount = Math.min(dialogue.text.length, Math.floor(scene.dialogueTimer * 0.5));
+        const displayText = dialogue.text.substring(0, charCount);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '6px "Press Start 2P"';
+        // Word wrap the text
+        const words = displayText.split(' ');
+        let line = '';
+        let lineY = boxY + 30;
+        words.forEach(word => {
+            const testLine = line + word + ' ';
+            if (ctx.measureText(testLine).width > canvas.width - 40) {
+                ctx.fillText(line, 18, lineY);
+                line = word + ' ';
+                lineY += 12;
+            } else {
+                line = testLine;
+            }
+        });
+        ctx.fillText(line, 18, lineY);
+    }
+
+    // Phase 2: Dramatic transition effect before transformation
+    if (scene.phase === 2) {
+        const fadeProgress = GAME.stateTimer / 30;
+        ctx.fillStyle = `rgba(255, 100, 0, ${fadeProgress * 0.5})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Energy crackling around Bezos
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2 + t * 0.1;
+            const dist = 30 + Math.sin(t * 0.2 + i) * 10;
+            const ex = throneX + Math.cos(angle) * dist;
+            const ey = throneY + 45 + Math.sin(angle) * dist;
+            ctx.fillStyle = i % 2 === 0 ? '#ffff00' : '#ff6600';
+            ctx.beginPath();
+            ctx.arc(ex, ey, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    ctx.textAlign = 'left';
+}
+
 // === MECHA TRANSFORMATION CUTSCENE ===
 function drawMechaTransform() {
     const t = GAME.stateTimer;
@@ -5875,7 +6008,7 @@ function drawMechaTransform() {
     }
     ctx.restore();
 
-    // Phase 1: Normal Jeff (frames 0-80)
+    // Phase 1: Power surge (frames 0-80)
     if (t < 80) {
         const scale = 1 + Math.sin(t * 0.2) * 0.1;
         const shakeX = (Math.random() - 0.5) * (t / 20);
@@ -5887,10 +6020,17 @@ function drawMechaTransform() {
         ctx.drawImage(GFX.jeffYard, -24 + shakeX, -24 + shakeY);
         ctx.restore();
 
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = '12px "Press Start 2P"';
+        // Warning text
+        ctx.fillStyle = '#dc2626';
+        ctx.font = '10px "Press Start 2P"';
         ctx.textAlign = 'center';
-        ctx.fillText('YOU MADE IT...', canvas.width / 2, 180);
+        const warningFlash = Math.sin(t * 0.15) > 0;
+        if (warningFlash) {
+            ctx.fillText('!! WARNING !!', canvas.width / 2, 180);
+        }
+        ctx.fillStyle = '#ff9900';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillText('TRANSFORMATION', canvas.width / 2, 195);
     }
     // Phase 2: Transformation (frames 80-160)
     else if (t < 160) {
@@ -6395,6 +6535,7 @@ function draw() {
         ctx.restore(); return;
     }
     if (GAME.state === 'MECHA_BOSS') { drawMechaBattle(); ctx.restore(); return; }
+    if (GAME.state === 'THRONE_CONFRONTATION') { drawThroneConfrontation(); ctx.restore(); return; }
     if (GAME.state === 'MECHA_TRANSFORM') { drawMechaTransform(); ctx.restore(); return; }
     if (GAME.state === 'CREDITS') { drawCredits(); ctx.restore(); return; }
     if (GAME.state === 'BOSS_INTRO' && GAME.boss) {
