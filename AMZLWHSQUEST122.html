@@ -4174,6 +4174,66 @@ function updateYardLevel() {
                 }
             }
         }
+
+        // === BEZOS PACKAGE THROWING FROM THRONE ===
+        // Bezos throws packages at the player when they're in the castle
+        if (!y.bezosPackages) y.bezosPackages = [];
+        if (!y.bezosPackageTimer) y.bezosPackageTimer = 0;
+        y.bezosPackageTimer++;
+
+        // Throw packages more frequently as player gets closer
+        const distToThrone = y.playerY; // Lower Y = closer to throne
+        const throwInterval = Math.max(40, Math.floor(distToThrone / 5)); // More frequent as player approaches
+
+        if (y.bezosPackageTimer >= throwInterval && distToThrone < 500) {
+            y.bezosPackageTimer = 0;
+            // Jeff throws package from top of screen toward player
+            const jeffX = canvas.width / 2;
+            const jeffY = 40;
+            const angle = Math.atan2(y.playerY - jeffY, y.playerX - jeffX);
+            const speed = 2.0 + Math.random() * 0.5;
+            y.bezosPackages.push({
+                x: jeffX,
+                y: jeffY,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                rotation: 0,
+                life: 300
+            });
+            // Taunt when throwing
+            if (Math.random() < 0.15) {
+                const tauntIdx = Math.floor(Math.random() * BEZOS_TAUNTS.length);
+                y.jeffTaunt = BEZOS_TAUNTS[tauntIdx];
+                AudioSys.sfx.throw();
+            }
+        }
+
+        // Update Bezos packages
+        for (let i = y.bezosPackages.length - 1; i >= 0; i--) {
+            const pkg = y.bezosPackages[i];
+            pkg.x += pkg.vx;
+            pkg.y += pkg.vy;
+            pkg.vy += 0.03; // Slight gravity arc
+            pkg.rotation += 0.1;
+            pkg.life--;
+
+            // Remove if off screen or expired
+            if (pkg.life <= 0 || pkg.y > y.height + 20 || pkg.x < -30 || pkg.x > canvas.width + 30) {
+                y.bezosPackages.splice(i, 1);
+                continue;
+            }
+
+            // Collision with player
+            if (Math.abs(pkg.x - (y.playerX + 8)) < 14 && Math.abs(pkg.y - (y.playerY + 8)) < 14) {
+                if (GAME.player.iframe <= 0) {
+                    GAME.lives--; GAME.flash = 10; GAME.shake = 8; AudioSys.sfx.hurt(); updateHud();
+                    GAME.player.iframe = 60;
+                    y.bezosPackages.splice(i, 1);
+                    spawnFloatingText(y.playerX, y.playerY - 20, "PRIME DELIVERY!", "#f59e0b");
+                    if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('OVERWHELMED BY PACKAGES!'); return; }
+                }
+            }
+        }
     }
 
     // Trigger MECHA TRANSFORMATION CUTSCENE when player reaches Jeff
@@ -4220,8 +4280,16 @@ function updateMechaBattle() {
             m.phaseTransition = false;
             m.transitionTimer = 0;
             m.phaseTimer = 0;
-            // Announce new phase
-            spawnFloatingText(canvas.width / 2 - 40, 60, m.phaseNames[m.currentPhase], "#ff9900");
+            // Announce new phase with attack warning
+            const phaseWarnings = {
+                0: { text: "MISSILES!", color: "#dc2626" },
+                1: { text: "DRONES!", color: "#22d3ee" },
+                2: { text: "PRIME DROP!", color: "#f59e0b" },
+                3: { text: "LASER GRID!", color: "#38bdf8" },
+                4: { text: "GROUND SLAM!", color: "#a855f7" }
+            };
+            const warning = phaseWarnings[m.currentPhase];
+            spawnFloatingText(canvas.width / 2 - 40, 60, warning.text, warning.color);
         }
         return; // Pause attacks during transition
     }
@@ -4249,8 +4317,6 @@ function updateMechaBattle() {
     // PHASE 0: Prime Missiles - Homing missiles from shoulders
     if (m.currentPhase === 0) {
         if (m.timer % Math.floor(70 * attackRate) === 0 && m.attackCooldown <= 0) {
-            // Attack announcement (non-pausing)
-            spawnFloatingText(m.x + 10, m.y + 50, "MISSILES!", "#dc2626");
             const angle = Math.atan2(p.y - m.y, p.x - m.x);
             for (let i = -1; i <= 1; i += 2) {
                 m.projectiles.push({
@@ -4271,10 +4337,6 @@ function updateMechaBattle() {
     if (m.currentPhase === 1) {
         const activeDrones = m.projectiles.filter(pr => pr.type === 'drone').length;
         if (m.timer % Math.floor(50 * attackRate) === 0 && activeDrones < (m.enraged ? 5 : 3)) {
-            // Attack announcement (non-pausing)
-            if (activeDrones === 0) {
-                spawnFloatingText(m.x + 10, m.y + 50, "DRONES!", "#22d3ee");
-            }
             m.projectiles.push({
                 type: 'drone',
                 x: m.x + 32 + (Math.random() - 0.5) * 40,
@@ -4290,10 +4352,6 @@ function updateMechaBattle() {
     // PHASE 2: Package Rain - Boxes rain from above with shadows
     if (m.currentPhase === 2) {
         if (m.timer % Math.floor(35 * attackRate) === 0) {
-            // Attack announcement (non-pausing) - show warning occasionally
-            if (m.timer % Math.floor(70 * attackRate) === 0) {
-                spawnFloatingText(canvas.width / 2 - 30, 80, "PRIME DROP!", "#f59e0b");
-            }
             const targetX = p.x + (Math.random() - 0.5) * 80;
             m.shadows.push({ x: Math.max(10, Math.min(canvas.width - 30, targetX)), timer: 45 });
         }
@@ -4302,8 +4360,6 @@ function updateMechaBattle() {
     // PHASE 3: Laser Grid - Multiple sweeping beams
     if (m.currentPhase === 3) {
         if (m.timer % Math.floor(100 * attackRate) === 0 && m.beams.length < 3) {
-            // Attack announcement (non-pausing)
-            spawnFloatingText(canvas.width / 2 - 30, 80, "LASER GRID!", "#38bdf8");
             const beamCount = m.enraged ? 3 : 2;
             for (let i = 0; i < beamCount; i++) {
                 m.beams.push({
@@ -4324,8 +4380,6 @@ function updateMechaBattle() {
             m.slamming = true;
             m.slamTimer = 0;
             m.slamY = m.y;
-            // Attack announcement (non-pausing)
-            spawnFloatingText(m.x, m.y + 50, "GROUND SLAM!", "#a855f7");
             AudioSys.sfx.alert();
         }
 
@@ -5007,58 +5061,113 @@ function drawYardLevel() {
     ctx.save();
     ctx.translate(0, -camY);
 
-    // === DARK DRAMATIC SKY AT TOP ===
+    // === BEZOS THRONE ROOM AT TOP ===
     const skyGrad = ctx.createLinearGradient(0, 0, 0, 100);
-    skyGrad.addColorStop(0, '#0a0a14');
-    skyGrad.addColorStop(0.5, '#1a1a2e');
+    skyGrad.addColorStop(0, '#050510');
+    skyGrad.addColorStop(0.3, '#0a0a18');
+    skyGrad.addColorStop(0.7, '#1a1a2e');
     skyGrad.addColorStop(1, '#0b1224');
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, canvas.width, 100);
 
-    // === JEFF CHARACTER AT TOP ===
+    // === MASSIVE THRONE BEHIND JEFF ===
     if (y) {
+        const throneX = canvas.width / 2;
+        const throneY = 6;
+
+        // Throne backing - massive golden structure
+        ctx.fillStyle = '#2d1810';
+        ctx.fillRect(throneX - 50, throneY - 5, 100, 60);
+        ctx.fillStyle = '#4a2818';
+        ctx.fillRect(throneX - 45, throneY, 90, 50);
+
+        // Throne spires
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(throneX - 48, throneY - 20, 8, 25);
+        ctx.fillRect(throneX + 40, throneY - 20, 8, 25);
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.moveTo(throneX - 48, throneY - 20);
+        ctx.lineTo(throneX - 44, throneY - 32);
+        ctx.lineTo(throneX - 40, throneY - 20);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(throneX + 40, throneY - 20);
+        ctx.lineTo(throneX + 44, throneY - 32);
+        ctx.lineTo(throneX + 48, throneY - 20);
+        ctx.fill();
+
+        // Amazon logo on throne (glowing)
+        const logoPulse = Math.sin((y.jeffAnimFrame || 0) * 0.08) * 0.2 + 0.8;
+        ctx.fillStyle = `rgba(255, 153, 0, ${logoPulse})`;
+        ctx.fillRect(throneX - 20, throneY + 5, 40, 16);
+        ctx.fillStyle = '#ffb347';
+        ctx.fillRect(throneX - 16, throneY + 8, 32, 10);
+        // Amazon arrow/smile
+        ctx.fillStyle = '#ff6600';
+        ctx.beginPath();
+        ctx.moveTo(throneX - 12, throneY + 15);
+        ctx.quadraticCurveTo(throneX, throneY + 22, throneX + 12, throneY + 12);
+        ctx.lineTo(throneX + 16, throneY + 14);
+        ctx.quadraticCurveTo(throneX, throneY + 26, throneX - 14, throneY + 17);
+        ctx.fill();
+
+        // Ornate throne armrests
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(throneX - 42, throneY + 30, 12, 20);
+        ctx.fillRect(throneX + 30, throneY + 30, 12, 20);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(throneX - 40, throneY + 32, 8, 16);
+        ctx.fillRect(throneX + 32, throneY + 32, 8, 16);
+
         const jeffX = canvas.width / 2 - 24;
         const jeffY = 4;
-        const bobY = Math.sin(y.jeffAnimFrame * 0.04) * 2;
+        const bobY = Math.sin((y.jeffAnimFrame || 0) * 0.04) * 2;
 
-        // Spotlight effect behind Jeff
-        const glowSize = 36 + Math.sin(y.jeffAnimFrame * 0.06) * 6;
-        const glowGrad = ctx.createRadialGradient(jeffX + 24, jeffY + 24 + bobY, 8, jeffX + 24, jeffY + 24 + bobY, glowSize);
-        glowGrad.addColorStop(0, 'rgba(255, 200, 100, 0.35)');
-        glowGrad.addColorStop(0.6, 'rgba(200, 100, 50, 0.15)');
+        // Menacing spotlight behind Jeff
+        const glowSize = 50 + Math.sin((y.jeffAnimFrame || 0) * 0.06) * 8;
+        const glowGrad = ctx.createRadialGradient(jeffX + 24, jeffY + 28 + bobY, 6, jeffX + 24, jeffY + 28 + bobY, glowSize);
+        glowGrad.addColorStop(0, 'rgba(255, 100, 0, 0.6)');
+        glowGrad.addColorStop(0.4, 'rgba(220, 38, 38, 0.3)');
+        glowGrad.addColorStop(0.7, 'rgba(139, 0, 0, 0.15)');
         glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
         ctx.arc(jeffX + 24, jeffY + 28 + bobY, glowSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw Jeff (standing at top, arms crossed, taunting)
+        // Draw Jeff (standing at throne, arms crossed, taunting)
         ctx.drawImage(GFX.jeffYard, jeffX, jeffY + bobY);
 
-        // Speech bubble with taunt
+        // Speech bubble with taunt - more menacing style
         const tauntX = 6;
         const tauntY = 56;
         const tauntW = canvas.width - 12;
         const tauntH = 20;
 
-        // Bubble background
-        ctx.fillStyle = 'rgba(20, 20, 40, 0.9)';
+        // Bubble background with red border
+        ctx.fillStyle = 'rgba(10, 5, 15, 0.95)';
         ctx.fillRect(tauntX, tauntY, tauntW, tauntH);
-        ctx.strokeStyle = '#38bdf8';
+        ctx.strokeStyle = '#dc2626';
         ctx.lineWidth = 2;
         ctx.strokeRect(tauntX, tauntY, tauntW, tauntH);
+        // Inner glow
+        ctx.strokeStyle = 'rgba(255, 153, 0, 0.3)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(tauntX + 2, tauntY + 2, tauntW - 4, tauntH - 4);
 
-        // "JEFF:" label
-        ctx.fillStyle = '#f59e0b';
+        // "BEZOS:" label
+        ctx.fillStyle = '#ff9900';
         ctx.font = '6px "Press Start 2P"';
         ctx.textAlign = 'left';
-        ctx.fillText('JEFF:', tauntX + 4, tauntY + 12);
+        ctx.fillText('BEZOS:', tauntX + 4, tauntY + 12);
 
         // Taunt text
         ctx.fillStyle = '#ffffff';
-        ctx.font = '6px "Press Start 2P"';
+        ctx.font = '5px "Press Start 2P"';
         ctx.textAlign = 'left';
-        ctx.fillText(y.jeffTaunt, tauntX + 42, tauntY + 12);
+        const displayTaunt = (y.jeffTaunt || "WELCOME TO MY CASTLE!").substring(0, 32);
+        ctx.fillText(displayTaunt, tauntX + 52, tauntY + 12);
         ctx.textAlign = 'left';
     }
 
@@ -5368,6 +5477,33 @@ function drawYardLevel() {
                     }
                 });
             }
+
+            // Draw Bezos packages (thrown by Jeff from throne)
+            if (y.bezosPackages) {
+                y.bezosPackages.forEach(pkg => {
+                    ctx.save();
+                    ctx.translate(pkg.x, pkg.y);
+                    ctx.rotate(pkg.rotation);
+                    // Package with glow
+                    ctx.fillStyle = 'rgba(255, 153, 0, 0.3)';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 12, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Package body
+                    ctx.fillStyle = '#a16207';
+                    ctx.fillRect(-8, -8, 16, 16);
+                    ctx.fillStyle = '#78350f';
+                    ctx.fillRect(-6, -6, 12, 12);
+                    // Tape
+                    ctx.fillStyle = '#0ea5e9';
+                    ctx.fillRect(-6, -2, 12, 4);
+                    // Amazon smile
+                    ctx.fillStyle = '#ff9900';
+                    ctx.fillRect(-4, 2, 8, 2);
+                    ctx.fillRect(2, 0, 2, 4);
+                    ctx.restore();
+                });
+            }
         }
     }
 
@@ -5560,13 +5696,6 @@ function drawMechaBattle() {
         }
 
         ctx.drawImage(GFX.mechaJeff, m.x, m.y);
-
-        // Current phase indicator
-        ctx.fillStyle = '#ff9900';
-        ctx.font = '5px "Press Start 2P"';
-        ctx.textAlign = 'center';
-        ctx.fillText(m.phaseNames[m.currentPhase], m.x + 32, m.y - 6);
-        ctx.textAlign = 'left';
     }
 
     // Draw player
@@ -5678,6 +5807,22 @@ function drawMechaBattle() {
             }
         });
     }
+
+    // Draw player projectiles (attacks)
+    GAME.projectiles.forEach(proj => {
+        if (proj.type === 'attack') {
+            const sprite = (GFX.attacks && GFX.attacks[proj.owner]) ? GFX.attacks[proj.owner] : GFX.book;
+            // Glow effect behind projectile
+            ctx.fillStyle = proj.color || '#00ffff';
+            ctx.globalAlpha = 0.4;
+            ctx.beginPath();
+            ctx.arc(proj.x + 6, proj.y + 6, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            // Draw the projectile sprite
+            ctx.drawImage(sprite, proj.x, proj.y);
+        }
+    });
 
     // Particles
     GAME.particles.forEach(p => {
