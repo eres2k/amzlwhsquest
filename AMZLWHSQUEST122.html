@@ -389,6 +389,28 @@ const JEFF_YARD_TAUNTS = [
     "I OWN THE CLOUDS AND THE GROUND!"
 ];
 
+// --- JEFF CASTLE TAUNTS ---
+const JEFF_CASTLE_TAUNTS = [
+    "WELCOME TO MY FORTRESS OF EFFICIENCY!",
+    "THIS CASTLE WAS BUILT ON PRIME SUBSCRIPTIONS!",
+    "EVERY BRICK IS A WORKER'S DREAM... CRUSHED!",
+    "YOU DARE ENTER THE BEZOS DOMAIN?!",
+    "MY TOWERS REACH HIGHER THAN YOUR AMBITIONS!",
+    "I WATCH EVERYTHING FROM UP HERE!",
+    "THE ALGORITHMS DESIGNED THIS MAZE!",
+    "PRODUCTIVITY FLOWS THROUGH THESE HALLS!",
+    "NO UNION CAN SIEGE THESE WALLS!",
+    "MY THRONE AWAITS... BUT YOU WON'T REACH IT!",
+    "THIS IS WHERE WORKERS BECOME... OPTIMIZED!",
+    "EACH STEP YOU TAKE, I GROW STRONGER!",
+    "THE CASTLE IS MY FINAL WAREHOUSE!",
+    "CUSTOMER OBSESSION BUILT THESE STONES!",
+    "FEEL THE WEIGHT OF A TRILLION DOLLARS!",
+    "MY DRONES PATROL THESE CORRIDORS!",
+    "THE EXIT INTERVIEW IS AT THE TOP!",
+    "ONLY THE WORTHY MEET MECHA JEFF!",
+];
+
 // --- BEZOS TAUNTS FOR BOSS FIGHT ---
 const BEZOS_TAUNTS = [
     "Work harder, not smarter!",
@@ -2948,11 +2970,9 @@ function handleAction() {
     else if (GAME.state === 'BEZOS_WIN') {
         GAME.state = 'TITLE'; updateMusicForState();
     }
-    else if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'BEZOS_BOSS') {
+    else if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'BEZOS_BOSS' || GAME.state === 'MECHA_BOSS') {
         if (GAME.state === 'PLAY' && tryInteract()) return;
-        if (GAME.state === 'BEZOS_BOSS') throwBook();
-        else if (GAME.state === 'BOSS') throwBook();
-        else throwBook();
+        throwBook();
     }
 }
 
@@ -3153,9 +3173,14 @@ function initBossEncounter() {
 function startYardLevel() {
     GAME.state = 'YARD_LEVEL';
     GAME.stateTimer = 0;
-    const h = 720; // Extended yard height for more exploration
+    const yardHeight = 650; // Yard section height
+    const castleHeight = 700; // Castle section height (massive castle!)
+    const h = yardHeight + castleHeight; // Total level height
+    const castleStart = yardHeight; // Where castle begins (lower Y = higher on screen)
     GAME.yard = {
         height: h,
+        yardHeight: yardHeight,
+        castleStart: castleStart,
         cameraY: 0,
         playerX: canvas.width / 2 - 8,
         playerY: h - 32,
@@ -3165,12 +3190,14 @@ function startYardLevel() {
         forklifts: [], // Forklift hazards
         hazardZones: [], // Environmental hazard zones
         transformationTriggered: false, // Track if Mecha transformation cutscene started
+        inCastle: false, // Track if player entered castle
+        castleEntered: false, // Track if castle entry message shown
         // Jeff taunting system - now more dynamic
         jeffTaunt: JEFF_YARD_TAUNTS[Math.floor(Math.random() * JEFF_YARD_TAUNTS.length)],
         jeffTauntTimer: 0,
         jeffAnimFrame: 0, // Animation frame for Jeff
         progressTaunt: "", // Special taunt based on player progress
-        // Extended vehicle lanes - more challenging gauntlet with varied patterns
+        // Extended vehicle lanes - more challenging gauntlet with varied patterns (in yard section only)
         lanes: [
             { y: h - 70, dir: 1, speed: 0.85, timer: 75, type: 'truck' },
             { y: h - 120, dir: -1, speed: 1.0, timer: 65, type: 'van' },
@@ -3189,14 +3216,45 @@ function startYardLevel() {
             { y: h - 380, timer: 240, active: false },
             { y: h - 520, timer: 200, active: false }
         ],
-        // Static hazard areas (puddles, debris)
+        // Static hazard areas (puddles, debris) - in yard section
         staticHazards: [
             { x: 30, y: h - 150, type: 'puddle' },
             { x: 180, y: h - 260, type: 'debris' },
             { x: 80, y: h - 440, type: 'puddle' },
             { x: 150, y: h - 550, type: 'debris' }
-        ]
+        ],
+        // Castle section hazards
+        castleDrones: [], // Patrol drones in castle
+        castleLasers: [], // Laser barriers
+        castleGuards: [], // Stationary guard turrets
+        castlePlatforms: [ // Moving platforms player can use/avoid
+            { x: 20, y: castleStart - 100, w: 40, dir: 1, speed: 0.8 },
+            { x: 150, y: castleStart - 200, w: 50, dir: -1, speed: 1.0 },
+            { x: 80, y: castleStart - 320, w: 45, dir: 1, speed: 0.9 },
+            { x: 30, y: castleStart - 450, w: 55, dir: -1, speed: 1.1 },
+            { x: 120, y: castleStart - 550, w: 40, dir: 1, speed: 1.2 }
+        ],
+        // Castle laser barriers that pulse on/off
+        castleLaserBarriers: [
+            { y: castleStart - 150, onTime: 60, offTime: 90, timer: 0, active: true },
+            { y: castleStart - 280, onTime: 50, offTime: 80, timer: 30, active: false },
+            { y: castleStart - 400, onTime: 70, offTime: 70, timer: 50, active: true },
+            { y: castleStart - 520, onTime: 40, offTime: 100, timer: 20, active: false }
+        ],
+        // Castle patrol drones initialization
+        droneSpawnTimer: 0
     };
+
+    // Initialize castle guard turrets
+    const y = GAME.yard;
+    y.castleGuards = [
+        { x: 10, y: castleStart - 180, fireTimer: 60, fireRate: 80 },
+        { x: canvas.width - 26, y: castleStart - 250, fireTimer: 40, fireRate: 90 },
+        { x: 10, y: castleStart - 350, fireTimer: 20, fireRate: 70 },
+        { x: canvas.width - 26, y: castleStart - 480, fireTimer: 0, fireRate: 85 },
+        { x: 10, y: castleStart - 600, fireTimer: 50, fireRate: 75 }
+    ];
+
     GAME.player.speed = GAME.yard.speed;
     GAME.projectiles = [];
     GAME.particles = [];
@@ -3846,22 +3904,39 @@ function updateYardLevel() {
     const y = GAME.yard;
     GAME.player.x = y.playerX; GAME.player.y = y.playerY;
 
+    // Check if player is in castle section
+    const inCastle = y.playerY < y.castleStart;
+    if (inCastle && !y.inCastle) {
+        y.inCastle = true;
+        if (!y.castleEntered) {
+            y.castleEntered = true;
+            spawnFloatingText(y.playerX, y.playerY - 30, "ENTERING BEZOS CASTLE!", "#ff9900");
+            AudioSys.sfx.bossIntro();
+        }
+    }
+
     // Update Jeff taunt at top - now with progress-based taunts
     y.jeffTauntTimer++;
     y.jeffAnimFrame++;
 
-    // Progress-based dynamic taunts
+    // Progress-based dynamic taunts (use castle taunts when in castle)
     const progress = 1 - (y.playerY / y.height);
-    if (progress > 0.8 && !y.nearTauntShown) {
+    if (progress > 0.9 && !y.nearTauntShown) {
         y.nearTauntShown = true;
-        y.jeffTaunt = "YOU'RE ALMOST HERE! TOO BAD I'M ABOUT TO CRUSH YOU!";
+        y.jeffTaunt = "YOU'RE AT MY THRONE ROOM! PREPARE FOR TRANSFORMATION!";
+        AudioSys.sfx.alert();
+    } else if (progress > 0.7 && !y.almostTauntShown) {
+        y.almostTauntShown = true;
+        y.jeffTaunt = "THE TOP OF MY CASTLE AWAITS... IF YOU SURVIVE!";
         AudioSys.sfx.alert();
     } else if (progress > 0.5 && !y.halfwayTauntShown) {
         y.halfwayTauntShown = true;
-        y.jeffTaunt = "HALFWAY? IMPRESSIVE! NOW FACE THE REAL CHALLENGE!";
+        y.jeffTaunt = "WELCOME TO MY FORTRESS! YOU WON'T LEAVE ALIVE!";
         AudioSys.sfx.pop();
     } else if (y.jeffTauntTimer > 100) { // Regular taunt rotation
-        y.jeffTaunt = JEFF_YARD_TAUNTS[Math.floor(Math.random() * JEFF_YARD_TAUNTS.length)];
+        // Use castle taunts when in castle, yard taunts otherwise
+        const taunts = y.inCastle ? JEFF_CASTLE_TAUNTS : JEFF_YARD_TAUNTS;
+        y.jeffTaunt = taunts[Math.floor(Math.random() * taunts.length)];
         y.jeffTauntTimer = 0;
         AudioSys.sfx.pop();
     }
@@ -3870,9 +3945,9 @@ function updateYardLevel() {
     if (KEYS.up) dy = -y.speed; if (KEYS.down) dy = y.speed; if (KEYS.left) dx = -y.speed; if (KEYS.right) dx = y.speed;
     if (dx!==0 && dy!==0) { dx *= 0.707; dy *= 0.707; }
 
-    // Check for static hazard slowdown (puddles slow you down)
+    // Check for static hazard slowdown (puddles slow you down) - only in yard section
     let inHazard = false;
-    if (y.staticHazards) {
+    if (y.staticHazards && !y.inCastle) {
         y.staticHazards.forEach(h => {
             if (Math.abs(y.playerX - h.x) < 20 && Math.abs(y.playerY - h.y) < 20) {
                 if (h.type === 'puddle') {
@@ -3890,47 +3965,50 @@ function updateYardLevel() {
     const viewAnchor = y.playerY - canvas.height * 0.55;
     y.cameraY = Math.max(0, Math.min(y.height - canvas.height, viewAnchor));
 
-    // Spawn vehicles in lanes with varied types
-    y.lanes.forEach(lane => {
-        lane.timer--;
-        if (lane.timer <= 0) {
-            let type;
-            if (lane.type === 'truck') type = 'truck';
-            else if (lane.type === 'van') type = 'van';
-            else type = Math.random() < 0.55 ? 'van' : 'truck';
+    // === YARD SECTION UPDATES (only when in yard) ===
+    if (!y.inCastle) {
+        // Spawn vehicles in lanes with varied types
+        y.lanes.forEach(lane => {
+            lane.timer--;
+            if (lane.timer <= 0) {
+                let type;
+                if (lane.type === 'truck') type = 'truck';
+                else if (lane.type === 'van') type = 'van';
+                else type = Math.random() < 0.55 ? 'van' : 'truck';
 
-            const w = type === 'van' ? 34 : 52;
-            const h = type === 'van' ? 16 : 20;
-            const x = lane.dir === 1 ? -w : canvas.width + w;
-            y.vehicles.push({ type, x, y: lane.y - h/2, w, h, dir: lane.dir, speed: lane.speed + Math.random()*0.25 });
-            lane.timer = 50 + Math.random() * 60;
-        }
-    });
-
-    // Update forklift zones
-    if (y.forkliftZones) {
-        y.forkliftZones.forEach(zone => {
-            zone.timer--;
-            if (zone.timer <= 0) {
-                zone.active = !zone.active;
-                zone.timer = zone.active ? 60 : (150 + Math.random() * 100);
-                if (zone.active && Math.abs(y.playerY - zone.y) < 100) {
-                    // Spawn a forklift
-                    const dir = Math.random() < 0.5 ? 1 : -1;
-                    y.forklifts.push({
-                        x: dir === 1 ? -30 : canvas.width + 30,
-                        y: zone.y - 10,
-                        dir: dir,
-                        speed: 1.5 + Math.random() * 0.5,
-                        w: 28, h: 20
-                    });
-                    AudioSys.sfx.alert();
-                }
+                const w = type === 'van' ? 34 : 52;
+                const h = type === 'van' ? 16 : 20;
+                const x = lane.dir === 1 ? -w : canvas.width + w;
+                y.vehicles.push({ type, x, y: lane.y - h/2, w, h, dir: lane.dir, speed: lane.speed + Math.random()*0.25 });
+                lane.timer = 50 + Math.random() * 60;
             }
         });
+
+        // Update forklift zones
+        if (y.forkliftZones) {
+            y.forkliftZones.forEach(zone => {
+                zone.timer--;
+                if (zone.timer <= 0) {
+                    zone.active = !zone.active;
+                    zone.timer = zone.active ? 60 : (150 + Math.random() * 100);
+                    if (zone.active && Math.abs(y.playerY - zone.y) < 100) {
+                        // Spawn a forklift
+                        const dir = Math.random() < 0.5 ? 1 : -1;
+                        y.forklifts.push({
+                            x: dir === 1 ? -30 : canvas.width + 30,
+                            y: zone.y - 10,
+                            dir: dir,
+                            speed: 1.5 + Math.random() * 0.5,
+                            w: 28, h: 20
+                        });
+                        AudioSys.sfx.alert();
+                    }
+                }
+            });
+        }
     }
 
-    // Update forklifts
+    // Update forklifts (can still be on screen when transitioning)
     for (let i = y.forklifts.length - 1; i >= 0; i--) {
         const f = y.forklifts[i];
         f.x += f.dir * f.speed;
@@ -3942,6 +4020,7 @@ function updateYardLevel() {
                 // Teleport to start - no iframe needed since player is repositioned
                 y.playerX = canvas.width / 2 - 8;
                 y.playerY = y.startY;
+                y.inCastle = false;
                 y.cameraY = Math.max(0, y.height - canvas.height);
                 spawnFloatingText(y.playerX, y.playerY - 20, "FORKLIFT! NO PEDESTRIANS!", "#ff4444");
                 if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('FORKLIFT INCIDENT!'); return; }
@@ -3960,9 +4039,139 @@ function updateYardLevel() {
                 // FULL RESET - player goes back to starting position, no iframe since teleporting
                 y.playerX = canvas.width / 2 - 8;
                 y.playerY = y.startY;
+                y.inCastle = false;
                 y.cameraY = Math.max(0, y.height - canvas.height);
                 spawnFloatingText(y.playerX, y.playerY - 20, "WATCH THE TRAFFIC!", "#ff4444");
                 if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('FLATTENED BY LOGISTICS!'); return; }
+            }
+        }
+    }
+
+    // === CASTLE SECTION UPDATES ===
+    if (y.inCastle) {
+        // Update castle moving platforms
+        if (y.castlePlatforms) {
+            y.castlePlatforms.forEach(p => {
+                p.x += p.dir * p.speed;
+                if (p.x <= 0 || p.x + p.w >= canvas.width) {
+                    p.dir *= -1;
+                }
+            });
+        }
+
+        // Update castle laser barriers
+        if (y.castleLaserBarriers) {
+            y.castleLaserBarriers.forEach(barrier => {
+                barrier.timer++;
+                if (barrier.active && barrier.timer >= barrier.onTime) {
+                    barrier.active = false;
+                    barrier.timer = 0;
+                } else if (!barrier.active && barrier.timer >= barrier.offTime) {
+                    barrier.active = true;
+                    barrier.timer = 0;
+                    AudioSys.sfx.alert();
+                }
+
+                // Collision with active laser barrier
+                if (barrier.active && Math.abs(y.playerY - barrier.y) < 8 && GAME.player.iframe <= 0) {
+                    GAME.lives--; GAME.flash = 15; GAME.shake = 12; AudioSys.sfx.hurt(); updateHud();
+                    GAME.player.iframe = 60;
+                    spawnFloatingText(y.playerX, y.playerY - 20, "LASER BARRIER!", "#ff4444");
+                    if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('VAPORIZED BY SECURITY!'); return; }
+                }
+            });
+        }
+
+        // Update castle guard turrets and their projectiles
+        if (y.castleGuards) {
+            y.castleGuards.forEach(guard => {
+                guard.fireTimer++;
+                // Only fire if player is within vertical range
+                if (guard.fireTimer >= guard.fireRate && Math.abs(y.playerY - guard.y) < 150) {
+                    guard.fireTimer = 0;
+                    // Fire projectile toward player
+                    const dirX = guard.x < canvas.width / 2 ? 1 : -1;
+                    if (!y.castleProjectiles) y.castleProjectiles = [];
+                    y.castleProjectiles.push({
+                        x: guard.x + 8,
+                        y: guard.y + 6,
+                        vx: dirX * 2.5,
+                        vy: 0,
+                        life: 120
+                    });
+                    AudioSys.sfx.throw();
+                }
+            });
+        }
+
+        // Update castle projectiles
+        if (y.castleProjectiles) {
+            for (let i = y.castleProjectiles.length - 1; i >= 0; i--) {
+                const proj = y.castleProjectiles[i];
+                proj.x += proj.vx;
+                proj.y += proj.vy;
+                proj.life--;
+
+                if (proj.life <= 0 || proj.x < -20 || proj.x > canvas.width + 20) {
+                    y.castleProjectiles.splice(i, 1);
+                    continue;
+                }
+
+                // Collision with player
+                if (Math.abs(proj.x - (y.playerX + 8)) < 12 && Math.abs(proj.y - (y.playerY + 8)) < 12) {
+                    if (GAME.player.iframe <= 0) {
+                        GAME.lives--; GAME.flash = 10; GAME.shake = 8; AudioSys.sfx.hurt(); updateHud();
+                        GAME.player.iframe = 60;
+                        y.castleProjectiles.splice(i, 1);
+                        spawnFloatingText(y.playerX, y.playerY - 20, "GUARD TURRET!", "#ff4444");
+                        if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('TERMINATED BY SECURITY!'); return; }
+                    }
+                }
+            }
+        }
+
+        // Spawn patrol drones periodically
+        y.droneSpawnTimer++;
+        if (y.droneSpawnTimer > 180 && y.castleDrones.length < 3) {
+            y.droneSpawnTimer = 0;
+            const droneY = y.castleStart - 100 - Math.random() * 500;
+            if (droneY > 80) { // Don't spawn too close to Jeff
+                y.castleDrones.push({
+                    x: Math.random() < 0.5 ? -20 : canvas.width + 20,
+                    y: droneY,
+                    dir: Math.random() < 0.5 ? 1 : -1,
+                    speed: 1.2 + Math.random() * 0.5,
+                    pulseTimer: 0
+                });
+            }
+        }
+
+        // Update patrol drones
+        for (let i = y.castleDrones.length - 1; i >= 0; i--) {
+            const drone = y.castleDrones[i];
+            drone.x += drone.dir * drone.speed;
+            drone.pulseTimer++;
+
+            // Slight homing toward player Y
+            if (Math.abs(drone.y - y.playerY) > 30) {
+                drone.y += (y.playerY > drone.y ? 0.3 : -0.3);
+            }
+
+            // Remove if off screen
+            if ((drone.dir === 1 && drone.x > canvas.width + 40) || (drone.dir === -1 && drone.x < -40)) {
+                y.castleDrones.splice(i, 1);
+                continue;
+            }
+
+            // Collision with player
+            if (Math.abs(drone.x - (y.playerX + 8)) < 14 && Math.abs(drone.y - (y.playerY + 8)) < 14) {
+                if (GAME.player.iframe <= 0) {
+                    GAME.lives--; GAME.flash = 12; GAME.shake = 10; AudioSys.sfx.hurt(); updateHud();
+                    GAME.player.iframe = 60;
+                    y.castleDrones.splice(i, 1);
+                    spawnFloatingText(y.playerX, y.playerY - 20, "PATROL DRONE!", "#22d3ee");
+                    if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('DRONE STRIKE!'); return; }
+                }
             }
         }
     }
@@ -4034,9 +4243,14 @@ function updateMechaBattle() {
     // Phase-specific attack patterns
     const attackRate = m.enraged ? 0.7 : 1.0;
 
+    // Initialize attack announcement tracking
+    if (!m.lastAnnounce) m.lastAnnounce = { phase: -1, timer: 0 };
+
     // PHASE 0: Prime Missiles - Homing missiles from shoulders
     if (m.currentPhase === 0) {
         if (m.timer % Math.floor(70 * attackRate) === 0 && m.attackCooldown <= 0) {
+            // Attack announcement (non-pausing)
+            spawnFloatingText(m.x + 10, m.y + 50, "MISSILES!", "#dc2626");
             const angle = Math.atan2(p.y - m.y, p.x - m.x);
             for (let i = -1; i <= 1; i += 2) {
                 m.projectiles.push({
@@ -4057,6 +4271,10 @@ function updateMechaBattle() {
     if (m.currentPhase === 1) {
         const activeDrones = m.projectiles.filter(pr => pr.type === 'drone').length;
         if (m.timer % Math.floor(50 * attackRate) === 0 && activeDrones < (m.enraged ? 5 : 3)) {
+            // Attack announcement (non-pausing)
+            if (activeDrones === 0) {
+                spawnFloatingText(m.x + 10, m.y + 50, "DRONES!", "#22d3ee");
+            }
             m.projectiles.push({
                 type: 'drone',
                 x: m.x + 32 + (Math.random() - 0.5) * 40,
@@ -4072,6 +4290,10 @@ function updateMechaBattle() {
     // PHASE 2: Package Rain - Boxes rain from above with shadows
     if (m.currentPhase === 2) {
         if (m.timer % Math.floor(35 * attackRate) === 0) {
+            // Attack announcement (non-pausing) - show warning occasionally
+            if (m.timer % Math.floor(70 * attackRate) === 0) {
+                spawnFloatingText(canvas.width / 2 - 30, 80, "PRIME DROP!", "#f59e0b");
+            }
             const targetX = p.x + (Math.random() - 0.5) * 80;
             m.shadows.push({ x: Math.max(10, Math.min(canvas.width - 30, targetX)), timer: 45 });
         }
@@ -4080,6 +4302,8 @@ function updateMechaBattle() {
     // PHASE 3: Laser Grid - Multiple sweeping beams
     if (m.currentPhase === 3) {
         if (m.timer % Math.floor(100 * attackRate) === 0 && m.beams.length < 3) {
+            // Attack announcement (non-pausing)
+            spawnFloatingText(canvas.width / 2 - 30, 80, "LASER GRID!", "#38bdf8");
             const beamCount = m.enraged ? 3 : 2;
             for (let i = 0; i < beamCount; i++) {
                 m.beams.push({
@@ -4100,6 +4324,8 @@ function updateMechaBattle() {
             m.slamming = true;
             m.slamTimer = 0;
             m.slamY = m.y;
+            // Attack announcement (non-pausing)
+            spawnFloatingText(m.x, m.y + 50, "GROUND SLAM!", "#a855f7");
             AudioSys.sfx.alert();
         }
 
@@ -4979,6 +5205,170 @@ function drawYardLevel() {
                 ctx.fillRect(f.x + 12, f.y - 2, 4, 4);
             });
         }
+
+        // === CASTLE SECTION RENDERING ===
+        if (y.castleStart) {
+            const castleY = y.castleStart;
+
+            // Castle entrance gate - massive archway
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, castleY - 80, canvas.width, 80);
+
+            // Castle entrance arch
+            ctx.fillStyle = '#2d2d44';
+            ctx.fillRect(canvas.width / 2 - 40, castleY - 60, 80, 60);
+            ctx.fillStyle = '#3d3d5c';
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, castleY - 60, 40, Math.PI, 0);
+            ctx.fill();
+
+            // Castle wall texture
+            ctx.fillStyle = '#252538';
+            for (let ty = 0; ty < castleY - 80; ty += 20) {
+                for (let tx = 0; tx < canvas.width; tx += 24) {
+                    const offset = (Math.floor(ty / 20) % 2) * 12;
+                    ctx.fillRect(tx + offset, ty, 20, 18);
+                }
+            }
+
+            // Castle wall base
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 80, canvas.width, castleY - 80);
+
+            // Castle brickwork texture
+            ctx.fillStyle = '#2a2a40';
+            for (let ty = 80; ty < castleY; ty += 16) {
+                for (let tx = 0; tx < canvas.width; tx += 20) {
+                    const offset = (Math.floor(ty / 16) % 2) * 10;
+                    ctx.fillRect(tx + offset, ty, 18, 14);
+                }
+            }
+
+            // Castle side towers
+            ctx.fillStyle = '#1f1f35';
+            ctx.fillRect(0, 80, 30, castleY - 80);
+            ctx.fillRect(canvas.width - 30, 80, 30, castleY - 80);
+
+            // Tower details
+            ctx.fillStyle = '#0ea5e9';
+            for (let ty = 100; ty < castleY; ty += 60) {
+                ctx.fillRect(8, ty, 14, 8);
+                ctx.fillRect(canvas.width - 22, ty, 14, 8);
+            }
+
+            // Banner/flags on towers
+            ctx.fillStyle = '#ff9900';
+            ctx.fillRect(12, 85, 6, 20);
+            ctx.fillRect(canvas.width - 18, 85, 6, 20);
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.moveTo(18, 85); ctx.lineTo(30, 90); ctx.lineTo(18, 100); ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 12, 85); ctx.lineTo(canvas.width - 24, 90); ctx.lineTo(canvas.width - 12, 100); ctx.fill();
+
+            // Draw castle platforms
+            if (y.castlePlatforms) {
+                y.castlePlatforms.forEach(p => {
+                    // Platform glow
+                    ctx.fillStyle = 'rgba(14, 165, 233, 0.3)';
+                    ctx.fillRect(p.x - 2, p.y - 2, p.w + 4, 12);
+                    // Platform body
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillRect(p.x, p.y, p.w, 8);
+                    ctx.fillStyle = '#0ea5e9';
+                    ctx.fillRect(p.x + 2, p.y + 2, p.w - 4, 4);
+                    // Platform edges
+                    ctx.fillStyle = '#7dd3fc';
+                    ctx.fillRect(p.x, p.y, 4, 8);
+                    ctx.fillRect(p.x + p.w - 4, p.y, 4, 8);
+                });
+            }
+
+            // Draw laser barriers
+            if (y.castleLaserBarriers) {
+                y.castleLaserBarriers.forEach(barrier => {
+                    if (barrier.active) {
+                        // Active laser - dangerous
+                        const pulse = Math.sin(GAME.ticks * 0.3) * 0.2 + 0.8;
+                        ctx.fillStyle = `rgba(239, 68, 68, ${pulse * 0.3})`;
+                        ctx.fillRect(30, barrier.y - 10, canvas.width - 60, 20);
+                        ctx.fillStyle = '#ef4444';
+                        ctx.fillRect(30, barrier.y - 3, canvas.width - 60, 6);
+                        ctx.fillStyle = '#fca5a5';
+                        ctx.fillRect(30, barrier.y - 1, canvas.width - 60, 2);
+                        // Emitter nodes
+                        ctx.fillStyle = '#dc2626';
+                        ctx.fillRect(26, barrier.y - 6, 8, 12);
+                        ctx.fillRect(canvas.width - 34, barrier.y - 6, 8, 12);
+                    } else {
+                        // Inactive - safe to pass
+                        ctx.fillStyle = 'rgba(34, 197, 94, 0.2)';
+                        ctx.fillRect(30, barrier.y - 2, canvas.width - 60, 4);
+                        ctx.fillStyle = '#166534';
+                        ctx.fillRect(26, barrier.y - 6, 8, 12);
+                        ctx.fillRect(canvas.width - 34, barrier.y - 6, 8, 12);
+                    }
+                });
+            }
+
+            // Draw guard turrets
+            if (y.castleGuards) {
+                y.castleGuards.forEach(guard => {
+                    // Turret base
+                    ctx.fillStyle = '#374151';
+                    ctx.fillRect(guard.x, guard.y, 16, 16);
+                    ctx.fillStyle = '#4b5563';
+                    ctx.fillRect(guard.x + 2, guard.y + 2, 12, 12);
+                    // Turret barrel
+                    const dirX = guard.x < canvas.width / 2 ? 1 : -1;
+                    ctx.fillStyle = '#6b7280';
+                    if (dirX === 1) {
+                        ctx.fillRect(guard.x + 12, guard.y + 5, 10, 6);
+                    } else {
+                        ctx.fillRect(guard.x - 6, guard.y + 5, 10, 6);
+                    }
+                    // Warning light
+                    const charging = guard.fireTimer > guard.fireRate - 20;
+                    ctx.fillStyle = charging ? '#ef4444' : '#22c55e';
+                    ctx.fillRect(guard.x + 6, guard.y - 2, 4, 4);
+                });
+            }
+
+            // Draw castle projectiles
+            if (y.castleProjectiles) {
+                y.castleProjectiles.forEach(proj => {
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillRect(proj.x - 4, proj.y - 3, 8, 6);
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.fillRect(proj.x - 2, proj.y - 1, 4, 2);
+                });
+            }
+
+            // Draw patrol drones
+            if (y.castleDrones) {
+                y.castleDrones.forEach(drone => {
+                    const pulse = Math.sin(drone.pulseTimer * 0.15) * 2;
+                    // Drone body
+                    ctx.fillStyle = '#22d3ee';
+                    ctx.fillRect(drone.x - 8 - pulse/2, drone.y - 8 - pulse/2, 16 + pulse, 16 + pulse);
+                    ctx.fillStyle = '#0ea5e9';
+                    ctx.fillRect(drone.x - 5, drone.y - 5, 10, 10);
+                    // Eye
+                    ctx.fillStyle = '#dc2626';
+                    ctx.fillRect(drone.x - 2, drone.y - 2, 4, 4);
+                    // Propellers
+                    const propPhase = Math.floor(drone.pulseTimer / 2) % 2;
+                    ctx.fillStyle = '#94a3b8';
+                    if (propPhase === 0) {
+                        ctx.fillRect(drone.x - 14, drone.y - 2, 6, 4);
+                        ctx.fillRect(drone.x + 8, drone.y - 2, 6, 4);
+                    } else {
+                        ctx.fillRect(drone.x - 2, drone.y - 14, 4, 6);
+                        ctx.fillRect(drone.x - 2, drone.y + 8, 4, 6);
+                    }
+                });
+            }
+        }
     }
 
     // Draw player
@@ -5037,47 +5427,106 @@ function drawYardLevel() {
 function drawMechaBattle() {
     const m = GAME.mecha;
 
-    // Dynamic background based on phase and enrage
-    let bgColor = '#0b1020';
+    // === CASTLE THRONE ROOM BACKGROUND ===
+    // Base castle wall color - changes when enraged
+    let wallColor = '#1a1a2e';
+    let accentColor = '#2a2a40';
     if (m && m.enraged) {
-        const pulse = Math.sin(GAME.ticks * 0.1) * 0.1;
-        bgColor = `rgb(${Math.floor(20 + pulse * 30)}, ${Math.floor(10 + pulse * 10)}, ${Math.floor(20 + pulse * 20)})`;
+        const pulse = Math.sin(GAME.ticks * 0.1) * 0.15;
+        wallColor = `rgb(${Math.floor(40 + pulse * 30)}, ${Math.floor(15 + pulse * 10)}, ${Math.floor(25 + pulse * 15)})`;
+        accentColor = `rgb(${Math.floor(60 + pulse * 20)}, ${Math.floor(25 + pulse * 10)}, ${Math.floor(35 + pulse * 10)})`;
     }
-    ctx.fillStyle = bgColor;
+
+    // Castle wall background
+    ctx.fillStyle = wallColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Stars with parallax
-    for (let i = 0; i < 80; i++) {
-        const twinkle = Math.sin(GAME.ticks * 0.05 + i) * 0.1 + 0.15;
-        ctx.fillStyle = `rgba(255,255,255,${twinkle})`;
-        const x = (i * 47 + GAME.ticks * 0.1) % canvas.width;
-        const y = (i * 23) % 30;
-        ctx.fillRect(x, y, 1, 1);
+    // Stone brick pattern
+    ctx.fillStyle = accentColor;
+    for (let ty = 0; ty < canvas.height; ty += 16) {
+        for (let tx = 0; tx < canvas.width; tx += 20) {
+            const offset = (Math.floor(ty / 16) % 2) * 10;
+            ctx.fillRect(tx + offset, ty, 18, 14);
+        }
     }
 
-    // Arena floor with grid pattern
-    ctx.fillStyle = '#1a1f2e';
+    // Castle pillars on sides
+    ctx.fillStyle = '#151525';
+    ctx.fillRect(0, 0, 24, canvas.height);
+    ctx.fillRect(canvas.width - 24, 0, 24, canvas.height);
+    ctx.fillStyle = '#252538';
+    ctx.fillRect(4, 0, 16, canvas.height);
+    ctx.fillRect(canvas.width - 20, 0, 16, canvas.height);
+
+    // Pillar decorations
+    ctx.fillStyle = '#ff9900';
+    for (let py = 20; py < canvas.height; py += 40) {
+        ctx.fillRect(8, py, 8, 6);
+        ctx.fillRect(canvas.width - 16, py, 8, 6);
+    }
+
+    // Throne room banners
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(40, 0, 20, 50);
+    ctx.fillRect(canvas.width - 60, 0, 20, 50);
+    ctx.fillStyle = '#ff9900';
+    ctx.fillRect(44, 20, 12, 8);
+    ctx.fillRect(canvas.width - 56, 20, 12, 8);
+    // Banner tips
+    ctx.beginPath();
+    ctx.moveTo(40, 50); ctx.lineTo(50, 65); ctx.lineTo(60, 50); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(canvas.width - 60, 50); ctx.lineTo(canvas.width - 50, 65); ctx.lineTo(canvas.width - 40, 50); ctx.fill();
+
+    // Castle window arches with ominous glow
+    const windowGlow = m && m.enraged ? 'rgba(220, 38, 38, 0.4)' : 'rgba(14, 165, 233, 0.3)';
+    ctx.fillStyle = windowGlow;
+    ctx.fillRect(80, 10, 30, 25);
+    ctx.fillRect(canvas.width - 110, 10, 30, 25);
+    ctx.beginPath();
+    ctx.arc(95, 10, 15, Math.PI, 0);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(canvas.width - 95, 10, 15, Math.PI, 0);
+    ctx.fill();
+
+    // Throne room floor with perspective tiles
+    const floorGradient = ctx.createLinearGradient(0, 35, 0, canvas.height);
+    floorGradient.addColorStop(0, '#1f1f35');
+    floorGradient.addColorStop(1, '#0f0f20');
+    ctx.fillStyle = floorGradient;
     ctx.fillRect(0, 35, canvas.width, canvas.height - 35);
 
-    // Grid lines for depth
-    ctx.strokeStyle = '#2d3748';
+    // Floor tile grid with perspective effect
+    ctx.strokeStyle = m && m.enraged ? '#4a1515' : '#2d2d48';
     ctx.lineWidth = 1;
-    for (let x = 0; x < canvas.width; x += 20) {
+    for (let x = 24; x < canvas.width - 24; x += 24) {
         ctx.beginPath();
         ctx.moveTo(x, 35);
         ctx.lineTo(x, canvas.height);
         ctx.stroke();
     }
-    for (let y = 35; y < canvas.height; y += 16) {
+    for (let y = 35; y < canvas.height; y += 18) {
         ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
+        ctx.moveTo(24, y);
+        ctx.lineTo(canvas.width - 24, y);
         ctx.stroke();
     }
 
-    // Arena edge glow
-    ctx.fillStyle = m && m.enraged ? '#dc2626' : '#0ea5e9';
-    ctx.fillRect(0, 33, canvas.width, 3);
+    // Golden carpet runner in center
+    ctx.fillStyle = m && m.enraged ? '#7f1d1d' : '#92400e';
+    ctx.fillRect(canvas.width / 2 - 30, 35, 60, canvas.height - 35);
+    ctx.fillStyle = m && m.enraged ? '#dc2626' : '#f59e0b';
+    ctx.fillRect(canvas.width / 2 - 26, 35, 52, canvas.height - 35);
+    // Carpet pattern
+    ctx.fillStyle = m && m.enraged ? '#7f1d1d' : '#b45309';
+    for (let cy = 45; cy < canvas.height; cy += 30) {
+        ctx.fillRect(canvas.width / 2 - 20, cy, 40, 8);
+    }
+
+    // Arena edge glow line
+    ctx.fillStyle = m && m.enraged ? '#dc2626' : '#ff9900';
+    ctx.fillRect(24, 33, canvas.width - 48, 3);
 
     // Phase transition overlay
     if (m && m.phaseTransition) {
