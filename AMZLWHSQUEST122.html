@@ -1220,8 +1220,7 @@ function generateAssets() {
     });
 
     GFX.mechaJeff = c(64,64, ctx => {
-        // Dark background plate
-        ctx.fillStyle = '#050810'; ctx.fillRect(0,0,64,64);
+        // Transparent background - no fill
         // Mecha body frame with gradient effect
         ctx.fillStyle = '#1a1f2e'; ctx.fillRect(8,32,48,28);
         ctx.fillStyle = '#252b3d'; ctx.fillRect(12,34,40,24);
@@ -2234,8 +2233,7 @@ function generateAssets() {
     });
     // Jeff character for yard level - full body standing with arms crossed
     GFX.jeffYard = c(48,48, ctx => {
-        // Background
-        ctx.fillStyle = '#0a0a14'; ctx.fillRect(0,0,48,48);
+        // Transparent background - no fill
         // Legs (dark pants)
         ctx.fillStyle = '#1a1f2e'; ctx.fillRect(16,38,6,10); ctx.fillRect(26,38,6,10);
         ctx.fillStyle = '#2d3748'; ctx.fillRect(17,39,4,9); ctx.fillRect(27,39,4,9);
@@ -2284,8 +2282,7 @@ function generateAssets() {
         ctx.fillStyle = '#e8c49a'; ctx.fillRect(13,11,2,4); ctx.fillRect(33,11,2,4);
     });
     GFX.mechaBezos = c(48,48, ctx => {
-        // Base plate
-        ctx.fillStyle = '#0a0f18'; ctx.fillRect(0,0,48,48);
+        // Transparent background - no fill
         // Mecha body with armor
         ctx.fillStyle = '#2d3748'; ctx.fillRect(8,22,32,20);
         ctx.fillStyle = '#3d4a5c'; ctx.fillRect(10,24,28,16);
@@ -2948,11 +2945,10 @@ function handleAction() {
     else if (GAME.state === 'BEZOS_WIN') {
         GAME.state = 'TITLE'; updateMusicForState();
     }
-    else if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'BEZOS_BOSS') {
+    else if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'BEZOS_BOSS' || GAME.state === 'MECHA_BOSS') {
         if (GAME.state === 'PLAY' && tryInteract()) return;
-        if (GAME.state === 'BEZOS_BOSS') throwBook();
-        else if (GAME.state === 'BOSS') throwBook();
-        else throwBook();
+        // Allow shooting in all combat states - always target the appropriate enemy
+        throwBook();
     }
 }
 
@@ -3153,9 +3149,14 @@ function initBossEncounter() {
 function startYardLevel() {
     GAME.state = 'YARD_LEVEL';
     GAME.stateTimer = 0;
-    const h = 720; // Extended yard height for more exploration
+    const yardSection = 720; // Yard height
+    const castleSection = 400; // Castle corridor height
+    const h = yardSection + castleSection; // Total level height
     GAME.yard = {
         height: h,
+        yardSection: yardSection,
+        castleSection: castleSection,
+        castleStart: yardSection, // Y coordinate where castle begins (lower Y = higher on screen)
         cameraY: 0,
         playerX: canvas.width / 2 - 8,
         playerY: h - 32,
@@ -3165,11 +3166,31 @@ function startYardLevel() {
         forklifts: [], // Forklift hazards
         hazardZones: [], // Environmental hazard zones
         transformationTriggered: false, // Track if Mecha transformation cutscene started
+        // Castle section state
+        inCastle: false,
+        castleEnemies: [], // Drone patrols in castle
+        castleLasers: [], // Laser barriers
         // Jeff taunting system - now more dynamic
         jeffTaunt: JEFF_YARD_TAUNTS[Math.floor(Math.random() * JEFF_YARD_TAUNTS.length)],
         jeffTauntTimer: 0,
         jeffAnimFrame: 0, // Animation frame for Jeff
         progressTaunt: "", // Special taunt based on player progress
+        // Jeff throne taunts for castle section
+        throneTaunts: [
+            "WELCOME TO MY CASTLE!",
+            "YOU'VE COME SO FAR... TO FAIL!",
+            "MY DRONES AWAIT YOU!",
+            "EVERY STEP COSTS YOU!",
+            "THE THRONE ROOM IS CLOSE!",
+            "I'VE BEEN EXPECTING YOU!",
+            "AUTOMATION WILL REPLACE YOU!",
+            "BEHOLD MY EMPIRE!",
+            "YOUR METRICS END HERE!",
+            "PRIME MEMBERS GET IN FREE!",
+            "TOO SLOW! MY DRONES ARE FASTER!",
+            "CUSTOMER OBSESSION? I OBSESS OVER CRUSHING YOU!"
+        ],
+        currentThroneTaunt: 0,
         // Extended vehicle lanes - more challenging gauntlet with varied patterns
         lanes: [
             { y: h - 70, dir: 1, speed: 0.85, timer: 75, type: 'truck' },
@@ -3195,6 +3216,13 @@ function startYardLevel() {
             { x: 180, y: h - 260, type: 'debris' },
             { x: 80, y: h - 440, type: 'puddle' },
             { x: 150, y: h - 550, type: 'debris' }
+        ],
+        // Castle hazards
+        castleDrones: [],
+        castleLaserWalls: [
+            { y: castleSection - 80, active: true, timer: 0, pattern: 'sweep' },
+            { y: castleSection - 180, active: true, timer: 60, pattern: 'blink' },
+            { y: castleSection - 280, active: true, timer: 30, pattern: 'sweep' }
         ]
     };
     GAME.player.speed = GAME.yard.speed;
@@ -3845,25 +3873,38 @@ function updateYardLevel() {
     if (!GAME.yard) return;
     const y = GAME.yard;
     GAME.player.x = y.playerX; GAME.player.y = y.playerY;
+    const inCastle = y.playerY < y.castleStart;
 
-    // Update Jeff taunt at top - now with progress-based taunts
+    // Update Jeff taunt - different behavior for yard vs castle
     y.jeffTauntTimer++;
     y.jeffAnimFrame++;
 
-    // Progress-based dynamic taunts
-    const progress = 1 - (y.playerY / y.height);
-    if (progress > 0.8 && !y.nearTauntShown) {
-        y.nearTauntShown = true;
-        y.jeffTaunt = "YOU'RE ALMOST HERE! TOO BAD I'M ABOUT TO CRUSH YOU!";
-        AudioSys.sfx.alert();
-    } else if (progress > 0.5 && !y.halfwayTauntShown) {
-        y.halfwayTauntShown = true;
-        y.jeffTaunt = "HALFWAY? IMPRESSIVE! NOW FACE THE REAL CHALLENGE!";
-        AudioSys.sfx.pop();
-    } else if (y.jeffTauntTimer > 100) { // Regular taunt rotation
-        y.jeffTaunt = JEFF_YARD_TAUNTS[Math.floor(Math.random() * JEFF_YARD_TAUNTS.length)];
-        y.jeffTauntTimer = 0;
-        AudioSys.sfx.pop();
+    if (inCastle) {
+        // Castle section - throne taunts
+        if (!y.inCastle) {
+            y.inCastle = true;
+            y.currentThroneTaunt = 0;
+            spawnFloatingText(y.playerX, y.playerY - 30, "ENTERING BEZOS CASTLE!", "#ff9900");
+            AudioSys.sfx.alert();
+        }
+        // Rotate throne taunts
+        if (y.jeffTauntTimer > 80) {
+            y.currentThroneTaunt = (y.currentThroneTaunt + 1) % y.throneTaunts.length;
+            y.jeffTauntTimer = 0;
+            AudioSys.sfx.pop();
+        }
+    } else {
+        // Yard section - progress-based taunts
+        const progress = 1 - (y.playerY / y.height);
+        if (progress > 0.5 && !y.halfwayTauntShown) {
+            y.halfwayTauntShown = true;
+            y.jeffTaunt = "HALFWAY? IMPRESSIVE! NOW FACE THE REAL CHALLENGE!";
+            AudioSys.sfx.pop();
+        } else if (y.jeffTauntTimer > 100) {
+            y.jeffTaunt = JEFF_YARD_TAUNTS[Math.floor(Math.random() * JEFF_YARD_TAUNTS.length)];
+            y.jeffTauntTimer = 0;
+            AudioSys.sfx.pop();
+        }
     }
 
     let dx = 0, dy = 0;
@@ -3872,103 +3913,168 @@ function updateYardLevel() {
 
     // Check for static hazard slowdown (puddles slow you down)
     let inHazard = false;
-    if (y.staticHazards) {
+    if (y.staticHazards && !inCastle) {
         y.staticHazards.forEach(h => {
             if (Math.abs(y.playerX - h.x) < 20 && Math.abs(y.playerY - h.y) < 20) {
                 if (h.type === 'puddle') {
-                    dx *= 0.5; dy *= 0.5; // Slow down in puddles
+                    dx *= 0.5; dy *= 0.5;
                     inHazard = true;
                 }
             }
         });
     }
 
-    y.playerX = Math.max(0, Math.min(canvas.width - 16, y.playerX + dx));
-    y.playerY = Math.max(10, Math.min(y.height - 22, y.playerY + dy));
+    // Boundary limits - castle has wall pillars on sides
+    const minX = inCastle ? 24 : 0;
+    const maxX = inCastle ? canvas.width - 40 : canvas.width - 16;
+    y.playerX = Math.max(minX, Math.min(maxX, y.playerX + dx));
+    y.playerY = Math.max(100, Math.min(y.height - 22, y.playerY + dy)); // Can't go above throne area
     GAME.player.x = y.playerX; GAME.player.y = y.playerY;
 
     const viewAnchor = y.playerY - canvas.height * 0.55;
     y.cameraY = Math.max(0, Math.min(y.height - canvas.height, viewAnchor));
 
-    // Spawn vehicles in lanes with varied types
-    y.lanes.forEach(lane => {
-        lane.timer--;
-        if (lane.timer <= 0) {
-            let type;
-            if (lane.type === 'truck') type = 'truck';
-            else if (lane.type === 'van') type = 'van';
-            else type = Math.random() < 0.55 ? 'van' : 'truck';
-
-            const w = type === 'van' ? 34 : 52;
-            const h = type === 'van' ? 16 : 20;
-            const x = lane.dir === 1 ? -w : canvas.width + w;
-            y.vehicles.push({ type, x, y: lane.y - h/2, w, h, dir: lane.dir, speed: lane.speed + Math.random()*0.25 });
-            lane.timer = 50 + Math.random() * 60;
+    // === CASTLE SECTION HAZARDS ===
+    if (inCastle) {
+        // Spawn castle drones periodically
+        if (!y.castleDrones) y.castleDrones = [];
+        if (GAME.ticks % 120 === 0 && y.castleDrones.length < 4) {
+            const dir = Math.random() < 0.5 ? 1 : -1;
+            y.castleDrones.push({
+                x: dir === 1 ? -20 : canvas.width + 20,
+                y: 150 + Math.random() * 200,
+                dir: dir,
+                speed: 0.8 + Math.random() * 0.4,
+                w: 20, h: 12
+            });
         }
-    });
 
-    // Update forklift zones
-    if (y.forkliftZones) {
-        y.forkliftZones.forEach(zone => {
-            zone.timer--;
-            if (zone.timer <= 0) {
-                zone.active = !zone.active;
-                zone.timer = zone.active ? 60 : (150 + Math.random() * 100);
-                if (zone.active && Math.abs(y.playerY - zone.y) < 100) {
-                    // Spawn a forklift
-                    const dir = Math.random() < 0.5 ? 1 : -1;
-                    y.forklifts.push({
-                        x: dir === 1 ? -30 : canvas.width + 30,
-                        y: zone.y - 10,
-                        dir: dir,
-                        speed: 1.5 + Math.random() * 0.5,
-                        w: 28, h: 20
-                    });
-                    AudioSys.sfx.alert();
+        // Update drones
+        for (let i = y.castleDrones.length - 1; i >= 0; i--) {
+            const d = y.castleDrones[i];
+            d.x += d.dir * d.speed;
+            // Sine wave vertical movement
+            d.y += Math.sin(GAME.ticks * 0.05 + d.x * 0.1) * 0.3;
+            if (d.x < -40 || d.x > canvas.width + 40) {
+                y.castleDrones.splice(i, 1);
+                continue;
+            }
+            // Drone collision
+            if (Math.abs((d.x + d.w/2) - (y.playerX + 8)) < (d.w/2 + 6) && Math.abs((d.y + d.h/2) - (y.playerY + 8)) < (d.h/2 + 6)) {
+                if (GAME.player.iframe <= 0) {
+                    GAME.lives--; GAME.flash = 12; GAME.shake = 10; AudioSys.sfx.hurt(); updateHud();
+                    GAME.player.iframe = 60;
+                    spawnFloatingText(y.playerX, y.playerY - 20, "DRONE PATROL!", "#ff4444");
+                    if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('DRONE TERMINATED!'); return; }
                 }
             }
+        }
+
+        // Castle laser wall collisions
+        if (y.castleLaserWalls) {
+            y.castleLaserWalls.forEach(laser => {
+                const active = laser.pattern === 'blink' ?
+                    (Math.floor((GAME.ticks + laser.timer) / 40) % 2 === 0) :
+                    true;
+                if (!active) return;
+
+                const sweepX = laser.pattern === 'sweep' ?
+                    Math.sin((GAME.ticks + laser.timer) * 0.03) * 60 + canvas.width / 2 - 40 :
+                    24;
+                const sweepW = laser.pattern === 'sweep' ? 80 : canvas.width - 48;
+
+                // Check collision
+                if (y.playerY >= laser.y - 6 && y.playerY <= laser.y + 10 &&
+                    y.playerX + 8 >= sweepX && y.playerX + 8 <= sweepX + sweepW) {
+                    if (GAME.player.iframe <= 0) {
+                        GAME.lives--; GAME.flash = 15; GAME.shake = 12; AudioSys.sfx.hurt(); updateHud();
+                        GAME.player.iframe = 60;
+                        spawnFloatingText(y.playerX, y.playerY - 20, "LASER BARRIER!", "#ff4444");
+                        if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('VAPORIZED BY LASER!'); return; }
+                    }
+                }
+            });
+        }
+    }
+
+    // === YARD SECTION HAZARDS ===
+    if (!inCastle) {
+        // Spawn vehicles in lanes
+        y.lanes.forEach(lane => {
+            lane.timer--;
+            if (lane.timer <= 0) {
+                let type;
+                if (lane.type === 'truck') type = 'truck';
+                else if (lane.type === 'van') type = 'van';
+                else type = Math.random() < 0.55 ? 'van' : 'truck';
+
+                const w = type === 'van' ? 34 : 52;
+                const h = type === 'van' ? 16 : 20;
+                const x = lane.dir === 1 ? -w : canvas.width + w;
+                y.vehicles.push({ type, x, y: lane.y - h/2, w, h, dir: lane.dir, speed: lane.speed + Math.random()*0.25 });
+                lane.timer = 50 + Math.random() * 60;
+            }
         });
-    }
 
-    // Update forklifts
-    for (let i = y.forklifts.length - 1; i >= 0; i--) {
-        const f = y.forklifts[i];
-        f.x += f.dir * f.speed;
-        if (f.x < -60 || f.x > canvas.width + 60) { y.forklifts.splice(i, 1); continue; }
-        // Forklift collision
-        if (Math.abs((f.x + f.w/2) - (y.playerX + 8)) < (f.w/2 + 4) && Math.abs((f.y + f.h/2) - (y.playerY + 8)) < (f.h/2 + 4)) {
-            if (GAME.player.iframe <= 0) {
-                GAME.lives--; GAME.flash = 15; GAME.shake = 20; AudioSys.sfx.hurt(); updateHud();
-                // Teleport to start - no iframe needed since player is repositioned
-                y.playerX = canvas.width / 2 - 8;
-                y.playerY = y.startY;
-                y.cameraY = Math.max(0, y.height - canvas.height);
-                spawnFloatingText(y.playerX, y.playerY - 20, "FORKLIFT! NO PEDESTRIANS!", "#ff4444");
-                if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('FORKLIFT INCIDENT!'); return; }
+        // Update forklift zones
+        if (y.forkliftZones) {
+            y.forkliftZones.forEach(zone => {
+                zone.timer--;
+                if (zone.timer <= 0) {
+                    zone.active = !zone.active;
+                    zone.timer = zone.active ? 60 : (150 + Math.random() * 100);
+                    if (zone.active && Math.abs(y.playerY - zone.y) < 100) {
+                        const dir = Math.random() < 0.5 ? 1 : -1;
+                        y.forklifts.push({
+                            x: dir === 1 ? -30 : canvas.width + 30,
+                            y: zone.y - 10,
+                            dir: dir,
+                            speed: 1.5 + Math.random() * 0.5,
+                            w: 28, h: 20
+                        });
+                        AudioSys.sfx.alert();
+                    }
+                }
+            });
+        }
+
+        // Update forklifts
+        for (let i = y.forklifts.length - 1; i >= 0; i--) {
+            const f = y.forklifts[i];
+            f.x += f.dir * f.speed;
+            if (f.x < -60 || f.x > canvas.width + 60) { y.forklifts.splice(i, 1); continue; }
+            if (Math.abs((f.x + f.w/2) - (y.playerX + 8)) < (f.w/2 + 4) && Math.abs((f.y + f.h/2) - (y.playerY + 8)) < (f.h/2 + 4)) {
+                if (GAME.player.iframe <= 0) {
+                    GAME.lives--; GAME.flash = 15; GAME.shake = 20; AudioSys.sfx.hurt(); updateHud();
+                    y.playerX = canvas.width / 2 - 8;
+                    y.playerY = y.startY;
+                    y.cameraY = Math.max(0, y.height - canvas.height);
+                    spawnFloatingText(y.playerX, y.playerY - 20, "FORKLIFT! NO PEDESTRIANS!", "#ff4444");
+                    if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('FORKLIFT INCIDENT!'); return; }
+                }
+            }
+        }
+
+        // Vehicle collision - FULL RESET
+        for (let i = y.vehicles.length - 1; i >= 0; i--) {
+            const v = y.vehicles[i];
+            v.x += v.dir * v.speed;
+            if (v.x < -80 || v.x > canvas.width + 80) { y.vehicles.splice(i,1); continue; }
+            if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 5) && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 5)) {
+                if (GAME.player.iframe <= 0) {
+                    GAME.lives--; GAME.flash = 12; GAME.shake = 15; AudioSys.sfx.hurt(); updateHud();
+                    y.playerX = canvas.width / 2 - 8;
+                    y.playerY = y.startY;
+                    y.cameraY = Math.max(0, y.height - canvas.height);
+                    spawnFloatingText(y.playerX, y.playerY - 20, "WATCH THE TRAFFIC!", "#ff4444");
+                    if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('FLATTENED BY LOGISTICS!'); return; }
+                }
             }
         }
     }
 
-    // Vehicle collision - FULL RESET to starting position
-    for (let i = y.vehicles.length - 1; i >= 0; i--) {
-        const v = y.vehicles[i];
-        v.x += v.dir * v.speed;
-        if (v.x < -80 || v.x > canvas.width + 80) { y.vehicles.splice(i,1); continue; }
-        if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 5) && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 5)) {
-            if (GAME.player.iframe <= 0) {
-                GAME.lives--; GAME.flash = 12; GAME.shake = 15; AudioSys.sfx.hurt(); updateHud();
-                // FULL RESET - player goes back to starting position, no iframe since teleporting
-                y.playerX = canvas.width / 2 - 8;
-                y.playerY = y.startY;
-                y.cameraY = Math.max(0, y.height - canvas.height);
-                spawnFloatingText(y.playerX, y.playerY - 20, "WATCH THE TRAFFIC!", "#ff4444");
-                if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('FLATTENED BY LOGISTICS!'); return; }
-            }
-        }
-    }
-
-    // Trigger MECHA TRANSFORMATION CUTSCENE when player reaches Jeff
-    if (y.playerY <= 60 && !y.transformationTriggered) {
+    // Trigger MECHA TRANSFORMATION when player reaches Jeff's throne
+    if (y.playerY <= 110 && !y.transformationTriggered) {
         y.transformationTriggered = true;
         GAME.state = 'MECHA_TRANSFORM';
         GAME.stateTimer = 0;
@@ -4004,18 +4110,20 @@ function updateMechaBattle() {
     }
     if (m.enraged) m.enrageFlash = (m.enrageFlash + 1) % 20;
 
-    // Phase transition handling
+    // Phase transition handling - NON-BLOCKING (game continues during announcement)
     if (m.phaseTransition) {
         m.transitionTimer++;
         if (m.transitionTimer >= 60) {
             m.phaseTransition = false;
             m.transitionTimer = 0;
             m.phaseTimer = 0;
-            // Announce new phase
-            spawnFloatingText(canvas.width / 2 - 40, 60, m.phaseNames[m.currentPhase], "#ff9900");
         }
-        return; // Pause attacks during transition
+        // DON'T return - gameplay continues while announcement displays!
     }
+
+    // Attack announcements system - shows warning before attacks
+    if (!m.attackAnnouncement) m.attackAnnouncement = { text: '', timer: 0, color: '#ff9900' };
+    if (m.attackAnnouncement.timer > 0) m.attackAnnouncement.timer--;
 
     m.phaseTimer++;
 
@@ -4036,7 +4144,12 @@ function updateMechaBattle() {
 
     // PHASE 0: Prime Missiles - Homing missiles from shoulders
     if (m.currentPhase === 0) {
-        if (m.timer % Math.floor(70 * attackRate) === 0 && m.attackCooldown <= 0) {
+        const missileInterval = Math.floor(70 * attackRate);
+        // Announcement 20 frames before attack
+        if (m.timer % missileInterval === missileInterval - 20) {
+            m.attackAnnouncement = { text: 'PRIME MISSILES!', timer: 40, color: '#dc2626' };
+        }
+        if (m.timer % missileInterval === 0 && m.attackCooldown <= 0) {
             const angle = Math.atan2(p.y - m.y, p.x - m.x);
             for (let i = -1; i <= 1; i += 2) {
                 m.projectiles.push({
@@ -4055,8 +4168,13 @@ function updateMechaBattle() {
 
     // PHASE 1: Drone Swarm - Multiple homing drones
     if (m.currentPhase === 1) {
+        const droneInterval = Math.floor(50 * attackRate);
         const activeDrones = m.projectiles.filter(pr => pr.type === 'drone').length;
-        if (m.timer % Math.floor(50 * attackRate) === 0 && activeDrones < (m.enraged ? 5 : 3)) {
+        // Announcement before spawning drones
+        if (m.timer % droneInterval === droneInterval - 15 && activeDrones < (m.enraged ? 5 : 3)) {
+            m.attackAnnouncement = { text: 'DRONE DEPLOYED!', timer: 35, color: '#22d3ee' };
+        }
+        if (m.timer % droneInterval === 0 && activeDrones < (m.enraged ? 5 : 3)) {
             m.projectiles.push({
                 type: 'drone',
                 x: m.x + 32 + (Math.random() - 0.5) * 40,
@@ -4071,7 +4189,12 @@ function updateMechaBattle() {
 
     // PHASE 2: Package Rain - Boxes rain from above with shadows
     if (m.currentPhase === 2) {
-        if (m.timer % Math.floor(35 * attackRate) === 0) {
+        const boxInterval = Math.floor(35 * attackRate);
+        // Announcement for package drops
+        if (m.timer % boxInterval === boxInterval - 10) {
+            m.attackAnnouncement = { text: 'INCOMING PACKAGES!', timer: 30, color: '#f59e0b' };
+        }
+        if (m.timer % boxInterval === 0) {
             const targetX = p.x + (Math.random() - 0.5) * 80;
             m.shadows.push({ x: Math.max(10, Math.min(canvas.width - 30, targetX)), timer: 45 });
         }
@@ -4079,7 +4202,12 @@ function updateMechaBattle() {
 
     // PHASE 3: Laser Grid - Multiple sweeping beams
     if (m.currentPhase === 3) {
-        if (m.timer % Math.floor(100 * attackRate) === 0 && m.beams.length < 3) {
+        const laserInterval = Math.floor(100 * attackRate);
+        // Announcement before laser grid
+        if (m.timer % laserInterval === laserInterval - 30 && m.beams.length < 3) {
+            m.attackAnnouncement = { text: 'LASER GRID!', timer: 50, color: '#ef4444' };
+        }
+        if (m.timer % laserInterval === 0 && m.beams.length < 3) {
             const beamCount = m.enraged ? 3 : 2;
             for (let i = 0; i < beamCount; i++) {
                 m.beams.push({
@@ -4096,7 +4224,12 @@ function updateMechaBattle() {
 
     // PHASE 4: Ground Slam - Boss slams down and creates shockwave
     if (m.currentPhase === 4) {
-        if (!m.slamming && m.timer % Math.floor(120 * attackRate) === 0) {
+        const slamInterval = Math.floor(120 * attackRate);
+        // Announcement before slam
+        if (!m.slamming && m.timer % slamInterval === slamInterval - 25) {
+            m.attackAnnouncement = { text: 'GROUND SLAM!', timer: 45, color: '#a855f7' };
+        }
+        if (!m.slamming && m.timer % slamInterval === 0) {
             m.slamming = true;
             m.slamTimer = 0;
             m.slamY = m.y;
@@ -4137,13 +4270,17 @@ function updateMechaBattle() {
         }
     }
 
-    // Phase cycling
+    // Phase cycling with announcement
     if (m.phaseTimer >= m.phaseDuration) {
         m.currentPhase = (m.currentPhase + 1) % 5;
         m.phaseTransition = true;
+        m.transitionTimer = 0;
         m.shadows = [];
         m.beams = [];
         m.slamming = false;
+        // Announce new phase
+        m.attackAnnouncement = { text: m.phaseNames[m.currentPhase], timer: 60, color: '#ff9900' };
+        AudioSys.sfx.alert();
     }
 
     // Update projectiles
@@ -4776,101 +4913,265 @@ function drawSnesSplash(isWin) {
 function drawYardLevel() {
     const y = GAME.yard;
     const camY = y ? y.cameraY || 0 : 0;
-    const yardHeight = y ? y.height : canvas.height;
+    const totalHeight = y ? y.height : canvas.height;
+    const castleStart = y ? y.castleStart : 720;
+    const inCastle = y && y.playerY < castleStart;
 
     ctx.save();
     ctx.translate(0, -camY);
 
-    // === DARK DRAMATIC SKY AT TOP ===
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, 100);
-    skyGrad.addColorStop(0, '#0a0a14');
-    skyGrad.addColorStop(0.5, '#1a1a2e');
-    skyGrad.addColorStop(1, '#0b1224');
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, canvas.width, 100);
-
-    // === JEFF CHARACTER AT TOP ===
+    // === CASTLE SECTION (drawn first, at top of level) ===
     if (y) {
+        const castleTop = 0;
+        const castleBottom = castleStart;
+
+        // Castle background - dark stone walls
+        const castleGrad = ctx.createLinearGradient(0, castleTop, 0, castleBottom);
+        castleGrad.addColorStop(0, '#1a0a1a');
+        castleGrad.addColorStop(0.3, '#2d1f3d');
+        castleGrad.addColorStop(0.7, '#1f1a2e');
+        castleGrad.addColorStop(1, '#0f0a1a');
+        ctx.fillStyle = castleGrad;
+        ctx.fillRect(0, castleTop, canvas.width, castleBottom);
+
+        // Stone wall texture
+        ctx.fillStyle = '#2a1f3a';
+        for (let ty = castleTop; ty < castleBottom; ty += 24) {
+            for (let tx = (Math.floor(ty / 24) % 2) * 16; tx < canvas.width; tx += 32) {
+                ctx.fillRect(tx, ty, 30, 22);
+            }
+        }
+        ctx.fillStyle = '#3d2f4d';
+        for (let ty = castleTop + 4; ty < castleBottom; ty += 24) {
+            for (let tx = (Math.floor(ty / 24) % 2) * 16 + 2; tx < canvas.width; tx += 32) {
+                ctx.fillRect(tx, ty, 26, 16);
+            }
+        }
+
+        // Castle wall pillars on sides
+        ctx.fillStyle = '#1a1028';
+        ctx.fillRect(0, castleTop, 20, castleBottom - castleTop);
+        ctx.fillRect(canvas.width - 20, castleTop, 20, castleBottom - castleTop);
+        ctx.fillStyle = '#2d1f3d';
+        ctx.fillRect(4, castleTop, 12, castleBottom - castleTop);
+        ctx.fillRect(canvas.width - 16, castleTop, 12, castleBottom - castleTop);
+
+        // Torches on pillars
+        for (let ty = castleTop + 40; ty < castleBottom - 60; ty += 80) {
+            const flickerL = Math.sin(GAME.ticks * 0.15 + ty) * 2;
+            const flickerR = Math.sin(GAME.ticks * 0.15 + ty + 1) * 2;
+            // Left torch
+            ctx.fillStyle = '#4a3a2a';
+            ctx.fillRect(16, ty, 6, 12);
+            ctx.fillStyle = '#ff9900';
+            ctx.beginPath();
+            ctx.arc(19, ty - 4 + flickerL, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffcc00';
+            ctx.beginPath();
+            ctx.arc(19, ty - 6 + flickerL, 3, 0, Math.PI * 2);
+            ctx.fill();
+            // Right torch
+            ctx.fillStyle = '#4a3a2a';
+            ctx.fillRect(canvas.width - 22, ty, 6, 12);
+            ctx.fillStyle = '#ff9900';
+            ctx.beginPath();
+            ctx.arc(canvas.width - 19, ty - 4 + flickerR, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffcc00';
+            ctx.beginPath();
+            ctx.arc(canvas.width - 19, ty - 6 + flickerR, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Amazon banners on walls
+        for (let ty = castleTop + 60; ty < castleBottom - 100; ty += 120) {
+            // Left banner
+            ctx.fillStyle = '#0f4c81';
+            ctx.fillRect(28, ty, 24, 40);
+            ctx.fillStyle = '#ff9900';
+            ctx.fillRect(32, ty + 10, 16, 8);
+            ctx.fillRect(36, ty + 18, 12, 6);
+            // Right banner
+            ctx.fillStyle = '#0f4c81';
+            ctx.fillRect(canvas.width - 52, ty, 24, 40);
+            ctx.fillStyle = '#ff9900';
+            ctx.fillRect(canvas.width - 48, ty + 10, 16, 8);
+            ctx.fillRect(canvas.width - 44, ty + 18, 12, 6);
+        }
+
+        // Castle floor pattern (red carpet down middle)
+        ctx.fillStyle = '#4a1a1a';
+        ctx.fillRect(80, castleTop, canvas.width - 160, castleBottom - castleTop);
+        ctx.fillStyle = '#6a2a2a';
+        ctx.fillRect(84, castleTop, canvas.width - 168, castleBottom - castleTop);
+        // Carpet trim
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(80, castleTop, 4, castleBottom - castleTop);
+        ctx.fillRect(canvas.width - 84, castleTop, 4, castleBottom - castleTop);
+
+        // === JEFF ON HIS THRONE AT TOP ===
+        const throneY = 20;
         const jeffX = canvas.width / 2 - 24;
-        const jeffY = 4;
         const bobY = Math.sin(y.jeffAnimFrame * 0.04) * 2;
 
-        // Spotlight effect behind Jeff
-        const glowSize = 36 + Math.sin(y.jeffAnimFrame * 0.06) * 6;
-        const glowGrad = ctx.createRadialGradient(jeffX + 24, jeffY + 24 + bobY, 8, jeffX + 24, jeffY + 24 + bobY, glowSize);
-        glowGrad.addColorStop(0, 'rgba(255, 200, 100, 0.35)');
-        glowGrad.addColorStop(0.6, 'rgba(200, 100, 50, 0.15)');
+        // Throne platform
+        ctx.fillStyle = '#2d1f3d';
+        ctx.fillRect(60, throneY + 40, canvas.width - 120, 20);
+        ctx.fillStyle = '#4a3a5d';
+        ctx.fillRect(64, throneY + 42, canvas.width - 128, 16);
+
+        // Throne back
+        ctx.fillStyle = '#4a3a2a';
+        ctx.fillRect(jeffX - 16, throneY - 20, 80, 70);
+        ctx.fillStyle = '#6a4a3a';
+        ctx.fillRect(jeffX - 12, throneY - 16, 72, 62);
+        // Throne gold trim
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(jeffX - 16, throneY - 20, 80, 4);
+        ctx.fillRect(jeffX - 16, throneY - 20, 4, 70);
+        ctx.fillRect(jeffX + 60, throneY - 20, 4, 70);
+        // Crown on throne
+        ctx.fillStyle = '#ffcc00';
+        ctx.fillRect(jeffX + 8, throneY - 30, 32, 12);
+        ctx.fillRect(jeffX + 12, throneY - 38, 6, 10);
+        ctx.fillRect(jeffX + 22, throneY - 42, 6, 14);
+        ctx.fillRect(jeffX + 32, throneY - 38, 6, 10);
+
+        // Spotlight on Jeff
+        const glowSize = 50 + Math.sin(y.jeffAnimFrame * 0.06) * 8;
+        const glowGrad = ctx.createRadialGradient(jeffX + 24, throneY + 24 + bobY, 10, jeffX + 24, throneY + 24 + bobY, glowSize);
+        glowGrad.addColorStop(0, 'rgba(255, 200, 100, 0.4)');
+        glowGrad.addColorStop(0.5, 'rgba(255, 153, 0, 0.2)');
         glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
-        ctx.arc(jeffX + 24, jeffY + 28 + bobY, glowSize, 0, Math.PI * 2);
+        ctx.arc(jeffX + 24, throneY + 30 + bobY, glowSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw Jeff (standing at top, arms crossed, taunting)
-        ctx.drawImage(GFX.jeffYard, jeffX, jeffY + bobY);
+        // Draw Jeff on throne
+        ctx.drawImage(GFX.jeffYard, jeffX, throneY + bobY);
 
-        // Speech bubble with taunt
-        const tauntX = 6;
-        const tauntY = 56;
-        const tauntW = canvas.width - 12;
-        const tauntH = 20;
-
-        // Bubble background
-        ctx.fillStyle = 'rgba(20, 20, 40, 0.9)';
-        ctx.fillRect(tauntX, tauntY, tauntW, tauntH);
-        ctx.strokeStyle = '#38bdf8';
+        // Taunt speech bubble (at top of screen, always visible)
+        const currentTaunt = inCastle ? y.throneTaunts[y.currentThroneTaunt % y.throneTaunts.length] : y.jeffTaunt;
+        const tauntBoxY = throneY + 70;
+        ctx.fillStyle = 'rgba(20, 10, 30, 0.95)';
+        ctx.fillRect(30, tauntBoxY, canvas.width - 60, 24);
+        ctx.strokeStyle = '#ff9900';
         ctx.lineWidth = 2;
-        ctx.strokeRect(tauntX, tauntY, tauntW, tauntH);
-
-        // "JEFF:" label
-        ctx.fillStyle = '#f59e0b';
+        ctx.strokeRect(30, tauntBoxY, canvas.width - 60, 24);
+        ctx.fillStyle = '#ff9900';
         ctx.font = '6px "Press Start 2P"';
         ctx.textAlign = 'left';
-        ctx.fillText('JEFF:', tauntX + 4, tauntY + 12);
-
-        // Taunt text
+        ctx.fillText('JEFF:', 36, tauntBoxY + 15);
         ctx.fillStyle = '#ffffff';
+        ctx.fillText(currentTaunt, 74, tauntBoxY + 15);
+
+        // Castle laser barriers
+        if (y.castleLaserWalls) {
+            y.castleLaserWalls.forEach(laser => {
+                const laserY = laser.y;
+                const active = laser.pattern === 'blink' ?
+                    (Math.floor((GAME.ticks + laser.timer) / 40) % 2 === 0) :
+                    true;
+                const sweepX = laser.pattern === 'sweep' ?
+                    Math.sin((GAME.ticks + laser.timer) * 0.03) * 60 + canvas.width / 2 - 40 :
+                    24;
+                const sweepW = laser.pattern === 'sweep' ? 80 : canvas.width - 48;
+
+                if (active) {
+                    // Laser emitters
+                    ctx.fillStyle = '#4a4a4a';
+                    ctx.fillRect(20, laserY - 4, 8, 12);
+                    ctx.fillRect(canvas.width - 28, laserY - 4, 8, 12);
+                    // Laser glow
+                    ctx.fillStyle = 'rgba(220, 38, 38, 0.3)';
+                    ctx.fillRect(sweepX, laserY - 8, sweepW, 20);
+                    // Laser beam
+                    ctx.fillStyle = '#ff4444';
+                    ctx.fillRect(sweepX, laserY, sweepW, 4);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(sweepX, laserY + 1, sweepW, 2);
+                } else {
+                    // Inactive emitters
+                    ctx.fillStyle = '#3a3a3a';
+                    ctx.fillRect(20, laserY - 4, 8, 12);
+                    ctx.fillRect(canvas.width - 28, laserY - 4, 8, 12);
+                }
+            });
+        }
+
+        // Castle drones
+        if (y.castleDrones) {
+            y.castleDrones.forEach(d => {
+                const pulse = Math.sin(GAME.ticks * 0.2 + d.x) * 2;
+                // Drone body
+                ctx.fillStyle = '#2a2a2a';
+                ctx.fillRect(d.x, d.y, 20, 12);
+                ctx.fillStyle = '#3a3a3a';
+                ctx.fillRect(d.x + 2, d.y + 2, 16, 8);
+                // Propellers
+                const propAngle = GAME.ticks % 4;
+                ctx.fillStyle = '#666';
+                if (propAngle < 2) {
+                    ctx.fillRect(d.x - 4, d.y + 4, 6, 4);
+                    ctx.fillRect(d.x + 18, d.y + 4, 6, 4);
+                } else {
+                    ctx.fillRect(d.x + 6, d.y - 4, 8, 4);
+                    ctx.fillRect(d.x + 6, d.y + 12, 8, 4);
+                }
+                // Eye
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(d.x + 8, d.y + 4, 4, 4);
+                // Amazon logo
+                ctx.fillStyle = '#ff9900';
+                ctx.fillRect(d.x + 4, d.y + 4, 3, 3);
+                ctx.fillRect(d.x + 13, d.y + 4, 3, 3);
+            });
+        }
+
+        // Transition zone between yard and castle
+        const transitionY = castleStart - 20;
+        ctx.fillStyle = '#ff9900';
+        for (let x = 0; x < canvas.width; x += 16) {
+            ctx.fillRect(x, transitionY, 8, 8);
+        }
+        ctx.fillStyle = '#1a1a1a';
+        for (let x = 8; x < canvas.width; x += 16) {
+            ctx.fillRect(x, transitionY, 8, 8);
+        }
+        ctx.fillStyle = '#ff9900';
         ctx.font = '6px "Press Start 2P"';
-        ctx.textAlign = 'left';
-        ctx.fillText(y.jeffTaunt, tauntX + 42, tauntY + 12);
+        ctx.textAlign = 'center';
+        ctx.fillText('BEZOS CASTLE', canvas.width / 2, transitionY - 6);
         ctx.textAlign = 'left';
     }
 
-    // asphalt base with SNES-style tiling and parallax skyline
-    ctx.fillStyle = '#0b1224'; ctx.fillRect(0, 85, canvas.width, yardHeight - 85);
+    // === YARD SECTION (below castle) ===
+    const yardTop = y ? y.castleStart : 0;
+    const yardBottom = totalHeight;
+
+    // asphalt base with SNES-style tiling
+    ctx.fillStyle = '#0b1224';
+    ctx.fillRect(0, yardTop, canvas.width, yardBottom - yardTop);
     ctx.fillStyle = '#0f172a';
-    for (let ty = 85; ty < yardHeight + 16; ty += 16) {
+    for (let ty = yardTop; ty < yardBottom + 16; ty += 16) {
         for (let tx = (ty % 32 === 0 ? 0 : 8); tx < canvas.width; tx += 16) {
             ctx.fillRect(tx, ty, 12, 12);
         }
     }
     ctx.fillStyle = 'rgba(255,255,255,0.02)';
-    for (let ty = 85; ty < yardHeight; ty += 8) {
-        for (let tx = 4; tx < canvas.width; tx += 16) ctx.fillRect(tx, ty + ((tx + ty) % 16 === 0 ? 2 : 0), 2, 2);
+    for (let ty = yardTop; ty < yardBottom; ty += 8) {
+        for (let tx = 4; tx < canvas.width; tx += 16) {
+            ctx.fillRect(tx, ty + ((tx + ty) % 16 === 0 ? 2 : 0), 2, 2);
+        }
     }
 
-    // Warning stripes at goal line
-    ctx.fillStyle = '#facc15';
-    for (let x = 0; x < canvas.width; x += 16) {
-        ctx.fillRect(x, 80, 8, 5);
-    }
-    ctx.fillStyle = '#0f0f0f';
-    for (let x = 8; x < canvas.width; x += 16) {
-        ctx.fillRect(x, 80, 8, 5);
-    }
-
-    // curbs and dock edges
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, yardHeight - 18, canvas.width, 18);
-    ctx.fillStyle = '#334155'; ctx.fillRect(0, yardHeight - 22, canvas.width, 4);
-    ctx.fillStyle = '#64748b'; for (let x=0; x<canvas.width; x+=14) ctx.fillRect(x, yardHeight - 16, 8, 3);
-    ctx.fillStyle = '#fef08a'; ctx.fillRect(0, 88, canvas.width,3);
-    ctx.fillStyle = '#22c55e'; ctx.fillRect(0, 85, canvas.width,3);
-
-    // painted dock goal
-    ctx.fillStyle = '#14532d'; ctx.fillRect(0,0,canvas.width,10);
-    ctx.fillStyle = '#facc15'; ctx.fillRect(0,10,canvas.width,2);
-    ctx.fillStyle = '#94a3b8'; ctx.fillRect(0,12,canvas.width,3);
-    ctx.fillStyle = '#0ea5e9'; for (let x=6; x<canvas.width; x+=34) ctx.fillRect(x,14,14,2);
+    // curbs and dock edges at bottom
+    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, yardBottom - 18, canvas.width, 18);
+    ctx.fillStyle = '#334155'; ctx.fillRect(0, yardBottom - 22, canvas.width, 4);
+    ctx.fillStyle = '#64748b';
+    for (let x = 0; x < canvas.width; x += 14) ctx.fillRect(x, yardBottom - 16, 8, 3);
 
     // lane bands and markings
     if (y) {
@@ -4884,23 +5185,11 @@ function drawYardLevel() {
             ctx.fillStyle = '#1e293b'; ctx.fillRect(0, lane.y + 20, canvas.width, 2);
         });
         ctx.setLineDash([]);
-    }
 
-    // chainlink and palettes
-    ctx.fillStyle = '#1f2937'; for (let x=0; x<canvas.width; x+=32) ctx.fillRect(x+2, 32, 28, 4);
-    ctx.fillStyle = '#0ea5e9'; for (let x=0; x<canvas.width; x+=26) ctx.fillRect(x+6, 28, 2, 8);
-    ctx.fillStyle = '#f97316'; for (let x=10; x<canvas.width; x+=60) ctx.fillRect(x, yardHeight - 36, 8, 16);
-    ctx.fillStyle = '#9ca3af'; for (let x=6; x<canvas.width; x+=50) ctx.fillRect(x, yardHeight - 48, 14, 6);
-    ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 62, canvas.width, 18);
-    ctx.fillStyle = '#0ea5e9'; for (let x=8; x<canvas.width; x+=44) ctx.fillRect(x, 66, 14, 6);
-    ctx.fillStyle = '#f8fafc'; for (let x=14; x<canvas.width; x+=36) ctx.fillRect(x, 64, 6, 2);
-
-    if (y) {
         // Draw static hazards (puddles, debris)
         if (y.staticHazards) {
             y.staticHazards.forEach(h => {
                 if (h.type === 'puddle') {
-                    // Oil/water puddle
                     ctx.fillStyle = 'rgba(30, 64, 175, 0.6)';
                     ctx.beginPath();
                     ctx.ellipse(h.x + 12, h.y + 8, 18, 8, 0, 0, Math.PI * 2);
@@ -4909,12 +5198,10 @@ function drawYardLevel() {
                     ctx.beginPath();
                     ctx.ellipse(h.x + 10, h.y + 6, 8, 4, 0, 0, Math.PI * 2);
                     ctx.fill();
-                    // Warning icon
                     ctx.fillStyle = '#fbbf24';
                     ctx.font = '6px "Press Start 2P"';
                     ctx.fillText('!', h.x + 10, h.y - 2);
                 } else if (h.type === 'debris') {
-                    // Debris pile
                     ctx.fillStyle = '#78716c';
                     ctx.fillRect(h.x, h.y + 8, 24, 8);
                     ctx.fillStyle = '#a8a29e';
@@ -4954,26 +5241,21 @@ function drawYardLevel() {
         // Draw forklifts
         if (y.forklifts) {
             y.forklifts.forEach(f => {
-                // Forklift body
                 ctx.fillStyle = '#f59e0b';
                 ctx.fillRect(f.x, f.y, 28, 16);
                 ctx.fillStyle = '#d97706';
                 ctx.fillRect(f.x + 2, f.y + 2, 24, 12);
-                // Cage
                 ctx.fillStyle = '#1f2937';
                 ctx.fillRect(f.x + 4, f.y + 2, 8, 10);
                 ctx.fillStyle = '#374151';
                 ctx.fillRect(f.x + 5, f.y + 3, 6, 8);
-                // Forks
                 ctx.fillStyle = '#6b7280';
                 const forkX = f.dir === 1 ? f.x + 24 : f.x - 8;
                 ctx.fillRect(forkX, f.y + 12, 10, 3);
                 ctx.fillRect(forkX, f.y + 8, 10, 3);
-                // Wheels
                 ctx.fillStyle = '#1f2937';
                 ctx.fillRect(f.x + 4, f.y + 14, 6, 4);
                 ctx.fillRect(f.x + 18, f.y + 14, 6, 4);
-                // Warning light
                 const lightPulse = Math.sin(GAME.ticks * 0.3) > 0;
                 ctx.fillStyle = lightPulse ? '#ef4444' : '#7f1d1d';
                 ctx.fillRect(f.x + 12, f.y - 2, 4, 4);
@@ -4988,11 +5270,6 @@ function drawYardLevel() {
     ctx.drawImage(GFX.chars[GAME.selectedChar], GAME.player.x, GAME.player.y);
     ctx.globalAlpha = 1;
 
-    // Goal text
-    ctx.fillStyle = '#facc15';
-    ctx.font = '8px "Press Start 2P"';
-    ctx.fillText('GOAL', 8, 8);
-
     ctx.restore();
 
     // Progress indicator (fixed position, not scrolling)
@@ -5003,34 +5280,39 @@ function drawYardLevel() {
         const barX = canvas.width - 14;
         const barY = 20;
 
-        // Background
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         ctx.fillRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4);
-
-        // Track
         ctx.fillStyle = '#1f2937';
         ctx.fillRect(barX, barY, barWidth, barHeight);
 
-        // Progress fill
+        // Castle/yard divider on progress bar
+        const castleProgress = 1 - (y.castleStart / y.height);
+        const dividerY = barY + barHeight - (barHeight * castleProgress);
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(barX - 1, dividerY - 1, barWidth + 2, 2);
+
         const fillHeight = barHeight * progress;
         const gradient = ctx.createLinearGradient(0, barY + barHeight - fillHeight, 0, barY + barHeight);
-        gradient.addColorStop(0, '#22c55e');
-        gradient.addColorStop(1, '#16a34a');
+        gradient.addColorStop(0, inCastle ? '#a855f7' : '#22c55e');
+        gradient.addColorStop(1, inCastle ? '#7c3aed' : '#16a34a');
         ctx.fillStyle = gradient;
         ctx.fillRect(barX, barY + barHeight - fillHeight, barWidth, fillHeight);
 
-        // Player marker
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(barX - 3, barY + barHeight - fillHeight - 2, barWidth + 6, 4);
 
-        // Labels
-        ctx.fillStyle = '#facc15';
+        ctx.fillStyle = '#ff9900';
         ctx.font = '4px "Press Start 2P"';
         ctx.textAlign = 'center';
         ctx.fillText('JEFF', barX + barWidth / 2, barY - 4);
         ctx.fillStyle = '#22c55e';
         ctx.fillText('START', barX + barWidth / 2, barY + barHeight + 10);
         ctx.textAlign = 'left';
+
+        // Section label
+        ctx.fillStyle = inCastle ? '#a855f7' : '#22c55e';
+        ctx.font = '5px "Press Start 2P"';
+        ctx.fillText(inCastle ? 'CASTLE' : 'YARD', 4, 12);
     }
 }
 
@@ -5079,24 +5361,13 @@ function drawMechaBattle() {
     ctx.fillStyle = m && m.enraged ? '#dc2626' : '#0ea5e9';
     ctx.fillRect(0, 33, canvas.width, 3);
 
-    // Phase transition overlay
+    // Phase transition visual effect (subtle, non-blocking)
     if (m && m.phaseTransition) {
-        const alpha = Math.min(0.6, m.transitionTimer / 30);
-        ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Phase name announcement
-        if (m.transitionTimer > 20) {
-            ctx.save();
-            ctx.textAlign = 'center';
-            ctx.font = '10px "Press Start 2P"';
-            ctx.fillStyle = '#ff9900';
-            const shake = Math.sin(m.transitionTimer * 0.5) * 2;
-            ctx.fillText(m.phaseNames[m.currentPhase], canvas.width / 2 + shake, canvas.height / 2 - 10);
-            ctx.font = '6px "Press Start 2P"';
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(m.phaseTaunts[m.currentPhase], canvas.width / 2, canvas.height / 2 + 10);
-            ctx.restore();
+        // Just a quick screen flash effect, no blocking overlay
+        if (m.transitionTimer < 10) {
+            const flashAlpha = (10 - m.transitionTimer) / 30;
+            ctx.fillStyle = `rgba(255, 153, 0, ${flashAlpha})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
     }
 
@@ -5250,6 +5521,59 @@ function drawMechaBattle() {
         ctx.font = '6px "Press Start 2P"';
         ctx.fillText(t.text, t.x, t.y);
     });
+
+    // Attack announcement overlay (non-blocking - game continues)
+    if (m && m.attackAnnouncement && m.attackAnnouncement.timer > 0) {
+        const ann = m.attackAnnouncement;
+        const alpha = Math.min(1, ann.timer / 20);
+        const scale = 1 + Math.sin(ann.timer * 0.3) * 0.05;
+
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.8;
+
+        // Warning banner background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(20, canvas.height - 45, canvas.width - 40, 28);
+
+        // Colored border based on attack type
+        ctx.strokeStyle = ann.color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(20, canvas.height - 45, canvas.width - 40, 28);
+
+        // Warning icon
+        ctx.fillStyle = ann.color;
+        ctx.font = '10px "Press Start 2P"';
+        ctx.textAlign = 'left';
+        ctx.fillText('!', 28, canvas.height - 26);
+
+        // Announcement text with slight shake
+        const shake = Math.sin(ann.timer * 0.5) * 2;
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText(ann.text, canvas.width / 2 + shake, canvas.height - 26);
+
+        ctx.restore();
+    }
+
+    // Phase transition banner (more subtle, doesn't block gameplay)
+    if (m && m.phaseTransition && m.transitionTimer > 10) {
+        const alpha = Math.min(0.9, (m.transitionTimer - 10) / 30);
+        ctx.save();
+        ctx.globalAlpha = alpha;
+
+        // Phase banner at top
+        ctx.fillStyle = 'rgba(255, 153, 0, 0.3)';
+        ctx.fillRect(0, 0, canvas.width, 30);
+
+        ctx.fillStyle = '#ff9900';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        const shake = Math.sin(m.transitionTimer * 0.5) * 1;
+        ctx.fillText('PHASE: ' + m.phaseNames[m.currentPhase], canvas.width / 2 + shake, 18);
+
+        ctx.restore();
+    }
 }
 
 // === MECHA TRANSFORMATION CUTSCENE ===
