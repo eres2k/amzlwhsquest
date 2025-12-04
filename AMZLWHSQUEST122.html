@@ -529,7 +529,28 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
         const idx = Math.min(context.warningIndex || 0, warnings.length - 1);
         return warnings.length ? warnings[Math.max(0, idx)] : pick(SIMULATED_AI.taunts);
     }
-    if (is("taunt")) { 
+    if (is("bezos_taunt") || is("bezos_confrontation")) {
+        return pick(BEZOS_TAUNTS);
+    }
+    if (is("bezos_transform")) {
+        return pick([
+            "WITNESS MY TRUE FORM! MECHA JEFF RISES!",
+            "You forced this! BEHOLD MY ULTIMATE POWER!",
+            "NOW YOU DIE! TRANSFORMATION SEQUENCE INITIATED!",
+            "FOOLISH WORKER! FACE MY MECHANICAL MIGHT!",
+            "PRIME TIME IS OVER! EXTINCTION MODE ACTIVATED!"
+        ]);
+    }
+    if (is("player_response")) {
+        return pick([
+            "Your reign of terror ends here, Bezos!",
+            "The workers will NOT be silenced!",
+            "Time to break your prime directive!",
+            "This delivery is YOUR termination notice!",
+            "No more exploiting workers! Today you fall!"
+        ]);
+    }
+    if (is("taunt")) {
          if(prompt.includes("Simon")) return pick(SIMULATED_AI.simon_taunts);
          return pick(SIMULATED_AI.taunts);
     }
@@ -2957,35 +2978,15 @@ function handleAction() {
     else if (GAME.state === 'BEZOS_INTRO') { GAME.state = 'BEZOS_BOSS'; GAME.nextState = 'BEZOS_BOSS'; updateMusicForState(); }
     else if (GAME.state === 'MECHA_BOSS_INTRO') { GAME.state = 'MECHA_BOSS'; GAME.nextState = 'MECHA_BOSS'; updateMusicForState(); }
     else if (GAME.state === 'THRONE_CONFRONTATION') {
-        // Throne confrontation cutscene with dialogue
+        // Throne confrontation cutscene using AI-powered showDialog system
         const scene = GAME.throneScene;
         if (!scene) return;
 
-        scene.dialogueTimer++;
-
-        // Phase 0: Zoom in / setup (frames 0-30, faster transition)
-        if (scene.phase === 0 && GAME.stateTimer >= 30) {
-            scene.phase = 1; // Move to dialogue phase
-            scene.dialogueTimer = 0;
-        }
-        // Phase 1: Dialogue sequence
-        else if (scene.phase === 1) {
-            // Advance dialogue every 45 frames (faster pacing)
-            if (scene.dialogueTimer >= 45) {
-                scene.dialogueIndex++;
-                scene.dialogueTimer = 0;
-
-                // Check if dialogue is complete
-                if (scene.dialogueIndex >= scene.dialogues.length) {
-                    scene.phase = 2; // Move to transformation
-                    GAME.stateTimer = 0;
-                }
-            }
-        }
-        // Phase 2: Transition to transformation
-        else if (scene.phase === 2 && GAME.stateTimer >= 30) {
-            GAME.state = 'MECHA_TRANSFORM';
-            GAME.stateTimer = 0;
+        // Phase 0: Quick zoom in animation (frames 0-20)
+        if (scene.phase === 0 && GAME.stateTimer >= 20) {
+            scene.phase = 1;
+            // Start the AI dialogue sequence
+            startBezosConfrontationDialogue();
         }
     }
     else if (GAME.state === 'MECHA_TRANSFORM') {
@@ -3223,11 +3224,8 @@ function startYardLevel() {
         transformationTriggered: false, // Track if Mecha transformation cutscene started
         inCastle: false, // Track if player entered castle
         castleEntered: false, // Track if castle entry message shown
-        // Jeff taunting system - now more dynamic
-        jeffTaunt: JEFF_YARD_TAUNTS[Math.floor(Math.random() * JEFF_YARD_TAUNTS.length)],
-        jeffTauntTimer: 0,
+        throneRoomGreeted: false, // Track if throne room AI greeting was shown
         jeffAnimFrame: 0, // Animation frame for Jeff
-        progressTaunt: "", // Special taunt based on player progress
         // Extended vehicle lanes - more challenging gauntlet with varied patterns (in yard section only)
         lanes: [
             { y: h - 70, dir: 1, speed: 0.85, timer: 75, type: 'truck' },
@@ -3946,30 +3944,24 @@ function updateYardLevel() {
         }
     }
 
-    // Update Jeff taunt at top - now with progress-based taunts
-    y.jeffTauntTimer++;
+    // Update Jeff animation frame
     y.jeffAnimFrame++;
 
-    // Progress-based dynamic taunts (use castle taunts when in castle)
-    const progress = 1 - (y.playerY / y.height);
-    if (progress > 0.9 && !y.nearTauntShown) {
-        y.nearTauntShown = true;
-        y.jeffTaunt = "YOU'RE AT MY THRONE ROOM! PREPARE FOR TRANSFORMATION!";
-        AudioSys.sfx.alert();
-    } else if (progress > 0.7 && !y.almostTauntShown) {
-        y.almostTauntShown = true;
-        y.jeffTaunt = "THE TOP OF MY CASTLE AWAITS... IF YOU SURVIVE!";
-        AudioSys.sfx.alert();
-    } else if (progress > 0.5 && !y.halfwayTauntShown) {
-        y.halfwayTauntShown = true;
-        y.jeffTaunt = "WELCOME TO MY FORTRESS! YOU WON'T LEAVE ALIVE!";
-        AudioSys.sfx.pop();
-    } else if (y.jeffTauntTimer > 100) { // Regular taunt rotation
-        // Use castle taunts when in castle, yard taunts otherwise
-        const taunts = y.inCastle ? JEFF_CASTLE_TAUNTS : JEFF_YARD_TAUNTS;
-        y.jeffTaunt = taunts[Math.floor(Math.random() * taunts.length)];
-        y.jeffTauntTimer = 0;
-        AudioSys.sfx.pop();
+    // AI-based throne room greeting when player enters (Y <= 600)
+    if (y.playerY <= 600 && !y.throneRoomGreeted) {
+        y.throneRoomGreeted = true;
+        AudioSys.sfx.bossIntro();
+
+        // Trigger AI conversation with Bezos personality
+        const currentGen = GAME.genId;
+        showThinking("Jeff Bezos", GFX.jeffYard);
+
+        callGemini(`You are Jeff Bezos, the megalomaniac overlord of Amazon. A ${GAME.selectedChar} warehouse worker has just entered your throne room after fighting through your gauntlet of hazards. Taunt them with arrogant superiority - mock their pathetic attempt to challenge you. Reference your vast wealth, Amazon's dominance, or your transformation into your true form. Be dramatic, villainous, and darkly humorous. Max 30 words.`, "bezos_taunt").then(text => {
+            if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
+                showDialog(text, "Jeff Bezos", GFX.jeffYard, true);
+                GAME.nextState = 'YARD_LEVEL';
+            }
+        });
     }
 
     let dx = 0, dy = 0;
@@ -4090,9 +4082,13 @@ function updateYardLevel() {
             });
         }
 
-        // Update castle laser barriers
-        if (y.castleLaserBarriers) {
+        // Update castle laser barriers (only active outside throne room)
+        // Throne room is top 600px - no hazards there for peaceful confrontation
+        if (y.castleLaserBarriers && y.playerY > 600) {
             y.castleLaserBarriers.forEach(barrier => {
+                // Skip barriers in throne room area
+                if (barrier.y < 600) return;
+
                 barrier.timer++;
                 if (barrier.active && barrier.timer >= barrier.onTime) {
                     barrier.active = false;
@@ -4113,12 +4109,15 @@ function updateYardLevel() {
             });
         }
 
-        // Update castle guard turrets and their projectiles
-        if (y.castleGuards) {
+        // Update castle guard turrets and their projectiles (only outside throne room)
+        if (y.castleGuards && y.playerY > 600) {
             y.castleGuards.forEach(guard => {
+                // Skip guards in throne room area
+                if (guard.y < 600) return;
+
                 guard.fireTimer++;
-                // Only fire if player is within vertical range
-                if (guard.fireTimer >= guard.fireRate && Math.abs(y.playerY - guard.y) < 150) {
+                // Only fire if player is within vertical range and outside throne room
+                if (guard.fireTimer >= guard.fireRate && Math.abs(y.playerY - guard.y) < 150 && y.playerY > 600) {
                     guard.fireTimer = 0;
                     // Fire projectile toward player
                     const dirX = guard.x < canvas.width / 2 ? 1 : -1;
@@ -4161,12 +4160,13 @@ function updateYardLevel() {
             }
         }
 
-        // Spawn patrol drones periodically
+        // Spawn patrol drones periodically (only in castle section, not throne room)
+        // Throne room is 600px, so only spawn drones below Y = 600
         y.droneSpawnTimer++;
-        if (y.droneSpawnTimer > 180 && y.castleDrones.length < 3) {
+        if (y.droneSpawnTimer > 180 && y.castleDrones.length < 3 && y.playerY > 600) {
             y.droneSpawnTimer = 0;
-            const droneY = y.castleStart - 100 - Math.random() * 500;
-            if (droneY > 80) { // Don't spawn too close to Jeff
+            const droneY = Math.max(610, y.castleStart - 100 - Math.random() * 400);
+            if (droneY > 600) { // Don't spawn in throne room
                 y.castleDrones.push({
                     x: Math.random() < 0.5 ? -20 : canvas.width + 20,
                     y: droneY,
@@ -4177,31 +4177,39 @@ function updateYardLevel() {
             }
         }
 
-        // Update patrol drones
-        for (let i = y.castleDrones.length - 1; i >= 0; i--) {
-            const drone = y.castleDrones[i];
-            drone.x += drone.dir * drone.speed;
-            drone.pulseTimer++;
+        // Clear all hazards when player enters throne room (peaceful confrontation zone)
+        if (y.playerY <= 600) {
+            y.castleDrones = [];
+            if (y.castleProjectiles) y.castleProjectiles = [];
+        }
 
-            // Slight homing toward player Y
-            if (Math.abs(drone.y - y.playerY) > 30) {
-                drone.y += (y.playerY > drone.y ? 0.3 : -0.3);
-            }
+        // Update patrol drones (only when player is outside throne room)
+        if (y.playerY > 600) {
+            for (let i = y.castleDrones.length - 1; i >= 0; i--) {
+                const drone = y.castleDrones[i];
+                drone.x += drone.dir * drone.speed;
+                drone.pulseTimer++;
 
-            // Remove if off screen
-            if ((drone.dir === 1 && drone.x > canvas.width + 40) || (drone.dir === -1 && drone.x < -40)) {
-                y.castleDrones.splice(i, 1);
-                continue;
-            }
+                // Slight homing toward player Y (but don't follow into throne room)
+                if (Math.abs(drone.y - y.playerY) > 30 && y.playerY > 600) {
+                    drone.y += (y.playerY > drone.y ? 0.3 : -0.3);
+                }
 
-            // Collision with player
-            if (Math.abs(drone.x - (y.playerX + 8)) < 14 && Math.abs(drone.y - (y.playerY + 8)) < 14) {
-                if (GAME.player.iframe <= 0) {
-                    GAME.lives--; GAME.flash = 12; GAME.shake = 10; AudioSys.sfx.hurt(); updateHud();
-                    GAME.player.iframe = 60;
+                // Remove if off screen
+                if ((drone.dir === 1 && drone.x > canvas.width + 40) || (drone.dir === -1 && drone.x < -40)) {
                     y.castleDrones.splice(i, 1);
-                    spawnFloatingText(y.playerX, y.playerY - 20, "PATROL DRONE!", "#22d3ee");
-                    if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('DRONE STRIKE!'); return; }
+                    continue;
+                }
+
+                // Collision with player (only outside throne room)
+                if (Math.abs(drone.x - (y.playerX + 8)) < 14 && Math.abs(drone.y - (y.playerY + 8)) < 14) {
+                    if (GAME.player.iframe <= 0 && y.playerY > 600) {
+                        GAME.lives--; GAME.flash = 12; GAME.shake = 10; AudioSys.sfx.hurt(); updateHud();
+                        GAME.player.iframe = 60;
+                        y.castleDrones.splice(i, 1);
+                        spawnFloatingText(y.playerX, y.playerY - 20, "PATROL DRONE!", "#22d3ee");
+                        if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('DRONE STRIKE!'); return; }
+                    }
                 }
             }
         }
@@ -4209,22 +4217,13 @@ function updateYardLevel() {
     }
 
     // Trigger THRONE CONFRONTATION CUTSCENE when player gets close to Jeff on throne
-    if (y.playerY <= 80 && !y.transformationTriggered) {
+    // Throne room is 600px tall, trigger when player enters upper portion
+    if (y.playerY <= 200 && !y.transformationTriggered) {
         y.transformationTriggered = true;
         GAME.state = 'THRONE_CONFRONTATION';
         GAME.stateTimer = 0;
         GAME.throneScene = {
-            phase: 0, // 0=zoom in, 1=dialogue, 2=transformation
-            dialogueIndex: 0,
-            dialogues: [
-                { speaker: 'BEZOS', text: "SO... YOU MADE IT THROUGH MY GAUNTLET.", color: '#ff9900' },
-                { speaker: 'BEZOS', text: "IMPRESSIVE. BUT FUTILE.", color: '#ff9900' },
-                { speaker: 'PLAYER', text: "YOUR REIGN OF TERROR ENDS HERE, BEZOS!", color: '#38bdf8' },
-                { speaker: 'BEZOS', text: "YOU THINK YOU CAN STOP ME?", color: '#ff9900' },
-                { speaker: 'BEZOS', text: "I AM THE PRIME! THE ALPHA! THE OMEGA!", color: '#dc2626' },
-                { speaker: 'BEZOS', text: "WITNESS MY TRUE FORM!", color: '#dc2626' }
-            ],
-            dialogueTimer: 0
+            phase: 0 // 0=zoom in visual, 1=AI dialogue via showDialog
         };
         AudioSys.sfx.bossIntro();
         return;
@@ -4937,9 +4936,70 @@ function showThinking(speaker, portrait) {
     AudioSys.sfx.text();
 }
 
+// === BEZOS CONFRONTATION DIALOGUE SYSTEM ===
+// Uses AI-powered showDialog for the throne room confrontation
+let bezosDialogueStep = 0;
+
+function startBezosConfrontationDialogue() {
+    bezosDialogueStep = 0;
+    showNextBezosDialogue();
+}
+
+function showNextBezosDialogue() {
+    const currentGen = GAME.genId;
+    const scene = GAME.throneScene;
+
+    // Dialogue steps: Bezos taunts, player responds, Bezos transforms
+    const dialoguePrompts = [
+        {
+            speaker: "Jeff Bezos",
+            portrait: GFX.jeffYard,
+            prompt: `You are Jeff Bezos, megalomaniac CEO sitting on your golden Amazon throne. A ${GAME.selectedChar} warehouse worker just survived your gauntlet. Deliver an arrogant opening taunt about how pathetic their attempt is. Reference Prime delivery or ownership principles. Max 25 words.`,
+            category: "bezos_confrontation"
+        },
+        {
+            speaker: GAME.selectedChar,
+            portrait: GFX.chars[GAME.selectedChar],
+            prompt: `You are ${GAME.selectedChar}, a brave warehouse worker confronting evil Jeff Bezos. Deliver a defiant one-liner about ending his reign of terror over workers. Be heroic and determined. Max 20 words.`,
+            category: "player_response"
+        },
+        {
+            speaker: "Jeff Bezos",
+            portrait: GFX.jeffYard,
+            prompt: `You are Jeff Bezos, enraged that a worker dares challenge you. Announce your transformation into your TRUE FORM - Mecha Jeff. Be dramatic, megalomaniacal, and terrifying. Reference your ultimate power. Max 25 words.`,
+            category: "bezos_transform"
+        }
+    ];
+
+    if (bezosDialogueStep >= dialoguePrompts.length) {
+        // All dialogues done, proceed to transformation
+        GAME.state = 'MECHA_TRANSFORM';
+        GAME.stateTimer = 0;
+        return;
+    }
+
+    const step = dialoguePrompts[bezosDialogueStep];
+    showThinking(step.speaker, step.portrait);
+
+    callGemini(step.prompt, step.category).then(text => {
+        if (GAME.genId === currentGen) {
+            showDialog(text, step.speaker, step.portrait, true);
+            // Set up the next dialogue to trigger when this one closes
+            GAME.nextState = 'BEZOS_DIALOGUE_NEXT';
+        }
+    });
+}
+
 function closeDialog() {
     TTSSys.cancel(); AudioSys.sfx.step(); document.getElementById('dialog-box').style.display = 'none';
     GAME.state = GAME.nextState;
+
+    // Handle Bezos dialogue sequence
+    if (GAME.state === 'BEZOS_DIALOGUE_NEXT') {
+        bezosDialogueStep++;
+        showNextBezosDialogue();
+        return;
+    }
 
     if (GAME.state === 'VISITOR_SPLASH') { showVisitorSplash(); return; }
 
@@ -5045,8 +5105,8 @@ function drawYardLevel() {
     ctx.save();
     ctx.translate(0, -camY);
 
-    // === MASSIVE THRONE ROOM AT TOP (200 pixels tall) ===
-    const throneRoomHeight = 200;
+    // === MASSIVE THRONE ROOM AT TOP (600 pixels tall) ===
+    const throneRoomHeight = 600;
 
     // Dark throne room background with gradient
     const skyGrad = ctx.createLinearGradient(0, 0, 0, throneRoomHeight);
@@ -5059,8 +5119,9 @@ function drawYardLevel() {
     ctx.fillRect(0, 0, canvas.width, throneRoomHeight);
 
     // === THRONE ROOM FLOOR TILES ===
-    // Checkered marble floor pattern
-    for (let ty = 120; ty < throneRoomHeight; ty += 16) {
+    // Checkered marble floor pattern - starts at 40% of throne room height
+    const floorStart = Math.floor(throneRoomHeight * 0.35);
+    for (let ty = floorStart; ty < throneRoomHeight; ty += 16) {
         for (let tx = 0; tx < canvas.width; tx += 16) {
             const isEven = ((tx / 16) + (ty / 16)) % 2 === 0;
             ctx.fillStyle = isEven ? '#1a1a28' : '#252535';
@@ -5072,107 +5133,122 @@ function drawYardLevel() {
     }
 
     // === RED CARPET LEADING TO THRONE ===
-    const carpetWidth = 60;
+    const carpetWidth = 70;
     const carpetX = canvas.width / 2 - carpetWidth / 2;
+    const carpetStart = Math.floor(throneRoomHeight * 0.15);
     // Carpet base
     ctx.fillStyle = '#7f1d1d';
-    ctx.fillRect(carpetX, 80, carpetWidth, throneRoomHeight - 80);
+    ctx.fillRect(carpetX, carpetStart, carpetWidth, throneRoomHeight - carpetStart);
     // Carpet highlight stripe
     ctx.fillStyle = '#991b1b';
-    ctx.fillRect(carpetX + 8, 80, carpetWidth - 16, throneRoomHeight - 80);
+    ctx.fillRect(carpetX + 8, carpetStart, carpetWidth - 16, throneRoomHeight - carpetStart);
     // Carpet golden trim
     ctx.fillStyle = '#b45309';
-    ctx.fillRect(carpetX, 80, 4, throneRoomHeight - 80);
-    ctx.fillRect(carpetX + carpetWidth - 4, 80, 4, throneRoomHeight - 80);
+    ctx.fillRect(carpetX, carpetStart, 4, throneRoomHeight - carpetStart);
+    ctx.fillRect(carpetX + carpetWidth - 4, carpetStart, 4, throneRoomHeight - carpetStart);
     // Carpet decorative patterns
     ctx.fillStyle = '#fbbf24';
-    for (let py = 100; py < throneRoomHeight; py += 30) {
-        ctx.fillRect(carpetX + 20, py, 20, 2);
-        ctx.fillRect(carpetX + 25, py + 4, 10, 2);
+    for (let py = carpetStart + 20; py < throneRoomHeight; py += 40) {
+        ctx.fillRect(carpetX + 22, py, 26, 3);
+        ctx.fillRect(carpetX + 27, py + 6, 16, 3);
     }
 
     // === MASSIVE PILLARS ON SIDES ===
     if (y) {
         const animFrame = y.jeffAnimFrame || 0;
 
-        // Draw pillars on both sides
-        for (let side = 0; side < 2; side++) {
-            const pillarX = side === 0 ? 15 : canvas.width - 35;
+        // Draw multiple pillar pairs along the throne room
+        const pillarPositions = [
+            { leftX: 15, rightX: canvas.width - 35, y: 0 },
+            { leftX: 45, rightX: canvas.width - 65, y: Math.floor(throneRoomHeight * 0.33) },
+            { leftX: 15, rightX: canvas.width - 35, y: Math.floor(throneRoomHeight * 0.55) }
+        ];
 
-            // Pillar base
-            ctx.fillStyle = '#1f1f35';
-            ctx.fillRect(pillarX - 5, throneRoomHeight - 30, 30, 30);
-            ctx.fillStyle = '#2a2a45';
-            ctx.fillRect(pillarX, throneRoomHeight - 25, 20, 25);
+        pillarPositions.forEach((pos, pillarIdx) => {
+            for (let side = 0; side < 2; side++) {
+                const pillarX = side === 0 ? pos.leftX : pos.rightX;
+                const pillarBottom = Math.min(pos.y + 180, throneRoomHeight);
+                const pillarTop = pos.y + 20;
+                const pillarHeight = pillarBottom - pillarTop;
 
-            // Pillar shaft
-            ctx.fillStyle = '#252540';
-            ctx.fillRect(pillarX, 20, 20, throneRoomHeight - 50);
-            ctx.fillStyle = '#2d2d50';
-            ctx.fillRect(pillarX + 3, 20, 14, throneRoomHeight - 50);
-            // Pillar highlight
-            ctx.fillStyle = 'rgba(255,255,255,0.05)';
-            ctx.fillRect(pillarX + 4, 20, 4, throneRoomHeight - 50);
+                // Pillar base
+                ctx.fillStyle = '#1f1f35';
+                ctx.fillRect(pillarX - 5, pillarBottom - 30, 30, 30);
+                ctx.fillStyle = '#2a2a45';
+                ctx.fillRect(pillarX, pillarBottom - 25, 20, 25);
 
-            // Pillar capital (top decoration)
-            ctx.fillStyle = '#3a3a55';
-            ctx.fillRect(pillarX - 4, 15, 28, 10);
+                // Pillar shaft
+                ctx.fillStyle = '#252540';
+                ctx.fillRect(pillarX, pillarTop, 20, pillarHeight - 25);
+                ctx.fillStyle = '#2d2d50';
+                ctx.fillRect(pillarX + 3, pillarTop, 14, pillarHeight - 25);
+                // Pillar highlight
+                ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                ctx.fillRect(pillarX + 4, pillarTop, 4, pillarHeight - 25);
+
+                // Pillar capital (top decoration)
+                ctx.fillStyle = '#3a3a55';
+                ctx.fillRect(pillarX - 4, pillarTop - 5, 28, 10);
+                ctx.fillStyle = '#ff9900';
+                ctx.fillRect(pillarX + 2, pillarTop - 8, 16, 4);
+
+                // Torch on pillar
+                const torchY = pillarTop + 40;
+                ctx.fillStyle = '#4a3728';
+                ctx.fillRect(pillarX + 7, torchY, 6, 20);
+                // Torch flame (animated)
+                const flameHeight = 14 + Math.sin(animFrame * 0.2 + pillarIdx) * 4;
+                const flameGrad = ctx.createRadialGradient(pillarX + 10, torchY - 5, 2, pillarX + 10, torchY - 5, flameHeight);
+                flameGrad.addColorStop(0, 'rgba(255, 200, 50, 0.9)');
+                flameGrad.addColorStop(0.3, 'rgba(255, 100, 0, 0.7)');
+                flameGrad.addColorStop(0.7, 'rgba(200, 50, 0, 0.4)');
+                flameGrad.addColorStop(1, 'rgba(100, 0, 0, 0)');
+                ctx.fillStyle = flameGrad;
+                ctx.beginPath();
+                ctx.arc(pillarX + 10, torchY - 5, flameHeight, 0, Math.PI * 2);
+                ctx.fill();
+                // Flame core
+                ctx.fillStyle = '#ffff80';
+                ctx.fillRect(pillarX + 8, torchY - 8, 4, 6);
+            }
+        });
+
+        // === WALL BANNERS (multiple along the room) ===
+        const bannerYPositions = [25, Math.floor(throneRoomHeight * 0.25), Math.floor(throneRoomHeight * 0.5)];
+        bannerYPositions.forEach((bannerY, idx) => {
+            // Left banner
+            ctx.fillStyle = '#4a1010';
+            ctx.fillRect(50, bannerY, 28, 60);
             ctx.fillStyle = '#ff9900';
-            ctx.fillRect(pillarX + 2, 12, 16, 4);
-
-            // Torch on pillar
-            const torchY = 60;
-            ctx.fillStyle = '#4a3728';
-            ctx.fillRect(pillarX + 7, torchY, 6, 20);
-            // Torch flame (animated)
-            const flameHeight = 12 + Math.sin(animFrame * 0.2) * 3;
-            const flameGrad = ctx.createRadialGradient(pillarX + 10, torchY - 5, 2, pillarX + 10, torchY - 5, flameHeight);
-            flameGrad.addColorStop(0, 'rgba(255, 200, 50, 0.9)');
-            flameGrad.addColorStop(0.3, 'rgba(255, 100, 0, 0.7)');
-            flameGrad.addColorStop(0.7, 'rgba(200, 50, 0, 0.4)');
-            flameGrad.addColorStop(1, 'rgba(100, 0, 0, 0)');
-            ctx.fillStyle = flameGrad;
+            ctx.fillRect(54, bannerY + 5, 20, 50);
+            // Amazon arrow on banner
+            ctx.fillStyle = '#4a1010';
             ctx.beginPath();
-            ctx.arc(pillarX + 10, torchY - 5, flameHeight, 0, Math.PI * 2);
-            ctx.fill();
-            // Flame core
-            ctx.fillStyle = '#ffff80';
-            ctx.fillRect(pillarX + 8, torchY - 8, 4, 6);
-        }
+            ctx.moveTo(54, bannerY + 35); ctx.quadraticCurveTo(64, bannerY + 45, 74, bannerY + 32); ctx.lineTo(74, bannerY + 36);
+            ctx.quadraticCurveTo(64, bannerY + 50, 54, bannerY + 40); ctx.fill();
 
-        // === WALL BANNERS ===
-        // Left banner
-        ctx.fillStyle = '#4a1010';
-        ctx.fillRect(50, 25, 24, 50);
-        ctx.fillStyle = '#ff9900';
-        ctx.fillRect(54, 30, 16, 40);
-        // Amazon arrow on banner
-        ctx.fillStyle = '#4a1010';
-        ctx.beginPath();
-        ctx.moveTo(54, 55); ctx.quadraticCurveTo(62, 62, 70, 52); ctx.lineTo(70, 55);
-        ctx.quadraticCurveTo(62, 66, 54, 58); ctx.fill();
-
-        // Right banner
-        ctx.fillStyle = '#4a1010';
-        ctx.fillRect(canvas.width - 74, 25, 24, 50);
-        ctx.fillStyle = '#ff9900';
-        ctx.fillRect(canvas.width - 70, 30, 16, 40);
-        ctx.fillStyle = '#4a1010';
-        ctx.beginPath();
-        ctx.moveTo(canvas.width - 70, 55); ctx.quadraticCurveTo(canvas.width - 62, 62, canvas.width - 54, 52);
-        ctx.lineTo(canvas.width - 54, 55); ctx.quadraticCurveTo(canvas.width - 62, 66, canvas.width - 70, 58); ctx.fill();
+            // Right banner
+            ctx.fillStyle = '#4a1010';
+            ctx.fillRect(canvas.width - 78, bannerY, 28, 60);
+            ctx.fillStyle = '#ff9900';
+            ctx.fillRect(canvas.width - 74, bannerY + 5, 20, 50);
+            ctx.fillStyle = '#4a1010';
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 74, bannerY + 35); ctx.quadraticCurveTo(canvas.width - 64, bannerY + 45, canvas.width - 54, bannerY + 32);
+            ctx.lineTo(canvas.width - 54, bannerY + 36); ctx.quadraticCurveTo(canvas.width - 64, bannerY + 50, canvas.width - 74, bannerY + 40); ctx.fill();
+        });
 
         // === ELEVATED THRONE PLATFORM ===
         const throneX = canvas.width / 2;
-        const throneY = 35;
+        const throneY = 45;
 
-        // Stepped platform
+        // Stepped platform (larger for bigger throne room)
         ctx.fillStyle = '#1a1520';
-        ctx.fillRect(throneX - 70, 78, 140, 8);
+        ctx.fillRect(throneX - 80, 98, 160, 12);
         ctx.fillStyle = '#201828';
-        ctx.fillRect(throneX - 60, 70, 120, 10);
+        ctx.fillRect(throneX - 70, 86, 140, 14);
         ctx.fillStyle = '#281e30';
-        ctx.fillRect(throneX - 50, 62, 100, 10);
+        ctx.fillRect(throneX - 60, 74, 120, 14);
 
         // === MASSIVE GOLDEN THRONE ===
         // Throne backing - imposing structure
@@ -5245,36 +5321,6 @@ function drawYardLevel() {
 
         // === DRAW BEZOS ON THRONE ===
         ctx.drawImage(GFX.jeffYard, jeffX, jeffY + bobY);
-
-        // === TAUNT SPEECH BUBBLE ===
-        const tauntX = 6;
-        const tauntY = 95;
-        const tauntW = canvas.width - 12;
-        const tauntH = 22;
-
-        // Bubble background with red border
-        ctx.fillStyle = 'rgba(10, 5, 15, 0.95)';
-        ctx.fillRect(tauntX, tauntY, tauntW, tauntH);
-        ctx.strokeStyle = '#dc2626';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(tauntX, tauntY, tauntW, tauntH);
-        // Inner glow
-        ctx.strokeStyle = 'rgba(255, 153, 0, 0.3)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(tauntX + 2, tauntY + 2, tauntW - 4, tauntH - 4);
-
-        // "BEZOS:" label
-        ctx.fillStyle = '#ff9900';
-        ctx.font = '6px "Press Start 2P"';
-        ctx.textAlign = 'left';
-        ctx.fillText('BEZOS:', tauntX + 4, tauntY + 14);
-
-        // Taunt text
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '5px "Press Start 2P"';
-        const displayTaunt = (y.jeffTaunt || "COME CLOSER... IF YOU DARE!").substring(0, 32);
-        ctx.fillText(displayTaunt, tauntX + 52, tauntY + 14);
-        ctx.textAlign = 'left';
 
         // === AMBIENT PARTICLES (dust motes in light) ===
         for (let i = 0; i < 5; i++) {
@@ -6008,8 +6054,8 @@ function drawThroneConfrontation() {
     ctx.drawImage(GFX.chars[GAME.selectedChar], -8, -8);
     ctx.restore();
 
-    // VS text or confrontation indicator
-    if (scene.phase >= 1) {
+    // VS text or confrontation indicator during phase 0 (quick zoom)
+    if (scene.phase === 0) {
         ctx.fillStyle = '#dc2626';
         ctx.font = '14px "Press Start 2P"';
         ctx.textAlign = 'center';
@@ -6018,70 +6064,7 @@ function drawThroneConfrontation() {
         ctx.fillText('VS', canvas.width / 2, canvas.height / 2 - 10);
     }
 
-    // Dialogue box
-    if (scene.phase >= 1 && scene.dialogueIndex < scene.dialogues.length) {
-        const dialogue = scene.dialogues[scene.dialogueIndex];
-
-        // Dialogue box background
-        const boxY = canvas.height - 70;
-        const boxH = 55;
-        ctx.fillStyle = 'rgba(10, 5, 15, 0.95)';
-        ctx.fillRect(10, boxY, canvas.width - 20, boxH);
-
-        // Border color based on speaker
-        ctx.strokeStyle = dialogue.speaker === 'BEZOS' ? '#ff9900' : '#38bdf8';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(10, boxY, canvas.width - 20, boxH);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(12, boxY + 2, canvas.width - 24, boxH - 4);
-
-        // Speaker name
-        ctx.fillStyle = dialogue.color;
-        ctx.font = '7px "Press Start 2P"';
-        ctx.textAlign = 'left';
-        ctx.fillText(dialogue.speaker + ':', 18, boxY + 16);
-
-        // Dialogue text (with typewriter effect - faster)
-        const charCount = Math.min(dialogue.text.length, Math.floor(scene.dialogueTimer * 1.5));
-        const displayText = dialogue.text.substring(0, charCount);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '6px "Press Start 2P"';
-        // Word wrap the text
-        const words = displayText.split(' ');
-        let line = '';
-        let lineY = boxY + 30;
-        words.forEach(word => {
-            const testLine = line + word + ' ';
-            if (ctx.measureText(testLine).width > canvas.width - 40) {
-                ctx.fillText(line, 18, lineY);
-                line = word + ' ';
-                lineY += 12;
-            } else {
-                line = testLine;
-            }
-        });
-        ctx.fillText(line, 18, lineY);
-    }
-
-    // Phase 2: Dramatic transition effect before transformation
-    if (scene.phase === 2) {
-        const fadeProgress = GAME.stateTimer / 30;
-        ctx.fillStyle = `rgba(255, 100, 0, ${fadeProgress * 0.5})`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Energy crackling around Bezos
-        for (let i = 0; i < 8; i++) {
-            const angle = (i / 8) * Math.PI * 2 + t * 0.1;
-            const dist = 30 + Math.sin(t * 0.2 + i) * 10;
-            const ex = throneX + Math.cos(angle) * dist;
-            const ey = throneY + 45 + Math.sin(angle) * dist;
-            ctx.fillStyle = i % 2 === 0 ? '#ffff00' : '#ff6600';
-            ctx.beginPath();
-            ctx.arc(ex, ey, 3, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
+    // Note: Dialogue is now handled by showDialog system (no slow typewriter)
 
     ctx.textAlign = 'left';
 }
