@@ -2256,8 +2256,7 @@ function generateAssets() {
     });
     // Jeff character for yard level - full body standing with arms crossed
     GFX.jeffYard = c(48,48, ctx => {
-        // Background
-        ctx.fillStyle = '#0a0a14'; ctx.fillRect(0,0,48,48);
+        // Transparent background - no fill needed
         // Legs (dark pants)
         ctx.fillStyle = '#1a1f2e'; ctx.fillRect(16,38,6,10); ctx.fillRect(26,38,6,10);
         ctx.fillStyle = '#2d3748'; ctx.fillRect(17,39,4,9); ctx.fillRect(27,39,4,9);
@@ -2964,15 +2963,15 @@ function handleAction() {
 
         scene.dialogueTimer++;
 
-        // Phase 0: Zoom in / setup (frames 0-60)
-        if (scene.phase === 0 && GAME.stateTimer >= 60) {
+        // Phase 0: Zoom in / setup (frames 0-30, faster transition)
+        if (scene.phase === 0 && GAME.stateTimer >= 30) {
             scene.phase = 1; // Move to dialogue phase
             scene.dialogueTimer = 0;
         }
         // Phase 1: Dialogue sequence
         else if (scene.phase === 1) {
-            // Advance dialogue every 90 frames (or on button press after minimum time)
-            if (scene.dialogueTimer >= 90) {
+            // Advance dialogue every 45 frames (faster pacing)
+            if (scene.dialogueTimer >= 45) {
                 scene.dialogueIndex++;
                 scene.dialogueTimer = 0;
 
@@ -4209,8 +4208,8 @@ function updateYardLevel() {
 
     }
 
-    // Trigger THRONE CONFRONTATION CUTSCENE when player approaches Jeff
-    if (y.playerY <= 120 && !y.transformationTriggered) {
+    // Trigger THRONE CONFRONTATION CUTSCENE when player gets close to Jeff on throne
+    if (y.playerY <= 80 && !y.transformationTriggered) {
         y.transformationTriggered = true;
         GAME.state = 'THRONE_CONFRONTATION';
         GAME.stateTimer = 0;
@@ -5046,89 +5045,212 @@ function drawYardLevel() {
     ctx.save();
     ctx.translate(0, -camY);
 
-    // === BEZOS THRONE ROOM AT TOP ===
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, 100);
-    skyGrad.addColorStop(0, '#050510');
-    skyGrad.addColorStop(0.3, '#0a0a18');
-    skyGrad.addColorStop(0.7, '#1a1a2e');
+    // === MASSIVE THRONE ROOM AT TOP (200 pixels tall) ===
+    const throneRoomHeight = 200;
+
+    // Dark throne room background with gradient
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, throneRoomHeight);
+    skyGrad.addColorStop(0, '#030308');
+    skyGrad.addColorStop(0.2, '#080812');
+    skyGrad.addColorStop(0.5, '#0f0f1e');
+    skyGrad.addColorStop(0.8, '#1a1a2e');
     skyGrad.addColorStop(1, '#0b1224');
     ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, canvas.width, 100);
+    ctx.fillRect(0, 0, canvas.width, throneRoomHeight);
 
-    // === MASSIVE THRONE BEHIND JEFF ===
+    // === THRONE ROOM FLOOR TILES ===
+    // Checkered marble floor pattern
+    for (let ty = 120; ty < throneRoomHeight; ty += 16) {
+        for (let tx = 0; tx < canvas.width; tx += 16) {
+            const isEven = ((tx / 16) + (ty / 16)) % 2 === 0;
+            ctx.fillStyle = isEven ? '#1a1a28' : '#252535';
+            ctx.fillRect(tx, ty, 16, 16);
+            // Tile shine
+            ctx.fillStyle = isEven ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)';
+            ctx.fillRect(tx + 1, ty + 1, 6, 6);
+        }
+    }
+
+    // === RED CARPET LEADING TO THRONE ===
+    const carpetWidth = 60;
+    const carpetX = canvas.width / 2 - carpetWidth / 2;
+    // Carpet base
+    ctx.fillStyle = '#7f1d1d';
+    ctx.fillRect(carpetX, 80, carpetWidth, throneRoomHeight - 80);
+    // Carpet highlight stripe
+    ctx.fillStyle = '#991b1b';
+    ctx.fillRect(carpetX + 8, 80, carpetWidth - 16, throneRoomHeight - 80);
+    // Carpet golden trim
+    ctx.fillStyle = '#b45309';
+    ctx.fillRect(carpetX, 80, 4, throneRoomHeight - 80);
+    ctx.fillRect(carpetX + carpetWidth - 4, 80, 4, throneRoomHeight - 80);
+    // Carpet decorative patterns
+    ctx.fillStyle = '#fbbf24';
+    for (let py = 100; py < throneRoomHeight; py += 30) {
+        ctx.fillRect(carpetX + 20, py, 20, 2);
+        ctx.fillRect(carpetX + 25, py + 4, 10, 2);
+    }
+
+    // === MASSIVE PILLARS ON SIDES ===
     if (y) {
-        const throneX = canvas.width / 2;
-        const throneY = 6;
+        const animFrame = y.jeffAnimFrame || 0;
 
-        // Throne backing - massive golden structure
-        ctx.fillStyle = '#2d1810';
-        ctx.fillRect(throneX - 50, throneY - 5, 100, 60);
-        ctx.fillStyle = '#4a2818';
-        ctx.fillRect(throneX - 45, throneY, 90, 50);
+        // Draw pillars on both sides
+        for (let side = 0; side < 2; side++) {
+            const pillarX = side === 0 ? 15 : canvas.width - 35;
 
-        // Throne spires
+            // Pillar base
+            ctx.fillStyle = '#1f1f35';
+            ctx.fillRect(pillarX - 5, throneRoomHeight - 30, 30, 30);
+            ctx.fillStyle = '#2a2a45';
+            ctx.fillRect(pillarX, throneRoomHeight - 25, 20, 25);
+
+            // Pillar shaft
+            ctx.fillStyle = '#252540';
+            ctx.fillRect(pillarX, 20, 20, throneRoomHeight - 50);
+            ctx.fillStyle = '#2d2d50';
+            ctx.fillRect(pillarX + 3, 20, 14, throneRoomHeight - 50);
+            // Pillar highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.05)';
+            ctx.fillRect(pillarX + 4, 20, 4, throneRoomHeight - 50);
+
+            // Pillar capital (top decoration)
+            ctx.fillStyle = '#3a3a55';
+            ctx.fillRect(pillarX - 4, 15, 28, 10);
+            ctx.fillStyle = '#ff9900';
+            ctx.fillRect(pillarX + 2, 12, 16, 4);
+
+            // Torch on pillar
+            const torchY = 60;
+            ctx.fillStyle = '#4a3728';
+            ctx.fillRect(pillarX + 7, torchY, 6, 20);
+            // Torch flame (animated)
+            const flameHeight = 12 + Math.sin(animFrame * 0.2) * 3;
+            const flameGrad = ctx.createRadialGradient(pillarX + 10, torchY - 5, 2, pillarX + 10, torchY - 5, flameHeight);
+            flameGrad.addColorStop(0, 'rgba(255, 200, 50, 0.9)');
+            flameGrad.addColorStop(0.3, 'rgba(255, 100, 0, 0.7)');
+            flameGrad.addColorStop(0.7, 'rgba(200, 50, 0, 0.4)');
+            flameGrad.addColorStop(1, 'rgba(100, 0, 0, 0)');
+            ctx.fillStyle = flameGrad;
+            ctx.beginPath();
+            ctx.arc(pillarX + 10, torchY - 5, flameHeight, 0, Math.PI * 2);
+            ctx.fill();
+            // Flame core
+            ctx.fillStyle = '#ffff80';
+            ctx.fillRect(pillarX + 8, torchY - 8, 4, 6);
+        }
+
+        // === WALL BANNERS ===
+        // Left banner
+        ctx.fillStyle = '#4a1010';
+        ctx.fillRect(50, 25, 24, 50);
         ctx.fillStyle = '#ff9900';
-        ctx.fillRect(throneX - 48, throneY - 20, 8, 25);
-        ctx.fillRect(throneX + 40, throneY - 20, 8, 25);
+        ctx.fillRect(54, 30, 16, 40);
+        // Amazon arrow on banner
+        ctx.fillStyle = '#4a1010';
+        ctx.beginPath();
+        ctx.moveTo(54, 55); ctx.quadraticCurveTo(62, 62, 70, 52); ctx.lineTo(70, 55);
+        ctx.quadraticCurveTo(62, 66, 54, 58); ctx.fill();
+
+        // Right banner
+        ctx.fillStyle = '#4a1010';
+        ctx.fillRect(canvas.width - 74, 25, 24, 50);
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(canvas.width - 70, 30, 16, 40);
+        ctx.fillStyle = '#4a1010';
+        ctx.beginPath();
+        ctx.moveTo(canvas.width - 70, 55); ctx.quadraticCurveTo(canvas.width - 62, 62, canvas.width - 54, 52);
+        ctx.lineTo(canvas.width - 54, 55); ctx.quadraticCurveTo(canvas.width - 62, 66, canvas.width - 70, 58); ctx.fill();
+
+        // === ELEVATED THRONE PLATFORM ===
+        const throneX = canvas.width / 2;
+        const throneY = 35;
+
+        // Stepped platform
+        ctx.fillStyle = '#1a1520';
+        ctx.fillRect(throneX - 70, 78, 140, 8);
+        ctx.fillStyle = '#201828';
+        ctx.fillRect(throneX - 60, 70, 120, 10);
+        ctx.fillStyle = '#281e30';
+        ctx.fillRect(throneX - 50, 62, 100, 10);
+
+        // === MASSIVE GOLDEN THRONE ===
+        // Throne backing - imposing structure
+        ctx.fillStyle = '#2d1810';
+        ctx.fillRect(throneX - 55, throneY - 25, 110, 75);
+        ctx.fillStyle = '#4a2818';
+        ctx.fillRect(throneX - 50, throneY - 20, 100, 65);
+        ctx.fillStyle = '#5a3520';
+        ctx.fillRect(throneX - 45, throneY - 15, 90, 55);
+
+        // Throne spires (taller, more imposing)
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(throneX - 52, throneY - 50, 12, 40);
+        ctx.fillRect(throneX + 40, throneY - 50, 12, 40);
+        // Spire tips
         ctx.fillStyle = '#fbbf24';
         ctx.beginPath();
-        ctx.moveTo(throneX - 48, throneY - 20);
-        ctx.lineTo(throneX - 44, throneY - 32);
-        ctx.lineTo(throneX - 40, throneY - 20);
+        ctx.moveTo(throneX - 52, throneY - 50);
+        ctx.lineTo(throneX - 46, throneY - 70);
+        ctx.lineTo(throneX - 40, throneY - 50);
         ctx.fill();
         ctx.beginPath();
-        ctx.moveTo(throneX + 40, throneY - 20);
-        ctx.lineTo(throneX + 44, throneY - 32);
-        ctx.lineTo(throneX + 48, throneY - 20);
+        ctx.moveTo(throneX + 40, throneY - 50);
+        ctx.lineTo(throneX + 46, throneY - 70);
+        ctx.lineTo(throneX + 52, throneY - 50);
         ctx.fill();
+        // Gems on spires
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(throneX - 49, throneY - 45, 6, 6);
+        ctx.fillRect(throneX + 43, throneY - 45, 6, 6);
 
-        // Amazon logo on throne (glowing)
-        const logoPulse = Math.sin((y.jeffAnimFrame || 0) * 0.08) * 0.2 + 0.8;
+        // Amazon logo on throne (glowing and pulsing)
+        const logoPulse = Math.sin(animFrame * 0.08) * 0.2 + 0.8;
         ctx.fillStyle = `rgba(255, 153, 0, ${logoPulse})`;
-        ctx.fillRect(throneX - 20, throneY + 5, 40, 16);
+        ctx.fillRect(throneX - 25, throneY, 50, 22);
         ctx.fillStyle = '#ffb347';
-        ctx.fillRect(throneX - 16, throneY + 8, 32, 10);
-        // Amazon arrow/smile
+        ctx.fillRect(throneX - 20, throneY + 3, 40, 16);
+        // Amazon arrow/smile (bigger)
         ctx.fillStyle = '#ff6600';
         ctx.beginPath();
-        ctx.moveTo(throneX - 12, throneY + 15);
-        ctx.quadraticCurveTo(throneX, throneY + 22, throneX + 12, throneY + 12);
-        ctx.lineTo(throneX + 16, throneY + 14);
-        ctx.quadraticCurveTo(throneX, throneY + 26, throneX - 14, throneY + 17);
+        ctx.moveTo(throneX - 15, throneY + 14);
+        ctx.quadraticCurveTo(throneX, throneY + 24, throneX + 15, throneY + 11);
+        ctx.lineTo(throneX + 20, throneY + 14);
+        ctx.quadraticCurveTo(throneX, throneY + 30, throneX - 18, throneY + 17);
         ctx.fill();
 
         // Ornate throne armrests
         ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(throneX - 42, throneY + 30, 12, 20);
-        ctx.fillRect(throneX + 30, throneY + 30, 12, 20);
+        ctx.fillRect(throneX - 48, throneY + 30, 14, 25);
+        ctx.fillRect(throneX + 34, throneY + 30, 14, 25);
         ctx.fillStyle = '#f59e0b';
-        ctx.fillRect(throneX - 40, throneY + 32, 8, 16);
-        ctx.fillRect(throneX + 32, throneY + 32, 8, 16);
+        ctx.fillRect(throneX - 45, throneY + 33, 8, 19);
+        ctx.fillRect(throneX + 37, throneY + 33, 8, 19);
 
+        // === MENACING GLOW BEHIND BEZOS ===
         const jeffX = canvas.width / 2 - 24;
-        const jeffY = 4;
-        const bobY = Math.sin((y.jeffAnimFrame || 0) * 0.04) * 2;
+        const jeffY = throneY + 5;
+        const bobY = Math.sin(animFrame * 0.04) * 2;
 
-        // Menacing spotlight behind Jeff
-        const glowSize = 50 + Math.sin((y.jeffAnimFrame || 0) * 0.06) * 8;
-        const glowGrad = ctx.createRadialGradient(jeffX + 24, jeffY + 28 + bobY, 6, jeffX + 24, jeffY + 28 + bobY, glowSize);
-        glowGrad.addColorStop(0, 'rgba(255, 100, 0, 0.6)');
-        glowGrad.addColorStop(0.4, 'rgba(220, 38, 38, 0.3)');
-        glowGrad.addColorStop(0.7, 'rgba(139, 0, 0, 0.15)');
+        const glowSize = 60 + Math.sin(animFrame * 0.06) * 10;
+        const glowGrad = ctx.createRadialGradient(jeffX + 24, jeffY + 24 + bobY, 8, jeffX + 24, jeffY + 24 + bobY, glowSize);
+        glowGrad.addColorStop(0, 'rgba(255, 100, 0, 0.7)');
+        glowGrad.addColorStop(0.3, 'rgba(220, 38, 38, 0.4)');
+        glowGrad.addColorStop(0.6, 'rgba(139, 0, 0, 0.2)');
         glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
-        ctx.arc(jeffX + 24, jeffY + 28 + bobY, glowSize, 0, Math.PI * 2);
+        ctx.arc(jeffX + 24, jeffY + 24 + bobY, glowSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw Jeff (standing at throne, arms crossed, taunting)
+        // === DRAW BEZOS ON THRONE ===
         ctx.drawImage(GFX.jeffYard, jeffX, jeffY + bobY);
 
-        // Speech bubble with taunt - more menacing style
+        // === TAUNT SPEECH BUBBLE ===
         const tauntX = 6;
-        const tauntY = 56;
+        const tauntY = 95;
         const tauntW = canvas.width - 12;
-        const tauntH = 20;
+        const tauntH = 22;
 
         // Bubble background with red border
         ctx.fillStyle = 'rgba(10, 5, 15, 0.95)';
@@ -5145,52 +5267,51 @@ function drawYardLevel() {
         ctx.fillStyle = '#ff9900';
         ctx.font = '6px "Press Start 2P"';
         ctx.textAlign = 'left';
-        ctx.fillText('BEZOS:', tauntX + 4, tauntY + 12);
+        ctx.fillText('BEZOS:', tauntX + 4, tauntY + 14);
 
         // Taunt text
         ctx.fillStyle = '#ffffff';
         ctx.font = '5px "Press Start 2P"';
+        const displayTaunt = (y.jeffTaunt || "COME CLOSER... IF YOU DARE!").substring(0, 32);
+        ctx.fillText(displayTaunt, tauntX + 52, tauntY + 14);
         ctx.textAlign = 'left';
-        const displayTaunt = (y.jeffTaunt || "WELCOME TO MY CASTLE!").substring(0, 32);
-        ctx.fillText(displayTaunt, tauntX + 52, tauntY + 12);
-        ctx.textAlign = 'left';
+
+        // === AMBIENT PARTICLES (dust motes in light) ===
+        for (let i = 0; i < 5; i++) {
+            const px = (animFrame * 0.3 + i * 50) % canvas.width;
+            const py = 30 + Math.sin(animFrame * 0.02 + i * 2) * 40;
+            ctx.fillStyle = 'rgba(255, 200, 100, 0.3)';
+            ctx.fillRect(px, py, 2, 2);
+        }
     }
 
-    // asphalt base with SNES-style tiling and parallax skyline
-    ctx.fillStyle = '#0b1224'; ctx.fillRect(0, 85, canvas.width, yardHeight - 85);
+    // asphalt base with SNES-style tiling and parallax skyline (starts after throne room)
+    ctx.fillStyle = '#0b1224'; ctx.fillRect(0, throneRoomHeight, canvas.width, yardHeight - throneRoomHeight);
     ctx.fillStyle = '#0f172a';
-    for (let ty = 85; ty < yardHeight + 16; ty += 16) {
+    for (let ty = throneRoomHeight; ty < yardHeight + 16; ty += 16) {
         for (let tx = (ty % 32 === 0 ? 0 : 8); tx < canvas.width; tx += 16) {
             ctx.fillRect(tx, ty, 12, 12);
         }
     }
     ctx.fillStyle = 'rgba(255,255,255,0.02)';
-    for (let ty = 85; ty < yardHeight; ty += 8) {
+    for (let ty = throneRoomHeight; ty < yardHeight; ty += 8) {
         for (let tx = 4; tx < canvas.width; tx += 16) ctx.fillRect(tx, ty + ((tx + ty) % 16 === 0 ? 2 : 0), 2, 2);
     }
 
-    // Warning stripes at goal line
+    // Warning stripes at throne room entrance
     ctx.fillStyle = '#facc15';
     for (let x = 0; x < canvas.width; x += 16) {
-        ctx.fillRect(x, 80, 8, 5);
+        ctx.fillRect(x, throneRoomHeight - 5, 8, 5);
     }
     ctx.fillStyle = '#0f0f0f';
     for (let x = 8; x < canvas.width; x += 16) {
-        ctx.fillRect(x, 80, 8, 5);
+        ctx.fillRect(x, throneRoomHeight - 5, 8, 5);
     }
 
-    // curbs and dock edges
+    // curbs and dock edges (at bottom of yard)
     ctx.fillStyle = '#0f172a'; ctx.fillRect(0, yardHeight - 18, canvas.width, 18);
     ctx.fillStyle = '#334155'; ctx.fillRect(0, yardHeight - 22, canvas.width, 4);
     ctx.fillStyle = '#64748b'; for (let x=0; x<canvas.width; x+=14) ctx.fillRect(x, yardHeight - 16, 8, 3);
-    ctx.fillStyle = '#fef08a'; ctx.fillRect(0, 88, canvas.width,3);
-    ctx.fillStyle = '#22c55e'; ctx.fillRect(0, 85, canvas.width,3);
-
-    // painted dock goal
-    ctx.fillStyle = '#14532d'; ctx.fillRect(0,0,canvas.width,10);
-    ctx.fillStyle = '#facc15'; ctx.fillRect(0,10,canvas.width,2);
-    ctx.fillStyle = '#94a3b8'; ctx.fillRect(0,12,canvas.width,3);
-    ctx.fillStyle = '#0ea5e9'; for (let x=6; x<canvas.width; x+=34) ctx.fillRect(x,14,14,2);
 
     // lane bands and markings
     if (y) {
@@ -5206,14 +5327,9 @@ function drawYardLevel() {
         ctx.setLineDash([]);
     }
 
-    // chainlink and palettes
-    ctx.fillStyle = '#1f2937'; for (let x=0; x<canvas.width; x+=32) ctx.fillRect(x+2, 32, 28, 4);
-    ctx.fillStyle = '#0ea5e9'; for (let x=0; x<canvas.width; x+=26) ctx.fillRect(x+6, 28, 2, 8);
+    // palettes at bottom of yard
     ctx.fillStyle = '#f97316'; for (let x=10; x<canvas.width; x+=60) ctx.fillRect(x, yardHeight - 36, 8, 16);
     ctx.fillStyle = '#9ca3af'; for (let x=6; x<canvas.width; x+=50) ctx.fillRect(x, yardHeight - 48, 14, 6);
-    ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 62, canvas.width, 18);
-    ctx.fillStyle = '#0ea5e9'; for (let x=8; x<canvas.width; x+=44) ctx.fillRect(x, 66, 14, 6);
-    ctx.fillStyle = '#f8fafc'; for (let x=14; x<canvas.width; x+=36) ctx.fillRect(x, 64, 6, 2);
 
     if (y) {
         // Draw static hazards (puddles, debris)
@@ -5300,11 +5416,11 @@ function drawYardLevel() {
             });
         }
 
-        // === CASTLE SECTION RENDERING ===
+        // === CASTLE SECTION RENDERING (below throne room) ===
         if (y.castleStart) {
             const castleY = y.castleStart;
 
-            // Castle entrance gate - massive archway
+            // Castle entrance gate - massive archway (at bottom of castle section)
             ctx.fillStyle = '#1a1a2e';
             ctx.fillRect(0, castleY - 80, canvas.width, 80);
 
@@ -5316,49 +5432,40 @@ function drawYardLevel() {
             ctx.arc(canvas.width / 2, castleY - 60, 40, Math.PI, 0);
             ctx.fill();
 
-            // Castle wall texture
-            ctx.fillStyle = '#252538';
-            for (let ty = 0; ty < castleY - 80; ty += 20) {
-                for (let tx = 0; tx < canvas.width; tx += 24) {
-                    const offset = (Math.floor(ty / 20) % 2) * 12;
-                    ctx.fillRect(tx + offset, ty, 20, 18);
-                }
-            }
-
-            // Castle wall base
+            // Castle wall base (starts after throne room at y=200)
             ctx.fillStyle = '#1a1a2e';
-            ctx.fillRect(0, 80, canvas.width, castleY - 80);
+            ctx.fillRect(0, throneRoomHeight, canvas.width, castleY - throneRoomHeight - 80);
 
-            // Castle brickwork texture
+            // Castle brickwork texture (starts after throne room)
             ctx.fillStyle = '#2a2a40';
-            for (let ty = 80; ty < castleY; ty += 16) {
+            for (let ty = throneRoomHeight; ty < castleY - 80; ty += 16) {
                 for (let tx = 0; tx < canvas.width; tx += 20) {
                     const offset = (Math.floor(ty / 16) % 2) * 10;
                     ctx.fillRect(tx + offset, ty, 18, 14);
                 }
             }
 
-            // Castle side towers
+            // Castle side towers (start after throne room)
             ctx.fillStyle = '#1f1f35';
-            ctx.fillRect(0, 80, 30, castleY - 80);
-            ctx.fillRect(canvas.width - 30, 80, 30, castleY - 80);
+            ctx.fillRect(0, throneRoomHeight, 30, castleY - throneRoomHeight);
+            ctx.fillRect(canvas.width - 30, throneRoomHeight, 30, castleY - throneRoomHeight);
 
-            // Tower details
+            // Tower details (windows)
             ctx.fillStyle = '#0ea5e9';
-            for (let ty = 100; ty < castleY; ty += 60) {
+            for (let ty = throneRoomHeight + 20; ty < castleY; ty += 60) {
                 ctx.fillRect(8, ty, 14, 8);
                 ctx.fillRect(canvas.width - 22, ty, 14, 8);
             }
 
-            // Banner/flags on towers
+            // Banner/flags on towers (at top of castle section)
             ctx.fillStyle = '#ff9900';
-            ctx.fillRect(12, 85, 6, 20);
-            ctx.fillRect(canvas.width - 18, 85, 6, 20);
+            ctx.fillRect(12, throneRoomHeight + 5, 6, 20);
+            ctx.fillRect(canvas.width - 18, throneRoomHeight + 5, 6, 20);
             ctx.fillStyle = '#f59e0b';
             ctx.beginPath();
-            ctx.moveTo(18, 85); ctx.lineTo(30, 90); ctx.lineTo(18, 100); ctx.fill();
+            ctx.moveTo(18, throneRoomHeight + 5); ctx.lineTo(30, throneRoomHeight + 10); ctx.lineTo(18, throneRoomHeight + 20); ctx.fill();
             ctx.beginPath();
-            ctx.moveTo(canvas.width - 12, 85); ctx.lineTo(canvas.width - 24, 90); ctx.lineTo(canvas.width - 12, 100); ctx.fill();
+            ctx.moveTo(canvas.width - 12, throneRoomHeight + 5); ctx.lineTo(canvas.width - 24, throneRoomHeight + 10); ctx.lineTo(canvas.width - 12, throneRoomHeight + 20); ctx.fill();
 
             // Draw castle platforms
             if (y.castlePlatforms) {
@@ -5935,8 +6042,8 @@ function drawThroneConfrontation() {
         ctx.textAlign = 'left';
         ctx.fillText(dialogue.speaker + ':', 18, boxY + 16);
 
-        // Dialogue text (with typewriter effect)
-        const charCount = Math.min(dialogue.text.length, Math.floor(scene.dialogueTimer * 0.5));
+        // Dialogue text (with typewriter effect - faster)
+        const charCount = Math.min(dialogue.text.length, Math.floor(scene.dialogueTimer * 1.5));
         const displayText = dialogue.text.substring(0, charCount);
         ctx.fillStyle = '#ffffff';
         ctx.font = '6px "Press Start 2P"';
