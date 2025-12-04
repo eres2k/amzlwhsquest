@@ -3206,13 +3206,17 @@ function startYardLevel() {
     GAME.state = 'YARD_LEVEL';
     GAME.stateTimer = 0;
     const yardHeight = 650; // Yard section height
-    const castleHeight = 700; // Castle section height (massive castle!)
-    const h = yardHeight + castleHeight; // Total level height
-    const castleStart = yardHeight; // Where castle begins (lower Y = higher on screen)
+    const hallwayHeight = 450; // Long hallway with lasers and drones
+    const throneRoomHeight = 250; // Safe throne room at top
+    const h = yardHeight + hallwayHeight + throneRoomHeight; // Total level height
+    const castleStart = yardHeight; // Where castle/hallway begins
+    const hallwayStart = throneRoomHeight; // Where the dangerous hallway starts (Y < this is safe throne room)
     GAME.yard = {
         height: h,
         yardHeight: yardHeight,
         castleStart: castleStart,
+        hallwayStart: hallwayStart, // Y boundary for safe throne room
+        throneRoomHeight: throneRoomHeight,
         cameraY: 0,
         playerX: canvas.width / 2 - 8,
         playerY: h - 32,
@@ -3224,6 +3228,8 @@ function startYardLevel() {
         transformationTriggered: false, // Track if Mecha transformation cutscene started
         inCastle: false, // Track if player entered castle
         castleEntered: false, // Track if castle entry message shown
+        inHallway: false, // Track if player entered the hallway
+        hallwayEntered: false, // Track if hallway entry message shown
         throneRoomGreeted: false, // Track if throne room AI greeting was shown
         jeffAnimFrame: 0, // Animation frame for Jeff
         // Extended vehicle lanes - more challenging gauntlet with varied patterns (in yard section only)
@@ -3252,36 +3258,39 @@ function startYardLevel() {
             { x: 80, y: h - 440, type: 'puddle' },
             { x: 150, y: h - 550, type: 'debris' }
         ],
-        // Castle section hazards
-        castleDrones: [], // Patrol drones in castle
+        // Hallway section hazards (all within hallway zone, NOT in throne room)
+        castleDrones: [], // Patrol drones in hallway
         castleLasers: [], // Laser barriers
         castleGuards: [], // Stationary guard turrets
-        castlePlatforms: [ // Moving platforms player can use/avoid
-            { x: 20, y: castleStart - 100, w: 40, dir: 1, speed: 0.8 },
-            { x: 150, y: castleStart - 200, w: 50, dir: -1, speed: 1.0 },
-            { x: 80, y: castleStart - 320, w: 45, dir: 1, speed: 0.9 },
-            { x: 30, y: castleStart - 450, w: 55, dir: -1, speed: 1.1 },
-            { x: 120, y: castleStart - 550, w: 40, dir: 1, speed: 1.2 }
+        // Moving platforms only in hallway section (Y > hallwayStart)
+        castlePlatforms: [
+            { x: 20, y: hallwayStart + 50, w: 40, dir: 1, speed: 0.8 },
+            { x: 150, y: hallwayStart + 120, w: 50, dir: -1, speed: 1.0 },
+            { x: 80, y: hallwayStart + 200, w: 45, dir: 1, speed: 0.9 },
+            { x: 30, y: hallwayStart + 280, w: 55, dir: -1, speed: 1.1 },
+            { x: 120, y: hallwayStart + 360, w: 40, dir: 1, speed: 1.2 }
         ],
-        // Castle laser barriers that pulse on/off
+        // Laser barriers in hallway section (Y > hallwayStart)
         castleLaserBarriers: [
-            { y: castleStart - 150, onTime: 60, offTime: 90, timer: 0, active: true },
-            { y: castleStart - 280, onTime: 50, offTime: 80, timer: 30, active: false },
-            { y: castleStart - 400, onTime: 70, offTime: 70, timer: 50, active: true },
-            { y: castleStart - 520, onTime: 40, offTime: 100, timer: 20, active: false }
+            { y: hallwayStart + 80, onTime: 60, offTime: 90, timer: 0, active: true },
+            { y: hallwayStart + 160, onTime: 50, offTime: 80, timer: 30, active: false },
+            { y: hallwayStart + 260, onTime: 70, offTime: 70, timer: 50, active: true },
+            { y: hallwayStart + 350, onTime: 40, offTime: 100, timer: 20, active: false },
+            { y: hallwayStart + 420, onTime: 55, offTime: 75, timer: 40, active: true }
         ],
-        // Castle patrol drones initialization
+        // Patrol drones initialization
         droneSpawnTimer: 0
     };
 
-    // Initialize castle guard turrets
+    // Initialize hallway guard turrets (all in hallway section, NOT in throne room)
     const y = GAME.yard;
     y.castleGuards = [
-        { x: 10, y: castleStart - 180, fireTimer: 60, fireRate: 80 },
-        { x: canvas.width - 26, y: castleStart - 250, fireTimer: 40, fireRate: 90 },
-        { x: 10, y: castleStart - 350, fireTimer: 20, fireRate: 70 },
-        { x: canvas.width - 26, y: castleStart - 480, fireTimer: 0, fireRate: 85 },
-        { x: 10, y: castleStart - 600, fireTimer: 50, fireRate: 75 }
+        { x: 10, y: hallwayStart + 60, fireTimer: 60, fireRate: 80 },
+        { x: canvas.width - 26, y: hallwayStart + 130, fireTimer: 40, fireRate: 90 },
+        { x: 10, y: hallwayStart + 200, fireTimer: 20, fireRate: 70 },
+        { x: canvas.width - 26, y: hallwayStart + 290, fireTimer: 0, fireRate: 85 },
+        { x: 10, y: hallwayStart + 380, fireTimer: 50, fireRate: 75 },
+        { x: canvas.width - 26, y: hallwayStart + 440, fireTimer: 30, fireRate: 80 }
     ];
 
     GAME.player.speed = GAME.yard.speed;
@@ -3947,21 +3956,12 @@ function updateYardLevel() {
     // Update Jeff animation frame
     y.jeffAnimFrame++;
 
-    // AI-based throne room greeting when player enters (Y <= 600)
-    if (y.playerY <= 600 && !y.throneRoomGreeted) {
-        y.throneRoomGreeted = true;
+    // Show message when entering the dangerous hallway section
+    if (y.playerY < y.castleStart && !y.hallwayEntered) {
+        y.hallwayEntered = true;
+        y.inHallway = true;
+        spawnFloatingText(canvas.width / 2 - 50, 100, "DANGER: SECURITY HALLWAY!", "#ff4444");
         AudioSys.sfx.bossIntro();
-
-        // Trigger AI conversation with Bezos personality
-        const currentGen = GAME.genId;
-        showThinking("Jeff Bezos", GFX.jeffYard);
-
-        callGemini(`You are Jeff Bezos, the megalomaniac overlord of Amazon. A ${GAME.selectedChar} warehouse worker has just entered your throne room after fighting through your gauntlet of hazards. Taunt them with arrogant superiority - mock their pathetic attempt to challenge you. Reference your vast wealth, Amazon's dominance, or your transformation into your true form. Be dramatic, villainous, and darkly humorous. Max 30 words.`, "bezos_taunt").then(text => {
-            if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
-                showDialog(text, "Jeff Bezos", GFX.jeffYard, true);
-                GAME.nextState = 'YARD_LEVEL';
-            }
-        });
     }
 
     let dx = 0, dy = 0;
@@ -4082,13 +4082,11 @@ function updateYardLevel() {
             });
         }
 
-        // Update castle laser barriers (only active outside throne room)
-        // Throne room is top 600px - no hazards there for peaceful confrontation
-        if (y.castleLaserBarriers && y.playerY > 600) {
+        // Update hallway laser barriers (only in hallway section, NOT in throne room)
+        // Throne room is Y < hallwayStart - safe zone with no hazards
+        const hallwayBoundary = y.hallwayStart;
+        if (y.castleLaserBarriers && y.playerY >= hallwayBoundary) {
             y.castleLaserBarriers.forEach(barrier => {
-                // Skip barriers in throne room area
-                if (barrier.y < 600) return;
-
                 barrier.timer++;
                 if (barrier.active && barrier.timer >= barrier.onTime) {
                     barrier.active = false;
@@ -4109,15 +4107,12 @@ function updateYardLevel() {
             });
         }
 
-        // Update castle guard turrets and their projectiles (only outside throne room)
-        if (y.castleGuards && y.playerY > 600) {
+        // Update hallway guard turrets (only in hallway section)
+        if (y.castleGuards && y.playerY >= hallwayBoundary) {
             y.castleGuards.forEach(guard => {
-                // Skip guards in throne room area
-                if (guard.y < 600) return;
-
                 guard.fireTimer++;
-                // Only fire if player is within vertical range and outside throne room
-                if (guard.fireTimer >= guard.fireRate && Math.abs(y.playerY - guard.y) < 150 && y.playerY > 600) {
+                // Fire if player is within vertical range and in hallway
+                if (guard.fireTimer >= guard.fireRate && Math.abs(y.playerY - guard.y) < 150) {
                     guard.fireTimer = 0;
                     // Fire projectile toward player
                     const dirX = guard.x < canvas.width / 2 ? 1 : -1;
@@ -4134,7 +4129,7 @@ function updateYardLevel() {
             });
         }
 
-        // Update castle projectiles
+        // Update hallway projectiles
         if (y.castleProjectiles) {
             for (let i = y.castleProjectiles.length - 1; i >= 0; i--) {
                 const proj = y.castleProjectiles[i];
@@ -4147,8 +4142,8 @@ function updateYardLevel() {
                     continue;
                 }
 
-                // Collision with player
-                if (Math.abs(proj.x - (y.playerX + 8)) < 12 && Math.abs(proj.y - (y.playerY + 8)) < 12) {
+                // Collision with player (only in hallway)
+                if (y.playerY >= hallwayBoundary && Math.abs(proj.x - (y.playerX + 8)) < 12 && Math.abs(proj.y - (y.playerY + 8)) < 12) {
                     if (GAME.player.iframe <= 0) {
                         GAME.lives--; GAME.flash = 10; GAME.shake = 8; AudioSys.sfx.hurt(); updateHud();
                         GAME.player.iframe = 60;
@@ -4160,39 +4155,38 @@ function updateYardLevel() {
             }
         }
 
-        // Spawn patrol drones periodically (only in castle section, not throne room)
-        // Throne room is 600px, so only spawn drones below Y = 600
+        // Spawn patrol drones periodically (only in hallway section)
         y.droneSpawnTimer++;
-        if (y.droneSpawnTimer > 180 && y.castleDrones.length < 3 && y.playerY > 600) {
+        if (y.droneSpawnTimer > 180 && y.castleDrones.length < 4 && y.playerY >= hallwayBoundary) {
             y.droneSpawnTimer = 0;
-            const droneY = Math.max(610, y.castleStart - 100 - Math.random() * 400);
-            if (droneY > 600) { // Don't spawn in throne room
-                y.castleDrones.push({
-                    x: Math.random() < 0.5 ? -20 : canvas.width + 20,
-                    y: droneY,
-                    dir: Math.random() < 0.5 ? 1 : -1,
-                    speed: 1.2 + Math.random() * 0.5,
-                    pulseTimer: 0
-                });
-            }
+            // Spawn drones within the hallway section only
+            const droneY = hallwayBoundary + 50 + Math.random() * 350;
+            y.castleDrones.push({
+                x: Math.random() < 0.5 ? -20 : canvas.width + 20,
+                y: droneY,
+                dir: Math.random() < 0.5 ? 1 : -1,
+                speed: 1.2 + Math.random() * 0.5,
+                pulseTimer: 0
+            });
         }
 
         // Clear all hazards when player enters throne room (peaceful confrontation zone)
-        if (y.playerY <= 600) {
+        if (y.playerY < hallwayBoundary) {
             y.castleDrones = [];
             if (y.castleProjectiles) y.castleProjectiles = [];
         }
 
-        // Update patrol drones (only when player is outside throne room)
-        if (y.playerY > 600) {
+        // Update patrol drones (only when player is in hallway)
+        if (y.playerY >= hallwayBoundary) {
             for (let i = y.castleDrones.length - 1; i >= 0; i--) {
                 const drone = y.castleDrones[i];
                 drone.x += drone.dir * drone.speed;
                 drone.pulseTimer++;
 
-                // Slight homing toward player Y (but don't follow into throne room)
-                if (Math.abs(drone.y - y.playerY) > 30 && y.playerY > 600) {
-                    drone.y += (y.playerY > drone.y ? 0.3 : -0.3);
+                // Slight homing toward player Y (but stay in hallway)
+                if (Math.abs(drone.y - y.playerY) > 30) {
+                    const newY = drone.y + (y.playerY > drone.y ? 0.3 : -0.3);
+                    if (newY >= hallwayBoundary) drone.y = newY;
                 }
 
                 // Remove if off screen
@@ -4201,9 +4195,9 @@ function updateYardLevel() {
                     continue;
                 }
 
-                // Collision with player (only outside throne room)
+                // Collision with player
                 if (Math.abs(drone.x - (y.playerX + 8)) < 14 && Math.abs(drone.y - (y.playerY + 8)) < 14) {
-                    if (GAME.player.iframe <= 0 && y.playerY > 600) {
+                    if (GAME.player.iframe <= 0) {
                         GAME.lives--; GAME.flash = 12; GAME.shake = 10; AudioSys.sfx.hurt(); updateHud();
                         GAME.player.iframe = 60;
                         y.castleDrones.splice(i, 1);
@@ -4216,9 +4210,9 @@ function updateYardLevel() {
 
     }
 
-    // Trigger THRONE CONFRONTATION CUTSCENE when player gets close to Jeff on throne
-    // Throne room is 600px tall, trigger when player enters upper portion
-    if (y.playerY <= 200 && !y.transformationTriggered) {
+    // Trigger THRONE CONFRONTATION CUTSCENE when player enters throne room (Y < hallwayStart)
+    // Player approaches Jeff who is sitting on the throne - dialogue begins
+    if (y.playerY <= y.hallwayStart && !y.transformationTriggered) {
         y.transformationTriggered = true;
         GAME.state = 'THRONE_CONFRONTATION';
         GAME.stateTimer = 0;
@@ -4903,6 +4897,10 @@ function checkCol(x, y) {
 function updateHud() { document.getElementById('life-val').innerText = "❤️".repeat(Math.max(0, GAME.lives)); document.getElementById('score-val').innerText = GAME.issuesFixed + "/5"; }
 
 function showDialog(text, speaker, portrait, isAI = false) {
+    // Store previous state for background rendering during dialog
+    if (GAME.state !== 'DIALOG') {
+        GAME.dialogBackgroundState = GAME.state;
+    }
     GAME.state = 'DIALOG'; GAME.dialogText = (speaker ? speaker + ":\n" : "") + text; GAME.dialogVisible = "";
     const box = document.getElementById('dialog-box'); const badge = document.getElementById('gemini-badge'); const port = document.getElementById('portrait'); const pCtx = port.getContext('2d');
     box.style.display = 'flex'; document.getElementById('text-content').innerText = ""; 
@@ -4916,6 +4914,10 @@ function showDialog(text, speaker, portrait, isAI = false) {
 
 // --- NEW FUNCTION: Show "Thinking" state ---
 function showThinking(speaker, portrait) {
+    // Store previous state for background rendering during dialog
+    if (GAME.state !== 'DIALOG') {
+        GAME.dialogBackgroundState = GAME.state;
+    }
     GAME.state = 'DIALOG';
     GAME.dialogText = ""; // No typed text yet
     GAME.dialogVisible = "";
@@ -5100,33 +5102,32 @@ function drawSnesSplash(isWin) {
 function drawYardLevel() {
     const y = GAME.yard;
     const camY = y ? y.cameraY || 0 : 0;
-    const yardHeight = y ? y.height : canvas.height;
+    const totalHeight = y ? y.height : canvas.height;
+    const hallwayStart = y ? y.hallwayStart : 250;
+    const hallwayEnd = y ? y.castleStart : 650;
 
     ctx.save();
     ctx.translate(0, -camY);
 
-    // === MASSIVE THRONE ROOM AT TOP (600 pixels tall) ===
-    const throneRoomHeight = 600;
+    // === MASSIVE THRONE ROOM AT TOP (safe zone - no weapons) ===
+    const throneRoomHeight = hallwayStart;
 
     // Dark throne room background with gradient
     const skyGrad = ctx.createLinearGradient(0, 0, 0, throneRoomHeight);
-    skyGrad.addColorStop(0, '#030308');
-    skyGrad.addColorStop(0.2, '#080812');
-    skyGrad.addColorStop(0.5, '#0f0f1e');
-    skyGrad.addColorStop(0.8, '#1a1a2e');
-    skyGrad.addColorStop(1, '#0b1224');
+    skyGrad.addColorStop(0, '#020206');
+    skyGrad.addColorStop(0.3, '#050510');
+    skyGrad.addColorStop(0.6, '#0a0a18');
+    skyGrad.addColorStop(1, '#0f0f22');
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, canvas.width, throneRoomHeight);
 
     // === THRONE ROOM FLOOR TILES ===
-    // Checkered marble floor pattern - starts at 40% of throne room height
-    const floorStart = Math.floor(throneRoomHeight * 0.35);
+    const floorStart = Math.floor(throneRoomHeight * 0.5);
     for (let ty = floorStart; ty < throneRoomHeight; ty += 16) {
         for (let tx = 0; tx < canvas.width; tx += 16) {
             const isEven = ((tx / 16) + (ty / 16)) % 2 === 0;
             ctx.fillStyle = isEven ? '#1a1a28' : '#252535';
             ctx.fillRect(tx, ty, 16, 16);
-            // Tile shine
             ctx.fillStyle = isEven ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)';
             ctx.fillRect(tx + 1, ty + 1, 6, 6);
         }
@@ -5135,123 +5136,57 @@ function drawYardLevel() {
     // === RED CARPET LEADING TO THRONE ===
     const carpetWidth = 70;
     const carpetX = canvas.width / 2 - carpetWidth / 2;
-    const carpetStart = Math.floor(throneRoomHeight * 0.15);
-    // Carpet base
     ctx.fillStyle = '#7f1d1d';
-    ctx.fillRect(carpetX, carpetStart, carpetWidth, throneRoomHeight - carpetStart);
-    // Carpet highlight stripe
+    ctx.fillRect(carpetX, 0, carpetWidth, throneRoomHeight);
     ctx.fillStyle = '#991b1b';
-    ctx.fillRect(carpetX + 8, carpetStart, carpetWidth - 16, throneRoomHeight - carpetStart);
-    // Carpet golden trim
+    ctx.fillRect(carpetX + 8, 0, carpetWidth - 16, throneRoomHeight);
     ctx.fillStyle = '#b45309';
-    ctx.fillRect(carpetX, carpetStart, 4, throneRoomHeight - carpetStart);
-    ctx.fillRect(carpetX + carpetWidth - 4, carpetStart, 4, throneRoomHeight - carpetStart);
-    // Carpet decorative patterns
+    ctx.fillRect(carpetX, 0, 4, throneRoomHeight);
+    ctx.fillRect(carpetX + carpetWidth - 4, 0, 4, throneRoomHeight);
     ctx.fillStyle = '#fbbf24';
-    for (let py = carpetStart + 20; py < throneRoomHeight; py += 40) {
+    for (let py = 20; py < throneRoomHeight; py += 40) {
         ctx.fillRect(carpetX + 22, py, 26, 3);
         ctx.fillRect(carpetX + 27, py + 6, 16, 3);
     }
 
-    // === MASSIVE PILLARS ON SIDES ===
     if (y) {
         const animFrame = y.jeffAnimFrame || 0;
 
-        // Draw multiple pillar pairs along the throne room
-        const pillarPositions = [
-            { leftX: 15, rightX: canvas.width - 35, y: 0 },
-            { leftX: 45, rightX: canvas.width - 65, y: Math.floor(throneRoomHeight * 0.33) },
-            { leftX: 15, rightX: canvas.width - 35, y: Math.floor(throneRoomHeight * 0.55) }
-        ];
+        // === AMAZON WALL BANNERS ===
+        const bannerY = 20;
+        // Left banner with Amazon logo
+        ctx.fillStyle = '#4a1010';
+        ctx.fillRect(40, bannerY, 35, 70);
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(44, bannerY + 5, 27, 60);
+        ctx.fillStyle = '#4a1010';
+        ctx.beginPath();
+        ctx.moveTo(44, bannerY + 40); ctx.quadraticCurveTo(57, bannerY + 55, 71, bannerY + 37);
+        ctx.lineTo(71, bannerY + 42); ctx.quadraticCurveTo(57, bannerY + 60, 44, bannerY + 47); ctx.fill();
 
-        pillarPositions.forEach((pos, pillarIdx) => {
-            for (let side = 0; side < 2; side++) {
-                const pillarX = side === 0 ? pos.leftX : pos.rightX;
-                const pillarBottom = Math.min(pos.y + 180, throneRoomHeight);
-                const pillarTop = pos.y + 20;
-                const pillarHeight = pillarBottom - pillarTop;
-
-                // Pillar base
-                ctx.fillStyle = '#1f1f35';
-                ctx.fillRect(pillarX - 5, pillarBottom - 30, 30, 30);
-                ctx.fillStyle = '#2a2a45';
-                ctx.fillRect(pillarX, pillarBottom - 25, 20, 25);
-
-                // Pillar shaft
-                ctx.fillStyle = '#252540';
-                ctx.fillRect(pillarX, pillarTop, 20, pillarHeight - 25);
-                ctx.fillStyle = '#2d2d50';
-                ctx.fillRect(pillarX + 3, pillarTop, 14, pillarHeight - 25);
-                // Pillar highlight
-                ctx.fillStyle = 'rgba(255,255,255,0.05)';
-                ctx.fillRect(pillarX + 4, pillarTop, 4, pillarHeight - 25);
-
-                // Pillar capital (top decoration)
-                ctx.fillStyle = '#3a3a55';
-                ctx.fillRect(pillarX - 4, pillarTop - 5, 28, 10);
-                ctx.fillStyle = '#ff9900';
-                ctx.fillRect(pillarX + 2, pillarTop - 8, 16, 4);
-
-                // Torch on pillar
-                const torchY = pillarTop + 40;
-                ctx.fillStyle = '#4a3728';
-                ctx.fillRect(pillarX + 7, torchY, 6, 20);
-                // Torch flame (animated)
-                const flameHeight = 14 + Math.sin(animFrame * 0.2 + pillarIdx) * 4;
-                const flameGrad = ctx.createRadialGradient(pillarX + 10, torchY - 5, 2, pillarX + 10, torchY - 5, flameHeight);
-                flameGrad.addColorStop(0, 'rgba(255, 200, 50, 0.9)');
-                flameGrad.addColorStop(0.3, 'rgba(255, 100, 0, 0.7)');
-                flameGrad.addColorStop(0.7, 'rgba(200, 50, 0, 0.4)');
-                flameGrad.addColorStop(1, 'rgba(100, 0, 0, 0)');
-                ctx.fillStyle = flameGrad;
-                ctx.beginPath();
-                ctx.arc(pillarX + 10, torchY - 5, flameHeight, 0, Math.PI * 2);
-                ctx.fill();
-                // Flame core
-                ctx.fillStyle = '#ffff80';
-                ctx.fillRect(pillarX + 8, torchY - 8, 4, 6);
-            }
-        });
-
-        // === WALL BANNERS (multiple along the room) ===
-        const bannerYPositions = [25, Math.floor(throneRoomHeight * 0.25), Math.floor(throneRoomHeight * 0.5)];
-        bannerYPositions.forEach((bannerY, idx) => {
-            // Left banner
-            ctx.fillStyle = '#4a1010';
-            ctx.fillRect(50, bannerY, 28, 60);
-            ctx.fillStyle = '#ff9900';
-            ctx.fillRect(54, bannerY + 5, 20, 50);
-            // Amazon arrow on banner
-            ctx.fillStyle = '#4a1010';
-            ctx.beginPath();
-            ctx.moveTo(54, bannerY + 35); ctx.quadraticCurveTo(64, bannerY + 45, 74, bannerY + 32); ctx.lineTo(74, bannerY + 36);
-            ctx.quadraticCurveTo(64, bannerY + 50, 54, bannerY + 40); ctx.fill();
-
-            // Right banner
-            ctx.fillStyle = '#4a1010';
-            ctx.fillRect(canvas.width - 78, bannerY, 28, 60);
-            ctx.fillStyle = '#ff9900';
-            ctx.fillRect(canvas.width - 74, bannerY + 5, 20, 50);
-            ctx.fillStyle = '#4a1010';
-            ctx.beginPath();
-            ctx.moveTo(canvas.width - 74, bannerY + 35); ctx.quadraticCurveTo(canvas.width - 64, bannerY + 45, canvas.width - 54, bannerY + 32);
-            ctx.lineTo(canvas.width - 54, bannerY + 36); ctx.quadraticCurveTo(canvas.width - 64, bannerY + 50, canvas.width - 74, bannerY + 40); ctx.fill();
-        });
+        // Right banner
+        ctx.fillStyle = '#4a1010';
+        ctx.fillRect(canvas.width - 75, bannerY, 35, 70);
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(canvas.width - 71, bannerY + 5, 27, 60);
+        ctx.fillStyle = '#4a1010';
+        ctx.beginPath();
+        ctx.moveTo(canvas.width - 71, bannerY + 40); ctx.quadraticCurveTo(canvas.width - 58, bannerY + 55, canvas.width - 44, bannerY + 37);
+        ctx.lineTo(canvas.width - 44, bannerY + 42); ctx.quadraticCurveTo(canvas.width - 58, bannerY + 60, canvas.width - 71, bannerY + 47); ctx.fill();
 
         // === ELEVATED THRONE PLATFORM ===
         const throneX = canvas.width / 2;
         const throneY = 45;
 
-        // Stepped platform (larger for bigger throne room)
+        // Stepped platform
         ctx.fillStyle = '#1a1520';
-        ctx.fillRect(throneX - 80, 98, 160, 12);
+        ctx.fillRect(throneX - 80, 118, 160, 12);
         ctx.fillStyle = '#201828';
-        ctx.fillRect(throneX - 70, 86, 140, 14);
+        ctx.fillRect(throneX - 70, 106, 140, 14);
         ctx.fillStyle = '#281e30';
-        ctx.fillRect(throneX - 60, 74, 120, 14);
+        ctx.fillRect(throneX - 60, 94, 120, 14);
 
         // === MASSIVE GOLDEN THRONE ===
-        // Throne backing - imposing structure
         ctx.fillStyle = '#2d1810';
         ctx.fillRect(throneX - 55, throneY - 25, 110, 75);
         ctx.fillStyle = '#4a2818';
@@ -5259,11 +5194,10 @@ function drawYardLevel() {
         ctx.fillStyle = '#5a3520';
         ctx.fillRect(throneX - 45, throneY - 15, 90, 55);
 
-        // Throne spires (taller, more imposing)
+        // Throne spires
         ctx.fillStyle = '#ff9900';
         ctx.fillRect(throneX - 52, throneY - 50, 12, 40);
         ctx.fillRect(throneX + 40, throneY - 50, 12, 40);
-        // Spire tips
         ctx.fillStyle = '#fbbf24';
         ctx.beginPath();
         ctx.moveTo(throneX - 52, throneY - 50);
@@ -5275,7 +5209,6 @@ function drawYardLevel() {
         ctx.lineTo(throneX + 46, throneY - 70);
         ctx.lineTo(throneX + 52, throneY - 50);
         ctx.fill();
-        // Gems on spires
         ctx.fillStyle = '#dc2626';
         ctx.fillRect(throneX - 49, throneY - 45, 6, 6);
         ctx.fillRect(throneX + 43, throneY - 45, 6, 6);
@@ -5286,7 +5219,6 @@ function drawYardLevel() {
         ctx.fillRect(throneX - 25, throneY, 50, 22);
         ctx.fillStyle = '#ffb347';
         ctx.fillRect(throneX - 20, throneY + 3, 40, 16);
-        // Amazon arrow/smile (bigger)
         ctx.fillStyle = '#ff6600';
         ctx.beginPath();
         ctx.moveTo(throneX - 15, throneY + 14);
@@ -5322,42 +5254,94 @@ function drawYardLevel() {
         // === DRAW BEZOS ON THRONE ===
         ctx.drawImage(GFX.jeffYard, jeffX, jeffY + bobY);
 
-        // === AMBIENT PARTICLES (dust motes in light) ===
+        // === AMBIENT PARTICLES ===
         for (let i = 0; i < 5; i++) {
             const px = (animFrame * 0.3 + i * 50) % canvas.width;
             const py = 30 + Math.sin(animFrame * 0.02 + i * 2) * 40;
             ctx.fillStyle = 'rgba(255, 200, 100, 0.3)';
             ctx.fillRect(px, py, 2, 2);
         }
+
+        // === "SAFE ZONE" indicator at throne room boundary ===
+        ctx.fillStyle = '#22c55e';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('THRONE ROOM', canvas.width / 2, throneRoomHeight - 8);
+        ctx.textAlign = 'left';
     }
 
-    // asphalt base with SNES-style tiling and parallax skyline (starts after throne room)
-    ctx.fillStyle = '#0b1224'; ctx.fillRect(0, throneRoomHeight, canvas.width, yardHeight - throneRoomHeight);
-    ctx.fillStyle = '#0f172a';
-    for (let ty = throneRoomHeight; ty < yardHeight + 16; ty += 16) {
-        for (let tx = (ty % 32 === 0 ? 0 : 8); tx < canvas.width; tx += 16) {
-            ctx.fillRect(tx, ty, 12, 12);
+    // === LONG SECURITY HALLWAY (dangerous zone with lasers/drones) ===
+    const hallwayBgGrad = ctx.createLinearGradient(0, throneRoomHeight, 0, hallwayEnd);
+    hallwayBgGrad.addColorStop(0, '#0a0a18');
+    hallwayBgGrad.addColorStop(0.5, '#0f1020');
+    hallwayBgGrad.addColorStop(1, '#1a1a2e');
+    ctx.fillStyle = hallwayBgGrad;
+    ctx.fillRect(0, throneRoomHeight, canvas.width, hallwayEnd - throneRoomHeight);
+
+    // Hallway floor - industrial metal grating
+    for (let ty = throneRoomHeight; ty < hallwayEnd; ty += 12) {
+        for (let tx = 0; tx < canvas.width; tx += 12) {
+            ctx.fillStyle = (tx + ty) % 24 === 0 ? '#1a1a28' : '#151522';
+            ctx.fillRect(tx, ty, 11, 11);
+            // Grating details
+            ctx.fillStyle = 'rgba(255,255,255,0.02)';
+            ctx.fillRect(tx + 2, ty + 2, 3, 3);
         }
     }
-    ctx.fillStyle = 'rgba(255,255,255,0.02)';
-    for (let ty = throneRoomHeight; ty < yardHeight; ty += 8) {
-        for (let tx = 4; tx < canvas.width; tx += 16) ctx.fillRect(tx, ty + ((tx + ty) % 16 === 0 ? 2 : 0), 2, 2);
+
+    // Hallway walls (sides) with red alert lighting
+    if (y) {
+        const animFrame = y.jeffAnimFrame || 0;
+        const alertPulse = Math.sin(animFrame * 0.1) * 0.3 + 0.5;
+
+        // Left wall
+        ctx.fillStyle = '#1f1f35';
+        ctx.fillRect(0, throneRoomHeight, 25, hallwayEnd - throneRoomHeight);
+        // Right wall
+        ctx.fillRect(canvas.width - 25, throneRoomHeight, 25, hallwayEnd - throneRoomHeight);
+
+        // Red alert strips on walls
+        ctx.fillStyle = `rgba(220, 38, 38, ${alertPulse})`;
+        for (let wy = throneRoomHeight + 20; wy < hallwayEnd - 20; wy += 60) {
+            ctx.fillRect(2, wy, 4, 30);
+            ctx.fillRect(canvas.width - 6, wy, 4, 30);
+        }
+
+        // "DANGER" signs along hallway
+        ctx.fillStyle = '#dc2626';
+        ctx.font = '5px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        for (let signY = throneRoomHeight + 50; signY < hallwayEnd - 50; signY += 100) {
+            ctx.fillText('⚠', 12, signY);
+            ctx.fillText('⚠', canvas.width - 12, signY);
+        }
+        ctx.textAlign = 'left';
     }
 
-    // Warning stripes at throne room entrance
+    // Warning stripes at throne room / hallway boundary
     ctx.fillStyle = '#facc15';
     for (let x = 0; x < canvas.width; x += 16) {
-        ctx.fillRect(x, throneRoomHeight - 5, 8, 5);
+        ctx.fillRect(x, throneRoomHeight, 8, 5);
     }
     ctx.fillStyle = '#0f0f0f';
     for (let x = 8; x < canvas.width; x += 16) {
-        ctx.fillRect(x, throneRoomHeight - 5, 8, 5);
+        ctx.fillRect(x, throneRoomHeight, 8, 5);
+    }
+
+    // Warning stripes at hallway / yard boundary
+    ctx.fillStyle = '#facc15';
+    for (let x = 0; x < canvas.width; x += 16) {
+        ctx.fillRect(x, hallwayEnd - 5, 8, 5);
+    }
+    ctx.fillStyle = '#0f0f0f';
+    for (let x = 8; x < canvas.width; x += 16) {
+        ctx.fillRect(x, hallwayEnd - 5, 8, 5);
     }
 
     // curbs and dock edges (at bottom of yard)
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, yardHeight - 18, canvas.width, 18);
-    ctx.fillStyle = '#334155'; ctx.fillRect(0, yardHeight - 22, canvas.width, 4);
-    ctx.fillStyle = '#64748b'; for (let x=0; x<canvas.width; x+=14) ctx.fillRect(x, yardHeight - 16, 8, 3);
+    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, totalHeight - 18, canvas.width, 18);
+    ctx.fillStyle = '#334155'; ctx.fillRect(0, totalHeight - 22, canvas.width, 4);
+    ctx.fillStyle = '#64748b'; for (let x=0; x<canvas.width; x+=14) ctx.fillRect(x, totalHeight - 16, 8, 3);
 
     // lane bands and markings
     if (y) {
@@ -5374,8 +5358,8 @@ function drawYardLevel() {
     }
 
     // palettes at bottom of yard
-    ctx.fillStyle = '#f97316'; for (let x=10; x<canvas.width; x+=60) ctx.fillRect(x, yardHeight - 36, 8, 16);
-    ctx.fillStyle = '#9ca3af'; for (let x=6; x<canvas.width; x+=50) ctx.fillRect(x, yardHeight - 48, 14, 6);
+    ctx.fillStyle = '#f97316'; for (let x=10; x<canvas.width; x+=60) ctx.fillRect(x, totalHeight - 36, 8, 16);
+    ctx.fillStyle = '#9ca3af'; for (let x=6; x<canvas.width; x+=50) ctx.fillRect(x, totalHeight - 48, 14, 6);
 
     if (y) {
         // Draw static hazards (puddles, debris)
@@ -5462,58 +5446,28 @@ function drawYardLevel() {
             });
         }
 
-        // === CASTLE SECTION RENDERING (below throne room) ===
+        // === HALLWAY SECTION HAZARDS RENDERING ===
+        // Entrance archway at the bottom of hallway leading to yard
         if (y.castleStart) {
             const castleY = y.castleStart;
 
-            // Castle entrance gate - massive archway (at bottom of castle section)
+            // Entrance archway from yard to hallway
             ctx.fillStyle = '#1a1a2e';
-            ctx.fillRect(0, castleY - 80, canvas.width, 80);
-
-            // Castle entrance arch
+            ctx.fillRect(0, castleY - 60, canvas.width, 60);
             ctx.fillStyle = '#2d2d44';
-            ctx.fillRect(canvas.width / 2 - 40, castleY - 60, 80, 60);
+            ctx.fillRect(canvas.width / 2 - 40, castleY - 45, 80, 45);
             ctx.fillStyle = '#3d3d5c';
             ctx.beginPath();
-            ctx.arc(canvas.width / 2, castleY - 60, 40, Math.PI, 0);
+            ctx.arc(canvas.width / 2, castleY - 45, 40, Math.PI, 0);
             ctx.fill();
+            // "SECURITY CHECKPOINT" text
+            ctx.fillStyle = '#dc2626';
+            ctx.font = '5px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText('SECURITY', canvas.width / 2, castleY - 55);
+            ctx.textAlign = 'left';
 
-            // Castle wall base (starts after throne room at y=200)
-            ctx.fillStyle = '#1a1a2e';
-            ctx.fillRect(0, throneRoomHeight, canvas.width, castleY - throneRoomHeight - 80);
-
-            // Castle brickwork texture (starts after throne room)
-            ctx.fillStyle = '#2a2a40';
-            for (let ty = throneRoomHeight; ty < castleY - 80; ty += 16) {
-                for (let tx = 0; tx < canvas.width; tx += 20) {
-                    const offset = (Math.floor(ty / 16) % 2) * 10;
-                    ctx.fillRect(tx + offset, ty, 18, 14);
-                }
-            }
-
-            // Castle side towers (start after throne room)
-            ctx.fillStyle = '#1f1f35';
-            ctx.fillRect(0, throneRoomHeight, 30, castleY - throneRoomHeight);
-            ctx.fillRect(canvas.width - 30, throneRoomHeight, 30, castleY - throneRoomHeight);
-
-            // Tower details (windows)
-            ctx.fillStyle = '#0ea5e9';
-            for (let ty = throneRoomHeight + 20; ty < castleY; ty += 60) {
-                ctx.fillRect(8, ty, 14, 8);
-                ctx.fillRect(canvas.width - 22, ty, 14, 8);
-            }
-
-            // Banner/flags on towers (at top of castle section)
-            ctx.fillStyle = '#ff9900';
-            ctx.fillRect(12, throneRoomHeight + 5, 6, 20);
-            ctx.fillRect(canvas.width - 18, throneRoomHeight + 5, 6, 20);
-            ctx.fillStyle = '#f59e0b';
-            ctx.beginPath();
-            ctx.moveTo(18, throneRoomHeight + 5); ctx.lineTo(30, throneRoomHeight + 10); ctx.lineTo(18, throneRoomHeight + 20); ctx.fill();
-            ctx.beginPath();
-            ctx.moveTo(canvas.width - 12, throneRoomHeight + 5); ctx.lineTo(canvas.width - 24, throneRoomHeight + 10); ctx.lineTo(canvas.width - 12, throneRoomHeight + 20); ctx.fill();
-
-            // Draw castle platforms
+            // Draw hallway platforms
             if (y.castlePlatforms) {
                 y.castlePlatforms.forEach(p => {
                     // Platform glow
@@ -6626,6 +6580,12 @@ function draw() {
     }
     if (GAME.state === 'MECHA_BOSS') { drawMechaBattle(); ctx.restore(); return; }
     if (GAME.state === 'THRONE_CONFRONTATION') { drawThroneConfrontation(); ctx.restore(); return; }
+    // Draw throne room background during dialog if we came from throne confrontation
+    if (GAME.state === 'DIALOG' && GAME.dialogBackgroundState === 'THRONE_CONFRONTATION') {
+        drawThroneConfrontation();
+        ctx.restore();
+        return;
+    }
     if (GAME.state === 'MECHA_TRANSFORM') { drawMechaTransform(); ctx.restore(); return; }
     if (GAME.state === 'CREDITS') { drawCredits(); ctx.restore(); return; }
     if (GAME.state === 'BOSS_INTRO' && GAME.boss) {
