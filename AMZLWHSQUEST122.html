@@ -182,17 +182,356 @@
         }
         
         #ai-status {
-            display: none !important; 
+            display: none !important;
             position: absolute; top: 10px; left: 10px; font-size: 10px; color: #00ffff;
             background: rgba(0,0,0,0.8); padding: 4px; border: 1px solid #00ffff; pointer-events: none;
-            z-index: 2000; 
+            z-index: 2000;
+        }
+
+        /* === AUDIT QUESTION MODAL === */
+        #audit-modal {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 700px;
+            background: linear-gradient(180deg, #0a1628 0%, #061020 100%);
+            border: 3px solid #fbbf24;
+            border-radius: 12px;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 2000;
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.4), inset 0 0 30px rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
+            max-height: 90%;
+            overflow-y: auto;
+        }
+
+        #audit-modal.visible {
+            display: block;
+        }
+
+        .audit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 10px;
+        }
+
+        .audit-title {
+            font-size: 14px;
+            color: #fbbf24;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+
+        .audit-close {
+            background: #dc2626;
+            border: none;
+            color: white;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .audit-question-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .audit-question-text {
+            flex: 1;
+            font-size: 12px;
+            color: #f0f0ff;
+            line-height: 1.5;
+        }
+
+        .help-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: 2px solid #60a5fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .help-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+        }
+
+        .audit-input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .audit-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        #audit-answer {
+            width: 100%;
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 6px;
+            color: #f0f0ff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            padding: 12px;
+            padding-right: 45px;
+            resize: none;
+            height: 60px;
+        }
+
+        #audit-answer:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+        }
+
+        .mic-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            border: 2px solid #4ade80;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .mic-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
+        }
+
+        .mic-btn.recording {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-color: #f87171;
+            animation: pulse-mic 1s infinite;
+        }
+
+        @keyframes pulse-mic {
+            0%, 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
+        }
+
+        .mic-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+
+        .camera-section {
+            margin-bottom: 15px;
+        }
+
+        .camera-btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            border: 2px solid #a78bfa;
+            color: white;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .camera-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .camera-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+
+        #camera-preview {
+            display: none;
+            margin-top: 10px;
+            border: 2px solid #334155;
+            border-radius: 6px;
+            max-width: 100%;
+        }
+
+        #captured-image {
+            display: none;
+            margin-top: 10px;
+            border: 2px solid #fbbf24;
+            border-radius: 6px;
+            max-width: 100%;
+            max-height: 150px;
+        }
+
+        .analysis-result {
+            display: none;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border: 2px solid #22c55e;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .analysis-result.visible {
+            display: block;
+        }
+
+        .analysis-header {
+            font-size: 10px;
+            color: #22c55e;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .analysis-text {
+            font-size: 11px;
+            color: #f0f0ff;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .use-action-btn {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            border: 2px solid #fb923c;
+            color: white;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .use-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+        }
+
+        .audit-submit {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            border: 2px solid #4ade80;
+            color: white;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 11px;
+            padding: 12px 25px;
+            cursor: pointer;
+            border-radius: 6px;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .audit-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+        }
+
+        /* === ASCHG HELP MODAL === */
+        #aschg-modal {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%;
+            max-width: 600px;
+            background: linear-gradient(180deg, #0f172a 0%, #0a1525 100%);
+            border: 3px solid #3b82f6;
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 2100;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
+            pointer-events: auto;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        #aschg-modal.visible {
+            display: block;
+        }
+
+        .aschg-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 10px;
+        }
+
+        .aschg-title {
+            font-size: 12px;
+            color: #3b82f6;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        .aschg-close {
+            background: #475569;
+            border: none;
+            color: white;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .aschg-content {
+            font-size: 11px;
+            color: #f0f0ff;
+            line-height: 1.6;
+        }
+
+        .aschg-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            color: #3b82f6;
+        }
+
+        .processing-badge {
+            font-size: 9px;
+            color: #22d3ee;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            text-shadow: 0 0 8px #22d3ee;
+            letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
 
     <div id="game-wrapper">
-        <div id="ai-status">AI Status: Init</div>
+        <div id="ai-status">System Status: Init</div>
         <canvas id="gameCanvas" width="256" height="224"></canvas>
         <div id="crt-overlay"></div>
         <div id="vignette"></div>
@@ -213,10 +552,63 @@
             <div id="dialog-box">
                 <canvas id="portrait" width="32" height="32"></canvas>
                 <div style="display:flex; flex-direction:column; width:100%;">
-                    <div id="gemini-badge" class="gemini-badge">✨ SIMON IS ANALYZING...</div>
+                    <div id="gemini-badge" class="gemini-badge processing-badge">✨ SIMON IS PROCESSING...</div>
                     <div id="text-content"></div>
                     <div id="press-space-hint">▼ PRESS SPACE</div>
                 </div>
+            </div>
+        </div>
+
+        <!-- AUDIT QUESTION MODAL -->
+        <div id="audit-modal">
+            <div class="audit-header">
+                <div class="audit-title">⚠️ HAZARD AUDIT</div>
+                <button class="audit-close" onclick="closeAuditModal()">✕ CLOSE</button>
+            </div>
+
+            <div id="audit-hazard-name" style="font-size: 13px; color: #fbbf24; margin-bottom: 15px; text-align: center;"></div>
+
+            <div class="audit-question-row">
+                <div class="audit-question-text" id="audit-question">What corrective action would you take to address this hazard?</div>
+                <div class="help-icon" onclick="showASCHGHelp()" title="Get ASCHG Information">?</div>
+            </div>
+
+            <div class="audit-input-section">
+                <div class="audit-input-wrapper">
+                    <textarea id="audit-answer" placeholder="Enter your response or use voice input..."></textarea>
+                    <button class="mic-btn" id="mic-btn" onclick="toggleVoiceInput()" title="Voice Input">
+                        <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="camera-section">
+                <button class="camera-btn" id="camera-btn" onclick="toggleCamera()">
+                    <svg viewBox="0 0 24 24"><path d="M9 3L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2h-3.17L15 3H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.65 0-3 1.35-3 3s1.35 3 3 3 3-1.35 3-3-1.35-3-3-3z"/></svg>
+                    CAPTURE PHOTO
+                </button>
+                <video id="camera-preview" autoplay playsinline></video>
+                <canvas id="photo-canvas" style="display: none;"></canvas>
+                <img id="captured-image" alt="Captured photo">
+
+                <div class="analysis-result" id="analysis-result">
+                    <div class="analysis-header">📋 RECOMMENDATION</div>
+                    <div class="analysis-text" id="analysis-text"></div>
+                    <button class="use-action-btn" onclick="useRecommendationAsAction()">➡️ USE AS ACTION</button>
+                </div>
+            </div>
+
+            <button class="audit-submit" onclick="submitAudit()">✓ SUBMIT AUDIT</button>
+        </div>
+
+        <!-- ASCHG HELP MODAL -->
+        <div id="aschg-modal">
+            <div class="aschg-header">
+                <div class="aschg-title">📖 ASCHG INFORMATION</div>
+                <button class="aschg-close" onclick="closeASCHGModal()">✕ CLOSE</button>
+            </div>
+            <div class="aschg-content" id="aschg-content">
+                <div class="aschg-loading">Loading ASCHG information...</div>
             </div>
         </div>
     </div>
@@ -306,8 +698,8 @@ function getCharStats(name) {
     };
 }
 
-// --- SIMULATED AI DATABASE (FALLBACKS) ---
-const SIMULATED_AI = {
+// --- SIMON RESPONSE DATABASE (FALLBACKS) ---
+const SIMON_RESPONSES = {
     tips: [
         "Blocked exit? That box is your tombstone. Move it.",
         "Chemical spill? Entropy leaking. Contain it before you dissolve.",
@@ -523,11 +915,11 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const is = (key) => category === key || prompt.includes(key);
 
-    if (is("runners")) return pick(SIMULATED_AI.runners);
+    if (is("runners")) return pick(SIMON_RESPONSES.runners);
     if (is("simon_warning")) {
-        const warnings = SIMULATED_AI.simon_warnings || [];
+        const warnings = SIMON_RESPONSES.simon_warnings || [];
         const idx = Math.min(context.warningIndex || 0, warnings.length - 1);
-        return warnings.length ? warnings[Math.max(0, idx)] : pick(SIMULATED_AI.taunts);
+        return warnings.length ? warnings[Math.max(0, idx)] : pick(SIMON_RESPONSES.taunts);
     }
     if (is("bezos_taunt") || is("bezos_confrontation")) {
         return pick(BEZOS_TAUNTS);
@@ -551,8 +943,8 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
         ]);
     }
     if (is("taunt")) {
-         if(prompt.includes("Simon")) return pick(SIMULATED_AI.simon_taunts);
-         return pick(SIMULATED_AI.taunts);
+         if(prompt.includes("Simon")) return pick(SIMON_RESPONSES.simon_taunts);
+         return pick(SIMON_RESPONSES.taunts);
     }
     if ((is("reviews_loss") || is("reviews_win")) && stats) {
         const time = stats.time ?? "?";
@@ -564,16 +956,16 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
         }
         return `Victory recap: ${hazards}/5 hazards cleared in ${time}s, ${books} rule books launched, ${ops} ops redirected. Celebrate, then keep exits clear.`;
     }
-    if (is("reviews_loss")) return pick(SIMULATED_AI.reviews_loss);
-    if (is("reviews_win")) return pick(SIMULATED_AI.reviews_win);
+    if (is("reviews_loss")) return pick(SIMON_RESPONSES.reviews_loss);
+    if (is("reviews_win")) return pick(SIMON_RESPONSES.reviews_win);
     if (is("hazard") || is("tips")) {
         if(hazardName) return `Hazard "${hazardName}" cleared. Paperwork avoided.`;
-        return pick(SIMULATED_AI.tips);
+        return pick(SIMON_RESPONSES.tips);
     }
     if (is("banter_ops")) return pick(BANTER_DB.ops);
     if (is("banter_assoc")) return pick(BANTER_DB.assoc);
 
-    return pick(SIMULATED_AI.tips);
+    return pick(SIMON_RESPONSES.tips);
 }
 
 const canvas = document.getElementById('gameCanvas');
@@ -2769,7 +3161,7 @@ const GAME = {
         { name: "Compliance Auditor", sprite: "boss_compliance", hp: 12, speed: 0.8, attackDelay: 70, title: "The Watcher", desc: "Nothing escapes.", attackName: "Audit Trail" },
         { name: "Sebastian Sprigade", sprite: "boss_sebastian", hp: 15, speed: 1.0, attackDelay: 60, title: "Delivery Station Mgr", desc: "Obsessed with TPH.", attackName: "Volume Spike" },
         { name: "Regional OPS MGR", sprite: "boss_regional", hp: 14, speed: 0.6, attackDelay: 90, title: "The Executive", desc: "Metrics first.", attackName: "Budget Cut" },
-        { name: "Avetta Platform", sprite: "boss_avetta", hp: 18, speed: 0.4, attackDelay: 100, title: "Risk Mgmt AI", desc: "Judges all.", attackName: "Compliance Block" },
+        { name: "Avetta Platform", sprite: "boss_avetta", hp: 18, speed: 0.4, attackDelay: 100, title: "Risk Mgmt System", desc: "Judges all.", attackName: "Compliance Block" },
         { name: "Jelena \"Jelly\"", sprite: "boss_jelly", hp: 13, speed: 0.9, attackDelay: 65, title: "HR Guardian", desc: "HR legend who never forgets a policy.", attackName: "Policy Shock" }
     ]
 };
@@ -2978,7 +3370,7 @@ function handleAction() {
     else if (GAME.state === 'BEZOS_INTRO') { GAME.state = 'BEZOS_BOSS'; GAME.nextState = 'BEZOS_BOSS'; updateMusicForState(); }
     else if (GAME.state === 'MECHA_BOSS_INTRO') { GAME.state = 'MECHA_BOSS'; GAME.nextState = 'MECHA_BOSS'; updateMusicForState(); }
     else if (GAME.state === 'THRONE_CONFRONTATION') {
-        // Throne confrontation cutscene using AI-powered showDialog system
+        // Throne confrontation cutscene using dynamic showDialog system
         const scene = GAME.throneScene;
         if (!scene) return;
 
@@ -4830,25 +5222,8 @@ function tryInteract() {
     }
     for(let h of GAME.activeIssues) {
         if (!h.fixed && Math.hypot(p.x-h.x, p.y-h.y) < 20) {
-            h.fixed = true; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
-            if (h.hiddenDoor && GAME.hiddenDoor) GAME.hiddenDoor.unlocked = true;
-            spawnFloatingText(h.x, h.y, "Fixed!", "#00ff00");
-
-            if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
-
-            // SIMON COMMENTARY
-            const currentGen = GAME.genId;
-
-            // --- CHANGED: Show thinking state immediately ---
-            showThinking("Simon Unglaube", GFX.simonFace);
-
-            callGemini(
-                `You are Simon Unglaube, WHS Senior Regional Manager. A hazard "${h.data.name}" was fixed. Praise the player with dry, professional humor and share one specific safety tip tied to that hazard. Max 32 words.`,
-                "hazard",
-                { hazardName: h.data.name }
-            ).then(tip => {
-                if (GAME.genId === currentGen) showDialog(`Fixed: ${h.data.name}!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
-            });
+            // Show audit modal instead of directly fixing
+            showAuditModal(h);
             return true;
         }
     }
@@ -4902,12 +5277,12 @@ function checkCol(x, y) {
 
 function updateHud() { document.getElementById('life-val').innerText = "❤️".repeat(Math.max(0, GAME.lives)); document.getElementById('score-val').innerText = GAME.issuesFixed + "/5"; }
 
-function showDialog(text, speaker, portrait, isAI = false) {
+function showDialog(text, speaker, portrait, showProcessing = false) {
     GAME.state = 'DIALOG'; GAME.dialogText = (speaker ? speaker + ":\n" : "") + text; GAME.dialogVisible = "";
     const box = document.getElementById('dialog-box'); const badge = document.getElementById('gemini-badge'); const port = document.getElementById('portrait'); const pCtx = port.getContext('2d');
-    box.style.display = 'flex'; document.getElementById('text-content').innerText = ""; 
-    badge.style.display = isAI ? 'block' : 'none';
-    badge.innerHTML = isAI ? "✨ SIMON IS ANALYZING..." : ""; // Reset badge text
+    box.style.display = 'flex'; document.getElementById('text-content').innerText = "";
+    badge.style.display = showProcessing ? 'block' : 'none';
+    badge.innerHTML = showProcessing ? "✨ SIMON IS PROCESSING..." : ""; // Reset badge text
     pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,32,32);
     if (portrait) pCtx.drawImage(portrait, 0, 0); else { pCtx.fillStyle='#fff'; pCtx.fillText("!", 10, 20); }
     AudioSys.sfx.text();
@@ -4923,21 +5298,310 @@ function showThinking(speaker, portrait) {
     const badge = document.getElementById('gemini-badge');
     const port = document.getElementById('portrait');
     const pCtx = port.getContext('2d');
-    
+
     box.style.display = 'flex';
     document.getElementById('text-content').innerHTML = "<span class='loading-dots'>PROCESSING</span>"; // Loading animation
-    
+
     badge.style.display = 'block';
     badge.innerText = "✨ UPLINK ESTABLISHED...";
-    
+
     pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,32,32);
     if (portrait) pCtx.drawImage(portrait, 0, 0);
-    
+
     AudioSys.sfx.text();
 }
 
+// === AUDIT MODAL SYSTEM ===
+let currentAuditHazard = null;
+let voiceRecognition = null;
+let isRecording = false;
+let cameraStream = null;
+let currentRecommendation = '';
+
+// Initialize Speech Recognition
+function initVoiceRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        voiceRecognition = new SpeechRecognition();
+        voiceRecognition.continuous = false;
+        voiceRecognition.interimResults = true;
+        voiceRecognition.lang = 'en-US';
+
+        voiceRecognition.onresult = (event) => {
+            const transcript = Array.from(event.results)
+                .map(result => result[0].transcript)
+                .join('');
+            document.getElementById('audit-answer').value = transcript;
+        };
+
+        voiceRecognition.onend = () => {
+            isRecording = false;
+            document.getElementById('mic-btn').classList.remove('recording');
+        };
+
+        voiceRecognition.onerror = (event) => {
+            console.error('Voice recognition error:', event.error);
+            isRecording = false;
+            document.getElementById('mic-btn').classList.remove('recording');
+        };
+    }
+}
+
+// Toggle voice input
+window.toggleVoiceInput = function() {
+    if (!voiceRecognition) {
+        initVoiceRecognition();
+    }
+
+    if (!voiceRecognition) {
+        alert('Voice recognition is not supported in this browser.');
+        return;
+    }
+
+    const micBtn = document.getElementById('mic-btn');
+
+    if (isRecording) {
+        voiceRecognition.stop();
+        isRecording = false;
+        micBtn.classList.remove('recording');
+    } else {
+        voiceRecognition.start();
+        isRecording = true;
+        micBtn.classList.add('recording');
+    }
+};
+
+// Toggle camera
+window.toggleCamera = async function() {
+    const preview = document.getElementById('camera-preview');
+    const capturedImg = document.getElementById('captured-image');
+    const cameraBtn = document.getElementById('camera-btn');
+
+    if (cameraStream) {
+        // Capture photo
+        const canvas = document.getElementById('photo-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = preview.videoWidth;
+        canvas.height = preview.videoHeight;
+        ctx.drawImage(preview, 0, 0);
+
+        const imageData = canvas.toDataURL('image/jpeg', 0.8);
+        capturedImg.src = imageData;
+        capturedImg.style.display = 'block';
+
+        // Stop camera
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+        preview.style.display = 'none';
+        cameraBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 3L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2h-3.17L15 3H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.65 0-3 1.35-3 3s1.35 3 3 3 3-1.35 3-3-1.35-3-3-3z"/></svg> CAPTURE PHOTO';
+
+        // Analyze the image
+        analyzeImage(imageData);
+    } else {
+        // Start camera
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' }
+            });
+            preview.srcObject = cameraStream;
+            preview.style.display = 'block';
+            capturedImg.style.display = 'none';
+            cameraBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 15c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm0-4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/></svg> TAKE PHOTO';
+            document.getElementById('analysis-result').classList.remove('visible');
+        } catch (err) {
+            console.error('Camera error:', err);
+            alert('Could not access camera. Please check permissions.');
+        }
+    }
+};
+
+// Analyze captured image
+async function analyzeImage(imageData) {
+    const analysisResult = document.getElementById('analysis-result');
+    const analysisText = document.getElementById('analysis-text');
+
+    analysisResult.classList.add('visible');
+    analysisText.innerHTML = '<span class="loading-dots">Analyzing image</span>';
+
+    if (!currentAuditHazard) {
+        analysisText.innerText = 'No hazard selected for analysis.';
+        return;
+    }
+
+    const hazardName = currentAuditHazard.data.name;
+    const prompt = `You are Simon Unglaube, WHS Senior Regional Manager. A coordinator has taken a photo while auditing "${hazardName}". Based on this hazard type, provide a specific corrective action recommendation. Be concise and practical. Max 40 words. Do not mention that you cannot see the image - provide general guidance for this hazard type.`;
+
+    try {
+        const recommendation = await callGemini(prompt, 'audit_recommendation');
+        currentRecommendation = recommendation || getDefaultRecommendation(hazardName);
+        analysisText.innerText = currentRecommendation;
+    } catch (err) {
+        currentRecommendation = getDefaultRecommendation(hazardName);
+        analysisText.innerText = currentRecommendation;
+    }
+}
+
+function getDefaultRecommendation(hazardName) {
+    const recommendations = {
+        'forklift': 'Ensure PIT operators complete daily inspection checklist. Verify seatbelt use and speed compliance. Report to supervisor immediately.',
+        'conveyor': 'Activate E-stop if jammed. Clear obstruction following LOTO procedures. Document incident in Safety Hub.',
+        'spill': 'Deploy wet floor signage. Use appropriate absorbent materials. Document spill location and cause.',
+        'box': 'Relocate boxes to designated staging area. Ensure clear egress paths. Maximum stack height 6 feet.',
+        'compliance': 'Review SOP documentation. Schedule required training. Update compliance tracker.',
+        'default': 'Identify root cause. Implement immediate corrective action. Document in Safety Hub. Follow up within 24 hours.'
+    };
+
+    for (const [key, value] of Object.entries(recommendations)) {
+        if (hazardName.toLowerCase().includes(key)) {
+            return value;
+        }
+    }
+    return recommendations.default;
+}
+
+// Use recommendation as action
+window.useRecommendationAsAction = function() {
+    if (currentRecommendation) {
+        document.getElementById('audit-answer').value = currentRecommendation;
+    }
+};
+
+// Show audit modal
+function showAuditModal(hazard) {
+    currentAuditHazard = hazard;
+    GAME.state = 'AUDIT_MODAL';
+
+    const modal = document.getElementById('audit-modal');
+    const hazardNameEl = document.getElementById('audit-hazard-name');
+    const answerEl = document.getElementById('audit-answer');
+    const analysisResult = document.getElementById('analysis-result');
+    const capturedImg = document.getElementById('captured-image');
+    const preview = document.getElementById('camera-preview');
+
+    hazardNameEl.innerText = `Hazard: ${hazard.data.name}`;
+    answerEl.value = '';
+    analysisResult.classList.remove('visible');
+    capturedImg.style.display = 'none';
+    preview.style.display = 'none';
+    currentRecommendation = '';
+
+    // Stop any active camera
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+
+    modal.classList.add('visible');
+    AudioSys.sfx.text();
+}
+
+// Close audit modal
+window.closeAuditModal = function() {
+    const modal = document.getElementById('audit-modal');
+    modal.classList.remove('visible');
+
+    // Stop camera if active
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+
+    // Stop voice recognition if active
+    if (isRecording && voiceRecognition) {
+        voiceRecognition.stop();
+        isRecording = false;
+    }
+
+    currentAuditHazard = null;
+    GAME.state = GAME.nextState || 'PLAY';
+};
+
+// Submit audit
+window.submitAudit = function() {
+    const answer = document.getElementById('audit-answer').value.trim();
+
+    if (!answer) {
+        alert('Please provide a corrective action before submitting.');
+        return;
+    }
+
+    if (currentAuditHazard) {
+        // Mark hazard as fixed
+        currentAuditHazard.fixed = true;
+        GAME.issuesFixed++;
+        updateHud();
+        AudioSys.sfx.fix();
+        spawnFloatingText(currentAuditHazard.x, currentAuditHazard.y, "Audited!", "#00ff00");
+
+        if (currentAuditHazard.hiddenDoor && GAME.hiddenDoor) {
+            GAME.hiddenDoor.unlocked = true;
+        }
+
+        if (GAME.issuesFixed >= 5) {
+            queueVisitorSplash();
+        }
+
+        // Show Simon's response
+        const currentGen = GAME.genId;
+        const hazardName = currentAuditHazard.data.name;
+
+        closeAuditModal();
+        showThinking("Simon Unglaube", GFX.simonFace);
+
+        callGemini(
+            `You are Simon Unglaube, WHS Senior Regional Manager. A coordinator audited "${hazardName}" with this corrective action: "${answer}". Provide brief feedback on their response - praise good answers, gently correct inadequate ones. Be professional with dry humor. Max 35 words.`,
+            "audit_feedback"
+        ).then(feedback => {
+            if (GAME.genId === currentGen) {
+                showDialog(`Audit Complete: ${hazardName}\n${feedback}`, "Simon Unglaube", GFX.simonFace, true);
+            }
+        });
+    }
+};
+
+// Show ASCHG Help Modal
+window.showASCHGHelp = function() {
+    const modal = document.getElementById('aschg-modal');
+    const content = document.getElementById('aschg-content');
+
+    modal.classList.add('visible');
+    content.innerHTML = '<div class="aschg-loading"><span class="loading-dots">Loading ASCHG information</span></div>';
+
+    const hazardName = currentAuditHazard ? currentAuditHazard.data.name : 'general workplace safety';
+
+    const prompt = `You are a safety expert explaining Austrian workplace safety regulations (ASchG - ArbeitnehmerInnenschutzgesetz). Provide relevant ASCHG information for "${hazardName}". Include:
+    1. Relevant legal requirements
+    2. Employer obligations
+    3. Worker rights
+    4. Required documentation
+    Be concise and practical. Max 100 words. Format with clear sections.`;
+
+    callGemini(prompt, 'aschg_info').then(info => {
+        content.innerHTML = info || getDefaultASCHGInfo(hazardName);
+    }).catch(() => {
+        content.innerHTML = getDefaultASCHGInfo(hazardName);
+    });
+};
+
+function getDefaultASCHGInfo(hazardName) {
+    return `<strong>ASCHG - ArbeitnehmerInnenschutzgesetz</strong><br><br>
+    <strong>§ 3 General Duties:</strong> Employers must evaluate and eliminate workplace hazards.<br><br>
+    <strong>§ 4 Risk Assessment:</strong> Regular hazard assessments are mandatory for "${hazardName}" type risks.<br><br>
+    <strong>§ 6 Worker Information:</strong> Employees must be informed about hazards and protective measures.<br><br>
+    <strong>§ 14 Documentation:</strong> All safety incidents and corrective actions must be documented.<br><br>
+    <em>For detailed regulations, consult the official ASCHG documentation or your WHS representative.</em>`;
+}
+
+// Close ASCHG Modal
+window.closeASCHGModal = function() {
+    document.getElementById('aschg-modal').classList.remove('visible');
+};
+
+// Initialize voice recognition on load
+initVoiceRecognition();
+
 // === BEZOS CONFRONTATION DIALOGUE SYSTEM ===
-// Uses AI-powered showDialog for the throne room confrontation
+// Uses dynamic showDialog for the throne room confrontation
 let bezosDialogueStep = 0;
 
 function startBezosConfrontationDialogue() {
