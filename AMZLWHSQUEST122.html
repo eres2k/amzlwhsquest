@@ -5,61 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AMZL WHS Coordinator Quest</title>
     <style>
+        /* === PS1/PS2 ERA VISUAL UPGRADE === */
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
         :root {
-            --bg-color: #0a0a12;
-            --accent-gold: #ffd700;
-            --accent-cyan: #00ffff;
-            --accent-orange: #ff9900;
+            /* PS1-ERA MUTED COLOR PALETTE */
+            --bg-color: #0d0d15;
+            --accent-gold: #c9a227;
+            --accent-cyan: #5ba3b0;
+            --accent-orange: #c47520;
+            --metal-light: #8a8a9a;
+            --metal-mid: #5a5a6a;
+            --metal-dark: #2a2a3a;
+            --ps1-red: #a03030;
+            --ps1-green: #30a040;
+            --ps1-blue: #3050a0;
         }
 
         body {
             margin: 0; padding: 0;
-            background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a12 50%, #000 100%);
+            /* PS1 ERA - Darker, more muted background */
+            background: radial-gradient(ellipse at center, #15151f 0%, #0a0a10 50%, #050508 100%);
             display: flex; justify-content: center; align-items: center;
             height: 100vh; overflow: hidden;
-            font-family: 'Press Start 2P', monospace; color: white; user-select: none;
+            font-family: 'Press Start 2P', monospace; color: #d0d0d8; user-select: none;
         }
 
         #game-wrapper {
             position: relative; width: 768px; height: 672px;
-            background: linear-gradient(135deg, #0f0f1a 0%, #000 100%);
-            border: 4px solid #333;
-            border-radius: 24px;
+            /* PS1-STYLE METALLIC BEZEL FRAME */
+            background: linear-gradient(145deg, #1a1a24 0%, #0a0a10 100%);
+            border: 6px solid;
+            border-color: #4a4a5a #2a2a3a #2a2a3a #4a4a5a;
+            border-radius: 8px;
             box-shadow:
-                0 0 60px rgba(255, 153, 0, 0.15),
-                0 0 120px rgba(0, 255, 255, 0.08),
-                inset 0 0 60px rgba(0, 0, 0, 0.8);
+                0 0 40px rgba(80, 60, 30, 0.25),
+                0 0 80px rgba(40, 50, 70, 0.15),
+                inset 0 0 80px rgba(0, 0, 0, 0.9),
+                /* PS1 metallic bezel effect */
+                inset 3px 3px 0 #3a3a4a,
+                inset -3px -3px 0 #1a1a2a;
             overflow: hidden;
         }
 
+        /* PS1-STYLE METALLIC BORDER FRAME */
         #game-wrapper::before {
             content: '';
             position: absolute;
-            top: -4px; left: -4px; right: -4px; bottom: -4px;
-            background: linear-gradient(45deg, #ff9900, #00ffff, #ff00ff, #ff9900);
-            background-size: 400% 400%;
-            animation: borderGlow 8s ease infinite;
-            border-radius: 28px;
+            top: -8px; left: -8px; right: -8px; bottom: -8px;
+            background: linear-gradient(135deg, #5a5a6a 0%, #3a3a4a 25%, #2a2a3a 50%, #3a3a4a 75%, #5a5a6a 100%);
+            border-radius: 12px;
             z-index: -1;
-            opacity: 0.5;
+            /* Subtle metallic shimmer */
+            animation: metallicShimmer 6s ease-in-out infinite;
         }
 
-        @keyframes borderGlow {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+        @keyframes metallicShimmer {
+            0%, 100% { filter: brightness(1.0); }
+            50% { filter: brightness(1.1); }
         }
 
-        canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+        canvas {
+            display: block; width: 100%; height: 100%;
+            image-rendering: pixelated;
+            /* PS1-STYLE COLOR CORRECTION - slightly desaturated, warmer */
+            filter: saturate(0.85) contrast(1.05) sepia(0.08);
+        }
 
+        /* PS1/PS2 ERA CRT OVERLAY - Wider scanlines, subtle color bleeding */
         #crt-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background:
-                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
-                linear-gradient(90deg, rgba(255, 100, 0, 0.03), rgba(0, 255, 100, 0.02), rgba(100, 0, 255, 0.03));
-            background-size: 100% 3px, 4px 100%; pointer-events: none; z-index: 900;
-            animation: flicker 0.08s infinite, scanline 10s linear infinite;
+                /* Wider PS1-era scanlines */
+                linear-gradient(rgba(10, 10, 12, 0) 50%, rgba(0, 0, 0, 0.20) 50%),
+                /* RGB phosphor pattern - more visible for PS1 feel */
+                linear-gradient(90deg, rgba(180, 60, 40, 0.04), rgba(40, 180, 60, 0.03), rgba(60, 80, 200, 0.04));
+            background-size: 100% 4px, 5px 100%; pointer-events: none; z-index: 900;
+            animation: ps1Flicker 0.12s infinite, scanline 8s linear infinite;
         }
 
         @keyframes scanline {
@@ -67,15 +89,23 @@
             100% { background-position: 0 100%, 0 0; }
         }
 
+        /* PS1-STYLE VIGNETTE - More dramatic corner darkening */
         #vignette {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.5) 80%, rgba(0,0,0,0.8) 100%);
-            pointer-events: none; z-index: 901; border-radius: 20px;
+            background: radial-gradient(ellipse at center,
+                rgba(0,0,0,0) 40%,
+                rgba(5,5,10,0.4) 60%,
+                rgba(10,10,15,0.7) 80%,
+                rgba(0,0,0,0.95) 100%);
+            pointer-events: none; z-index: 901; border-radius: 6px;
         }
 
-        @keyframes flicker {
-            0%, 100% { opacity: 0.97; }
+        /* PS1-ERA SUBTLE FLICKER - Slower, less harsh */
+        @keyframes ps1Flicker {
+            0%, 100% { opacity: 0.96; }
+            25% { opacity: 0.98; }
             50% { opacity: 1; }
+            75% { opacity: 0.97; }
         }
 
         #ui-overlay {
@@ -84,46 +114,62 @@
             justify-content: flex-end; padding: 20px; box-sizing: border-box; z-index: 1000;
         }
 
+        /* PS1-STYLE DIALOG BOX - Metallic beveled frame */
         #dialog-box {
             width: 100%; min-height: 140px;
-            background: linear-gradient(180deg, #0a1628 0%, #061020 100%);
-            border: 3px solid #3b82f6;
-            border-radius: 12px; display: none;
+            /* PS1 metallic gradient background */
+            background: linear-gradient(180deg, #1a1a28 0%, #0c0c14 50%, #080810 100%);
+            /* PS1 beveled border effect */
+            border: 4px solid;
+            border-color: #5a5a6a #2a2a3a #2a2a3a #5a5a6a;
+            border-radius: 4px; display: none;
             flex-direction: row; padding: 16px; box-sizing: border-box;
             box-shadow:
-                0 0 20px rgba(59, 130, 246, 0.4),
-                6px 6px 0px rgba(0,0,0,0.6),
-                inset 0 0 30px rgba(59, 130, 246, 0.1);
+                /* Outer glow - muted PS1 style */
+                0 0 15px rgba(80, 100, 140, 0.3),
+                4px 4px 0px rgba(0,0,0,0.7),
+                /* Inner metallic bevel */
+                inset 2px 2px 0 #3a3a4a,
+                inset -2px -2px 0 #1a1a2a,
+                inset 0 0 20px rgba(40, 50, 80, 0.2);
             pointer-events: auto;
         }
 
+        /* PS1-STYLE PORTRAIT FRAME - Angular metallic */
         #portrait {
             width: 64px; height: 64px;
-            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a14 100%);
-            border: 3px solid #ffd700;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #1a1a24 0%, #0a0a10 100%);
+            /* PS1 gold-bronze metallic border */
+            border: 4px solid;
+            border-color: #a08040 #604820 #604820 #a08040;
+            border-radius: 2px;
             margin-right: 20px; flex-shrink: 0; image-rendering: pixelated;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            box-shadow:
+                inset 2px 2px 0 #806030,
+                inset -2px -2px 0 #403010,
+                0 0 10px rgba(160, 128, 64, 0.3);
         }
 
         #text-content {
-            flex-grow: 1; font-size: 13px; line-height: 1.7; color: #f0f0ff;
-            text-shadow: 2px 2px 4px #000, 0 0 10px rgba(255, 255, 255, 0.1);
+            flex-grow: 1; font-size: 13px; line-height: 1.7;
+            /* PS1 era - slightly off-white text */
+            color: #d0d0d8;
+            text-shadow: 2px 2px 3px #000, 1px 1px 0 #202028;
             white-space: pre-wrap;
         }
 
         #press-space-hint {
-            font-size: 10px; color: #ffd700; margin-top: 10px;
-            animation: blink 0.8s ease-in-out infinite; display: block;
-            text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+            font-size: 10px; color: #a08040; margin-top: 10px;
+            animation: ps1Blink 1s ease-in-out infinite; display: block;
+            text-shadow: 1px 1px 2px #000;
         }
 
         .gemini-badge {
-            font-size: 9px; color: #00ffff; margin-bottom: 8px; display: none;
-            text-transform: uppercase; text-shadow: 0 0 8px #00ffff;
+            font-size: 9px; color: #5090a0; margin-bottom: 8px; display: none;
+            text-transform: uppercase; text-shadow: 1px 1px 2px #000;
             letter-spacing: 1px;
         }
-        
+
         .loading-dots::after {
             content: ' .';
             animation: dots 1.5s steps(5, end) infinite;
@@ -134,58 +180,102 @@
             60% { content: ' ...'; }
             80%, 100% { content: ''; }
         }
-        
+
         /* Banner hidden as requested */
         #slogan-display {
-            display: none; 
+            display: none;
         }
-        
-        @keyframes blink { 50% { opacity: 0; } }
 
+        @keyframes ps1Blink { 50% { opacity: 0.3; } }
+
+        /* PS1-STYLE HUD - Metallic beveled panel */
         .hud-text {
-            position: absolute; top: 12px; right: 12px; color: white;
-            text-align: right; text-shadow: 0 0 8px rgba(0,0,0,0.8), 2px 2px 4px black; font-size: 11px;
+            position: absolute; top: 12px; right: 12px;
+            color: #c0c0c8;
+            text-align: right;
+            text-shadow: 1px 1px 2px #000;
+            font-size: 11px;
             font-family: 'Press Start 2P', monospace;
-            background: linear-gradient(135deg, rgba(10, 15, 30, 0.95) 0%, rgba(5, 8, 20, 0.98) 100%);
-            padding: 10px 14px; border: 2px solid #fbbf24; border-radius: 6px;
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.4), inset 0 0 15px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5);
+            /* PS1 metallic panel background */
+            background: linear-gradient(145deg, #2a2a38 0%, #1a1a24 50%, #101018 100%);
+            padding: 10px 14px;
+            /* PS1 beveled border */
+            border: 3px solid;
+            border-color: #5a5a6a #2a2a3a #2a2a3a #5a5a6a;
+            border-radius: 2px;
+            box-shadow:
+                inset 2px 2px 0 #3a3a4a,
+                inset -2px -2px 0 #0a0a14,
+                3px 3px 0px rgba(0, 0, 0, 0.6);
         }
-        .hud-text div:first-child { color: #ef4444; margin-bottom: 6px; letter-spacing: 1px; }
-        .hud-text div:last-child { color: #22c55e; letter-spacing: 1px; }
+        .hud-text div:first-child { color: #a04040; margin-bottom: 6px; letter-spacing: 1px; }
+        .hud-text div:last-child { color: #40a050; letter-spacing: 1px; }
 
+        /* PS1-STYLE BOSS HUD - Dramatic metallic frame */
         #boss-hud {
             position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
             width: 65%; display: none;
-            background: linear-gradient(180deg, rgba(40, 10, 10, 0.9) 0%, rgba(20, 5, 5, 0.95) 100%);
-            padding: 10px 16px; border-radius: 10px;
-            border: 2px solid #dc2626;
-            box-shadow: 0 0 20px rgba(220, 38, 38, 0.4);
+            /* PS1 dark metallic gradient */
+            background: linear-gradient(180deg, #281818 0%, #180c0c 50%, #100808 100%);
+            padding: 10px 16px; border-radius: 2px;
+            /* PS1 beveled border - red tinted */
+            border: 4px solid;
+            border-color: #804040 #402020 #402020 #804040;
+            box-shadow:
+                inset 2px 2px 0 #603030,
+                inset -2px -2px 0 #200c0c,
+                0 0 15px rgba(160, 64, 64, 0.3),
+                4px 4px 0 rgba(0, 0, 0, 0.5);
         }
 
+        /* PS1-STYLE HEALTH BAR - 3D beveled */
         .boss-bar-bg {
-            width: 100%; height: 14px;
-            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
-            border: 2px solid #444; border-radius: 4px;
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+            width: 100%; height: 16px;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            /* PS1 inset border */
+            border: 3px solid;
+            border-color: #1a1a1a #3a3a3a #3a3a3a #1a1a1a;
+            border-radius: 2px;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.9);
         }
         .boss-bar-fill {
             width: 100%; height: 100%;
-            background: linear-gradient(180deg, #ff4444 0%, #cc0000 50%, #aa0000 100%);
+            /* PS1 gouraud-style gradient health bar */
+            background: linear-gradient(180deg,
+                #c04040 0%,
+                #a03030 20%,
+                #802020 50%,
+                #a03030 80%,
+                #c04040 100%);
             transition: width 0.3s ease-out;
-            border-radius: 2px;
-            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.2);
+            border-radius: 1px;
+            box-shadow:
+                inset 0 2px 0 rgba(255, 160, 160, 0.3),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.4);
         }
         .boss-name {
-            color: #ff4444; text-align: center; font-size: 11px; margin-bottom: 6px;
-            text-shadow: 2px 2px 4px black, 0 0 10px rgba(255, 0, 0, 0.5);
+            color: #c04040; text-align: center; font-size: 11px; margin-bottom: 6px;
+            text-shadow: 2px 2px 3px #000, 1px 1px 0 #200808;
             letter-spacing: 2px;
         }
-        
+
         #ai-status {
-            display: none !important; 
-            position: absolute; top: 10px; left: 10px; font-size: 10px; color: #00ffff;
-            background: rgba(0,0,0,0.8); padding: 4px; border: 1px solid #00ffff; pointer-events: none;
-            z-index: 2000; 
+            display: none !important;
+            position: absolute; top: 10px; left: 10px; font-size: 10px; color: #5090a0;
+            background: rgba(0,0,0,0.8); padding: 4px; border: 1px solid #406070; pointer-events: none;
+            z-index: 2000;
+        }
+
+        /* === PS1 DITHERING OVERLAY - Subtle texture === */
+        #game-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            /* PS1-style dithering pattern */
+            background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='1' height='1' fill='rgba(0,0,0,0.03)'/%3E%3Crect x='2' y='2' width='1' height='1' fill='rgba(0,0,0,0.03)'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 902;
+            opacity: 0.5;
         }
     </style>
 </head>
@@ -694,6 +784,123 @@ const MusicSys = {
 
 // --- ASSETS ---
 const GFX = {};
+
+// === PS1/PS2 ERA VISUAL EFFECTS SYSTEM ===
+const PS1_FX = {
+    // PS1 color palette - muted, desaturated console-era colors
+    muteColor: function(hex, satMult = 0.75, brightMult = 0.9) {
+        // Convert hex to RGB, desaturate, and return
+        let r = parseInt(hex.slice(1,3), 16);
+        let g = parseInt(hex.slice(3,5), 16);
+        let b = parseInt(hex.slice(5,7), 16);
+
+        // Desaturate by moving toward gray
+        const gray = (r + g + b) / 3;
+        r = Math.floor(r * satMult + gray * (1 - satMult)) * brightMult;
+        g = Math.floor(g * satMult + gray * (1 - satMult)) * brightMult;
+        b = Math.floor(b * satMult + gray * (1 - satMult)) * brightMult;
+
+        return `rgb(${Math.min(255, r)}, ${Math.min(255, g)}, ${Math.min(255, b)})`;
+    },
+
+    // PS1 vertex wobble effect - simulates affine texture mapping jitter
+    wobbleAmount: 0.5,
+    getWobble: function(tick) {
+        return (Math.sin(tick * 0.15) * this.wobbleAmount) + (Math.cos(tick * 0.23) * this.wobbleAmount * 0.5);
+    },
+
+    // PS1 dithering pattern for gradients
+    ditherPattern: null,
+    createDitherPattern: function(ctx) {
+        if (this.ditherPattern) return this.ditherPattern;
+        const dither = document.createElement('canvas');
+        dither.width = 4; dither.height = 4;
+        const dc = dither.getContext('2d');
+        dc.fillStyle = 'rgba(0,0,0,0.08)';
+        dc.fillRect(0, 0, 1, 1);
+        dc.fillRect(2, 2, 1, 1);
+        dc.fillStyle = 'rgba(255,255,255,0.04)';
+        dc.fillRect(1, 1, 1, 1);
+        dc.fillRect(3, 3, 1, 1);
+        this.ditherPattern = ctx.createPattern(dither, 'repeat');
+        return this.ditherPattern;
+    },
+
+    // PS1 gouraud-style gradient for 3D shading effect
+    createGouraudGradient: function(ctx, x, y, w, h, baseColor, lightDir = 'top') {
+        const grad = ctx.createLinearGradient(
+            lightDir === 'left' ? x : x + w/2,
+            lightDir === 'top' ? y : y + h/2,
+            lightDir === 'left' ? x + w : x + w/2,
+            lightDir === 'top' ? y + h : y + h/2
+        );
+        // Parse base color and create light/dark variants
+        grad.addColorStop(0, this.lightenColor(baseColor, 1.3));
+        grad.addColorStop(0.4, baseColor);
+        grad.addColorStop(0.7, this.darkenColor(baseColor, 0.8));
+        grad.addColorStop(1, this.darkenColor(baseColor, 0.6));
+        return grad;
+    },
+
+    lightenColor: function(hex, factor) {
+        if (hex.startsWith('rgb')) return hex; // Skip if already RGB
+        let r = Math.min(255, parseInt(hex.slice(1,3), 16) * factor);
+        let g = Math.min(255, parseInt(hex.slice(3,5), 16) * factor);
+        let b = Math.min(255, parseInt(hex.slice(5,7), 16) * factor);
+        return `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+    },
+
+    darkenColor: function(hex, factor) {
+        if (hex.startsWith('rgb')) return hex;
+        let r = parseInt(hex.slice(1,3), 16) * factor;
+        let g = parseInt(hex.slice(3,5), 16) * factor;
+        let b = parseInt(hex.slice(5,7), 16) * factor;
+        return `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+    },
+
+    // PS1 screen fade effect
+    screenFade: 0,
+    fadeColor: '#000000',
+
+    // PS1 hit flash effect - brief white flash
+    hitFlash: 0,
+
+    // PS1 affine texture distortion simulation
+    affineWarp: function(ctx, img, x, y, wobbleTick) {
+        const w = this.getWobble(wobbleTick);
+        ctx.save();
+        ctx.translate(x + w * 0.3, y + w * 0.2);
+        // Subtle skew for PS1 perspective distortion feel
+        ctx.transform(1, w * 0.01, w * 0.01, 1, 0, 0);
+        ctx.drawImage(img, 0, 0);
+        ctx.restore();
+    },
+
+    // PS1 fog/distance fade for depth
+    drawWithDepthFog: function(ctx, img, x, y, depth) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0.3, 1 - depth * 0.5);
+        ctx.drawImage(img, x, y);
+        ctx.globalAlpha = 1;
+        ctx.restore();
+    }
+};
+
+// PS1-era muted color palette constants
+const PS1_COLORS = {
+    // Muted versions of common game colors
+    floor: '#252530',
+    wall: '#3a3540',
+    shelf: '#453828',
+    accent: '#8a7050',
+    warning: '#a08030',
+    danger: '#803030',
+    safe: '#308040',
+    highlight: '#6080a0',
+    text: '#c0c0c8',
+    shadow: '#101018'
+};
+
 function generateAssets() {
     const c = (w,h,f) => { const c=document.createElement('canvas');c.width=w;c.height=h;f(c.getContext('2d'));return c;};
 
@@ -1976,105 +2183,113 @@ function generateAssets() {
     });
 
     // ENHANCED WAREHOUSE FLOOR - industrial concrete look
+    // === PS1-STYLE FLOOR TILE - Muted concrete with gouraud shading ===
     GFX.floor = c(16,16, ctx => {
-        // Base concrete
+        // PS1-era muted base concrete with gouraud gradient
         const floorGrad = ctx.createLinearGradient(0, 0, 16, 16);
-        floorGrad.addColorStop(0, '#44444f');
-        floorGrad.addColorStop(0.5, '#3c3c47');
-        floorGrad.addColorStop(1, '#38383f');
+        floorGrad.addColorStop(0, '#32323a');
+        floorGrad.addColorStop(0.3, '#2a2a32');
+        floorGrad.addColorStop(0.7, '#262630');
+        floorGrad.addColorStop(1, '#22222a');
         ctx.fillStyle = floorGrad;
         ctx.fillRect(0,0,16,16);
-        // Tile pattern
-        ctx.fillStyle = '#3a3a42';
+        // PS1 checkerboard pattern with depth
+        ctx.fillStyle = '#2e2e38';
         ctx.fillRect(0,0,8,8);
         ctx.fillRect(8,8,8,8);
-        // Subtle texture
-        ctx.fillStyle = '#4a4a55';
-        ctx.fillRect(2,2,4,4);
-        ctx.fillRect(10,10,4,4);
-        // Grout lines
-        ctx.fillStyle = '#2d2d35';
+        // Gouraud-style highlights
+        ctx.fillStyle = '#3a3a44';
+        ctx.fillRect(1,1,3,3);
+        ctx.fillRect(9,9,3,3);
+        // PS1 dithered texture
+        ctx.fillStyle = '#282830';
+        ctx.fillRect(2,2,1,1); ctx.fillRect(4,4,1,1);
+        ctx.fillRect(10,10,1,1); ctx.fillRect(12,12,1,1);
+        // Darker grout lines
+        ctx.fillStyle = '#1a1a22';
         ctx.fillRect(7,0,2,16);
         ctx.fillRect(0,7,16,2);
-        // Wear marks
-        ctx.fillStyle = '#35353d';
-        ctx.fillRect(4,4,2,2);
+        // Wear marks - more subtle
+        ctx.fillStyle = '#242430';
+        ctx.fillRect(4,4,2,1);
         ctx.fillRect(11,3,1,1);
-        ctx.fillRect(3,12,2,1);
-        // Edge shadow
-        ctx.fillStyle = '#28282e';
+        // PS1-style edge shadow
+        ctx.fillStyle = '#181820';
         ctx.fillRect(0,15,16,1);
         ctx.fillRect(15,0,1,16);
     });
 
-    // ENHANCED WAREHOUSE WALL - industrial cinder block
+    // === PS1-STYLE WAREHOUSE WALL - Industrial cinder block with gouraud shading ===
     GFX.wall = c(16,16, ctx => {
-        // Base wall color
+        // PS1-era muted wall gradient
         const wallGrad = ctx.createLinearGradient(0, 0, 0, 16);
-        wallGrad.addColorStop(0, '#3d3530');
-        wallGrad.addColorStop(0.5, '#4a4138');
-        wallGrad.addColorStop(1, '#3a322c');
+        wallGrad.addColorStop(0, '#3a3028');
+        wallGrad.addColorStop(0.4, '#322a22');
+        wallGrad.addColorStop(0.8, '#2a241e');
+        wallGrad.addColorStop(1, '#221e1a');
         ctx.fillStyle = wallGrad;
         ctx.fillRect(0,0,16,16);
-        // Cinder block pattern
-        ctx.fillStyle = '#4e443c';
+        // Cinder block pattern with PS1 shading
+        ctx.fillStyle = '#3e3428';
         ctx.fillRect(1,1,6,6);
         ctx.fillRect(9,1,6,6);
         ctx.fillRect(1,9,6,6);
         ctx.fillRect(9,9,6,6);
-        // Block highlights
-        ctx.fillStyle = '#5d5248';
+        // Block gouraud highlights
+        ctx.fillStyle = '#483c30';
         ctx.fillRect(2,2,4,4);
         ctx.fillRect(10,2,4,4);
         ctx.fillRect(2,10,4,4);
         ctx.fillRect(10,10,4,4);
-        // Block texture
-        ctx.fillStyle = '#6d6258';
-        ctx.fillRect(3,3,2,2);
-        ctx.fillRect(11,3,2,2);
-        ctx.fillRect(3,11,2,2);
-        ctx.fillRect(11,11,2,2);
-        // Mortar lines
-        ctx.fillStyle = '#2a241f';
+        // PS1 texture detail
+        ctx.fillStyle = '#524438';
+        ctx.fillRect(2,2,2,2);
+        ctx.fillRect(10,2,2,2);
+        ctx.fillRect(2,10,2,2);
+        ctx.fillRect(10,10,2,2);
+        // Dark mortar lines
+        ctx.fillStyle = '#1e1a16';
         ctx.fillRect(0,0,16,1);
         ctx.fillRect(0,8,16,1);
         ctx.fillRect(7,0,2,16);
-        // Shadow effects
-        ctx.fillStyle = '#1a1612';
+        // Deep shadow
+        ctx.fillStyle = '#14120e';
         ctx.fillRect(0,7,16,1);
         ctx.fillRect(0,15,16,1);
     });
-    // ENHANCED WAREHOUSE SHELF - industrial racking
+    // === PS1-STYLE WAREHOUSE SHELF - Industrial racking with muted colors ===
     GFX.shelf = c(16,16, ctx => {
-        // Vertical posts with shading
-        ctx.fillStyle = '#92400e';
+        // PS1 muted vertical posts with gouraud shading
+        ctx.fillStyle = '#5a3010';
         ctx.fillRect(0,0,4,16);
         ctx.fillRect(12,0,4,16);
-        ctx.fillStyle = '#b45309';
-        ctx.fillRect(1,0,3,16);
-        ctx.fillRect(13,0,3,16);
-        ctx.fillStyle = '#d97706';
-        ctx.fillRect(2,0,1,16);
+        ctx.fillStyle = '#6a4018';
+        ctx.fillRect(1,0,2,16);
+        ctx.fillRect(13,0,2,16);
+        ctx.fillStyle = '#7a5020';
+        ctx.fillRect(1,0,1,16);
         ctx.fillRect(13,0,1,16);
-        // Horizontal shelves with depth
-        ctx.fillStyle = '#a16207';
+        // PS1 horizontal shelves with depth
+        ctx.fillStyle = '#604010';
         ctx.fillRect(0,4,16,4);
         ctx.fillRect(0,11,16,4);
-        ctx.fillStyle = '#ca8a04';
+        ctx.fillStyle = '#705020';
         ctx.fillRect(1,5,14,2);
         ctx.fillRect(1,12,14,2);
-        ctx.fillStyle = '#eab308';
+        ctx.fillStyle = '#806028';
         ctx.fillRect(2,5,12,1);
         ctx.fillRect(2,12,12,1);
-        // Shelf items
-        ctx.fillStyle = '#78350f';
+        // PS1 shelf items - muted
+        ctx.fillStyle = '#48280c';
         ctx.fillRect(4,2,3,2);
         ctx.fillRect(9,2,3,2);
         ctx.fillRect(5,9,4,2);
-        // Safety labels
-        ctx.fillStyle = '#dc2626';
+        // PS1 safety labels - less saturated
+        ctx.fillStyle = '#802020';
         ctx.fillRect(6,6,4,1);
-        ctx.fillStyle = '#fbbf24'; ctx.fillRect(2,5,12,1); ctx.fillRect(2,11,12,1);
+        ctx.fillStyle = '#906830';
+        ctx.fillRect(2,5,12,1);
+        ctx.fillRect(2,11,12,1);
     });
     // ENHANCED RULE BOOK projectile
     GFX.book = c(10,10, ctx => {
@@ -4938,67 +5153,87 @@ function updateMusicForState() {
     MusicSys.play(track, rate);
 }
 
+// === PS1-STYLE WIN/LOSE SPLASH SCREEN ===
 function drawSnesSplash(isWin) {
     const t = GAME.stateTimer;
-    const primary = isWin ? '#0d1b4c' : '#2d0a0f';
-    const accent = isWin ? '#7dd3fc' : '#f87171';
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, isWin ? '#0a102a' : '#1a0408');
-    gradient.addColorStop(0.5, primary);
-    gradient.addColorStop(1, '#000');
-    ctx.fillStyle = gradient; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // PS1-era muted colors
+    const primary = isWin ? '#101830' : '#201010';
+    const accent = isWin ? '#508090' : '#804040';
 
-    // Moving scanlines
-    for (let y = 0; y < canvas.height; y += 8) {
-        const offset = Math.sin((t / 8) + y * 0.12) * 3;
-        ctx.fillStyle = `rgba(255,255,255,${isWin ? 0.05 : 0.04})`;
-        ctx.fillRect(offset, y, canvas.width, 2);
+    // PS1 muted background gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, isWin ? '#0a1020' : '#180808');
+    gradient.addColorStop(0.5, primary);
+    gradient.addColorStop(1, '#050508');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // PS1-style moving scanlines - more subtle
+    for (let y = 0; y < canvas.height; y += 6) {
+        const offset = Math.sin((t / 10) + y * 0.1) * 2;
+        ctx.fillStyle = `rgba(160,160,180,${isWin ? 0.03 : 0.025})`;
+        ctx.fillRect(offset, y, canvas.width, 1);
     }
 
-    // Mode-7 style horizon lines
+    // PS1 Mode-7 style horizon lines with muted colors
     ctx.save();
     ctx.translate(canvas.width / 2, canvas.height * 0.65);
-    for (let i = 0; i < 18; i++) {
-        const scale = (i + 1) / 18;
-        const wave = Math.sin((t / 10) + i * 0.6) * 4;
-        const w = canvas.width * (1.1 - scale * 0.6);
-        const y = i * 12 + wave;
-        ctx.strokeStyle = `${accent}80`;
-        ctx.lineWidth = 2;
+    for (let i = 0; i < 14; i++) {
+        const scale = (i + 1) / 14;
+        const wave = Math.sin((t / 12) + i * 0.5) * 3;
+        const w = canvas.width * (1.0 - scale * 0.5);
+        const lineY = i * 14 + wave;
+        // PS1 gouraud-style gradient on lines
+        const lineAlpha = 0.15 + scale * 0.15;
+        ctx.strokeStyle = isWin ? `rgba(60, 100, 120, ${lineAlpha})` : `rgba(100, 50, 50, ${lineAlpha})`;
+        ctx.lineWidth = 2 - scale;
         ctx.beginPath();
-        ctx.moveTo(-w / 2, y);
-        ctx.lineTo(w / 2, y);
+        ctx.moveTo(-w / 2, lineY);
+        ctx.lineTo(w / 2, lineY);
         ctx.stroke();
     }
     ctx.restore();
 
-    // Star glints
-    for (let i = 0; i < 14; i++) {
-        const x = (Math.sin((t + i * 13) / 6) * 0.5 + 0.5) * canvas.width;
-        const y = (i * 37 + t * 2) % canvas.height;
-        const alpha = 0.25 + ((i % 3) * 0.1);
-        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-        ctx.fillRect(x, y, 2, 2);
-        ctx.fillRect(x - 2, y, 6, 1);
-        ctx.fillRect(x, y - 2, 1, 6);
+    // PS1-style dim star glints
+    for (let i = 0; i < 10; i++) {
+        const x = (Math.sin((t + i * 17) / 8) * 0.5 + 0.5) * canvas.width;
+        const y = (i * 41 + t * 1.5) % canvas.height;
+        const alpha = 0.15 + ((i % 3) * 0.08);
+        ctx.fillStyle = `rgba(180,180,200,${alpha})`;
+        ctx.fillRect(x, y, 1, 1);
+        ctx.fillStyle = `rgba(180,180,200,${alpha * 0.5})`;
+        ctx.fillRect(x - 1, y, 3, 1);
+        ctx.fillRect(x, y - 1, 1, 3);
     }
 
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#000';
-    ctx.font = '22px monospace';
-    const text = isWin ? 'COMPLIANT!' : 'TERMINATED';
-    const shadowOffsets = [[2,2],[-2,2],[2,-2],[-2,-2]];
-    shadowOffsets.forEach(([dx, dy]) => ctx.fillText(text, canvas.width/2 + dx, canvas.height/2 - 6 + dy));
 
+    // PS1-style beveled text
+    const text = isWin ? 'COMPLIANT!' : 'TERMINATED';
+    ctx.font = '22px monospace';
+
+    // Deep shadow
+    ctx.fillStyle = '#080808';
+    ctx.fillText(text, canvas.width/2 + 3, canvas.height/2 - 3);
+    // Mid shadow
+    ctx.fillStyle = isWin ? '#102030' : '#201010';
+    ctx.fillText(text, canvas.width/2 + 2, canvas.height/2 - 4);
+    // Highlight edge
+    ctx.fillStyle = isWin ? '#80a0b0' : '#a06060';
+    ctx.fillText(text, canvas.width/2 - 1, canvas.height/2 - 7);
+    // Main text - muted accent
     ctx.fillStyle = accent;
     ctx.fillText(text, canvas.width/2, canvas.height/2 - 6);
+
+    // PS1-style subtitle
     ctx.font = '11px monospace';
-    ctx.fillStyle = '#fef9c3';
+    ctx.fillStyle = '#807060';
     const sub = isWin ? 'CALCULATING SAFETY SCORE...' : 'PREPARING EXIT INTERVIEW...';
     ctx.fillText(sub, canvas.width/2, canvas.height/2 + 20);
     ctx.textAlign = 'start';
 }
 
+// === PS1-STYLE YARD LEVEL RENDERING ===
 function drawYardLevel() {
     const y = GAME.yard;
     const camY = y ? y.cameraY || 0 : 0;
@@ -5007,119 +5242,148 @@ function drawYardLevel() {
     ctx.save();
     ctx.translate(0, -camY);
 
-    // === DARK DRAMATIC SKY AT TOP ===
+    // === PS1-STYLE DARK SKY AT TOP ===
     const skyGrad = ctx.createLinearGradient(0, 0, 0, 100);
-    skyGrad.addColorStop(0, '#0a0a14');
-    skyGrad.addColorStop(0.5, '#1a1a2e');
-    skyGrad.addColorStop(1, '#0b1224');
+    skyGrad.addColorStop(0, '#08080c');
+    skyGrad.addColorStop(0.5, '#101420');
+    skyGrad.addColorStop(1, '#0a0c14');
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, canvas.width, 100);
 
-    // === JEFF CHARACTER AT TOP ===
+    // === PS1-STYLE JEFF CHARACTER AT TOP ===
     if (y) {
         const jeffX = canvas.width / 2 - 24;
         const jeffY = 4;
         const bobY = Math.sin(y.jeffAnimFrame * 0.04) * 2;
 
-        // Spotlight effect behind Jeff
-        const glowSize = 36 + Math.sin(y.jeffAnimFrame * 0.06) * 6;
-        const glowGrad = ctx.createRadialGradient(jeffX + 24, jeffY + 24 + bobY, 8, jeffX + 24, jeffY + 24 + bobY, glowSize);
-        glowGrad.addColorStop(0, 'rgba(255, 200, 100, 0.35)');
-        glowGrad.addColorStop(0.6, 'rgba(200, 100, 50, 0.15)');
+        // PS1 muted spotlight effect behind Jeff
+        const glowSize = 32 + Math.sin(y.jeffAnimFrame * 0.06) * 4;
+        const glowGrad = ctx.createRadialGradient(jeffX + 24, jeffY + 24 + bobY, 6, jeffX + 24, jeffY + 24 + bobY, glowSize);
+        glowGrad.addColorStop(0, 'rgba(160, 120, 60, 0.25)');
+        glowGrad.addColorStop(0.6, 'rgba(120, 80, 40, 0.1)');
         glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
         ctx.arc(jeffX + 24, jeffY + 28 + bobY, glowSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw Jeff (standing at top, arms crossed, taunting)
-        ctx.drawImage(GFX.jeffYard, jeffX, jeffY + bobY);
+        // Draw Jeff with PS1 wobble
+        const wobble = PS1_FX.getWobble(y.jeffAnimFrame);
+        ctx.drawImage(GFX.jeffYard, jeffX + wobble * 0.2, jeffY + bobY);
 
-        // Speech bubble with taunt
+        // PS1-style speech bubble with metallic frame
         const tauntX = 6;
         const tauntY = 56;
         const tauntW = canvas.width - 12;
         const tauntH = 20;
 
-        // Bubble background
-        ctx.fillStyle = 'rgba(20, 20, 40, 0.9)';
+        // PS1 beveled bubble background
+        ctx.fillStyle = '#101420';
         ctx.fillRect(tauntX, tauntY, tauntW, tauntH);
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(tauntX, tauntY, tauntW, tauntH);
+        // PS1 bevel
+        ctx.fillStyle = '#2a3040';
+        ctx.fillRect(tauntX, tauntY, tauntW, 1);
+        ctx.fillRect(tauntX, tauntY, 1, tauntH);
+        ctx.fillStyle = '#0a0c10';
+        ctx.fillRect(tauntX, tauntY + tauntH - 1, tauntW, 1);
+        ctx.fillRect(tauntX + tauntW - 1, tauntY, 1, tauntH);
 
-        // "JEFF:" label
-        ctx.fillStyle = '#f59e0b';
+        // "JEFF:" label - muted
+        ctx.fillStyle = '#806030';
         ctx.font = '6px "Press Start 2P"';
         ctx.textAlign = 'left';
         ctx.fillText('JEFF:', tauntX + 4, tauntY + 12);
 
-        // Taunt text
-        ctx.fillStyle = '#ffffff';
+        // Taunt text - muted
+        ctx.fillStyle = '#a0a0a8';
         ctx.font = '6px "Press Start 2P"';
         ctx.textAlign = 'left';
         ctx.fillText(y.jeffTaunt, tauntX + 42, tauntY + 12);
         ctx.textAlign = 'left';
     }
 
-    // asphalt base with SNES-style tiling and parallax skyline
-    ctx.fillStyle = '#0b1224'; ctx.fillRect(0, 85, canvas.width, yardHeight - 85);
-    ctx.fillStyle = '#0f172a';
+    // PS1-style asphalt base with muted tiling
+    ctx.fillStyle = '#0a0c14';
+    ctx.fillRect(0, 85, canvas.width, yardHeight - 85);
+    ctx.fillStyle = '#101420';
     for (let ty = 85; ty < yardHeight + 16; ty += 16) {
         for (let tx = (ty % 32 === 0 ? 0 : 8); tx < canvas.width; tx += 16) {
             ctx.fillRect(tx, ty, 12, 12);
         }
     }
-    ctx.fillStyle = 'rgba(255,255,255,0.02)';
+    // PS1 dithered texture
+    ctx.fillStyle = 'rgba(180,180,200,0.015)';
     for (let ty = 85; ty < yardHeight; ty += 8) {
-        for (let tx = 4; tx < canvas.width; tx += 16) ctx.fillRect(tx, ty + ((tx + ty) % 16 === 0 ? 2 : 0), 2, 2);
+        for (let tx = 4; tx < canvas.width; tx += 16) ctx.fillRect(tx, ty + ((tx + ty) % 16 === 0 ? 2 : 0), 1, 1);
     }
 
-    // Warning stripes at goal line
-    ctx.fillStyle = '#facc15';
+    // PS1-style warning stripes at goal line - muted
     for (let x = 0; x < canvas.width; x += 16) {
+        ctx.fillStyle = '#806020';
         ctx.fillRect(x, 80, 8, 5);
-    }
-    ctx.fillStyle = '#0f0f0f';
-    for (let x = 8; x < canvas.width; x += 16) {
-        ctx.fillRect(x, 80, 8, 5);
+        ctx.fillStyle = '#101010';
+        ctx.fillRect(x + 8, 80, 8, 5);
     }
 
-    // curbs and dock edges
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, yardHeight - 18, canvas.width, 18);
-    ctx.fillStyle = '#334155'; ctx.fillRect(0, yardHeight - 22, canvas.width, 4);
-    ctx.fillStyle = '#64748b'; for (let x=0; x<canvas.width; x+=14) ctx.fillRect(x, yardHeight - 16, 8, 3);
-    ctx.fillStyle = '#fef08a'; ctx.fillRect(0, 88, canvas.width,3);
-    ctx.fillStyle = '#22c55e'; ctx.fillRect(0, 85, canvas.width,3);
+    // PS1-style curbs and dock edges - muted
+    ctx.fillStyle = '#101420';
+    ctx.fillRect(0, yardHeight - 18, canvas.width, 18);
+    ctx.fillStyle = '#283040';
+    ctx.fillRect(0, yardHeight - 22, canvas.width, 4);
+    ctx.fillStyle = '#404850';
+    for (let x=0; x<canvas.width; x+=14) ctx.fillRect(x, yardHeight - 16, 8, 3);
+    ctx.fillStyle = '#807040';
+    ctx.fillRect(0, 88, canvas.width, 3);
+    ctx.fillStyle = '#306030';
+    ctx.fillRect(0, 85, canvas.width, 3);
 
-    // painted dock goal
-    ctx.fillStyle = '#14532d'; ctx.fillRect(0,0,canvas.width,10);
-    ctx.fillStyle = '#facc15'; ctx.fillRect(0,10,canvas.width,2);
-    ctx.fillStyle = '#94a3b8'; ctx.fillRect(0,12,canvas.width,3);
-    ctx.fillStyle = '#0ea5e9'; for (let x=6; x<canvas.width; x+=34) ctx.fillRect(x,14,14,2);
+    // PS1-style painted dock goal - muted
+    ctx.fillStyle = '#103020';
+    ctx.fillRect(0, 0, canvas.width, 10);
+    ctx.fillStyle = '#806020';
+    ctx.fillRect(0, 10, canvas.width, 2);
+    ctx.fillStyle = '#606068';
+    ctx.fillRect(0, 12, canvas.width, 3);
+    ctx.fillStyle = '#406080';
+    for (let x=6; x<canvas.width; x+=34) ctx.fillRect(x, 14, 14, 2);
 
-    // lane bands and markings
+    // PS1-style lane bands and markings - muted
     if (y) {
         ctx.setLineDash([8, 10]);
-        ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2;
+        ctx.strokeStyle = '#605020';
+        ctx.lineWidth = 2;
         y.lanes.forEach(lane => {
-            ctx.fillStyle = '#0f172a'; ctx.fillRect(0, lane.y - 20, canvas.width, 40);
-            ctx.fillStyle = '#111827'; ctx.fillRect(0, lane.y - 14, canvas.width, 28);
-            ctx.beginPath(); ctx.moveTo(0, lane.y); ctx.lineTo(canvas.width, lane.y); ctx.stroke();
-            ctx.fillStyle = '#1e293b'; ctx.fillRect(0, lane.y - 22, canvas.width, 2);
-            ctx.fillStyle = '#1e293b'; ctx.fillRect(0, lane.y + 20, canvas.width, 2);
+            ctx.fillStyle = '#0c1018';
+            ctx.fillRect(0, lane.y - 20, canvas.width, 40);
+            ctx.fillStyle = '#101820';
+            ctx.fillRect(0, lane.y - 14, canvas.width, 28);
+            ctx.beginPath();
+            ctx.moveTo(0, lane.y);
+            ctx.lineTo(canvas.width, lane.y);
+            ctx.stroke();
+            ctx.fillStyle = '#182028';
+            ctx.fillRect(0, lane.y - 22, canvas.width, 2);
+            ctx.fillStyle = '#182028';
+            ctx.fillRect(0, lane.y + 20, canvas.width, 2);
         });
         ctx.setLineDash([]);
     }
 
-    // chainlink and palettes
-    ctx.fillStyle = '#1f2937'; for (let x=0; x<canvas.width; x+=32) ctx.fillRect(x+2, 32, 28, 4);
-    ctx.fillStyle = '#0ea5e9'; for (let x=0; x<canvas.width; x+=26) ctx.fillRect(x+6, 28, 2, 8);
-    ctx.fillStyle = '#f97316'; for (let x=10; x<canvas.width; x+=60) ctx.fillRect(x, yardHeight - 36, 8, 16);
-    ctx.fillStyle = '#9ca3af'; for (let x=6; x<canvas.width; x+=50) ctx.fillRect(x, yardHeight - 48, 14, 6);
-    ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 62, canvas.width, 18);
-    ctx.fillStyle = '#0ea5e9'; for (let x=8; x<canvas.width; x+=44) ctx.fillRect(x, 66, 14, 6);
-    ctx.fillStyle = '#f8fafc'; for (let x=14; x<canvas.width; x+=36) ctx.fillRect(x, 64, 6, 2);
+    // PS1-style chainlink and palettes - muted
+    ctx.fillStyle = '#1a2028';
+    for (let x=0; x<canvas.width; x+=32) ctx.fillRect(x+2, 32, 28, 4);
+    ctx.fillStyle = '#406070';
+    for (let x=0; x<canvas.width; x+=26) ctx.fillRect(x+6, 28, 2, 8);
+    ctx.fillStyle = '#804020';
+    for (let x=10; x<canvas.width; x+=60) ctx.fillRect(x, yardHeight - 36, 8, 16);
+    ctx.fillStyle = '#606068';
+    for (let x=6; x<canvas.width; x+=50) ctx.fillRect(x, yardHeight - 48, 14, 6);
+    ctx.fillStyle = '#182028';
+    ctx.fillRect(0, 62, canvas.width, 18);
+    ctx.fillStyle = '#406070';
+    for (let x=8; x<canvas.width; x+=44) ctx.fillRect(x, 66, 14, 6);
+    ctx.fillStyle = '#909098';
+    for (let x=14; x<canvas.width; x+=36) ctx.fillRect(x, 64, 6, 2);
 
     if (y) {
         // Draw static hazards (puddles, debris)
@@ -5893,113 +6157,151 @@ function draw() {
     if (GAME.state === 'TITLE') {
         const t = GAME.stateTimer;
 
-        // Premium animated background
+        // === PS1-STYLE TITLE SCREEN ===
+        // PS1 muted gradient background - darker, more atmospheric
         const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        grad.addColorStop(0, '#050510');
-        grad.addColorStop(0.3, '#0a1525');
-        grad.addColorStop(0.6, '#0f172a');
-        grad.addColorStop(1, '#0a0a18');
+        grad.addColorStop(0, '#08080c');
+        grad.addColorStop(0.25, '#0c1018');
+        grad.addColorStop(0.5, '#101520');
+        grad.addColorStop(0.75, '#0a0c12');
+        grad.addColorStop(1, '#060608');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Animated stars
-        for (let i = 0; i < 30; i++) {
-            const x = (i * 37 + t * 0.3) % canvas.width;
-            const y = (i * 61) % canvas.height;
-            const twinkle = Math.sin(t * 0.1 + i) * 0.5 + 0.5;
-            ctx.fillStyle = `rgba(255,255,255,${twinkle * 0.6})`;
-            ctx.fillRect(x, y, 1, 1);
+        // PS1-style parallax star field with depth layers
+        for (let layer = 0; layer < 3; layer++) {
+            const speed = 0.1 + layer * 0.15;
+            const size = 1 + layer * 0.5;
+            const brightness = 0.3 + layer * 0.2;
+            for (let i = 0; i < 12; i++) {
+                const x = (i * 37 + layer * 13 + t * speed) % canvas.width;
+                const y = (i * 61 + layer * 29) % (canvas.height - 50);
+                const twinkle = Math.sin(t * 0.08 + i + layer) * 0.3 + 0.7;
+                ctx.fillStyle = `rgba(180,180,200,${twinkle * brightness})`;
+                ctx.fillRect(x, y, size, size);
+            }
         }
 
-        // Animated grid lines with perspective
-        const offset = (t * 1.2) % 32;
-        ctx.strokeStyle = 'rgba(34, 211, 238, 0.15)';
-        ctx.lineWidth = 1;
-        for (let i = -1; i < 16; i++) {
-            const y = i * 16 + offset;
-            const alpha = 0.1 + (y / canvas.height) * 0.2;
-            ctx.strokeStyle = `rgba(34, 211, 238, ${alpha})`;
+        // PS1-style Mode 7 perspective grid (fake 3D floor)
+        const gridOffset = (t * 0.8) % 20;
+        ctx.save();
+        for (let row = 0; row < 8; row++) {
+            const y = 140 + row * 12 + gridOffset * (row / 8);
+            const perspScale = 0.3 + row * 0.1;
+            const alpha = 0.05 + row * 0.02;
+            // Horizontal perspective lines
+            ctx.strokeStyle = `rgba(80, 100, 120, ${alpha})`;
+            ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(canvas.width, y);
+            const leftX = 128 - 128 * perspScale;
+            const rightX = 128 + 128 * perspScale;
+            ctx.moveTo(leftX, y);
+            ctx.lineTo(rightX, y);
             ctx.stroke();
         }
-        for (let i = 0; i < 17; i++) {
-            ctx.strokeStyle = 'rgba(34, 211, 238, 0.1)';
+        // Vertical converging lines for depth
+        for (let i = 0; i < 9; i++) {
+            const xBase = 24 + i * 26;
+            ctx.strokeStyle = `rgba(60, 80, 100, 0.08)`;
             ctx.beginPath();
-            ctx.moveTo(i * 16, 0);
-            ctx.lineTo(i * 16, canvas.height);
+            ctx.moveTo(128, 120); // Vanishing point
+            ctx.lineTo(xBase, 224);
             ctx.stroke();
         }
+        ctx.restore();
 
-        // Warehouse silhouette at bottom
-        ctx.fillStyle = '#0a0a14';
-        ctx.fillRect(0, 180, canvas.width, 44);
-        ctx.fillStyle = '#1a1a2e';
+        // PS1-style warehouse silhouette with gouraud shading
+        ctx.fillStyle = '#0c0c10';
+        ctx.fillRect(0, 175, canvas.width, 50);
         for (let i = 0; i < 8; i++) {
-            ctx.fillRect(i * 32 + 4, 185, 24, 35);
-            ctx.fillStyle = '#fbbf24';
-            ctx.fillRect(i * 32 + 8, 190, 16, 12);
-            ctx.fillStyle = '#1a1a2e';
+            const bx = i * 32 + 4;
+            // PS1 gouraud-style building gradient
+            const buildGrad = ctx.createLinearGradient(bx, 178, bx + 24, 178);
+            buildGrad.addColorStop(0, '#1a1a22');
+            buildGrad.addColorStop(0.3, '#202028');
+            buildGrad.addColorStop(0.7, '#181820');
+            buildGrad.addColorStop(1, '#101016');
+            ctx.fillStyle = buildGrad;
+            ctx.fillRect(bx, 178, 24, 38);
+            // Muted window glow
+            ctx.fillStyle = '#806830';
+            ctx.fillRect(bx + 4, 184, 16, 10);
+            ctx.fillStyle = '#604820';
+            ctx.fillRect(bx + 6, 186, 12, 6);
         }
 
         ctx.textAlign = 'center';
 
-        // Title glow effect
-        const glowIntensity = Math.sin(t * 0.08) * 0.3 + 0.7;
-        ctx.shadowColor = '#ff9900';
-        ctx.shadowBlur = 15 * glowIntensity;
-
-        // Title with multiple layers
+        // PS1-style metallic title with beveled 3D effect
         ctx.font = '16px "Press Start 2P"';
-        ctx.fillStyle = '#7c2d12';
-        ctx.fillText('AMZL WHS QUEST', canvas.width / 2 + 2, 44);
-        ctx.fillStyle = '#ea580c';
-        ctx.fillText('AMZL WHS QUEST', canvas.width / 2 + 1, 43);
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillText('AMZL WHS QUEST', canvas.width / 2, 42);
-        ctx.shadowBlur = 0;
+        // Shadow/depth layers
+        ctx.fillStyle = '#201008';
+        ctx.fillText('AMZL WHS QUEST', canvas.width / 2 + 3, 46);
+        ctx.fillStyle = '#402010';
+        ctx.fillText('AMZL WHS QUEST', canvas.width / 2 + 2, 45);
+        ctx.fillStyle = '#804020';
+        ctx.fillText('AMZL WHS QUEST', canvas.width / 2 + 1, 44);
+        // Main title - muted gold/bronze
+        ctx.fillStyle = '#a07030';
+        ctx.fillText('AMZL WHS QUEST', canvas.width / 2, 43);
+        // Highlight
+        ctx.fillStyle = '#c09050';
+        ctx.fillText('AMZL WHS QUEST', canvas.width / 2 - 1, 42);
 
-        // Subtitle with glow
-        ctx.shadowColor = '#22d3ee';
-        ctx.shadowBlur = 8;
-        ctx.fillStyle = '#22d3ee';
+        // PS1-style subtitle - muted cyan
+        ctx.fillStyle = '#406070';
         ctx.font = '7px "Press Start 2P"';
+        ctx.fillText('SAFETY COORDINATOR EDITION', canvas.width / 2 + 1, 61);
+        ctx.fillStyle = '#608090';
         ctx.fillText('SAFETY COORDINATOR EDITION', canvas.width / 2, 60);
-        ctx.shadowBlur = 0;
 
-        // Animated character showcase
+        // PS1-style character showcase with wobble
         const charIdx = Math.floor(t / 90) % 5;
         const chars = ['Carrie', 'Nevena', 'Joao', 'Roman', 'Erwin'];
         const charName = chars[charIdx];
-        const charBounce = Math.sin(t * 0.15) * 3;
+        const charBounce = Math.sin(t * 0.12) * 2;
+        const wobble = PS1_FX.getWobble(t);
         ctx.save();
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(GFX.chars[charName], canvas.width / 2 - 16, 85 + charBounce, 32, 32);
+        // Character shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        ctx.beginPath();
+        ctx.ellipse(canvas.width / 2, 122 + charBounce, 14, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Character with PS1 wobble
+        ctx.translate(canvas.width / 2 - 16 + wobble * 0.3, 85 + charBounce);
+        ctx.drawImage(GFX.chars[charName], 0, 0, 32, 32);
         ctx.restore();
 
-        // Animated prompt with pulse
-        const blink = Math.sin(t * 0.12) > 0;
-        const pulseScale = 1 + Math.sin(t * 0.1) * 0.05;
+        // PS1-style blinking prompt
+        const blink = Math.floor(t / 30) % 2 === 0;
         if (blink) {
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = '#404048';
             ctx.font = '9px "Press Start 2P"';
-            ctx.fillText('PRESS SPACE', canvas.width / 2, 140);
+            ctx.fillText('PRESS START', canvas.width / 2 + 1, 141);
+            ctx.fillStyle = '#a0a0a8';
+            ctx.fillText('PRESS START', canvas.width / 2, 140);
         }
 
-        // Decorative lines
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(40, 155, 176, 2);
-        ctx.fillStyle = '#22d3ee';
-        ctx.fillRect(60, 160, 136, 1);
+        // PS1-style metallic decorative bars
+        const barGrad = ctx.createLinearGradient(40, 0, 216, 0);
+        barGrad.addColorStop(0, '#403020');
+        barGrad.addColorStop(0.3, '#806040');
+        barGrad.addColorStop(0.5, '#a08060');
+        barGrad.addColorStop(0.7, '#806040');
+        barGrad.addColorStop(1, '#403020');
+        ctx.fillStyle = barGrad;
+        ctx.fillRect(40, 153, 176, 3);
+        ctx.fillStyle = '#304050';
+        ctx.fillRect(60, 159, 136, 2);
 
-        // Credits with style
-        ctx.fillStyle = '#64748b';
+        // PS1-style muted credits
+        ctx.fillStyle = '#404048';
         ctx.font = '7px monospace';
-        ctx.fillText('CREATED BY ERWIN ESENER', canvas.width / 2, 175);
-        ctx.fillStyle = '#475569';
+        ctx.fillText('CREATED BY ERWIN ESENER', canvas.width / 2, 172);
+        ctx.fillStyle = '#303038';
         ctx.font = '6px monospace';
-        ctx.fillText('© 2024 ERWIN ESENER PRODUCTIONS', canvas.width / 2, 220);
+        ctx.fillText('© 2024 ERWIN ESENER PRODUCTIONS', canvas.width / 2, 218);
 
         ctx.textAlign = 'left';
         ctx.restore(); return;
@@ -6020,113 +6322,147 @@ function draw() {
         ctx.lineWidth = 2;
         ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
 
-        // Title with glow
+        // === PS1-STYLE HOW TO PLAY SCREEN ===
         ctx.textAlign = 'center';
-        ctx.shadowColor = '#fbbf24';
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = '#fbbf24';
+        // PS1 metallic title - no glow, beveled look
+        ctx.fillStyle = '#302820';
         ctx.font = '14px "Press Start 2P"';
+        ctx.fillText('HOW TO PLAY', canvas.width / 2 + 2, 37);
+        ctx.fillStyle = '#604830';
+        ctx.fillText('HOW TO PLAY', canvas.width / 2 + 1, 36);
+        ctx.fillStyle = '#907050';
         ctx.fillText('HOW TO PLAY', canvas.width / 2, 35);
-        ctx.shadowBlur = 0;
 
         ctx.textAlign = 'left';
         ctx.font = '9px "Press Start 2P"';
 
-        // Controls section
-        ctx.fillStyle = '#22d3ee';
+        // PS1 muted controls section
+        ctx.fillStyle = '#508090';
         ctx.fillText('WASD / ARROWS', 25, 65);
-        ctx.fillStyle = '#94a3b8';
+        ctx.fillStyle = '#707078';
         ctx.font = '8px monospace';
         ctx.fillText('Navigate the warehouse floor', 25, 80);
 
-        ctx.fillStyle = '#22d3ee';
+        ctx.fillStyle = '#508090';
         ctx.font = '9px "Press Start 2P"';
         ctx.fillText('SPACE', 25, 105);
-        ctx.fillStyle = '#94a3b8';
+        ctx.fillStyle = '#707078';
         ctx.font = '8px monospace';
         ctx.fillText('Interact with hazards / Attack', 25, 120);
 
-        // Goal section
-        ctx.fillStyle = '#ef4444';
+        // PS1 mission section - muted red
+        ctx.fillStyle = '#803030';
         ctx.font = '9px "Press Start 2P"';
         ctx.fillText('YOUR MISSION:', 25, 150);
-        ctx.fillStyle = '#fbbf24';
+        ctx.fillStyle = '#907040';
         ctx.font = '8px monospace';
         ctx.fillText('1. Find and fix 5 safety hazards', 25, 165);
         ctx.fillText('2. Dodge crazy Ops requests!', 25, 180);
         ctx.fillText('3. Defeat the surprise visitor', 25, 195);
 
-        // Animated prompt
-        const blink = Math.sin(t * 0.12) > 0;
+        // PS1-style blinking prompt
+        const blink = Math.floor(t / 25) % 2 === 0;
         if (blink) {
             ctx.textAlign = 'center';
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = '#505058';
             ctx.font = '8px "Press Start 2P"';
+            ctx.fillText('[PRESS SPACE TO CONTINUE]', canvas.width / 2 + 1, 216);
+            ctx.fillStyle = '#909098';
             ctx.fillText('[PRESS SPACE TO CONTINUE]', canvas.width / 2, 215);
         }
         ctx.textAlign = 'left';
         ctx.restore(); return;
     }
     if (GAME.state === 'SELECT') {
+        // === PS1-STYLE CHARACTER SELECT SCREEN ===
         const t = GAME.stateTimer;
         const frameX = 14, frameY = 22, frameW = 228, frameH = 180;
 
-        // Background gradient
+        // PS1 muted background gradient
         const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        grad.addColorStop(0, '#050510');
-        grad.addColorStop(0.5, '#0a1525');
-        grad.addColorStop(1, '#0f172a');
+        grad.addColorStop(0, '#08080c');
+        grad.addColorStop(0.5, '#0c1018');
+        grad.addColorStop(1, '#101520');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Animated background particles
-        for (let i = 0; i < 20; i++) {
-            const x = (i * 31 + t * 0.2) % canvas.width;
-            const y = (i * 47 + t * 0.1) % canvas.height;
-            ctx.fillStyle = `rgba(251, 191, 36, ${0.1 + Math.sin(t * 0.05 + i) * 0.1})`;
+        // PS1-style slow floating particles - muted
+        for (let i = 0; i < 15; i++) {
+            const x = (i * 31 + t * 0.15) % canvas.width;
+            const y = (i * 47 + t * 0.08) % canvas.height;
+            ctx.fillStyle = `rgba(120, 100, 60, ${0.08 + Math.sin(t * 0.03 + i) * 0.06})`;
             ctx.fillRect(x, y, 2, 2);
         }
 
-        // Main frame with glow
-        ctx.shadowColor = '#fbbf24';
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = '#0a0a14';
-        ctx.fillRect(frameX, frameY, frameW, frameH);
-        ctx.shadowBlur = 0;
-
-        ctx.strokeStyle = '#fbbf24';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(frameX, frameY, frameW, frameH);
-        ctx.strokeStyle = '#92400e';
-        ctx.strokeRect(frameX + 2, frameY + 2, frameW - 4, frameH - 4);
-
+        // PS1-style metallic beveled frame
+        // Outer dark border
+        ctx.fillStyle = '#181820';
+        ctx.fillRect(frameX - 4, frameY - 4, frameW + 8, frameH + 8);
+        // Metallic gradient frame
+        const frameGrad = ctx.createLinearGradient(frameX, frameY, frameX + frameW, frameY + frameH);
+        frameGrad.addColorStop(0, '#4a4a58');
+        frameGrad.addColorStop(0.3, '#3a3a48');
+        frameGrad.addColorStop(0.7, '#2a2a38');
+        frameGrad.addColorStop(1, '#202028');
+        ctx.fillStyle = frameGrad;
+        ctx.fillRect(frameX - 2, frameY - 2, frameW + 4, frameH + 4);
         // Inner panel
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+        ctx.fillStyle = '#0c0c14';
+        ctx.fillRect(frameX, frameY, frameW, frameH);
+        // PS1 bevel highlights
+        ctx.fillStyle = '#5a5a68';
+        ctx.fillRect(frameX - 2, frameY - 2, frameW + 4, 2);
+        ctx.fillRect(frameX - 2, frameY - 2, 2, frameH + 4);
+        ctx.fillStyle = '#1a1a22';
+        ctx.fillRect(frameX - 2, frameY + frameH, frameW + 4, 2);
+        ctx.fillRect(frameX + frameW, frameY - 2, 2, frameH + 4);
+
+        // Inner content panel
+        ctx.fillStyle = 'rgba(12, 16, 24, 0.9)';
         ctx.fillRect(frameX + 6, frameY + 35, frameW - 12, frameH - 50);
 
         ctx.textAlign = 'center';
-        ctx.shadowColor = '#fbbf24';
-        ctx.shadowBlur = 8;
-        ctx.fillStyle = '#fbbf24';
+        // PS1 metallic title
+        ctx.fillStyle = '#302820';
         ctx.font = '11px "Press Start 2P"';
+        ctx.fillText("SELECT COORDINATOR", frameX + frameW / 2 + 1, frameY + 19);
+        ctx.fillStyle = '#806040';
         ctx.fillText("SELECT COORDINATOR", frameX + frameW / 2, frameY + 18);
-        ctx.shadowBlur = 0;
 
-        ctx.fillStyle = '#64748b';
+        ctx.fillStyle = '#505058';
         ctx.font = '7px monospace';
         ctx.fillText("< ARROWS TO BROWSE > | SPACE TO START", frameX + frameW / 2, frameY + 30);
 
         let name = GAME.charList[GAME.charIndex]; let data = CHAR_DATA[name];
         const portraitX = frameX + 18, portraitY = frameY + 46;
-        ctx.fillStyle = '#000'; ctx.fillRect(portraitX - 2, portraitY - 2, 56, 56);
-        ctx.strokeStyle = '#333'; ctx.strokeRect(portraitX - 4, portraitY - 4, 60, 60);
-        ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(GFX.chars[name], portraitX, portraitY, 52, 52); ctx.restore();
+        // PS1-style portrait frame with bevel
+        ctx.fillStyle = '#282830';
+        ctx.fillRect(portraitX - 4, portraitY - 4, 60, 60);
+        ctx.fillStyle = '#3a3a44';
+        ctx.fillRect(portraitX - 3, portraitY - 3, 58, 1);
+        ctx.fillRect(portraitX - 3, portraitY - 3, 1, 58);
+        ctx.fillStyle = '#181820';
+        ctx.fillRect(portraitX - 3, portraitY + 53, 58, 1);
+        ctx.fillRect(portraitX + 53, portraitY - 3, 1, 58);
+        ctx.fillStyle = '#0a0a10';
+        ctx.fillRect(portraitX - 2, portraitY - 2, 56, 56);
+        ctx.save(); ctx.imageSmoothingEnabled = false;
+        // PS1 wobble on character
+        const wobble = PS1_FX.getWobble(t);
+        ctx.translate(portraitX + wobble * 0.2, portraitY);
+        ctx.drawImage(GFX.chars[name], 0, 0, 52, 52);
+        ctx.restore();
 
-        ctx.fillStyle='#eab308'; ctx.font='12px monospace';
+        // PS1 muted gold name
+        ctx.fillStyle = '#604820';
+        ctx.font = '12px monospace';
+        ctx.fillText("< " + name + " >", frameX + frameW / 2 + 1, frameY + 55);
+        ctx.fillStyle = '#907040';
         ctx.fillText("< " + name + " >", frameX + frameW / 2, frameY + 54);
 
         ctx.textAlign = 'left';
-        ctx.font='8px monospace'; ctx.fillStyle='#00ffff';
+        ctx.font = '8px monospace';
+        ctx.fillStyle = '#508090';
         const textStartX = portraitX + 70; const textStartY = frameY + 70;
         ctx.fillText("ROLE: " + data.role, textStartX, textStartY);
 
@@ -6136,62 +6472,80 @@ function draw() {
             if (line) lines.push(line); return lines;
         };
         const backstoryLines = wrapText(data.backstory, 30).slice(0, 3);
-        ctx.fillStyle='#fff'; backstoryLines.forEach((l, idx) => ctx.fillText(l, textStartX, textStartY + 14 + idx * 12));
+        ctx.fillStyle = '#a0a0a8';
+        backstoryLines.forEach((l, idx) => ctx.fillText(l, textStartX, textStartY + 14 + idx * 12));
 
-        ctx.fillStyle='#ff00ff';
+        // PS1 muted magenta
+        ctx.fillStyle = '#805080';
         ctx.fillText("ATTACK: " + data.attack, frameX + 18, frameY + frameH - 30);
 
         ctx.textAlign = 'center';
-        ctx.fillStyle='#888'; ctx.font='10px monospace';
-        ctx.fillText("PRESS SPACE", frameX + frameW / 2, frameY + frameH - 12);
+        // PS1-style blinking prompt
+        const selectBlink = Math.floor(t / 25) % 2 === 0;
+        ctx.fillStyle = selectBlink ? '#707078' : '#404048';
+        ctx.font = '10px monospace';
+        ctx.fillText("PRESS START", frameX + frameW / 2, frameY + frameH - 12);
         ctx.restore(); return;
     }
     if (GAME.state === 'YARD_INTRO') {
-        // Dark gradient background
+        // === PS1-STYLE YARD INTRO SCREEN ===
         const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        grad.addColorStop(0, '#0a0a14');
-        grad.addColorStop(0.5, '#1a1a2e');
-        grad.addColorStop(1, '#0f172a');
+        grad.addColorStop(0, '#0c0c14');
+        grad.addColorStop(0.5, '#141820');
+        grad.addColorStop(1, '#101418');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Warning stripes
-        ctx.fillStyle = '#facc15';
+        // PS1-style warning stripes - muted yellow/black
         for (let i = 0; i < canvas.width; i += 24) {
+            ctx.fillStyle = '#806020';
             ctx.fillRect(i, 0, 12, 6);
             ctx.fillRect(i + 12, canvas.height - 6, 12, 6);
+            ctx.fillStyle = '#282018';
+            ctx.fillRect(i + 12, 0, 12, 6);
+            ctx.fillRect(i, canvas.height - 6, 12, 6);
         }
 
-        // Title
-        ctx.fillStyle = '#ff9900';
-        ctx.font = '16px "Press Start 2P"';
+        // PS1 metallic title
         ctx.textAlign = 'center';
+        ctx.font = '16px "Press Start 2P"';
+        ctx.fillStyle = '#302010';
+        ctx.fillText('THE YARD', canvas.width / 2 + 2, 52);
+        ctx.fillStyle = '#604020';
+        ctx.fillText('THE YARD', canvas.width / 2 + 1, 51);
+        ctx.fillStyle = '#906030';
         ctx.fillText('THE YARD', canvas.width / 2, 50);
 
-        // Subtitle
-        ctx.fillStyle = '#dc2626';
+        // PS1 muted subtitle
+        ctx.fillStyle = '#602020';
         ctx.font = '10px "Press Start 2P"';
+        ctx.fillText('DANGER ZONE', canvas.width / 2 + 1, 71);
+        ctx.fillStyle = '#803030';
         ctx.fillText('DANGER ZONE', canvas.width / 2, 70);
 
-        // Instructions
-        ctx.fillStyle = '#f0f0ff';
+        // PS1 muted instructions
+        ctx.fillStyle = '#909098';
         ctx.font = '9px monospace';
         ctx.fillText('You sneak through the fire exit', canvas.width / 2, 100);
         ctx.fillText('into the Amazon logistics yard.', canvas.width / 2, 115);
 
-        ctx.fillStyle = '#facc15';
+        ctx.fillStyle = '#806830';
         ctx.fillText('Dodge DSP vans and semis!', canvas.width / 2, 140);
         ctx.fillText('Reach the top without getting hit!', canvas.width / 2, 155);
 
-        ctx.fillStyle = '#ef4444';
+        ctx.fillStyle = '#803030';
         ctx.font = '8px monospace';
         ctx.fillText('WARNING: Vehicles WILL reset you!', canvas.width / 2, 175);
 
-        // Prompt
-        ctx.fillStyle = '#00ffff';
+        // PS1-style blinking prompt
         ctx.font = '9px "Press Start 2P"';
-        const blink = Math.sin(GAME.stateTimer * 0.1) > 0;
-        if (blink) ctx.fillText('[PRESS SPACE TO RUN]', canvas.width / 2, 205);
+        const blink = Math.floor(GAME.stateTimer / 25) % 2 === 0;
+        if (blink) {
+            ctx.fillStyle = '#305060';
+            ctx.fillText('[PRESS SPACE TO RUN]', canvas.width / 2 + 1, 206);
+            ctx.fillStyle = '#508090';
+            ctx.fillText('[PRESS SPACE TO RUN]', canvas.width / 2, 205);
+        }
 
         ctx.textAlign = 'left';
         ctx.restore(); return;
