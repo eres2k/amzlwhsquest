@@ -6938,11 +6938,11 @@ function drawBezosEscape() {
 
     const pt = scene.phaseTimer || 0;
 
-    // Draw throne room backdrop for phases 0-6 (before and during rocket escape)
-    if (scene.phase <= 6) {
+    // Draw throne room backdrop for phases 0-7 (keep throne room during dialogue)
+    if (scene.phase <= 7) {
         drawThroneRoomBackdrop(t);
     } else {
-        // After rocket escapes, switch to victory scene
+        // After dialogue, switch to victory scene for Simon joining
         drawVictoryBackdrop(t);
     }
 
@@ -7331,29 +7331,134 @@ function drawBezosEscape() {
             ctx.fillText(`SPD: ${speed}m/s`, canvas.width - 10, 32);
         }
     }
-    // Phase 7: Dialogue exchange (rocket already escaped)
+    // Phase 7: Dialogue exchange with animated wide view of rocket in space
     else if (scene.phase === 7) {
-        // Tiny rocket trail in the sky
-        const trailX = canvas.width - 40;
-        for (let i = 0; i < 8; i++) {
-            const trailY = 15 + i * 6;
-            ctx.fillStyle = `rgba(255, 153, 0, ${0.5 - i * 0.06})`;
-            ctx.fillRect(trailX - 2, trailY, 4, 5);
+        // Initialize space view animation state
+        if (!scene.spaceViewInit) {
+            scene.spaceViewInit = true;
+            scene.spaceRocketY = 60; // Start position in the upper part of screen
+            scene.spaceRocketScale = 0.5; // Starting scale (will shrink)
+            scene.spaceStars = [];
+            for (let i = 0; i < 80; i++) {
+                scene.spaceStars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height * 0.7,
+                    size: Math.random() * 2 + 0.5,
+                    twinkle: Math.random() * Math.PI * 2,
+                    speed: Math.random() * 0.5 + 0.1
+                });
+            }
         }
 
-        // Tiny rocket in sky
-        ctx.fillStyle = '#aaa';
-        ctx.fillRect(trailX - 2, 8, 4, 8);
-        ctx.fillStyle = '#dc2626';
+        // Draw epic space backdrop over throne room ceiling
+        ctx.save();
+
+        // Dark space gradient at the top (through the blasted ceiling)
+        const spaceGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.6);
+        spaceGrad.addColorStop(0, '#000010');
+        spaceGrad.addColorStop(0.3, '#050520');
+        spaceGrad.addColorStop(0.6, '#0a0a30');
+        spaceGrad.addColorStop(1, 'rgba(15, 15, 40, 0.8)');
+        ctx.fillStyle = spaceGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height * 0.65);
+
+        // Animated twinkling stars
+        for (const star of scene.spaceStars) {
+            star.twinkle += 0.05;
+            const twinkle = Math.sin(star.twinkle) * 0.4 + 0.6;
+            ctx.fillStyle = `rgba(255, 255, 255, ${twinkle})`;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Draw Earth horizon curving at the bottom of the space view
+        const earthY = canvas.height * 0.55;
+        ctx.fillStyle = '#1e40af';
         ctx.beginPath();
-        ctx.moveTo(trailX, 4);
-        ctx.lineTo(trailX - 3, 10);
-        ctx.lineTo(trailX + 3, 10);
-        ctx.closePath();
+        ctx.arc(canvas.width / 2, earthY + 400, 420, Math.PI, 2 * Math.PI);
         ctx.fill();
 
-        // Player character
-        ctx.drawImage(GFX.chars[GAME.selectedChar], 60, canvas.height - 50);
+        // Atmosphere glow around Earth
+        const atmosGrad = ctx.createRadialGradient(
+            canvas.width / 2, earthY + 400, 400,
+            canvas.width / 2, earthY + 400, 450
+        );
+        atmosGrad.addColorStop(0, 'rgba(135, 206, 250, 0)');
+        atmosGrad.addColorStop(0.5, 'rgba(135, 206, 250, 0.4)');
+        atmosGrad.addColorStop(1, 'rgba(135, 206, 250, 0)');
+        ctx.fillStyle = atmosGrad;
+        ctx.beginPath();
+        ctx.arc(canvas.width / 2, earthY + 400, 450, Math.PI, 2 * Math.PI);
+        ctx.fill();
+
+        // Animate rocket moving upward and shrinking
+        scene.spaceRocketY -= 0.3; // Slowly moving up
+        scene.spaceRocketScale = Math.max(0.1, scene.spaceRocketScale - 0.001); // Slowly shrinking
+
+        const rocketCenterX = canvas.width / 2 + 30;
+        const rocketDrawY = scene.spaceRocketY;
+        const scale = scene.spaceRocketScale;
+
+        // Draw rocket flames (scaled)
+        const flameColors = ['#ffffff', '#ffff00', '#ff9900', '#ff6600', '#ff3300'];
+        for (let i = 0; i < 5; i++) {
+            const flameY = rocketDrawY + (20 + i * 8) * scale;
+            const flameWidth = (12 - i * 2) * scale;
+            const wobble = Math.sin(t * 0.8 + i * 0.5) * (2 * scale);
+            ctx.fillStyle = flameColors[i];
+            ctx.globalAlpha = 0.9 - i * 0.15;
+            ctx.fillRect(rocketCenterX - flameWidth/2 + wobble, flameY, flameWidth, 8 * scale);
+        }
+        ctx.globalAlpha = 1;
+
+        // Draw scaled rocket (simplified when small)
+        if (scale > 0.3) {
+            // Draw actual rocket sprite scaled
+            ctx.save();
+            ctx.translate(rocketCenterX, rocketDrawY);
+            ctx.scale(scale, scale);
+            ctx.drawImage(GFX.escapeRocket, -32, -64);
+            ctx.restore();
+        } else {
+            // Very small rocket - just a simple shape
+            ctx.fillStyle = '#e5e7eb';
+            const rocketH = Math.max(4, 20 * scale);
+            const rocketW = Math.max(2, 8 * scale);
+            ctx.fillRect(rocketCenterX - rocketW/2, rocketDrawY - rocketH, rocketW, rocketH);
+            ctx.fillStyle = '#1e40af';
+            ctx.beginPath();
+            ctx.moveTo(rocketCenterX, rocketDrawY - rocketH - 4 * scale);
+            ctx.lineTo(rocketCenterX - rocketW/2, rocketDrawY - rocketH);
+            ctx.lineTo(rocketCenterX + rocketW/2, rocketDrawY - rocketH);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Smoke trail behind rocket
+        for (let i = 0; i < 12; i++) {
+            const trailY = rocketDrawY + (30 + i * 15) * scale;
+            const trailX = rocketCenterX + Math.sin(t * 0.05 + i * 0.4) * (5 + i * 0.5);
+            const trailSize = (8 - i * 0.5) * scale;
+            if (trailSize > 0.5) {
+                ctx.fillStyle = `rgba(200, 200, 200, ${0.4 - i * 0.03})`;
+                ctx.beginPath();
+                ctx.arc(trailX, trailY, trailSize, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        ctx.restore();
+
+        // Player character looking up at the sky
+        ctx.drawImage(GFX.chars[GAME.selectedChar], canvas.width / 2 - 40, canvas.height - 55);
+
+        // HUD - altitude indicator continues
+        const altitude = Math.floor(1500 + pt * 2);
+        ctx.fillStyle = '#00ff00';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.textAlign = 'right';
+        ctx.fillText(`ALT: ${altitude}km`, canvas.width - 10, 20);
     }
     // Phase 8: Simon joins
     else if (scene.phase === 8) {
