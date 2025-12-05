@@ -669,20 +669,38 @@ const TTSSys = {
         "Narrator": { pitch: 0.7, rate: 0.85, volume: 1.0, desc: "Dramatic narrator" }
     },
     init: function() {
+        // Get selected language from localStorage
+        this.selectedLang = localStorage.getItem('amzl_language') || 'en';
+        this.ttsLang = this.getTTSLang(this.selectedLang);
+
         const loadVoices = () => {
             this.voices = this.synth.getVoices();
-            // Prioritize English voices - force English language
-            const englishVoices = this.voices.filter(v =>
-                v.lang.startsWith('en') || v.name.includes('English')
+            // Find voice for selected language
+            const langPrefix = this.ttsLang.split('-')[0]; // e.g., 'en' from 'en-US'
+            const langVoices = this.voices.filter(v =>
+                v.lang.startsWith(langPrefix) || v.lang === this.ttsLang
             );
-            // Prefer Google US English, then any US English, then any English
-            this.voice = englishVoices.find(v => v.name.includes("Google US English"))
-                || englishVoices.find(v => v.lang === 'en-US')
-                || englishVoices.find(v => v.lang.startsWith('en'))
+
+            // Prefer Google voice, then native language voice, then any matching voice
+            this.voice = langVoices.find(v => v.name.includes("Google"))
+                || langVoices.find(v => v.lang === this.ttsLang)
+                || langVoices.find(v => v.lang.startsWith(langPrefix))
                 || this.voices[0];
+
+            console.log(`TTS initialized: lang=${this.selectedLang}, ttsLang=${this.ttsLang}, voice=${this.voice?.name || 'default'}`);
         };
         if (this.synth.onvoiceschanged !== undefined) this.synth.onvoiceschanged = loadVoices;
         loadVoices();
+    },
+    getTTSLang: function(lang) {
+        const langMap = {
+            'en': 'en-US',
+            'de': 'de-DE',
+            'sr': 'sr-RS',
+            'fil': 'fil-PH',
+            'pt': 'pt-PT'
+        };
+        return langMap[lang] || 'en-US';
     },
     getVoiceConfig: function(speakerName) {
         // Find matching voice config by checking if speaker name contains any key
@@ -699,8 +717,8 @@ const TTSSys = {
         this.synth.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
 
-        // Force English language
-        utterance.lang = 'en-US';
+        // Use selected language for TTS
+        utterance.lang = this.ttsLang || 'en-US';
         if (this.voice) utterance.voice = this.voice;
 
         // Apply character-specific voice settings
@@ -721,7 +739,7 @@ const TTSSys = {
     queue: function(text, speakerName = "System") {
         if (!this.synth || !text) return;
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
+        utterance.lang = this.ttsLang || 'en-US';
         if (this.voice) utterance.voice = this.voice;
         const config = this.getVoiceConfig(speakerName);
         utterance.pitch = config.pitch;
@@ -3065,6 +3083,583 @@ const HAZARD_POOL = [
     { name: "Lockout Tagout Forgotten", type: "compliance" },
 ];
 
+// === TRANSLATION SYSTEM ===
+const GAME_LANGUAGE = localStorage.getItem('amzl_language') || 'en';
+
+const LANGUAGE_CONFIG = {
+    en: { name: 'English', flag: '🇬🇧', ttsLang: 'en-US' },
+    de: { name: 'Deutsch', flag: '🇩🇪', ttsLang: 'de-DE' },
+    sr: { name: 'Srpski', flag: '🇷🇸', ttsLang: 'sr-RS' },
+    fil: { name: 'Filipino', flag: '🇵🇭', ttsLang: 'fil-PH' },
+    pt: { name: 'Português', flag: '🇵🇹', ttsLang: 'pt-PT' }
+};
+
+// Hazard translations - comprehensive translations for all 65+ hazards
+const HAZARD_TRANSLATIONS = {
+    // === POWERED INDUSTRIAL TRUCKS (PITs) ===
+    "Speeding PIT Operator": {
+        de: "Rasender Gabelstapler-Fahrer",
+        sr: "Возач виљушкара који јури",
+        fil: "Mabilis na Operator ng Forklift",
+        pt: "Operador de Empilhadeira em Alta Velocidade"
+    },
+    "Forklift With Blocked View": {
+        de: "Gabelstapler mit blockierter Sicht",
+        sr: "Виљушкар са блокираним погледом",
+        fil: "Forklift na May Nahaharang na Paningin",
+        pt: "Empilhadeira com Visão Bloqueada"
+    },
+    "Reach Truck Cutting Corner": {
+        de: "Schubmaststapler schneidet Kurve",
+        sr: "Виљушкар сече кривину",
+        fil: "Reach Truck na Nagko-corner Cut",
+        pt: "Empilhadeira Retrátil Cortando Curva"
+    },
+    "Order Picker Too High": {
+        de: "Order Picker zu hoch",
+        sr: "Order Picker превисоко",
+        fil: "Order Picker Masyadong Mataas",
+        pt: "Order Picker Muito Alto"
+    },
+    "Turret Truck Near Pedestrians": {
+        de: "Turret-Stapler nahe Fußgänger",
+        sr: "Турет камион близу пешака",
+        fil: "Turret Truck Malapit sa mga Tao",
+        pt: "Turret Truck Perto de Pedestres"
+    },
+    "Clamp Truck Overloaded": {
+        de: "Klammer-Stapler überladen",
+        sr: "Преоптерећен клемп камион",
+        fil: "Sobrang Karga ng Clamp Truck",
+        pt: "Clamp Truck Sobrecarregado"
+    },
+    "PIT Operator Without Seatbelt": {
+        de: "PIT-Fahrer ohne Sicherheitsgurt",
+        sr: "Возач без појаса",
+        fil: "Operator ng PIT Walang Seatbelt",
+        pt: "Operador de PIT sem Cinto"
+    },
+
+    // === PACK & SHIP HAZARDS ===
+    "Overflowing SLAM Line": {
+        de: "Überlaufende SLAM-Linie",
+        sr: "Преплављена SLAM линија",
+        fil: "Umaapaw na SLAM Line",
+        pt: "Linha SLAM Transbordando"
+    },
+    "Jammed AFE Chute": {
+        de: "Verstopfte AFE-Rutsche",
+        sr: "Заглављена AFE шутира",
+        fil: "Naka-jam na AFE Chute",
+        pt: "Rampa AFE Obstruída"
+    },
+    "SIOC Avalanche": {
+        de: "SIOC-Lawine",
+        sr: "SIOC лавина",
+        fil: "SIOC Avalanche",
+        pt: "Avalanche de SIOC"
+    },
+    "Crushed Jiffy Mailer Pile": {
+        de: "Zerdrückte Jiffy-Umschläge",
+        sr: "Згњечена гомила коверти",
+        fil: "Nadurog na Jiffy Mailer",
+        pt: "Pilha de Envelopes Amassados"
+    },
+    "Tape Gun Left Running": {
+        de: "Klebebandpistole läuft noch",
+        sr: "Упаљен диспензер траке",
+        fil: "Tape Gun na Tumatakbo",
+        pt: "Dispensador de Fita Ligado"
+    },
+    "Poly Bag Explosion": {
+        de: "Plastiktüten-Explosion",
+        sr: "Експлозија поли кеса",
+        fil: "Sumabog na Poly Bag",
+        pt: "Explosão de Sacos Plásticos"
+    },
+    "Gift Wrap Station Chaos": {
+        de: "Chaos an der Geschenkverpackung",
+        sr: "Хаос на станици за паковање",
+        fil: "Kaguluhan sa Gift Wrap Station",
+        pt: "Caos na Estação de Embrulho"
+    },
+    "Dunnage Bag Mountain": {
+        de: "Dunnage-Kissen-Berg",
+        sr: "Планина торби за паковање",
+        fil: "Bundok ng Dunnage Bag",
+        pt: "Montanha de Sacos de Enchimento"
+    },
+
+    // === INBOUND & RECEIVE ===
+    "Unbroken-Down Gaylord": {
+        de: "Nicht zerlegter Gaylord",
+        sr: "Нерашклопљен Gaylord",
+        fil: "Hindi Nabuklat na Gaylord",
+        pt: "Gaylord Não Desmontado"
+    },
+    "Vendor Pallet Leaning": {
+        de: "Schiefe Lieferanten-Palette",
+        sr: "Нагнута палета добављача",
+        fil: "Nakasandal na Vendor Pallet",
+        pt: "Palete de Fornecedor Inclinada"
+    },
+    "Receive Dock Gap": {
+        de: "Lücke an der Empfangsrampe",
+        sr: "Размак на пријемној рампи",
+        fil: "Puwang sa Receive Dock",
+        pt: "Vão na Doca de Recebimento"
+    },
+    "Trailer Without Wheel Chocks": {
+        de: "Anhänger ohne Radkeile",
+        sr: "Приколица без клинова",
+        fil: "Trailer Walang Wheel Chocks",
+        pt: "Trailer sem Calços de Roda"
+    },
+    "Dock Plate Not Secured": {
+        de: "Überfahrrampe nicht gesichert",
+        sr: "Мост за утовар није осигуран",
+        fil: "Dock Plate Hindi Naka-secure",
+        pt: "Placa de Doca Não Segura"
+    },
+    "Mixed SKU Nightmare Pallet": {
+        de: "Albtraum-Palette mit gemischten Artikeln",
+        sr: "Кошмарна палета мешаних артикала",
+        fil: "Mixed SKU Nightmare Pallet",
+        pt: "Palete Pesadelo de SKUs Misturados"
+    },
+    "Shrink Wrap Tornado": {
+        de: "Schrumpffolien-Tornado",
+        sr: "Торнадо стреч фолије",
+        fil: "Shrink Wrap Tornado",
+        pt: "Tornado de Filme Stretch"
+    },
+
+    // === PROBLEM SOLVE CHAOS ===
+    "Problem Solve Cart Avalanche": {
+        de: "Problem Solve Wagen-Lawine",
+        sr: "Лавина колица за решавање проблема",
+        fil: "Problem Solve Cart Avalanche",
+        pt: "Avalanche de Carrinho Problem Solve"
+    },
+    "ASIN Research Black Hole": {
+        de: "ASIN-Recherche Schwarzes Loch",
+        sr: "Црна рупа истраживања ASIN-а",
+        fil: "ASIN Research Black Hole",
+        pt: "Buraco Negro de Pesquisa ASIN"
+    },
+    "Damaged Out Pile Growing": {
+        de: "Wachsender Schadenshaufen",
+        sr: "Расте гомила оштећених",
+        fil: "Lumalaking Damaged Out Pile",
+        pt: "Pilha de Danificados Crescendo"
+    },
+    "Research Bin Overflow": {
+        de: "Überlaufende Recherche-Box",
+        sr: "Преплављена кутија за истраживање",
+        fil: "Research Bin Overflow",
+        pt: "Caixa de Pesquisa Transbordando"
+    },
+    "Missing Label Saga": {
+        de: "Fehlende-Etiketten-Drama",
+        sr: "Сага о недостајућој етикети",
+        fil: "Missing Label Saga",
+        pt: "Saga da Etiqueta Perdida"
+    },
+
+    // === FLOOR HAZARDS ===
+    "Ice Pack Leak Trail": {
+        de: "Kühlakku-Leckspur",
+        sr: "Траг цурења ледене кесице",
+        fil: "Ice Pack Leak Trail",
+        pt: "Trilha de Vazamento de Gelo"
+    },
+    "Crushed Fragile Item Spill": {
+        de: "Zerbrochener Zerbrechlich-Artikel",
+        sr: "Разбијен ломљив предмет",
+        fil: "Nabasag na Fragile Item",
+        pt: "Derrame de Item Frágil Esmagado"
+    },
+    "Leaking Liquid Hazmat": {
+        de: "Auslaufende Gefahrenstoffe",
+        sr: "Цурење опасних течности",
+        fil: "Tumatagas na Liquid Hazmat",
+        pt: "Vazamento de Material Perigoso"
+    },
+    "Sweeper Missed This Spot": {
+        de: "Reiniger hat diese Stelle verpasst",
+        sr: "Чистач је пропустио ово место",
+        fil: "Hindi Nakuha ng Sweeper",
+        pt: "Limpador Perdeu Este Ponto"
+    },
+    "Energy Drink Explosion": {
+        de: "Energy-Drink-Explosion",
+        sr: "Експлозија енергетског пића",
+        fil: "Sumabog na Energy Drink",
+        pt: "Explosão de Energético"
+    },
+    "Smoothie Shrapnel Zone": {
+        de: "Smoothie-Schrapnell-Zone",
+        sr: "Зона гелера од смутија",
+        fil: "Smoothie Shrapnel Zone",
+        pt: "Zona de Estilhaços de Smoothie"
+    },
+    "Coffee Ring of Standup Past": {
+        de: "Kaffeefleck vom letzten Standup",
+        sr: "Круг од кафе од прошлог састанка",
+        fil: "Coffee Ring mula sa Nakaraang Standup",
+        pt: "Marca de Café do Standup Passado"
+    },
+    "Wet Floor No Sign": {
+        de: "Nasser Boden ohne Schild",
+        sr: "Мокар под без знака",
+        fil: "Basa ang Sahig Walang Sign",
+        pt: "Piso Molhado Sem Placa"
+    },
+
+    // === STOW & STORAGE ===
+    "Overstuffed Prime Bin": {
+        de: "Überfüllter Prime-Behälter",
+        sr: "Препуњена Prime кутија",
+        fil: "Sobrang Punong Prime Bin",
+        pt: "Caixa Prime Superlotada"
+    },
+    "Top Stock About to Fall": {
+        de: "Oberste Ware kurz vor Sturz",
+        sr: "Горња роба пред падом",
+        fil: "Top Stock Malapit Nang Mahulog",
+        pt: "Estoque Superior Prestes a Cair"
+    },
+    "Heavy Item Stowed High": {
+        de: "Schwerer Artikel hoch gelagert",
+        sr: "Тежак предмет високо складиштен",
+        fil: "Heavy Item Nakataas",
+        pt: "Item Pesado Armazenado Alto"
+    },
+    "Bin Capacity Ignored": {
+        de: "Behälterkapazität ignoriert",
+        sr: "Игнорисан капацитет кутије",
+        fil: "Hindi Sinunod ang Bin Capacity",
+        pt: "Capacidade da Caixa Ignorada"
+    },
+    "Unstable Rack Section": {
+        de: "Instabile Regalsektion",
+        sr: "Нестабилна секција регала",
+        fil: "Hindi Stable na Rack Section",
+        pt: "Seção de Estante Instável"
+    },
+    "Random Cage Contents": {
+        de: "Zufälliger Käfiginhalt",
+        sr: "Насумичан садржај кавеза",
+        fil: "Random Cage Contents",
+        pt: "Conteúdo Aleatório da Gaiola"
+    },
+
+    // === PICK & COUNT ===
+    "Scanner Cord Trip Wire": {
+        de: "Scanner-Kabel als Stolperfalle",
+        sr: "Кабл скенера као замка",
+        fil: "Scanner Cord Trip Wire",
+        pt: "Cabo de Scanner como Armadilha"
+    },
+    "Pick Cart Wheel Failure": {
+        de: "Pick-Cart-Raddefekt",
+        sr: "Квар точка колица за пикање",
+        fil: "Sira ang Gulong ng Pick Cart",
+        pt: "Falha na Roda do Carrinho Pick"
+    },
+    "Tote Stack Too Tall": {
+        de: "Behälterstapel zu hoch",
+        sr: "Превисок стог кутија",
+        fil: "Tote Stack Masyadong Mataas",
+        pt: "Pilha de Caixas Muito Alta"
+    },
+    "Mystery SKU in Wrong Bin": {
+        de: "Mysteriöser Artikel im falschen Behälter",
+        sr: "Мистериозни артикал у погрешној кутији",
+        fil: "Mystery SKU sa Maling Bin",
+        pt: "SKU Misterioso na Caixa Errada"
+    },
+    "Cycle Count Chaos": {
+        de: "Cycle-Count-Chaos",
+        sr: "Хаос при бројању залиха",
+        fil: "Cycle Count Chaos",
+        pt: "Caos na Contagem Cíclica"
+    },
+
+    // === EQUIPMENT & TOOLS ===
+    "Box Cutter Without Guard": {
+        de: "Cuttermesser ohne Schutz",
+        sr: "Скалпел без заштите",
+        fil: "Box Cutter Walang Guard",
+        pt: "Estilete sem Proteção"
+    },
+    "Frayed Scanner Holster": {
+        de: "Ausgefranste Scanner-Halterung",
+        sr: "Изношена футрола скенера",
+        fil: "Sira na Scanner Holster",
+        pt: "Coldre de Scanner Desgastado"
+    },
+    "Broken Safety Ladder": {
+        de: "Kaputte Sicherheitsleiter",
+        sr: "Покварене безбедносне мердевине",
+        fil: "Sirang Safety Ladder",
+        pt: "Escada de Segurança Quebrada"
+    },
+    "Missing Step Stool": {
+        de: "Fehlender Tritthocker",
+        sr: "Недостаје степеница",
+        fil: "Nawawalang Step Stool",
+        pt: "Banquinho Desaparecido"
+    },
+    "Unsecured Extension Cord": {
+        de: "Ungesichertes Verlängerungskabel",
+        sr: "Необезбеђен продужни кабл",
+        fil: "Hindi Naka-secure na Extension Cord",
+        pt: "Extensão Elétrica Não Segura"
+    },
+    "Charging Station Overload": {
+        de: "Ladestation überlastet",
+        sr: "Преоптерећена станица за пуњење",
+        fil: "Sobrang Karga ng Charging Station",
+        pt: "Estação de Carregamento Sobrecarregada"
+    },
+    "Dead Battery Pile": {
+        de: "Haufen leerer Batterien",
+        sr: "Гомила мртвих батерија",
+        fil: "Patay na Battery Pile",
+        pt: "Pilha de Baterias Descarregadas"
+    },
+
+    // === FIRE & EMERGENCY ===
+    "Blocked Fire Exit": {
+        de: "Blockierter Notausgang",
+        sr: "Блокиран противпожарни излаз",
+        fil: "Naka-block na Fire Exit",
+        pt: "Saída de Emergência Bloqueada"
+    },
+    "Fire Extinguisher Hidden": {
+        de: "Feuerlöscher versteckt",
+        sr: "Скривен апарат за гашење",
+        fil: "Nakatago ang Fire Extinguisher",
+        pt: "Extintor de Incêndio Escondido"
+    },
+    "Emergency Shower Blocked": {
+        de: "Notdusche blockiert",
+        sr: "Блокиран туш за хитне случајеве",
+        fil: "Naka-block ang Emergency Shower",
+        pt: "Chuveiro de Emergência Bloqueado"
+    },
+    "First Aid Kit Empty": {
+        de: "Erste-Hilfe-Kasten leer",
+        sr: "Празна кутија прве помоћи",
+        fil: "Walang Laman ang First Aid Kit",
+        pt: "Kit de Primeiros Socorros Vazio"
+    },
+    "AED Signage Covered": {
+        de: "AED-Beschilderung verdeckt",
+        sr: "Покривена AED сигнализација",
+        fil: "Natatakpan ang AED Signage",
+        pt: "Sinalização do DEA Coberta"
+    },
+
+    // === ERGONOMIC HAZARDS ===
+    "Overreaching Associate": {
+        de: "Mitarbeiter überstreckt sich",
+        sr: "Радник се превише истеже",
+        fil: "Sobrang Abot ng Associate",
+        pt: "Funcionário Esticando Demais"
+    },
+    "Improper Lifting Technique": {
+        de: "Falsche Hebetechnik",
+        sr: "Неправилна техника подизања",
+        fil: "Maling Paraan ng Pagbuhat",
+        pt: "Técnica de Levantamento Incorreta"
+    },
+    "Continuous Repetitive Motion": {
+        de: "Dauerhaft wiederholende Bewegung",
+        sr: "Непрестани понављајући покрет",
+        fil: "Tuloy-tuloy na Paulit-ulit na Galaw",
+        pt: "Movimento Repetitivo Contínuo"
+    },
+    "Standing Mat Missing": {
+        de: "Stehmatte fehlt",
+        sr: "Недостаје простирка за стајање",
+        fil: "Nawawalang Standing Mat",
+        pt: "Tapete Anti-fadiga Ausente"
+    },
+    "Keyboard at Wrong Height": {
+        de: "Tastatur auf falscher Höhe",
+        sr: "Тастатура на погрешној висини",
+        fil: "Mali ang Taas ng Keyboard",
+        pt: "Teclado na Altura Errada"
+    },
+
+    // === PEOPLE & BEHAVIOR ===
+    "Phone Walker on Floor": {
+        de: "Handyläufer auf der Fläche",
+        sr: "Особа гледа у телефон док хода",
+        fil: "Naglalakad Habang Naka-phone",
+        pt: "Pessoa Andando com Celular"
+    },
+    "Manager Speed Walk Mode": {
+        de: "Manager im Schnellgang-Modus",
+        sr: "Менаџер у брзом ходу",
+        fil: "Manager Speed Walk Mode",
+        pt: "Gerente em Modo Caminhada Rápida"
+    },
+    "New Hire Wrong Way Traffic": {
+        de: "Neuer Mitarbeiter falsche Richtung",
+        sr: "Нови радник иде погрешним путем",
+        fil: "Bagong Hire na Mali ang Daan",
+        pt: "Novo Funcionário no Sentido Errado"
+    },
+    "Peak Season Burnout Zone": {
+        de: "Peak-Season Burnout-Zone",
+        sr: "Зона сагоревања у пик сезони",
+        fil: "Peak Season Burnout Zone",
+        pt: "Zona de Esgotamento da Alta Temporada"
+    },
+    "Ambassador Training Cluster": {
+        de: "Ambassador-Trainingsgruppe",
+        sr: "Група за обуку амбасадора",
+        fil: "Ambassador Training Cluster",
+        pt: "Grupo de Treinamento de Embaixador"
+    },
+    "VTO Line Blocking Path": {
+        de: "VTO-Schlange blockiert Weg",
+        sr: "Ред за VTO блокира пут",
+        fil: "VTO Line na Humaharang sa Daan",
+        pt: "Fila de VTO Bloqueando Passagem"
+    },
+
+    // === OUTBOUND & SHIPPING ===
+    "Trailer Loaded Unevenly": {
+        de: "Anhänger ungleichmäßig beladen",
+        sr: "Неравномерно натоварена приколица",
+        fil: "Hindi Pantay ang Pagkakarga ng Trailer",
+        pt: "Trailer Carregado Desigualmente"
+    },
+    "Smalls Bag Landslide": {
+        de: "Smalls-Taschen-Erdrutsch",
+        sr: "Клизиште торби за ситнице",
+        fil: "Smalls Bag Landslide",
+        pt: "Deslizamento de Sacolas Pequenas"
+    },
+    "Rollers Not Locked": {
+        de: "Rollen nicht arretiert",
+        sr: "Ваљци нису закључани",
+        fil: "Hindi Naka-lock ang Rollers",
+        pt: "Roletes Não Travados"
+    },
+    "Cart Wall Collapse Risk": {
+        de: "Einsturzgefahr der Wagenwand",
+        sr: "Ризик од рушења зида колица",
+        fil: "Cart Wall Collapse Risk",
+        pt: "Risco de Colapso da Parede de Carrinhos"
+    },
+    "CPT Rush Hour Chaos": {
+        de: "CPT-Stoßzeit-Chaos",
+        sr: "Хаос у шпицу CPT",
+        fil: "CPT Rush Hour Chaos",
+        pt: "Caos na Hora do Pico CPT"
+    },
+    "Sortation System Jam": {
+        de: "Sortieranlage verstopft",
+        sr: "Застој система за сортирање",
+        fil: "Sortation System Jam",
+        pt: "Congestionamento do Sistema de Triagem"
+    },
+
+    // === COMPLIANCE & DOCUMENTATION ===
+    "Safety Audit Due Tomorrow": {
+        de: "Sicherheitsaudit morgen fällig",
+        sr: "Безбедносна ревизија сутра",
+        fil: "Safety Audit Bukas Na",
+        pt: "Auditoria de Segurança Amanhã"
+    },
+    "Training Expired Badge": {
+        de: "Schulungszertifikat abgelaufen",
+        sr: "Истекла обука на беџу",
+        fil: "Nag-expire ang Training Badge",
+        pt: "Crachá de Treinamento Expirado"
+    },
+    "PPE Checklist Skipped": {
+        de: "PPE-Checkliste übersprungen",
+        sr: "Прескочена PPE провера",
+        fil: "PPE Checklist Hindi Nasunod",
+        pt: "Lista de EPIs Pulada"
+    },
+    "Incident Near-Miss Unreported": {
+        de: "Near-Miss nicht gemeldet",
+        sr: "Непријављен инцидент",
+        fil: "Hindi Naiulat ang Near-Miss",
+        pt: "Quase-acidente Não Reportado"
+    },
+    "OSHA Log Update Pending": {
+        de: "OSHA-Protokoll-Update ausstehend",
+        sr: "Чека се ажурирање OSHA записника",
+        fil: "OSHA Log Update Pending",
+        pt: "Atualização do Registro OSHA Pendente"
+    },
+    "Lockout Tagout Forgotten": {
+        de: "Lockout/Tagout vergessen",
+        sr: "Заборављен Lockout/Tagout",
+        fil: "Nakalimutang Lockout Tagout",
+        pt: "Lockout/Tagout Esquecido"
+    }
+};
+
+// UI text translations
+const UI_TRANSLATIONS = {
+    fixed: {
+        en: "Fixed",
+        de: "Behoben",
+        sr: "Поправљено",
+        fil: "Naayos",
+        pt: "Corrigido"
+    },
+    translatedQuestion: {
+        en: "TRANSLATED QUESTION",
+        de: "ÜBERSETZTE FRAGE",
+        sr: "ПРЕВЕДЕНО ПИТАЊЕ",
+        fil: "ISINALIN NA TANONG",
+        pt: "PERGUNTA TRADUZIDA"
+    }
+};
+
+// Get translated hazard name
+function getTranslatedHazard(englishName, targetLang) {
+    if (targetLang === 'en') return englishName;
+    const translations = HAZARD_TRANSLATIONS[englishName];
+    if (translations && translations[targetLang]) {
+        return translations[targetLang];
+    }
+    return englishName; // Fallback to English
+}
+
+// Get UI text translation
+function getUIText(key, lang) {
+    const texts = UI_TRANSLATIONS[key];
+    if (texts && texts[lang]) {
+        return texts[lang];
+    }
+    return texts ? texts.en : key;
+}
+
+// Format hazard display with translation
+function formatHazardWithTranslation(englishName) {
+    const lang = GAME_LANGUAGE;
+    if (lang === 'en') {
+        return `${getUIText('fixed', lang)}: ${englishName}!`;
+    }
+
+    const translatedName = getTranslatedHazard(englishName, lang);
+    const config = LANGUAGE_CONFIG[lang] || LANGUAGE_CONFIG.en;
+
+    // Show both English and translation
+    return `${getUIText('fixed', lang)}: ${englishName}!\n${config.flag} ${getUIText('translatedQuestion', lang)}:\n${translatedName}`;
+}
+
 function shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -5078,7 +5673,10 @@ function tryInteract() {
                 "hazard",
                 { hazardName: h.data.name }
             ).then(tip => {
-                if (GAME.genId === currentGen) showDialog(`Fixed: ${h.data.name}!\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
+                if (GAME.genId === currentGen) {
+                    const hazardDisplay = formatHazardWithTranslation(h.data.name);
+                    showDialog(`${hazardDisplay}\n${tip}`, "Simon Unglaube", GFX.simonFace, true);
+                }
             });
             return true;
         }

@@ -337,7 +337,31 @@
     </div>
 
     <div style="text-align: center; margin: 60px 0;">
-        <a href="AMZLWHSQUEST122.html" class="play-btn">▶ START SHIFT</a>
+        <!-- LANGUAGE SELECTOR -->
+        <div style="margin-bottom: 25px;">
+            <label style="color: var(--neon-cyan); font-family: 'Press Start 2P'; font-size: 0.7rem; display: block; margin-bottom: 10px;">
+                🌐 SELECT LANGUAGE / SPRACHE / JEZIK / WIKA / IDIOMA
+            </label>
+            <select id="language-select" style="
+                background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+                color: var(--gold-accent);
+                border: 2px solid var(--neon-cyan);
+                border-radius: 4px;
+                font-family: 'VT323', monospace;
+                font-size: 1.2rem;
+                padding: 12px 20px;
+                cursor: pointer;
+                min-width: 280px;
+                text-align: center;
+            ">
+                <option value="en">🇬🇧 English</option>
+                <option value="de">🇩🇪 Deutsch (German)</option>
+                <option value="sr">🇷🇸 Srpski (Serbian)</option>
+                <option value="fil">🇵🇭 Filipino</option>
+                <option value="pt">🇵🇹 Português (Portuguese)</option>
+            </select>
+        </div>
+        <a href="#" onclick="startGame(); return false;" class="play-btn">▶ START SHIFT</a>
         <p style="color: #aaa; font-size: 0.8rem; margin-top: 15px;">(INPUT: KEYBOARD | REWARD: PIZZA PARTY)</p>
     </div>
 
@@ -955,6 +979,20 @@
             painter(sCtx);
             div.appendChild(spriteCanvas);
         });
+    }
+
+    // --- 6. LANGUAGE SELECTION & GAME START ---
+    function startGame() {
+        const lang = document.getElementById('language-select').value;
+        localStorage.setItem('amzl_language', lang);
+        console.log('Language set to:', lang);
+        window.location.href = 'AMZLWHSQUEST122.html';
+    }
+
+    // Restore previously selected language
+    const savedLang = localStorage.getItem('amzl_language');
+    if (savedLang) {
+        document.getElementById('language-select').value = savedLang;
     }
 
     fetchAnnouncement();
