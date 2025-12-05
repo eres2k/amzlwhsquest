@@ -999,24 +999,26 @@ function generateAssets() {
             ctx.beginPath(); ctx.arc(7, 7, 2, 0, Math.PI*2); ctx.fill();
         })
     };
-    // IMPROVED SIMON SPRITE
+    // IMPROVED SIMON SPRITE - Short brown hair, glasses, brown beard
     GFX.simon = c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
         ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
-        // Hair with detail
-        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(3,0,10,5);
-        ctx.fillStyle = '#2d2d2d'; ctx.fillRect(4,1,8,3);
-        ctx.fillStyle = '#3d3d3d'; ctx.fillRect(5,1,3,2); // Highlight
+        // Short brown hair
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(3,0,10,4);
+        ctx.fillStyle = '#6b4423'; ctx.fillRect(4,1,8,2);
+        ctx.fillStyle = '#7a5030'; ctx.fillRect(5,1,3,1); // Highlight
         // Face
-        ctx.fillStyle = '#d4a574'; ctx.fillRect(4,5,8,5);
-        ctx.fillStyle = '#e8c49a'; ctx.fillRect(5,6,6,3);
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(4,4,8,6);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(5,5,6,4);
         // Glasses
-        ctx.fillStyle = '#000'; ctx.fillRect(4,6,3,2); ctx.fillRect(9,6,3,2);
-        ctx.fillStyle = '#87ceeb'; ctx.fillRect(5,6,1,1); ctx.fillRect(10,6,1,1);
-        ctx.fillStyle = '#475569'; ctx.fillRect(7,7,2,1);
-        // Serious mouth
-        ctx.fillStyle = '#8b6b5a'; ctx.fillRect(6,8,4,1);
+        ctx.fillStyle = '#000'; ctx.fillRect(4,5,3,2); ctx.fillRect(9,5,3,2);
+        ctx.fillStyle = '#87ceeb'; ctx.fillRect(5,5,1,1); ctx.fillRect(10,5,1,1);
+        ctx.fillStyle = '#475569'; ctx.fillRect(7,6,2,1);
+        // Brown beard
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(4,8,8,2);
+        ctx.fillStyle = '#6b4423'; ctx.fillRect(5,8,6,2);
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(6,9,4,1);
         // Gold WHS jacket
         ctx.fillStyle = '#b45309'; ctx.fillRect(2,10,12,6);
         ctx.fillStyle = '#d97706'; ctx.fillRect(3,10,10,4);
@@ -1029,7 +1031,7 @@ function generateAssets() {
     });
     GFX.simonFace = c(32,32, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simon,0,0,16,16,0,0,32,32); });
 
-    // ENHANCED SIMON BOSS - 32x32 detailed sprite
+    // ENHANCED SIMON BOSS - 32x32 detailed sprite - Short brown hair, glasses, brown beard
     GFX.simonBoss = c(32,32, ctx => {
         // Dark background aura
         const aura = ctx.createRadialGradient(16, 16, 4, 16, 16, 16);
@@ -1040,27 +1042,30 @@ function generateAssets() {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.4)';
         ctx.beginPath(); ctx.ellipse(16, 30, 10, 3, 0, 0, Math.PI*2); ctx.fill();
-        // Hair
-        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(8,2,16,8);
-        ctx.fillStyle = '#2d2d2d'; ctx.fillRect(10,3,12,5);
+        // Short brown hair
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(8,2,16,6);
+        ctx.fillStyle = '#6b4423'; ctx.fillRect(10,3,12,4);
+        ctx.fillStyle = '#7a5030'; ctx.fillRect(12,3,4,2); // Highlight
         // Face
-        ctx.fillStyle = '#c4956a'; ctx.fillRect(8,8,16,10);
-        ctx.fillStyle = '#d4a574'; ctx.fillRect(10,10,12,6);
-        // Angry eyebrows
-        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(10,10,4,2); ctx.fillRect(18,10,4,2);
+        ctx.fillStyle = '#c4956a'; ctx.fillRect(8,7,16,11);
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(10,9,12,7);
+        // Angry brown eyebrows
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(10,9,4,2); ctx.fillRect(18,9,4,2);
         // Glasses (glowing red)
-        ctx.fillStyle = '#1e293b'; ctx.fillRect(10,12,5,4); ctx.fillRect(17,12,5,4);
-        ctx.fillStyle = '#ef4444'; ctx.fillRect(11,13,3,2); ctx.fillRect(18,13,3,2);
-        ctx.fillStyle = '#475569'; ctx.fillRect(15,14,2,1);
-        // Stern mouth
-        ctx.fillStyle = '#5c4033'; ctx.fillRect(12,17,8,2);
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(10,11,5,4); ctx.fillRect(17,11,5,4);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(11,12,3,2); ctx.fillRect(18,12,3,2);
+        ctx.fillStyle = '#475569'; ctx.fillRect(15,13,2,1);
+        // Brown beard
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(8,16,16,4);
+        ctx.fillStyle = '#6b4423'; ctx.fillRect(10,16,12,3);
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(12,18,8,2);
         // Gold WHS uniform
-        ctx.fillStyle = '#92400e'; ctx.fillRect(6,18,20,14);
-        ctx.fillStyle = '#b45309'; ctx.fillRect(8,18,16,10);
-        ctx.fillStyle = '#d97706'; ctx.fillRect(10,20,12,6);
+        ctx.fillStyle = '#92400e'; ctx.fillRect(6,19,20,13);
+        ctx.fillStyle = '#b45309'; ctx.fillRect(8,19,16,10);
+        ctx.fillStyle = '#d97706'; ctx.fillRect(10,21,12,6);
         // Large badge
-        ctx.fillStyle = '#fff'; ctx.fillRect(11,22,10,4);
-        ctx.fillStyle = '#dc2626'; ctx.fillRect(13,23,6,2);
+        ctx.fillStyle = '#fff'; ctx.fillRect(11,23,10,4);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(13,24,6,2);
     });
 
     // IMPROVED OPS MANAGER NPC
@@ -4010,6 +4015,9 @@ function updateYardLevel() {
     const y = GAME.yard;
     GAME.player.x = y.playerX; GAME.player.y = y.playerY;
 
+    // Decrement invincibility frames (fixes permanent invincibility bug)
+    if (GAME.player.iframe > 0) GAME.player.iframe--;
+
     // Check if player is in castle section
     const inCastle = y.playerY < y.castleStart;
     if (inCastle && !y.inCastle) {
@@ -4675,6 +4683,11 @@ function updateEntities() {
             if (Math.random() < 0.02) e.dir = Math.floor(Math.random()*4);
             let s = 0.3;
             if (e.dir===0) e.y-=s; else if(e.dir===1) e.y+=s; else if(e.dir===2) e.x-=s; else e.x+=s;
+            // Slow OPS respawn - assocs slowly turn back into OPS managers (makes warehouse more challenging)
+            if (Math.random() < 0.0008) {
+                e.type = 'ops';
+                spawnFloatingText(e.x, e.y - 10, "PROMOTED!", "#ff4444");
+            }
         }
         if (e.type === 'runner') {
             if (Math.random() < 0.05) e.dir = Math.floor(Math.random()*4);
