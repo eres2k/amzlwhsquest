@@ -3180,8 +3180,8 @@ function handleAction() {
     else if (GAME.state === 'BEZOS_ESCAPE') {
         // Handle escape scene dialogue advances
         const scene = GAME.escapeScene;
-        if (scene && scene.phase === 4) {
-            // During dialogue phase, advance to next dialogue
+        if (scene && scene.phase === 7) {
+            // During dialogue phase (phase 7), advance to next dialogue
             advanceBezosEscapeDialogue();
         }
     }
@@ -4104,7 +4104,7 @@ function update() {
         return;
     }
 
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM', 'BEZOS_ESCAPE'].includes(GAME.state)) return;
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM', 'BEZOS_ESCAPE', 'BEZOS_ESCAPE_MECHA_LINE', 'BEZOS_ESCAPE_JEFF_LINE', 'BEZOS_ESCAPE_DIALOGUE'].includes(GAME.state)) return;
 
     // Bezos victory screen
     if (GAME.state === 'BEZOS_WIN') {
@@ -4743,18 +4743,26 @@ function updateMechaBattle() {
             }
 
             if (m.hp <= 0) {
-                // Trigger Bezos escape sequence instead of going directly to credits
+                // Trigger Bezos escape sequence - show Mecha Jeff's defeat one-liner first
                 GAME.state = 'BEZOS_ESCAPE';
                 GAME.stateTimer = 0;
                 GAME.escapeScene = {
-                    phase: 0, // 0=mecha explodes, 1=transform back, 2=run to rocket, 3=rocket launch, 4=dialogue, 5=simon joins
+                    // New phases: 0=mecha sparks/shakes, 1=mecha one-liner, 2=mecha explodes,
+                    // 3=slow transform, 4=jeff one-liner, 5=throne room + run to rocket,
+                    // 6=rocket launch, 7=escape dialogue, 8=simon joins
+                    phase: 0,
                     jeffX: m.x + 32,
                     jeffY: m.y + 32,
-                    rocketX: canvas.width - 50,
-                    rocketY: canvas.height - 20,
+                    startJeffX: m.x + 32,
+                    startJeffY: m.y + 32,
+                    rocketX: canvas.width - 60,
+                    rocketY: canvas.height - 90,
                     rocketLaunched: false,
                     dialogueStep: 0,
-                    simonJoined: false
+                    simonJoined: false,
+                    phaseTimer: 0,
+                    transformProgress: 0,
+                    explosionParticles: []
                 };
                 document.getElementById('boss-hud').style.display = 'none';
                 MusicSys.stop();
@@ -5264,9 +5272,31 @@ function closeDialog() {
         return;
     }
 
+    // Handle Mecha Jeff's defeat one-liner (after phase 0)
+    if (GAME.state === 'BEZOS_ESCAPE_MECHA_LINE' && GAME.escapeScene) {
+        // After Mecha Jeff's one-liner, proceed to explosion (phase 2)
+        GAME.state = 'BEZOS_ESCAPE';
+        GAME.escapeScene.phase = 2;
+        GAME.escapeScene.phaseTimer = 0;
+        GAME.escapeScene.explosionParticles = [];
+        return;
+    }
+
+    // Handle Jeff's one-liner after transformation (after phase 3)
+    if (GAME.state === 'BEZOS_ESCAPE_JEFF_LINE' && GAME.escapeScene) {
+        // After Jeff's one-liner, proceed to running to rocket (phase 5)
+        GAME.state = 'BEZOS_ESCAPE';
+        GAME.escapeScene.phase = 5;
+        GAME.escapeScene.phaseTimer = 0;
+        // Reset Jeff position for the run
+        GAME.escapeScene.jeffX = GAME.escapeScene.startJeffX || canvas.width / 2;
+        GAME.escapeScene.jeffY = canvas.height - 70;
+        return;
+    }
+
     // Handle BEZOS_ESCAPE dialogue continuation (Simon's congratulations)
-    if (GAME.state === 'BEZOS_ESCAPE' && GAME.escapeScene && GAME.escapeScene.phase === 5) {
-        // Continue phase 5 animation after Simon's dialog
+    if (GAME.state === 'BEZOS_ESCAPE' && GAME.escapeScene && GAME.escapeScene.phase === 8) {
+        // Continue phase 8 animation after Simon's dialog
         GAME.stateTimer = GAME.escapeScene.phaseTimer || 0;
         return;
     }
@@ -6531,7 +6561,21 @@ function drawMechaTransform() {
 }
 
 // === BEZOS ESCAPE SEQUENCE ===
-// Hardcoded snarky dialogue exchange (AI Gemini first, then player response)
+// Mecha Jeff's defeat one-liner (shown right after defeat)
+const MECHA_JEFF_DEFEAT_LINE = {
+    speaker: "Mecha Jeff",
+    portrait: "mechaJeff",
+    text: "CRITICAL... SYSTEM... FAILURE! But you haven't won yet, worker ant! My TRUE form awaits..."
+};
+
+// Jeff Bezos one-liner after transforming back (shown after de-mecha transformation)
+const JEFF_TRANSFORM_LINE = {
+    speaker: "Jeff Bezos",
+    portrait: "jeffYard",
+    text: "Ugh! That mecha suit cost more than your entire BLOODLINE! No matter... I have a BACKUP plan!"
+};
+
+// Snarky dialogue exchange during/after rocket escape
 const BEZOS_ESCAPE_DIALOGUES = [
     {
         speaker: "Jeff Bezos",
@@ -6566,83 +6610,150 @@ function updateBezosEscape() {
     const scene = GAME.escapeScene;
     if (!scene) return;
 
-    const t = GAME.stateTimer;
+    scene.phaseTimer = (scene.phaseTimer || 0) + 1;
+    const t = scene.phaseTimer;
 
-    // Phase 0: Mecha explodes (frames 0-120)
-    if (scene.phase === 0 && t >= 120) {
-        scene.phase = 1;
-        scene.phaseTimer = 0;
-        AudioSys.sfx.bossHit();
-    }
-    // Phase 1: Transform back to regular Jeff (frames 120-240)
-    else if (scene.phase === 1) {
-        scene.phaseTimer = (scene.phaseTimer || 0) + 1;
-        if (scene.phaseTimer >= 120) {
-            scene.phase = 2;
+    // Phase 0: Mecha sparks and shakes (90 frames), then show Mecha Jeff's one-liner
+    if (scene.phase === 0) {
+        if (t >= 90) {
+            scene.phase = 1;
             scene.phaseTimer = 0;
+            // Show Mecha Jeff's defeat one-liner
+            GAME.dialogBackgroundState = 'BEZOS_ESCAPE';
+            showDialog(MECHA_JEFF_DEFEAT_LINE.text, MECHA_JEFF_DEFEAT_LINE.speaker, GFX.mechaJeff, true);
+            GAME.nextState = 'BEZOS_ESCAPE_MECHA_LINE';
         }
     }
-    // Phase 2: Jeff runs to rocket (frames 240-360)
+    // Phase 1: Waiting for Mecha Jeff dialogue to finish (handled by dialogue system)
+    // Phase 2: Mecha explodes dramatically (200 frames)
     else if (scene.phase === 2) {
-        scene.phaseTimer = (scene.phaseTimer || 0) + 1;
-        // Move Jeff toward rocket
-        const targetX = canvas.width - 60;
-        const targetY = canvas.height - 80;
-        scene.jeffX += (targetX - scene.jeffX) * 0.05;
-        scene.jeffY += (targetY - scene.jeffY) * 0.05;
+        // Generate explosion particles
+        if (t < 60 && t % 5 === 0) {
+            for (let i = 0; i < 5; i++) {
+                scene.explosionParticles.push({
+                    x: scene.jeffX + (Math.random() - 0.5) * 40,
+                    y: scene.jeffY + (Math.random() - 0.5) * 40,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6 - 2,
+                    life: 60 + Math.random() * 40,
+                    color: Math.random() > 0.5 ? '#ff9900' : '#dc2626',
+                    size: 4 + Math.random() * 6
+                });
+            }
+            if (t % 15 === 0) AudioSys.sfx.bossHit();
+        }
+        // Update particles
+        scene.explosionParticles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.1;
+            p.life--;
+            p.size *= 0.98;
+        });
+        scene.explosionParticles = scene.explosionParticles.filter(p => p.life > 0);
 
-        if (scene.phaseTimer >= 120) {
+        if (t >= 200) {
             scene.phase = 3;
+            scene.phaseTimer = 0;
+            scene.transformProgress = 0;
+        }
+    }
+    // Phase 3: Slow transformation back to regular Jeff (250 frames)
+    else if (scene.phase === 3) {
+        scene.transformProgress = Math.min(1, t / 220);
+
+        // Steam/smoke particles during transformation
+        if (t % 8 === 0 && t < 180) {
+            scene.explosionParticles.push({
+                x: scene.jeffX + (Math.random() - 0.5) * 30,
+                y: scene.jeffY,
+                vx: (Math.random() - 0.5) * 1,
+                vy: -1 - Math.random() * 2,
+                life: 40 + Math.random() * 30,
+                color: '#888888',
+                size: 8 + Math.random() * 8
+            });
+        }
+        // Update particles
+        scene.explosionParticles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life--;
+            p.size *= 0.97;
+        });
+        scene.explosionParticles = scene.explosionParticles.filter(p => p.life > 0);
+
+        if (t >= 250) {
+            scene.phase = 4;
+            scene.phaseTimer = 0;
+            // Show Jeff's one-liner after transformation
+            GAME.dialogBackgroundState = 'BEZOS_ESCAPE';
+            showDialog(JEFF_TRANSFORM_LINE.text, JEFF_TRANSFORM_LINE.speaker, GFX.jeffYard, true);
+            GAME.nextState = 'BEZOS_ESCAPE_JEFF_LINE';
+        }
+    }
+    // Phase 4: Waiting for Jeff's dialogue to finish (handled by dialogue system)
+    // Phase 5: Show throne room backdrop, Jeff runs to rocket (200 frames)
+    else if (scene.phase === 5) {
+        // Move Jeff toward rocket position
+        const targetX = canvas.width - 80;
+        const targetY = canvas.height - 70;
+        scene.jeffX += (targetX - scene.jeffX) * 0.03;
+        scene.jeffY += (targetY - scene.jeffY) * 0.03;
+
+        if (t >= 200) {
+            scene.phase = 6;
             scene.phaseTimer = 0;
             AudioSys.sfx.bossIntro();
         }
     }
-    // Phase 3: Rocket launches (frames 360-480)
-    else if (scene.phase === 3) {
-        scene.phaseTimer = (scene.phaseTimer || 0) + 1;
-        if (!scene.rocketLaunched && scene.phaseTimer > 60) {
+    // Phase 6: Rocket launches (250 frames)
+    else if (scene.phase === 6) {
+        if (!scene.rocketLaunched && t > 40) {
             scene.rocketLaunched = true;
+            scene.jeffVisible = false; // Jeff is now in the rocket
         }
         if (scene.rocketLaunched) {
-            scene.rocketY -= 3 + scene.phaseTimer * 0.05; // Accelerating rocket
+            // Accelerating rocket with smooth curve
+            scene.rocketY -= 1.5 + (t - 40) * 0.04;
         }
-        if (scene.phaseTimer >= 180) {
-            scene.phase = 4;
+        if (t >= 250) {
+            scene.phase = 7;
             scene.dialogueStep = 0;
             scene.phaseTimer = 0;
-            // Start dialogue sequence
+            // Start snarky dialogue exchange
             showBezosEscapeDialogue(0);
         }
     }
-    // Phase 4: Dialogue exchange (handled by dialogue system)
-    // Phase 5: Simon joins player
-    else if (scene.phase === 5) {
-        scene.phaseTimer = (scene.phaseTimer || 0) + 1;
+    // Phase 7: Dialogue exchange (handled by dialogue system)
+    // Phase 8: Simon joins player from warehouse entrance
+    else if (scene.phase === 8) {
         if (!scene.simonJoined) {
             scene.simonJoined = true;
-            scene.simonX = -20;
-            scene.simonY = canvas.height - 40;
+            scene.simonX = -30;
+            scene.simonY = canvas.height - 45;
+            MusicSys.play('victory');
         }
         // Simon walks in from left
-        if (scene.simonX < canvas.width / 2 - 40) {
-            scene.simonX += 2;
+        if (scene.simonX < canvas.width / 2 - 50) {
+            scene.simonX += 1.5;
         }
         // After Simon arrives and some time passes, go to credits
-        if (scene.phaseTimer >= 300) {
+        if (t >= 350) {
             GAME.state = 'CREDITS';
             GAME.stateTimer = 0;
             GAME.creditsType = 'mecha';
-            MusicSys.play('victory');
         }
     }
 }
 
 function showBezosEscapeDialogue(index) {
     if (index >= BEZOS_ESCAPE_DIALOGUES.length) {
-        // All dialogues done, move to Simon joining
-        GAME.escapeScene.phase = 5;
+        // All dialogues done, move to Simon joining (phase 8)
+        GAME.escapeScene.phase = 8;
         GAME.escapeScene.phaseTimer = 0;
         // Show Simon's congratulations
+        GAME.dialogBackgroundState = 'BEZOS_ESCAPE';
         showDialog(
             'OUTSTANDING! You actually did it! You defeated the corporate overlord himself! ' +
             'This calls for a celebration... and possibly a promotion. ' +
@@ -6667,6 +6778,7 @@ function showBezosEscapeDialogue(index) {
         speaker = GAME.selectedChar;
     }
 
+    GAME.dialogBackgroundState = 'BEZOS_ESCAPE';
     showDialog(dialogue.text, speaker, portrait, true);
     GAME.escapeScene.dialogueStep = index;
     GAME.nextState = 'BEZOS_ESCAPE_DIALOGUE'; // Special state for escape dialogue continuation
@@ -6690,201 +6802,329 @@ function drawBezosEscape() {
     const scene = GAME.escapeScene;
     if (!scene) return;
 
-    // Dark dramatic background with stars
-    ctx.fillStyle = '#050510';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const pt = scene.phaseTimer || 0;
 
-    // Starfield
-    for (let i = 0; i < 50; i++) {
-        const starX = (i * 73 + t * 0.2) % canvas.width;
-        const starY = (i * 41) % canvas.height;
-        const brightness = 0.3 + Math.sin(t * 0.05 + i) * 0.3;
-        ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
-        ctx.fillRect(starX, starY, 1, 1);
+    // Draw throne room backdrop for phases 0-6 (before and during rocket escape)
+    if (scene.phase <= 6) {
+        drawThroneRoomBackdrop(t);
+    } else {
+        // After rocket escapes, switch to victory scene
+        drawVictoryBackdrop(t);
     }
 
-    // Ground platform
-    ctx.fillStyle = '#1a1f2e';
-    ctx.fillRect(0, canvas.height - 30, canvas.width, 30);
-    ctx.fillStyle = '#2d3748';
-    ctx.fillRect(0, canvas.height - 30, canvas.width, 5);
-
-    // Phase 0: Mecha explodes
+    // Phase 0: Mecha sparks and shakes (defeated but still standing)
     if (scene.phase === 0) {
-        const progress = t / 120;
+        const shake = Math.sin(pt * 0.5) * (4 + pt * 0.05);
 
-        // Explosion particles
-        for (let i = 0; i < 20; i++) {
-            const angle = (i / 20) * Math.PI * 2;
-            const dist = progress * 80;
-            const px = scene.jeffX + Math.cos(angle + t * 0.1) * dist;
-            const py = scene.jeffY + Math.sin(angle + t * 0.1) * dist;
-            const size = 8 - progress * 6;
-            ctx.fillStyle = i % 2 === 0 ? '#ff9900' : '#dc2626';
-            ctx.globalAlpha = 1 - progress;
-            ctx.fillRect(px - size/2, py - size/2, size, size);
+        // Warning sparks flying off
+        for (let i = 0; i < 8; i++) {
+            const sparkAngle = (i / 8) * Math.PI * 2 + pt * 0.1;
+            const sparkDist = 20 + Math.sin(pt * 0.3 + i) * 10;
+            const sx = scene.jeffX + Math.cos(sparkAngle) * sparkDist;
+            const sy = scene.jeffY + Math.sin(sparkAngle) * sparkDist;
+            ctx.fillStyle = pt % 4 < 2 ? '#ff9900' : '#ffff00';
+            ctx.globalAlpha = 0.6 + Math.sin(pt * 0.5 + i) * 0.4;
+            ctx.fillRect(sx - 2, sy - 2, 4, 4);
         }
         ctx.globalAlpha = 1;
 
-        // Mecha breaking apart
-        if (progress < 0.5) {
-            const shake = (Math.random() - 0.5) * 10 * progress;
-            ctx.save();
-            ctx.translate(scene.jeffX + shake, scene.jeffY + shake);
-            ctx.globalAlpha = 1 - progress * 2;
+        // Damaged Mecha Jeff shaking
+        ctx.save();
+        ctx.translate(scene.jeffX + shake, scene.jeffY);
+        // Flickering/damage effect
+        if (pt % 6 < 4) {
+            ctx.globalAlpha = 0.8;
             ctx.drawImage(GFX.mechaJeff, -32, -32);
-            ctx.restore();
+        }
+        ctx.restore();
+
+        // Damage indicators
+        ctx.fillStyle = '#ff4444';
+        ctx.font = '12px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('CRITICAL DAMAGE', canvas.width / 2, 30);
+        ctx.fillStyle = '#ff9900';
+        ctx.font = '8px "Press Start 2P"';
+        const warningFlash = pt % 30 < 15 ? 'WARNING' : 'SYSTEM FAILURE';
+        ctx.fillText(warningFlash, canvas.width / 2, 48);
+    }
+    // Phase 1: Waiting for Mecha dialogue (still show damaged mecha)
+    else if (scene.phase === 1) {
+        const shake = Math.sin(pt * 0.3) * 3;
+        ctx.save();
+        ctx.translate(scene.jeffX + shake, scene.jeffY);
+        ctx.globalAlpha = 0.9;
+        ctx.drawImage(GFX.mechaJeff, -32, -32);
+        ctx.restore();
+
+        // Continuous sparks
+        for (let i = 0; i < 5; i++) {
+            const sx = scene.jeffX + (Math.random() - 0.5) * 50;
+            const sy = scene.jeffY + (Math.random() - 0.5) * 50;
+            ctx.fillStyle = Math.random() > 0.5 ? '#ff9900' : '#ffff00';
+            ctx.globalAlpha = 0.7;
+            ctx.fillRect(sx - 1, sy - 1, 3, 3);
+        }
+        ctx.globalAlpha = 1;
+    }
+    // Phase 2: Mecha explodes dramatically
+    else if (scene.phase === 2) {
+        const progress = Math.min(1, pt / 180);
+
+        // Explosion core
+        if (pt < 100) {
+            const coreSize = 30 + progress * 80;
+            const coreGrad = ctx.createRadialGradient(scene.jeffX, scene.jeffY, 0, scene.jeffX, scene.jeffY, coreSize);
+            coreGrad.addColorStop(0, 'rgba(255, 255, 255, ' + (1 - progress) + ')');
+            coreGrad.addColorStop(0.3, 'rgba(255, 200, 50, ' + (0.8 - progress * 0.5) + ')');
+            coreGrad.addColorStop(0.6, 'rgba(255, 100, 0, ' + (0.6 - progress * 0.4) + ')');
+            coreGrad.addColorStop(1, 'rgba(200, 0, 0, 0)');
+            ctx.fillStyle = coreGrad;
+            ctx.beginPath();
+            ctx.arc(scene.jeffX, scene.jeffY, coreSize, 0, Math.PI * 2);
+            ctx.fill();
         }
 
-        // Flash effect
-        if (t % 10 < 3) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        // Draw explosion particles
+        scene.explosionParticles.forEach(p => {
+            ctx.globalAlpha = Math.min(1, p.life / 30);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+        });
+        ctx.globalAlpha = 1;
+
+        // Screen flash
+        if (pt < 30 && pt % 8 < 4) {
+            ctx.fillStyle = 'rgba(255, 255, 255, ' + (0.6 - pt * 0.02) + ')';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Mecha fading out (first half only)
+        if (pt < 60) {
+            ctx.save();
+            ctx.translate(scene.jeffX, scene.jeffY);
+            ctx.globalAlpha = Math.max(0, 1 - pt / 50);
+            const scale = 1 + pt * 0.01;
+            ctx.scale(scale, scale);
+            ctx.drawImage(GFX.mechaJeff, -32, -32);
+            ctx.restore();
         }
 
         // Text
         ctx.fillStyle = '#ff4444';
         ctx.font = '14px "Press Start 2P"';
         ctx.textAlign = 'center';
-        ctx.fillText('SYSTEM FAILURE', canvas.width / 2, 40);
-        ctx.fillStyle = '#ff9900';
-        ctx.font = '10px "Press Start 2P"';
-        ctx.fillText('MECHA DESTROYED', canvas.width / 2, 60);
-    }
-    // Phase 1: Transform back to regular Jeff
-    else if (scene.phase === 1) {
-        const progress = scene.phaseTimer / 120;
+        ctx.fillText('MECHA DESTROYED', canvas.width / 2, 30);
 
-        // Smoke/steam effect
-        for (let i = 0; i < 10; i++) {
-            const smokeY = scene.jeffY - 20 - i * 10 - scene.phaseTimer * 0.5;
-            const smokeX = scene.jeffX + Math.sin(t * 0.1 + i) * 10;
-            ctx.fillStyle = `rgba(100, 100, 100, ${0.5 - progress * 0.3 - i * 0.04})`;
-            ctx.beginPath();
-            ctx.arc(smokeX, smokeY, 8 + i * 2, 0, Math.PI * 2);
-            ctx.fill();
+        if (pt > 100) {
+            ctx.fillStyle = '#ffcc00';
+            ctx.font = '10px "Press Start 2P"';
+            ctx.fillText('FORM DESTABILIZING...', canvas.width / 2, 50);
         }
+    }
+    // Phase 3: Slow transformation back to regular Jeff
+    else if (scene.phase === 3) {
+        const progress = scene.transformProgress || 0;
 
-        // Morphing sprites
+        // Transformation energy field
+        const fieldSize = 50 - progress * 20;
+        const fieldGrad = ctx.createRadialGradient(scene.jeffX, scene.jeffY, 0, scene.jeffX, scene.jeffY, fieldSize);
+        fieldGrad.addColorStop(0, 'rgba(100, 200, 255, ' + (0.3 - progress * 0.2) + ')');
+        fieldGrad.addColorStop(0.5, 'rgba(50, 150, 255, ' + (0.2 - progress * 0.15) + ')');
+        fieldGrad.addColorStop(1, 'rgba(0, 100, 200, 0)');
+        ctx.fillStyle = fieldGrad;
+        ctx.beginPath();
+        ctx.arc(scene.jeffX, scene.jeffY, fieldSize, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Steam/smoke particles
+        scene.explosionParticles.forEach(p => {
+            ctx.globalAlpha = Math.min(0.6, p.life / 40);
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+
+        // Morphing sprites with smooth transition
         ctx.save();
         ctx.translate(scene.jeffX, scene.jeffY);
 
-        if (progress < 0.5) {
-            ctx.globalAlpha = 1 - progress * 2;
+        // Mecha fading out
+        if (progress < 0.6) {
+            ctx.globalAlpha = Math.max(0, 1 - progress * 1.8);
+            const mechaScale = 1 - progress * 0.3;
+            ctx.scale(mechaScale, mechaScale);
             ctx.drawImage(GFX.mechaJeff, -32, -32);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.translate(scene.jeffX, scene.jeffY);
         }
-        ctx.globalAlpha = progress;
-        ctx.drawImage(GFX.jeffYard, -24, -24);
+
+        // Jeff fading in
+        if (progress > 0.3) {
+            ctx.globalAlpha = Math.min(1, (progress - 0.3) / 0.6);
+            const jeffScale = 0.7 + progress * 0.3;
+            ctx.scale(jeffScale, jeffScale);
+            ctx.drawImage(GFX.jeffYard, -24, -24);
+        }
         ctx.restore();
 
-        // Text
+        // Text progression
         ctx.fillStyle = '#22d3ee';
         ctx.font = '12px "Press Start 2P"';
         ctx.textAlign = 'center';
-        ctx.fillText('REVERTING...', canvas.width / 2, 40);
+        if (progress < 0.3) {
+            ctx.fillText('REVERTING...', canvas.width / 2, 30);
+        } else if (progress < 0.7) {
+            ctx.fillText('TRANSFORMATION...', canvas.width / 2, 30);
+        } else {
+            ctx.fillStyle = '#ff9900';
+            ctx.fillText('BEZOS RETURNS!', canvas.width / 2, 30);
+        }
     }
-    // Phase 2: Jeff runs to rocket
-    else if (scene.phase === 2) {
-        // Draw rocket on ground
-        ctx.drawImage(GFX.escapeRocket, canvas.width - 70, canvas.height - 90);
+    // Phase 4: Waiting for Jeff's dialogue
+    else if (scene.phase === 4) {
+        // Jeff standing (post-transformation)
+        ctx.drawImage(GFX.jeffYard, scene.jeffX - 24, scene.jeffY - 24);
+
+        // Residual steam
+        for (let i = 0; i < 3; i++) {
+            const smokeX = scene.jeffX + Math.sin(t * 0.05 + i * 2) * 15;
+            const smokeY = scene.jeffY - 30 - i * 12;
+            ctx.fillStyle = `rgba(150, 150, 150, ${0.2 - i * 0.05})`;
+            ctx.beginPath();
+            ctx.arc(smokeX, smokeY, 6 + i * 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    // Phase 5: Jeff runs to rocket (throne room with rocket visible)
+    else if (scene.phase === 5) {
+        // Draw rocket on platform near throne
+        ctx.drawImage(GFX.escapeRocket, scene.rocketX, scene.rocketY);
+
+        // "SECRET ESCAPE POD" label
+        ctx.fillStyle = '#ff9900';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('ESCAPE POD', scene.rocketX + 16, scene.rocketY - 8);
 
         // Jeff running animation
-        const runFrame = Math.floor(scene.phaseTimer / 10) % 2;
+        const runFrame = Math.floor(pt / 8) % 2;
         ctx.save();
-        ctx.translate(scene.jeffX, scene.jeffY + (runFrame * 2));
+        ctx.translate(scene.jeffX, scene.jeffY + (runFrame * 3));
+        // Face right (toward rocket)
+        ctx.scale(-1, 1);
         ctx.drawImage(GFX.jeffYard, -24, -24);
         ctx.restore();
+
+        // Running dust clouds
+        if (pt % 12 === 0) {
+            ctx.fillStyle = 'rgba(150, 150, 150, 0.4)';
+            ctx.beginPath();
+            ctx.arc(scene.jeffX - 20, scene.jeffY + 20, 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
 
         // Text
         ctx.fillStyle = '#fbbf24';
         ctx.font = '10px "Press Start 2P"';
         ctx.textAlign = 'center';
-        ctx.fillText('RETREAT!', canvas.width / 2, 40);
-        ctx.fillStyle = '#ff9900';
-        ctx.font = '8px monospace';
-        ctx.fillText('"Time to pivot to space!"', canvas.width / 2, 55);
+        ctx.fillText('TACTICAL RETREAT!', canvas.width / 2, 30);
+        ctx.fillStyle = '#888';
+        ctx.font = '7px monospace';
+        ctx.fillText('"To the secret escape pod!"', canvas.width / 2, 45);
     }
-    // Phase 3: Rocket launches
-    else if (scene.phase === 3) {
-        // Draw rocket (moving up if launched)
-        const rocketY = scene.rocketLaunched ? scene.rocketY : canvas.height - 90;
-        ctx.drawImage(GFX.escapeRocket, canvas.width - 70, rocketY);
+    // Phase 6: Rocket launches
+    else if (scene.phase === 6) {
+        // Draw rocket
+        ctx.drawImage(GFX.escapeRocket, scene.rocketX, scene.rocketY);
 
-        // Rocket flame if launched
-        if (scene.rocketLaunched) {
-            for (let i = 0; i < 8; i++) {
-                const flameY = rocketY + 64 + i * 6;
-                const flameWidth = 16 - i * 1.5;
-                const colors = ['#ff9900', '#ff6600', '#ff3300', '#ffcc00'];
-                ctx.fillStyle = colors[i % colors.length];
-                ctx.globalAlpha = 0.8 - i * 0.08;
-                ctx.fillRect(canvas.width - 70 + 16 - flameWidth/2 + Math.random() * 4, flameY, flameWidth, 6);
+        // Jeff boarding (before launch)
+        if (!scene.rocketLaunched) {
+            ctx.drawImage(GFX.jeffYard, scene.rocketX - 10, scene.rocketY + 20);
+            ctx.fillStyle = '#ff9900';
+            ctx.font = '8px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText('BOARDING...', canvas.width / 2, 30);
+        } else {
+            // Rocket flame
+            for (let i = 0; i < 10; i++) {
+                const flameY = scene.rocketY + 64 + i * 8;
+                const flameWidth = 20 - i * 1.8;
+                const colors = ['#ffffff', '#ffff00', '#ff9900', '#ff6600', '#ff3300'];
+                ctx.fillStyle = colors[Math.min(i, colors.length - 1)];
+                ctx.globalAlpha = 0.9 - i * 0.08;
+                const wobble = Math.sin(t * 0.5 + i) * 3;
+                ctx.fillRect(scene.rocketX + 16 - flameWidth/2 + wobble, flameY, flameWidth, 8);
             }
             ctx.globalAlpha = 1;
 
             // Smoke trail
-            for (let i = 0; i < 15; i++) {
-                const smokeY = rocketY + 80 + i * 15;
-                const smokeX = canvas.width - 54 + Math.sin(t * 0.1 + i) * 10;
-                ctx.fillStyle = `rgba(150, 150, 150, ${0.6 - i * 0.04})`;
+            for (let i = 0; i < 20; i++) {
+                const smokeY = scene.rocketY + 90 + i * 12;
+                if (smokeY > canvas.height) continue;
+                const smokeX = scene.rocketX + 16 + Math.sin(t * 0.08 + i * 0.5) * (8 + i * 0.5);
+                ctx.fillStyle = `rgba(180, 180, 180, ${0.5 - i * 0.025})`;
                 ctx.beginPath();
-                ctx.arc(smokeX, smokeY, 6 + i * 2, 0, Math.PI * 2);
+                ctx.arc(smokeX, smokeY, 8 + i * 1.5, 0, Math.PI * 2);
                 ctx.fill();
             }
-        } else {
-            // Jeff boarding rocket
-            ctx.drawImage(GFX.jeffYard, canvas.width - 80, canvas.height - 100);
-        }
 
-        // Text
-        ctx.fillStyle = '#ff4444';
-        ctx.font = '12px "Press Start 2P"';
-        ctx.textAlign = 'center';
-        if (scene.rocketLaunched) {
-            ctx.fillText('BEZOS ESCAPES!', canvas.width / 2, 40);
+            // Screen shake during launch
+            if (pt < 80) {
+                ctx.save();
+                ctx.translate(Math.random() * 4 - 2, Math.random() * 4 - 2);
+            }
+
+            // Text
+            ctx.fillStyle = '#ff4444';
+            ctx.font = '12px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText('BEZOS ESCAPES!', canvas.width / 2, 30);
             ctx.fillStyle = '#ff9900';
             ctx.font = '8px monospace';
-            ctx.fillText('"To infinity and tax evasion!"', canvas.width / 2, 55);
-        } else {
-            ctx.fillText('BOARDING ESCAPE POD', canvas.width / 2, 40);
+            ctx.fillText('"To infinity and tax evasion!"', canvas.width / 2, 48);
+
+            if (pt < 80) ctx.restore();
         }
     }
-    // Phase 4: Dialogue (background only - dialog box handles text)
-    else if (scene.phase === 4) {
-        // Space background with rocket trail in distance
-        const trailX = canvas.width - 60;
-        for (let i = 0; i < 10; i++) {
-            const trailY = 20 + i * 8;
-            ctx.fillStyle = `rgba(255, 153, 0, ${0.5 - i * 0.05})`;
-            ctx.fillRect(trailX - 2, trailY, 4, 6);
+    // Phase 7: Dialogue exchange (rocket already escaped)
+    else if (scene.phase === 7) {
+        // Tiny rocket trail in the sky
+        const trailX = canvas.width - 40;
+        for (let i = 0; i < 8; i++) {
+            const trailY = 15 + i * 6;
+            ctx.fillStyle = `rgba(255, 153, 0, ${0.5 - i * 0.06})`;
+            ctx.fillRect(trailX - 2, trailY, 4, 5);
         }
 
         // Tiny rocket in sky
-        ctx.fillStyle = '#6b7280';
-        ctx.fillRect(trailX - 3, 10, 6, 12);
+        ctx.fillStyle = '#aaa';
+        ctx.fillRect(trailX - 2, 8, 4, 8);
         ctx.fillStyle = '#dc2626';
         ctx.beginPath();
-        ctx.moveTo(trailX, 5);
-        ctx.lineTo(trailX - 4, 12);
-        ctx.lineTo(trailX + 4, 12);
+        ctx.moveTo(trailX, 4);
+        ctx.lineTo(trailX - 3, 10);
+        ctx.lineTo(trailX + 3, 10);
         ctx.closePath();
         ctx.fill();
 
-        // Player character standing
-        ctx.drawImage(GFX.chars[GAME.selectedChar], 50, canvas.height - 50);
+        // Player character
+        ctx.drawImage(GFX.chars[GAME.selectedChar], 60, canvas.height - 50);
     }
-    // Phase 5: Simon joins
-    else if (scene.phase === 5) {
-        // Same space background
-        const trailX = canvas.width - 60;
-        for (let i = 0; i < 5; i++) {
-            const trailY = 10 + i * 4;
-            ctx.fillStyle = `rgba(255, 153, 0, ${0.3 - i * 0.05})`;
+    // Phase 8: Simon joins
+    else if (scene.phase === 8) {
+        // Fading rocket trail (almost gone)
+        const trailX = canvas.width - 40;
+        for (let i = 0; i < 4; i++) {
+            const trailY = 8 + i * 4;
+            ctx.fillStyle = `rgba(255, 153, 0, ${0.2 - i * 0.04})`;
             ctx.fillRect(trailX - 1, trailY, 2, 3);
         }
 
         // Player character
-        ctx.drawImage(GFX.chars[GAME.selectedChar], 80, canvas.height - 50);
+        ctx.drawImage(GFX.chars[GAME.selectedChar], 90, canvas.height - 50);
 
         // Simon walking in
         if (scene.simonX !== undefined) {
@@ -6895,26 +7135,139 @@ function drawBezosEscape() {
         ctx.fillStyle = '#22c55e';
         ctx.font = '14px "Press Start 2P"';
         ctx.textAlign = 'center';
-        ctx.fillText('VICTORY!', canvas.width / 2, 50);
+        ctx.fillText('VICTORY!', canvas.width / 2, 40);
 
         ctx.fillStyle = '#fbbf24';
         ctx.font = '8px "Press Start 2P"';
-        const celebrateText = scene.simonX >= canvas.width / 2 - 40 ?
+        const celebrateText = scene.simonX >= canvas.width / 2 - 50 ?
             'THE WAREHOUSE IS SAFE!' : 'Simon approaches...';
-        ctx.fillText(celebrateText, canvas.width / 2, 70);
+        ctx.fillText(celebrateText, canvas.width / 2, 58);
 
         // Confetti particles
-        for (let i = 0; i < 20; i++) {
-            const confettiX = (i * 47 + t * 2) % canvas.width;
-            const confettiY = (i * 31 + t * 1.5) % canvas.height;
+        for (let i = 0; i < 25; i++) {
+            const confettiX = (i * 47 + t * 2.5) % canvas.width;
+            const confettiY = (i * 31 + t * 2) % canvas.height;
             const colors = ['#ff9900', '#22c55e', '#3b82f6', '#fbbf24', '#ec4899'];
             ctx.fillStyle = colors[i % colors.length];
-            ctx.fillRect(confettiX, confettiY, 3, 3);
+            ctx.fillRect(confettiX, confettiY, 4, 4);
         }
     }
 
     ctx.textAlign = 'left';
     ctx.globalAlpha = 1;
+}
+
+// Draw throne room backdrop for escape sequence
+function drawThroneRoomBackdrop(t) {
+    // Dark royal purple/black gradient
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, '#0a0515');
+    grad.addColorStop(0.4, '#15082a');
+    grad.addColorStop(0.7, '#1a0a2e');
+    grad.addColorStop(1, '#0d0618');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Throne room pillars on sides
+    ctx.fillStyle = '#2a1f3d';
+    ctx.fillRect(0, 20, 20, canvas.height - 20);
+    ctx.fillRect(canvas.width - 20, 20, 20, canvas.height - 20);
+
+    // Pillar details
+    ctx.fillStyle = '#3d2d55';
+    ctx.fillRect(5, 25, 10, 8);
+    ctx.fillRect(canvas.width - 15, 25, 10, 8);
+
+    // Ornate golden trim on pillars
+    ctx.fillStyle = '#ffd700';
+    ctx.fillRect(0, 18, 22, 3);
+    ctx.fillRect(canvas.width - 22, 18, 22, 3);
+
+    // Throne in background (upper center) - golden with red cushion
+    const throneX = canvas.width / 2 - 25;
+    const throneY = 60;
+
+    // Throne back
+    ctx.fillStyle = '#4a3520';
+    ctx.fillRect(throneX - 5, throneY - 20, 60, 50);
+    ctx.fillStyle = '#ffd700';
+    ctx.fillRect(throneX, throneY - 15, 50, 3);
+    ctx.fillRect(throneX, throneY + 25, 50, 3);
+
+    // Throne seat
+    ctx.fillStyle = '#8b0000';
+    ctx.fillRect(throneX + 5, throneY - 5, 40, 25);
+
+    // Amazon logo on throne
+    ctx.fillStyle = '#ff9900';
+    ctx.font = '8px "Press Start 2P"';
+    ctx.textAlign = 'center';
+    ctx.fillText('A', throneX + 25, throneY + 12);
+
+    // Royal carpet/floor
+    ctx.fillStyle = '#1a0a1f';
+    ctx.fillRect(0, canvas.height - 35, canvas.width, 35);
+
+    // Red carpet runner
+    ctx.fillStyle = '#8b0000';
+    ctx.fillRect(canvas.width / 2 - 30, canvas.height - 35, 60, 35);
+    ctx.fillStyle = '#a52a2a';
+    ctx.fillRect(canvas.width / 2 - 25, canvas.height - 35, 50, 3);
+
+    // Torch lights on walls
+    for (let i = 0; i < 2; i++) {
+        const torchX = i === 0 ? 35 : canvas.width - 45;
+        const flicker = Math.sin(t * 0.15 + i) * 3;
+
+        // Torch holder
+        ctx.fillStyle = '#4a3520';
+        ctx.fillRect(torchX, 50, 10, 20);
+
+        // Flame
+        ctx.fillStyle = '#ff9900';
+        ctx.beginPath();
+        ctx.arc(torchX + 5, 45 + flicker, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffcc00';
+        ctx.beginPath();
+        ctx.arc(torchX + 5, 45 + flicker, 4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    ctx.textAlign = 'left';
+}
+
+// Draw victory backdrop for Simon joining
+function drawVictoryBackdrop(t) {
+    // Night sky gradient (post-battle calm)
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, '#050515');
+    grad.addColorStop(0.4, '#0a0a25');
+    grad.addColorStop(0.7, '#0f0f2a');
+    grad.addColorStop(1, '#1a1a35');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Stars
+    for (let i = 0; i < 40; i++) {
+        const starX = (i * 73 + t * 0.1) % canvas.width;
+        const starY = (i * 41) % (canvas.height - 40);
+        const brightness = 0.4 + Math.sin(t * 0.05 + i) * 0.3;
+        ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
+        ctx.fillRect(starX, starY, 1, 1);
+    }
+
+    // Warehouse/ground
+    ctx.fillStyle = '#1a1f2e';
+    ctx.fillRect(0, canvas.height - 35, canvas.width, 35);
+    ctx.fillStyle = '#2d3748';
+    ctx.fillRect(0, canvas.height - 35, canvas.width, 4);
+
+    // Warehouse entrance silhouette on left
+    ctx.fillStyle = '#0a0f1a';
+    ctx.fillRect(-10, canvas.height - 70, 50, 70);
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillRect(10, canvas.height - 60, 20, 25);
 }
 
 function drawCredits() {
