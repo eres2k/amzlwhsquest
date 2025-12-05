@@ -4168,7 +4168,7 @@ function updateYardLevel() {
                 // Collision with active laser barrier
                 if (barrier.active && Math.abs(y.playerY - barrier.y) < 8 && GAME.player.iframe <= 0) {
                     GAME.lives--; GAME.flash = 15; GAME.shake = 12; AudioSys.sfx.hurt(); updateHud();
-                    GAME.player.iframe = 999999; // Stay invincible forever after being hit in castle
+                    GAME.player.iframe = 120; // 2 seconds of invincibility in castle
                     spawnFloatingText(y.playerX, y.playerY - 20, "LASER BARRIER!", "#ff4444");
                     if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('VAPORIZED BY SECURITY!'); return; }
                 }
@@ -4214,7 +4214,7 @@ function updateYardLevel() {
                 if (y.playerY >= hallwayBoundary && Math.abs(proj.x - (y.playerX + 8)) < 12 && Math.abs(proj.y - (y.playerY + 8)) < 12) {
                     if (GAME.player.iframe <= 0) {
                         GAME.lives--; GAME.flash = 10; GAME.shake = 8; AudioSys.sfx.hurt(); updateHud();
-                        GAME.player.iframe = 999999; // Stay invincible forever after being hit in castle
+                        GAME.player.iframe = 120; // 2 seconds of invincibility in castle
                         y.castleProjectiles.splice(i, 1);
                         spawnFloatingText(y.playerX, y.playerY - 20, "GUARD TURRET!", "#ff4444");
                         if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('TERMINATED BY SECURITY!'); return; }
@@ -4267,7 +4267,7 @@ function updateYardLevel() {
                 if (Math.abs(drone.x - (y.playerX + 8)) < 14 && Math.abs(drone.y - (y.playerY + 8)) < 14) {
                     if (GAME.player.iframe <= 0) {
                         GAME.lives--; GAME.flash = 12; GAME.shake = 10; AudioSys.sfx.hurt(); updateHud();
-                        GAME.player.iframe = 999999; // Stay invincible forever after being hit in castle
+                        GAME.player.iframe = 120; // 2 seconds of invincibility in castle
                         y.castleDrones.splice(i, 1);
                         spawnFloatingText(y.playerX, y.playerY - 20, "PATROL DRONE!", "#22d3ee");
                         if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('DRONE STRIKE!'); return; }
