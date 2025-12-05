@@ -3865,7 +3865,7 @@ function update() {
             let header = isWin ? `OUTSTANDING!\n"${finalText}"\n` : `AUDIT FAILED\n"${finalText}"\n`;
             let stats = `\nStats:\nTime Spent: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nSafety Rules used: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`;
             showDialog(header + stats, speaker, GFX.simonFace, true);
-            GAME.state = 'DIALOG'; GAME.nextState = 'TITLE';
+            GAME.state = 'DIALOG'; GAME.nextState = isWin ? 'CREDITS' : 'TITLE';
         } else if (!ready && GAME.splashTimer <= fallbackTimer) {
             GAME.aiResultText = 'System could not load live review. Using cached performance log.';
         }
