@@ -1562,56 +1562,111 @@ function generateAssets() {
         ctx.fillStyle = '#fbbf24'; ctx.fillRect(6,1,2,2);
     });
 
-    // Bezos escape rocket - sleek space rocket
-    GFX.escapeRocket = c(32,64, ctx => {
-        // Main body (metallic silver)
-        ctx.fillStyle = '#374151';
-        ctx.fillRect(10, 8, 12, 48);
-        ctx.fillStyle = '#6b7280';
-        ctx.fillRect(12, 10, 8, 44);
-        ctx.fillStyle = '#9ca3af';
-        ctx.fillRect(14, 12, 4, 40);
-        // Nose cone
-        ctx.fillStyle = '#dc2626';
-        ctx.beginPath();
-        ctx.moveTo(16, 0);
-        ctx.lineTo(10, 12);
-        ctx.lineTo(22, 12);
-        ctx.closePath();
-        ctx.fill();
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath();
-        ctx.moveTo(16, 2);
-        ctx.lineTo(12, 10);
-        ctx.lineTo(20, 10);
-        ctx.closePath();
-        ctx.fill();
-        // Amazon logo
-        ctx.fillStyle = '#ff9900';
-        ctx.fillRect(12, 24, 8, 6);
-        ctx.fillStyle = '#ffb347';
-        ctx.fillRect(13, 25, 6, 4);
-        // Fins
+    // Bezos escape rocket - MASSIVE space rocket (Blue Origin style)
+    GFX.escapeRocket = c(64,128, ctx => {
+        // Main body (metallic silver/white)
+        ctx.fillStyle = '#e5e7eb';
+        ctx.fillRect(20, 16, 24, 96);
+        ctx.fillStyle = '#f3f4f6';
+        ctx.fillRect(24, 20, 16, 88);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(28, 24, 8, 80);
+
+        // Nose cone (pointed, blue)
         ctx.fillStyle = '#1e40af';
-        ctx.fillRect(4, 48, 8, 12);
-        ctx.fillRect(20, 48, 8, 12);
+        ctx.beginPath();
+        ctx.moveTo(32, 0);
+        ctx.lineTo(18, 24);
+        ctx.lineTo(46, 24);
+        ctx.closePath();
+        ctx.fill();
         ctx.fillStyle = '#3b82f6';
-        ctx.fillRect(5, 49, 6, 10);
-        ctx.fillRect(21, 49, 6, 10);
-        // Window
-        ctx.fillStyle = '#0ea5e9';
         ctx.beginPath();
-        ctx.arc(16, 18, 4, 0, Math.PI * 2);
+        ctx.moveTo(32, 4);
+        ctx.lineTo(22, 20);
+        ctx.lineTo(42, 20);
+        ctx.closePath();
         ctx.fill();
-        ctx.fillStyle = '#67e8f9';
+
+        // Blue Origin stripe
+        ctx.fillStyle = '#1e40af';
+        ctx.fillRect(20, 40, 24, 8);
+        ctx.fillRect(20, 70, 24, 8);
+
+        // Amazon arrow logo (orange)
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(24, 50, 16, 12);
+        ctx.fillStyle = '#ffb347';
         ctx.beginPath();
-        ctx.arc(15, 17, 2, 0, Math.PI * 2);
+        ctx.moveTo(24, 56);
+        ctx.lineTo(40, 56);
+        ctx.lineTo(40, 58);
+        ctx.lineTo(32, 62);
+        ctx.lineTo(24, 58);
+        ctx.closePath();
         ctx.fill();
-        // Engine nozzle
-        ctx.fillStyle = '#1f2937';
-        ctx.fillRect(11, 56, 10, 6);
+
+        // Windows (multiple)
+        for (let i = 0; i < 3; i++) {
+            ctx.fillStyle = '#0ea5e9';
+            ctx.beginPath();
+            ctx.arc(32, 28 + i * 16, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#67e8f9';
+            ctx.beginPath();
+            ctx.arc(30, 26 + i * 16, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Landing legs / Fins (4 of them, blue)
+        ctx.fillStyle = '#1e40af';
+        // Left fin
+        ctx.beginPath();
+        ctx.moveTo(20, 96);
+        ctx.lineTo(4, 124);
+        ctx.lineTo(12, 124);
+        ctx.lineTo(20, 108);
+        ctx.closePath();
+        ctx.fill();
+        // Right fin
+        ctx.beginPath();
+        ctx.moveTo(44, 96);
+        ctx.lineTo(60, 124);
+        ctx.lineTo(52, 124);
+        ctx.lineTo(44, 108);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#3b82f6';
+        ctx.beginPath();
+        ctx.moveTo(22, 98);
+        ctx.lineTo(10, 120);
+        ctx.lineTo(16, 120);
+        ctx.lineTo(22, 106);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(42, 98);
+        ctx.lineTo(54, 120);
+        ctx.lineTo(48, 120);
+        ctx.lineTo(42, 106);
+        ctx.closePath();
+        ctx.fill();
+
+        // Engine section (darker)
         ctx.fillStyle = '#374151';
-        ctx.fillRect(12, 57, 8, 4);
+        ctx.fillRect(18, 108, 28, 16);
+        ctx.fillStyle = '#4b5563';
+        ctx.fillRect(22, 110, 20, 12);
+
+        // Engine nozzles (3)
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(22, 120, 6, 8);
+        ctx.fillRect(29, 120, 6, 8);
+        ctx.fillRect(36, 120, 6, 8);
+        ctx.fillStyle = '#6b7280';
+        ctx.fillRect(23, 121, 4, 6);
+        ctx.fillRect(30, 121, 4, 6);
+        ctx.fillRect(37, 121, 4, 6);
     });
 
     GFX.clutter = { cart: c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(2,6,12,8); ctx.fillStyle = '#8b4513'; ctx.fillRect(4,4,8,6); }), coffee: c(8,8, ctx => { ctx.fillStyle='#fff'; ctx.fillRect(2,2,4,5); }), paper: c(8,8, ctx => { ctx.fillStyle='#eee'; ctx.fillRect(1,3,6,4); }), tape: c(8,8, ctx => { ctx.fillStyle='#d97706'; ctx.beginPath(); ctx.arc(4,4,3,0,Math.PI*2); ctx.fill(); }) };
@@ -4749,20 +4804,29 @@ function updateMechaBattle() {
                 GAME.escapeScene = {
                     // New phases: 0=mecha sparks/shakes, 1=mecha one-liner, 2=mecha explodes,
                     // 3=slow transform, 4=jeff one-liner, 5=throne room + run to rocket,
-                    // 6=rocket launch, 7=escape dialogue, 8=simon joins
+                    // 6=rocket launch with camera follow, 7=escape dialogue, 8=simon joins
                     phase: 0,
                     jeffX: m.x + 32,
                     jeffY: m.y + 32,
                     startJeffX: m.x + 32,
                     startJeffY: m.y + 32,
-                    rocketX: canvas.width - 60,
-                    rocketY: canvas.height - 90,
+                    rocketX: canvas.width / 2 - 32, // Center the bigger rocket
+                    rocketY: canvas.height - 150,   // Adjust for bigger rocket
+                    rocketVelocity: 0,              // For acceleration
                     rocketLaunched: false,
+                    launchCountdown: 0,             // For countdown sequence
                     dialogueStep: 0,
                     simonJoined: false,
                     phaseTimer: 0,
                     transformProgress: 0,
-                    explosionParticles: []
+                    explosionParticles: [],
+                    // Camera zoom/follow system
+                    cameraZoom: 1.0,
+                    cameraY: 0,
+                    cameraTargetY: 0,
+                    followingRocket: false,
+                    stars: [],                      // Stars for space background
+                    inSpace: false
                 };
                 document.getElementById('boss-hud').style.display = 'none';
                 MusicSys.stop();
@@ -6695,34 +6759,104 @@ function updateBezosEscape() {
     // Phase 4: Waiting for Jeff's dialogue to finish (handled by dialogue system)
     // Phase 5: Show throne room backdrop, Jeff runs to rocket (200 frames)
     else if (scene.phase === 5) {
-        // Move Jeff toward rocket position
-        const targetX = canvas.width - 80;
-        const targetY = canvas.height - 70;
+        // Move Jeff toward the big centered rocket
+        const targetX = scene.rocketX - 20; // Left of the rocket
+        const targetY = scene.rocketY + 60; // Near bottom of rocket
         scene.jeffX += (targetX - scene.jeffX) * 0.03;
         scene.jeffY += (targetY - scene.jeffY) * 0.03;
 
         if (t >= 200) {
             scene.phase = 6;
             scene.phaseTimer = 0;
-            AudioSys.sfx.bossIntro();
+            // Initialize camera for phase 6
+            scene.cameraZoom = 1.0;
+            scene.cameraY = 0;
         }
     }
-    // Phase 6: Rocket launches (250 frames)
+    // Phase 6: Epic rocket launch sequence (600 frames total)
     else if (scene.phase === 6) {
-        if (!scene.rocketLaunched && t > 40) {
-            scene.rocketLaunched = true;
-            scene.jeffVisible = false; // Jeff is now in the rocket
+        // Sub-phases: 0-60 = boarding, 61-120 = countdown, 121+ = launch
+
+        // Initialize countdown if not started
+        if (t === 1) {
+            scene.launchCountdown = 3;
+            scene.countdownTimer = 0;
         }
-        if (scene.rocketLaunched) {
-            // Accelerating rocket with smooth curve
-            scene.rocketY -= 1.5 + (t - 40) * 0.04;
+
+        // Boarding phase (first 60 frames)
+        if (t <= 60 && !scene.rocketLaunched) {
+            scene.jeffVisible = true;
+            // Jeff moves toward rocket hatch
+            const hatchX = scene.rocketX + 32;
+            const hatchY = scene.rocketY + 50;
+            scene.jeffX += (hatchX - scene.jeffX) * 0.08;
+            scene.jeffY += (hatchY - scene.jeffY) * 0.08;
         }
-        if (t >= 250) {
-            scene.phase = 7;
-            scene.dialogueStep = 0;
-            scene.phaseTimer = 0;
-            // Start snarky dialogue exchange
-            showBezosEscapeDialogue(0);
+        // Countdown phase (frames 61-120)
+        else if (t > 60 && t <= 180 && !scene.rocketLaunched) {
+            scene.jeffVisible = false; // Jeff is inside
+            scene.countdownTimer++;
+            // Update countdown every 40 frames (about 0.67 seconds each)
+            if (scene.countdownTimer >= 40 && scene.launchCountdown > 0) {
+                scene.launchCountdown--;
+                scene.countdownTimer = 0;
+                AudioSys.sfx.bossHit(); // Countdown beep
+            }
+            // Camera starts zooming out slightly
+            scene.cameraZoom = Math.max(0.7, scene.cameraZoom - 0.003);
+        }
+        // Launch phase (frames 181+)
+        else if (t > 180) {
+            if (!scene.rocketLaunched) {
+                scene.rocketLaunched = true;
+                scene.rocketVelocity = 0.5;
+                AudioSys.sfx.bossIntro(); // Big launch sound
+                // Initialize stars for space
+                scene.stars = [];
+                for (let i = 0; i < 100; i++) {
+                    scene.stars.push({
+                        x: Math.random() * canvas.width * 2,
+                        y: Math.random() * 2000 - 2000, // Stars above the screen
+                        size: Math.random() * 2 + 1,
+                        twinkle: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+
+            // Rocket acceleration - starts slow, then speeds up dramatically
+            const launchTime = t - 180;
+            scene.rocketVelocity = 0.5 + launchTime * 0.025; // Smooth acceleration
+            scene.rocketY -= scene.rocketVelocity;
+
+            // Camera follows the rocket
+            scene.followingRocket = true;
+            // Camera target follows rocket, keeping it in lower third of screen
+            scene.cameraTargetY = scene.rocketY - canvas.height * 0.6;
+            // Smooth camera follow
+            scene.cameraY += (scene.cameraTargetY - scene.cameraY) * 0.08;
+
+            // Continue zooming out as rocket goes higher
+            if (launchTime < 200) {
+                scene.cameraZoom = Math.max(0.4, scene.cameraZoom - 0.002);
+            }
+
+            // Transition to space when rocket is high enough
+            if (scene.rocketY < -500) {
+                scene.inSpace = true;
+            }
+
+            // End phase when rocket is far in space
+            if (scene.rocketY < -1500 || launchTime >= 420) {
+                scene.phase = 7;
+                scene.dialogueStep = 0;
+                scene.phaseTimer = 0;
+                // Reset camera for dialogue
+                scene.cameraY = 0;
+                scene.cameraZoom = 1.0;
+                scene.followingRocket = false;
+                // Start snarky dialogue exchange
+                showBezosEscapeDialogue(0);
+            }
         }
     }
     // Phase 7: Dialogue exchange (handled by dialogue system)
@@ -7000,14 +7134,14 @@ function drawBezosEscape() {
     }
     // Phase 5: Jeff runs to rocket (throne room with rocket visible)
     else if (scene.phase === 5) {
-        // Draw rocket on platform near throne
+        // Draw rocket on platform (bigger rocket now)
         ctx.drawImage(GFX.escapeRocket, scene.rocketX, scene.rocketY);
 
         // "SECRET ESCAPE POD" label
         ctx.fillStyle = '#ff9900';
-        ctx.font = '6px "Press Start 2P"';
+        ctx.font = '8px "Press Start 2P"';
         ctx.textAlign = 'center';
-        ctx.fillText('ESCAPE POD', scene.rocketX + 16, scene.rocketY - 8);
+        ctx.fillText('BEZOS ESCAPE POD', scene.rocketX + 32, scene.rocketY - 12);
 
         // Jeff running animation
         const runFrame = Math.floor(pt / 8) % 2;
@@ -7035,58 +7169,166 @@ function drawBezosEscape() {
         ctx.font = '7px monospace';
         ctx.fillText('"To the secret escape pod!"', canvas.width / 2, 45);
     }
-    // Phase 6: Rocket launches
+    // Phase 6: Epic rocket launch with camera follow
     else if (scene.phase === 6) {
-        // Draw rocket
+        const launchTime = Math.max(0, pt - 180);
+
+        // Apply camera transform for zoom and follow
+        ctx.save();
+
+        // Calculate zoom center (center of screen)
+        const zoomCenterX = canvas.width / 2;
+        const zoomCenterY = canvas.height / 2;
+
+        // Apply zoom and camera follow
+        ctx.translate(zoomCenterX, zoomCenterY);
+        ctx.scale(scene.cameraZoom || 1, scene.cameraZoom || 1);
+        ctx.translate(-zoomCenterX, -zoomCenterY - (scene.cameraY || 0));
+
+        // Draw space background (gradient from blue to black) when in upper atmosphere
+        if (scene.followingRocket) {
+            const spaceProgress = Math.min(1, Math.max(0, -scene.rocketY / 1000));
+
+            // Sky gradient - blue to dark blue to black
+            const gradient = ctx.createLinearGradient(0, scene.cameraY - 500, 0, scene.cameraY + canvas.height);
+            gradient.addColorStop(0, `rgba(0, 0, 20, ${spaceProgress})`);
+            gradient.addColorStop(0.3, `rgba(10, 20, 60, ${spaceProgress * 0.8})`);
+            gradient.addColorStop(0.6, `rgba(30, 60, 120, ${spaceProgress * 0.5})`);
+            gradient.addColorStop(1, `rgba(100, 150, 200, ${spaceProgress * 0.3})`);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, scene.cameraY - 1000, canvas.width * 2, 3000);
+
+            // Draw stars (when getting into space)
+            if (scene.stars && spaceProgress > 0.2) {
+                for (const star of scene.stars) {
+                    const twinkle = Math.sin(t * 0.1 + star.twinkle) * 0.3 + 0.7;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${twinkle * spaceProgress})`;
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y + scene.cameraY, star.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Draw Earth horizon curving away (when high enough)
+            if (spaceProgress > 0.5) {
+                ctx.fillStyle = '#3b82f6';
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height + 800 + scene.cameraY, 900, Math.PI, 2 * Math.PI);
+                ctx.fill();
+                // Atmosphere glow
+                ctx.strokeStyle = `rgba(135, 206, 250, ${spaceProgress * 0.6})`;
+                ctx.lineWidth = 20;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height + 800 + scene.cameraY, 910, Math.PI, 2 * Math.PI);
+                ctx.stroke();
+            }
+        }
+
+        // Draw the big rocket
         ctx.drawImage(GFX.escapeRocket, scene.rocketX, scene.rocketY);
 
-        // Jeff boarding (before launch)
-        if (!scene.rocketLaunched) {
-            ctx.drawImage(GFX.jeffYard, scene.rocketX - 10, scene.rocketY + 20);
+        // Boarding phase - Jeff running to rocket
+        if (pt <= 60 && !scene.rocketLaunched) {
+            ctx.drawImage(GFX.jeffYard, scene.jeffX - 12, scene.jeffY - 12);
             ctx.fillStyle = '#ff9900';
             ctx.font = '8px "Press Start 2P"';
             ctx.textAlign = 'center';
-            ctx.fillText('BOARDING...', canvas.width / 2, 30);
-        } else {
-            // Rocket flame
-            for (let i = 0; i < 10; i++) {
-                const flameY = scene.rocketY + 64 + i * 8;
-                const flameWidth = 20 - i * 1.8;
-                const colors = ['#ffffff', '#ffff00', '#ff9900', '#ff6600', '#ff3300'];
-                ctx.fillStyle = colors[Math.min(i, colors.length - 1)];
-                ctx.globalAlpha = 0.9 - i * 0.08;
-                const wobble = Math.sin(t * 0.5 + i) * 3;
-                ctx.fillRect(scene.rocketX + 16 - flameWidth/2 + wobble, flameY, flameWidth, 8);
+            ctx.fillText('BOARDING...', canvas.width / 2, 30 + (scene.cameraY || 0));
+        }
+        // Countdown phase
+        else if (pt > 60 && pt <= 180 && !scene.rocketLaunched) {
+            // Countdown display
+            const countdown = scene.launchCountdown !== undefined ? scene.launchCountdown : 3;
+
+            // Big countdown number
+            ctx.fillStyle = countdown === 0 ? '#22c55e' : '#ff4444';
+            ctx.font = '32px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            const countText = countdown === 0 ? 'LAUNCH!' : countdown.toString();
+            ctx.fillText(countText, canvas.width / 2, canvas.height / 2 - 20 + (scene.cameraY || 0));
+
+            // Warning flashing
+            if (t % 20 < 10) {
+                ctx.fillStyle = '#ff9900';
+                ctx.font = '8px "Press Start 2P"';
+                ctx.fillText('T-MINUS', canvas.width / 2, canvas.height / 2 - 50 + (scene.cameraY || 0));
+            }
+
+            // Rocket rumble/vibration
+            ctx.drawImage(GFX.escapeRocket, scene.rocketX + (Math.random() - 0.5) * 2, scene.rocketY);
+
+            // Pre-launch smoke
+            for (let i = 0; i < 5; i++) {
+                const smokeX = scene.rocketX + 32 + (Math.random() - 0.5) * 40;
+                const smokeY = scene.rocketY + 120 + Math.random() * 20;
+                ctx.fillStyle = `rgba(200, 200, 200, ${0.4 - i * 0.08})`;
+                ctx.beginPath();
+                ctx.arc(smokeX, smokeY, 10 + Math.random() * 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        // Launch phase - rocket flying with massive flames
+        else if (scene.rocketLaunched) {
+            // Screen shake during initial launch
+            const shakeAmount = Math.max(0, 8 - launchTime * 0.02);
+            if (shakeAmount > 0) {
+                ctx.translate((Math.random() - 0.5) * shakeAmount, (Math.random() - 0.5) * shakeAmount);
+            }
+
+            // Massive rocket flames (3 engines worth)
+            const flameIntensity = Math.min(1, launchTime / 30);
+            for (let engine = 0; engine < 3; engine++) {
+                const engineX = scene.rocketX + 25 + engine * 7;
+                for (let i = 0; i < 15; i++) {
+                    const flameY = scene.rocketY + 128 + i * 12;
+                    const flameWidth = (30 - i * 1.8) * flameIntensity;
+                    const colors = ['#ffffff', '#ffffaa', '#ffff00', '#ffcc00', '#ff9900', '#ff6600', '#ff3300', '#cc0000'];
+                    ctx.fillStyle = colors[Math.min(i, colors.length - 1)];
+                    ctx.globalAlpha = (0.95 - i * 0.06) * flameIntensity;
+                    const wobble = Math.sin(t * 0.8 + i * 0.5 + engine) * (4 + i * 0.3);
+                    ctx.fillRect(engineX - flameWidth/2 + wobble, flameY, flameWidth, 12);
+                }
             }
             ctx.globalAlpha = 1;
 
-            // Smoke trail
-            for (let i = 0; i < 20; i++) {
-                const smokeY = scene.rocketY + 90 + i * 12;
-                if (smokeY > canvas.height) continue;
-                const smokeX = scene.rocketX + 16 + Math.sin(t * 0.08 + i * 0.5) * (8 + i * 0.5);
-                ctx.fillStyle = `rgba(180, 180, 180, ${0.5 - i * 0.025})`;
+            // Massive smoke/exhaust trail
+            for (let i = 0; i < 40; i++) {
+                const smokeY = scene.rocketY + 180 + i * 20;
+                const smokeX = scene.rocketX + 32 + Math.sin(t * 0.05 + i * 0.3) * (15 + i * 0.8);
+                const smokeSize = 15 + i * 2.5;
+                ctx.fillStyle = `rgba(180, 180, 180, ${0.6 - i * 0.015})`;
                 ctx.beginPath();
-                ctx.arc(smokeX, smokeY, 8 + i * 1.5, 0, Math.PI * 2);
+                ctx.arc(smokeX, smokeY, smokeSize, 0, Math.PI * 2);
                 ctx.fill();
             }
 
-            // Screen shake during launch
-            if (pt < 80) {
-                ctx.save();
-                ctx.translate(Math.random() * 4 - 2, Math.random() * 4 - 2);
-            }
+            // Draw rocket on top of flames
+            ctx.drawImage(GFX.escapeRocket, scene.rocketX, scene.rocketY);
+        }
 
-            // Text
-            ctx.fillStyle = '#ff4444';
-            ctx.font = '12px "Press Start 2P"';
-            ctx.textAlign = 'center';
-            ctx.fillText('BEZOS ESCAPES!', canvas.width / 2, 30);
+        ctx.restore(); // End camera transform
+
+        // HUD elements (not affected by camera)
+        ctx.fillStyle = '#ff4444';
+        ctx.font = '12px "Press Start 2P"';
+        ctx.textAlign = 'center';
+
+        if (scene.rocketLaunched) {
+            ctx.fillText('BEZOS ESCAPES!', canvas.width / 2, 25);
             ctx.fillStyle = '#ff9900';
             ctx.font = '8px monospace';
-            ctx.fillText('"To infinity and tax evasion!"', canvas.width / 2, 48);
+            ctx.fillText('"To infinity and tax evasion!"', canvas.width / 2, 42);
 
-            if (pt < 80) ctx.restore();
+            // Altitude indicator
+            const altitude = Math.max(0, Math.floor(-scene.rocketY / 10));
+            ctx.fillStyle = '#00ff00';
+            ctx.font = '6px "Press Start 2P"';
+            ctx.textAlign = 'right';
+            ctx.fillText(`ALT: ${altitude}km`, canvas.width - 10, 20);
+
+            // Speed indicator
+            const speed = Math.floor((scene.rocketVelocity || 0) * 100);
+            ctx.fillText(`SPD: ${speed}m/s`, canvas.width - 10, 32);
         }
     }
     // Phase 7: Dialogue exchange (rocket already escaped)
