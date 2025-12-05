@@ -646,24 +646,25 @@ const TTSSys = {
     // Character voice configurations: pitch (0.1-2), rate (0.1-10), volume (0-1)
     characterVoices: {
         // Main characters - varied voices
-        "Simon": { pitch: 0.5, rate: 0.82, volume: 1.0, desc: "Deep, slow, authoritative manager" },
-        "Simon Unglaube": { pitch: 0.5, rate: 0.82, volume: 1.0, desc: "Deep, slow, authoritative" },
+        "Simon": { pitch: 0.8, rate: 0.88, volume: 1.0, desc: "Authoritative manager" },
+        "Simon Unglaube": { pitch: 0.8, rate: 0.88, volume: 1.0, desc: "Authoritative manager" },
         "Carrie": { pitch: 1.3, rate: 1.05, volume: 0.95, desc: "Energetic, precise" },
         "Nevena": { pitch: 1.15, rate: 0.95, volume: 0.9, desc: "Calm, oracle-like" },
         "Joao": { pitch: 0.85, rate: 1.2, volume: 1.0, desc: "Loud, siren-like" },
         "Roman": { pitch: 0.7, rate: 0.9, volume: 0.75, desc: "Ghost-like, quiet" },
         "Erwin": { pitch: 0.95, rate: 1.1, volume: 1.0, desc: "Manager, confident" },
-        // Bosses & antagonists
-        "Jeff Bezos": { pitch: 0.4, rate: 0.75, volume: 1.0, desc: "Deep, megalomaniac" },
-        "Mecha Jeff": { pitch: 0.25, rate: 0.6, volume: 1.0, desc: "Robotic, terrifying" },
-        "Labour Inspector": { pitch: 0.65, rate: 1.0, volume: 1.0, desc: "Stern enforcer" },
-        "Compliance Auditor": { pitch: 0.8, rate: 0.85, volume: 0.9, desc: "Meticulous watcher" },
-        "Sebastian Sprigade": { pitch: 0.75, rate: 1.15, volume: 1.0, desc: "Fast, TPH obsessed" },
+        // Bosses & antagonists - gender-appropriate voices
+        "Jeff Bezos": { pitch: 0.6, rate: 0.8, volume: 1.0, desc: "Megalomaniac" },
+        "Mecha Jeff": { pitch: 0.3, rate: 0.6, volume: 1.0, desc: "Robotic, terrifying" },
+        "Labour Inspector": { pitch: 1.1, rate: 1.0, volume: 1.0, desc: "Stern female enforcer" },
+        "Compliance Auditor": { pitch: 1.05, rate: 0.85, volume: 0.9, desc: "Meticulous female watcher" },
+        "Sebastian Sprigade": { pitch: 0.75, rate: 1.15, volume: 1.0, desc: "Fast, TPH obsessed male" },
+        "Regional OPS MGR": { pitch: 0.85, rate: 0.9, volume: 1.0, desc: "Male executive" },
         "Avetta Platform": { pitch: 0.3, rate: 0.7, volume: 0.85, desc: "AI, robotic" },
-        "Jelena": { pitch: 1.1, rate: 0.95, volume: 0.95, desc: "HR guardian" },
-        "Jelly": { pitch: 1.1, rate: 0.95, volume: 0.95, desc: "HR guardian" },
+        "Jelena": { pitch: 1.15, rate: 0.95, volume: 0.95, desc: "HR guardian female" },
+        "Jelly": { pitch: 1.15, rate: 0.95, volume: 0.95, desc: "HR guardian female" },
         // System voices
-        "System": { pitch: 0.6, rate: 1.0, volume: 0.9, desc: "Neutral announcer" },
+        "System": { pitch: 1.2, rate: 1.0, volume: 0.9, desc: "Female announcer" },
         "Corporate": { pitch: 0.55, rate: 0.9, volume: 1.0, desc: "Snarky corporate" },
         "Narrator": { pitch: 0.7, rate: 0.85, volume: 1.0, desc: "Dramatic narrator" }
     },
@@ -4048,12 +4049,7 @@ function update() {
         const waitedEnough = GAME.splashTimer <= 0;
         const fallbackTimer = -600;
 
-        // Phase system for LOSE_SPLASH: 0=corporate msg, 1=character line, 2=ready for Simon
-        if (!isWin && GAME.gameOverPhase === 0 && GAME.stateTimer >= 100) {
-            // After corporate message, speak character defeat line
-            GAME.gameOverPhase = 1;
-            TTSSys.speak(GAME.characterDefeatLine, GAME.selectedChar);
-        }
+        // No phase system needed anymore - go straight to dialog like WIN_SPLASH
 
         if (ready && waitedEnough) {
             const speaker = "Simon Unglaube";
@@ -5111,9 +5107,8 @@ function triggerGameOver(reason) {
     GAME.characterDefeatLine = pickRandom(charLines);
     GAME.gameOverReason = reason;
 
-    // Start corporate voice immediately
+    // Don't speak corporate message immediately - wait for Simon's dialog like win flow
     MusicSys.play('menu'); // Play game over music
-    TTSSys.speak(GAME.corporateMessage, "Corporate");
 
     const time = Math.floor((Date.now() - GAME.startTime)/1000); const currentGen = GAME.genId;
     if (reason === "FIRED!") { GAME.aiResultText = "Terminated for unsafe behavior."; }
@@ -5361,29 +5356,7 @@ function drawSnesSplash(isWin) {
     ctx.fillStyle = accent;
     ctx.fillText(text, canvas.width/2, canvas.height/2 - 50);
 
-    // Game Over specific: Show corporate message and character defeat line
-    if (!isWin && GAME.corporateMessage) {
-        ctx.font = '8px monospace';
-        // Corporate message - typewriter effect
-        const corpChars = Math.min(GAME.corporateMessage.length, Math.floor(t / 2));
-        const corpText = GAME.corporateMessage.substring(0, corpChars);
-        // Word wrap for long messages
-        const maxWidth = canvas.width - 20;
-        ctx.fillStyle = '#fbbf24';
-        wrapText(ctx, `"${corpText}"`, canvas.width/2, canvas.height/2 - 20, maxWidth, 10);
-
-        // Character defeat line - appears after phase change
-        if (GAME.gameOverPhase >= 1 && GAME.characterDefeatLine) {
-            const charDelay = t - 100;
-            if (charDelay > 0) {
-                const charChars = Math.min(GAME.characterDefeatLine.length, Math.floor(charDelay / 2));
-                const charText = GAME.characterDefeatLine.substring(0, charChars);
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = '8px monospace';
-                wrapText(ctx, `${GAME.selectedChar}: "${charText}"`, canvas.width/2, canvas.height/2 + 20, maxWidth, 10);
-            }
-        }
-    }
+    // Game Over: Just show loading message like WIN_SPLASH - full content shows in Simon's dialog
 
     ctx.font = '11px monospace';
     ctx.fillStyle = '#fef9c3';
