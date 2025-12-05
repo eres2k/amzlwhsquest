@@ -1263,8 +1263,7 @@ function generateAssets() {
     });
 
     GFX.mechaJeff = c(64,64, ctx => {
-        // Dark background plate
-        ctx.fillStyle = '#050810'; ctx.fillRect(0,0,64,64);
+        // Transparent background - no fill needed
         // Mecha body frame with gradient effect
         ctx.fillStyle = '#1a1f2e'; ctx.fillRect(8,32,48,28);
         ctx.fillStyle = '#252b3d'; ctx.fillRect(12,34,40,24);
@@ -4898,7 +4897,8 @@ function updateHud() { document.getElementById('life-val').innerText = "❤️".
 
 function showDialog(text, speaker, portrait, isAI = false) {
     // Store previous state for background rendering during dialog
-    if (GAME.state !== 'DIALOG') {
+    // Don't overwrite if we're in the Bezos dialogue sequence (keep THRONE_CONFRONTATION)
+    if (GAME.state !== 'DIALOG' && GAME.state !== 'BEZOS_DIALOGUE_NEXT') {
         GAME.dialogBackgroundState = GAME.state;
     }
     GAME.state = 'DIALOG'; GAME.dialogText = (speaker ? speaker + ":\n" : "") + text; GAME.dialogVisible = "";
@@ -4915,7 +4915,8 @@ function showDialog(text, speaker, portrait, isAI = false) {
 // --- NEW FUNCTION: Show "Thinking" state ---
 function showThinking(speaker, portrait) {
     // Store previous state for background rendering during dialog
-    if (GAME.state !== 'DIALOG') {
+    // Don't overwrite if we're in the Bezos dialogue sequence (keep THRONE_CONFRONTATION)
+    if (GAME.state !== 'DIALOG' && GAME.state !== 'BEZOS_DIALOGUE_NEXT') {
         GAME.dialogBackgroundState = GAME.state;
     }
     GAME.state = 'DIALOG';
