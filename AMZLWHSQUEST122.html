@@ -3186,6 +3186,12 @@ function handleAction() {
         }
     }
     else if (GAME.state === 'YARD_INTRO') { startYardLevel(); }
+    else if (GAME.state === 'GAMEOVER_SPLASH') {
+        // After viewing game over screen, go back to title
+        if (GAME.stateTimer > 60) { // Short delay before allowing skip
+            GAME.state = 'TITLE'; updateMusicForState();
+        }
+    }
     else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') {
         document.getElementById('boss-hud').style.display = 'none'; GAME.state = 'TITLE'; updateMusicForState();
     }
@@ -4057,16 +4063,16 @@ function update() {
             let header, body;
             if (isWin) {
                 header = `OUTSTANDING!\n"${finalText}"\n`;
+                let stats = `\nStats:\nTime Spent: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nSafety Rules used: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`;
+                showDialog(header + stats, speaker, GFX.simonFace, true);
+                GAME.state = 'DIALOG'; GAME.nextState = 'CREDITS';
             } else {
-                // Include corporate message and character line in the game over dialog
-                header = `TERMINATED\n\n` +
-                    `"${GAME.corporateMessage || 'Employment optimized.'}"\n\n` +
-                    `${GAME.selectedChar}: "${GAME.characterDefeatLine || '...'}"\n\n` +
-                    `SIMON'S REVIEW:\n"${finalText}"\n`;
+                // Simon's analysis only - no corporate message or character defeat line
+                header = `${finalText}`;
+                let stats = `\n\nStats:\nTime Spent: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nSafety Rules used: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`;
+                showDialog(header + stats, speaker, GFX.simonFace, true);
+                GAME.state = 'DIALOG'; GAME.nextState = 'GAMEOVER_SPLASH';
             }
-            let stats = `\nStats:\nTime Spent: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nSafety Rules used: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`;
-            showDialog(header + stats, speaker, GFX.simonFace, true);
-            GAME.state = 'DIALOG'; GAME.nextState = isWin ? 'CREDITS' : 'TITLE';
         } else if (!ready && GAME.splashTimer <= fallbackTimer) {
             GAME.aiResultText = 'System could not load live review. Using cached performance log.';
         }
@@ -5267,6 +5273,12 @@ function closeDialog() {
 
     if (GAME.state === 'VISITOR_SPLASH') { showVisitorSplash(); return; }
 
+    // Handle GAMEOVER_SPLASH - reset stateTimer for animation
+    if (GAME.state === 'GAMEOVER_SPLASH') {
+        GAME.stateTimer = 0;
+        return;
+    }
+
     // Only start yard level if not already initialized (prevents infinite loop)
     if (GAME.state === 'YARD_LEVEL' && !GAME.yard) { startYardLevel(); return; }
     if (GAME.state === 'MECHA_BOSS_INTRO') { beginMechaEncounter(); return; }
@@ -5362,6 +5374,75 @@ function drawSnesSplash(isWin) {
     ctx.fillStyle = '#fef9c3';
     const sub = isWin ? 'CALCULATING SAFETY SCORE...' : 'PREPARING EXIT INTERVIEW...';
     ctx.fillText(sub, canvas.width/2, canvas.height/2 + 55);
+    ctx.textAlign = 'start';
+}
+
+// Game Over splash screen - shown after Simon's review dialog
+function drawGameOverSplash() {
+    const t = GAME.stateTimer;
+
+    // Dark red gradient background
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#1a0408');
+    gradient.addColorStop(0.5, '#2d0a0f');
+    gradient.addColorStop(1, '#000');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Moving scanlines
+    for (let y = 0; y < canvas.height; y += 8) {
+        const offset = Math.sin((t / 8) + y * 0.12) * 3;
+        ctx.fillStyle = `rgba(255,255,255,0.04)`;
+        ctx.fillRect(offset, y, canvas.width, 2);
+    }
+
+    // Flickering vignette effect
+    const vignetteAlpha = 0.4 + Math.sin(t / 20) * 0.1;
+    const vignette = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width * 0.8);
+    vignette.addColorStop(0, 'rgba(0,0,0,0)');
+    vignette.addColorStop(1, `rgba(0,0,0,${vignetteAlpha})`);
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.textAlign = 'center';
+
+    // "GAME OVER" text with dramatic shadow
+    ctx.font = 'bold 28px monospace';
+    const shadowOffsets = [[3,3],[-3,3],[3,-3],[-3,-3],[0,4],[0,-4],[4,0],[-4,0]];
+    shadowOffsets.forEach(([dx, dy]) => {
+        ctx.fillStyle = '#000';
+        ctx.fillText('GAME OVER', canvas.width/2 + dx, canvas.height/2 - 30 + dy);
+    });
+
+    // Pulsing red text
+    const pulse = 0.7 + Math.sin(t / 10) * 0.3;
+    ctx.fillStyle = `rgba(248, 113, 113, ${pulse})`;
+    ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 30);
+
+    // Corporate message
+    ctx.font = '10px monospace';
+    ctx.fillStyle = '#fef9c3';
+    const corporateMsg = GAME.corporateMessage || 'Employment optimized.';
+    wrapText(ctx, `"${corporateMsg}"`, canvas.width/2, canvas.height/2 + 20, canvas.width - 40, 14);
+
+    // Character defeat line
+    if (GAME.characterDefeatLine) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '9px monospace';
+        const charLine = `${GAME.selectedChar}: "${GAME.characterDefeatLine}"`;
+        wrapText(ctx, charLine, canvas.width/2, canvas.height/2 + 60, canvas.width - 40, 12);
+    }
+
+    // Press space prompt (after short delay)
+    if (t > 120) {
+        const blink = Math.floor(t / 30) % 2 === 0;
+        if (blink) {
+            ctx.font = '10px monospace';
+            ctx.fillStyle = '#666';
+            ctx.fillText('[PRESS SPACE]', canvas.width/2, canvas.height - 20);
+        }
+    }
+
     ctx.textAlign = 'start';
 }
 
@@ -7009,6 +7090,7 @@ function drawCredits() {
 function draw() {
     if (GAME.state === 'LOSE_SPLASH') { drawSnesSplash(false); return; }
     if (GAME.state === 'WIN_SPLASH') { drawSnesSplash(true); return; }
+    if (GAME.state === 'GAMEOVER_SPLASH') { drawGameOverSplash(); return; }
 
     ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width, canvas.height);
     let dxShake = 0, dyShake = 0;
