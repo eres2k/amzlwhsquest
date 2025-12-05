@@ -2738,6 +2738,7 @@ const GAME = {
     shake: 0, flash: 0,
     dialogText: "", dialogVisible: "", dialogTimer: 0,
     splashTimer: 0, aiResultText: null,
+    creditsType: 'normal', // 'normal' for surprise visitor, 'mecha' for Mecha Jeff
     startTime: 0, booksFired: 0, opsPushed: 0,
     lastAIBanterTime: 0, // Throttle AI requests
     fireExitDoor: null, // Hidden level door position
@@ -3000,6 +3001,12 @@ function handleAction() {
     }
     else if (GAME.state === 'BEZOS_WIN') {
         GAME.state = 'TITLE'; updateMusicForState();
+    }
+    else if (GAME.state === 'CREDITS') {
+        // Allow skip after credits have been rolling for a while
+        if (GAME.stateTimer > 600) {
+            GAME.state = 'TITLE'; updateMusicForState();
+        }
     }
     else if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'BEZOS_BOSS' || GAME.state === 'MECHA_BOSS') {
         if (GAME.state === 'PLAY' && tryInteract()) return;
@@ -3366,6 +3373,8 @@ function startCredits() {
     GAME.stateTimer = 0;
     GAME.boss = null;
     document.getElementById('boss-hud').style.display = 'none';
+    document.getElementById('hud-layer').style.display = 'none';
+    document.getElementById('dialog-box').style.display = 'none';
     GAME.projectiles = [];
     GAME.particles = [];
     GAME.floatingTexts = [];
@@ -4525,6 +4534,7 @@ function updateMechaBattle() {
 
             if (m.hp <= 0) {
                 GAME.nextState = 'CREDITS';
+                GAME.creditsType = 'mecha';
                 showDialog('Impressive. You actually crushed Evil Jeff Bezos. Audit notes: flawless. The warehouse is safe... for now.', 'Simon Unglaube', GFX.simonFace);
                 return;
             }
@@ -4875,7 +4885,7 @@ function triggerGameOver(reason) {
 }
 
 function winGame() {
-    AudioSys.sfx.start(); MusicSys.play('victory'); GAME.nextState = 'TITLE'; GAME.state = 'WIN_SPLASH'; GAME.splashTimer = 260; GAME.aiResultText = null; GAME.stateTimer = 0;
+    AudioSys.sfx.start(); MusicSys.play('victory'); GAME.nextState = 'CREDITS'; GAME.creditsType = 'normal'; GAME.state = 'WIN_SPLASH'; GAME.splashTimer = 260; GAME.aiResultText = null; GAME.stateTimer = 0;
     document.getElementById('boss-hud').style.display = 'none'; document.getElementById('dialog-box').style.display = 'none';
     document.getElementById('hud-layer').style.display = 'none';
     const currentGen = GAME.genId; const time = Math.floor((Date.now() - GAME.startTime)/1000);
@@ -6165,29 +6175,171 @@ function drawMechaTransform() {
 
 function drawCredits() {
     const t = GAME.stateTimer;
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(0,0,canvas.width, canvas.height);
-    ctx.fillStyle = '#1f2937'; ctx.fillRect(6,6,canvas.width-12, canvas.height-12);
-    ctx.drawImage(GFX.erwinFace, canvas.width/2 - 48, 12, 96, 96);
-    ctx.fillStyle = '#eab308'; ctx.font = '10px monospace'; ctx.textAlign = 'center';
-    ctx.fillText('CONGRATULATIONS! HIDDEN LEVEL CLEARED.', canvas.width/2, 118);
+    const isMecha = GAME.creditsType === 'mecha';
 
+    // Fade in effect
+    const fadeIn = Math.min(1, t / 60);
+    ctx.globalAlpha = fadeIn;
+
+    if (isMecha) {
+        // === FANCY MECHA CREDITS ===
+        // Epic gradient background
+        const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        grad.addColorStop(0, '#0a0020');
+        grad.addColorStop(0.3, '#1a0040');
+        grad.addColorStop(0.5, '#2a0060');
+        grad.addColorStop(0.7, '#1a0040');
+        grad.addColorStop(1, '#0a0020');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Animated star field
+        for (let i = 0; i < 50; i++) {
+            const x = (i * 47 + t * 0.5) % canvas.width;
+            const y = (i * 73 + t * 0.2) % canvas.height;
+            const twinkle = Math.sin(t * 0.08 + i * 0.7) * 0.5 + 0.5;
+            ctx.fillStyle = `rgba(255,215,0,${twinkle * 0.8})`;
+            ctx.fillRect(x, y, 2, 2);
+        }
+
+        // Golden border glow
+        ctx.strokeStyle = `rgba(255,215,0,${0.5 + Math.sin(t * 0.05) * 0.3})`;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
+        ctx.strokeStyle = `rgba(255,140,0,${0.3 + Math.sin(t * 0.07) * 0.2})`;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+
+        // Big congratulations header with glow
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 16px monospace';
+        const glowIntensity = 0.5 + Math.sin(t * 0.1) * 0.3;
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 15 * glowIntensity;
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText('CONGRATULATIONS!', canvas.width / 2, 30);
+        ctx.font = 'bold 12px monospace';
+        ctx.fillStyle = '#ff6600';
+        ctx.fillText('MECHA JEFF DEFEATED!', canvas.width / 2, 48);
+        ctx.shadowBlur = 0;
+
+        // Subtitle
+        ctx.font = '9px monospace';
+        ctx.fillStyle = '#aaa';
+        ctx.fillText('The Warehouse is Finally Safe', canvas.width / 2, 64);
+
+    } else {
+        // === NORMAL CREDITS ===
+        // Dark blue background
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(6, 6, canvas.width - 12, canvas.height - 12);
+
+        // Simple border
+        ctx.strokeStyle = '#4a5568';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(6, 6, canvas.width - 12, canvas.height - 12);
+
+        // Congratulations header
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 14px monospace';
+        ctx.fillStyle = '#eab308';
+        ctx.fillText('CONGRATULATIONS!', canvas.width / 2, 28);
+        ctx.font = '10px monospace';
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillText('SURPRISE VISITOR DEFEATED!', canvas.width / 2, 44);
+
+        // Subtitle
+        ctx.font = '8px monospace';
+        ctx.fillStyle = '#888';
+        ctx.fillText('Safety Audit Complete', canvas.width / 2, 58);
+    }
+
+    // Credits list - 35 positions all by Erwin Esener
     const credits = [
-        'Lead Developer: Erwin Esener',
-        'Art Director: Erwin Esener',
-        'Sound Engineer: Erwin Esener',
-        'QA Lead: Erwin Esener',
-        'Logistics Wizard: Erwin Esener',
-        'Catering: Erwin Esener',
-        'Moral Support: Erwin Esener',
-        'Everything Else: Erwin Esener'
+        'Executive Producer',
+        'Director',
+        'Lead Developer',
+        'Senior Programmer',
+        'Game Designer',
+        'Level Designer',
+        'Art Director',
+        'Lead Artist',
+        'Character Designer',
+        'Background Artist',
+        'Pixel Art Specialist',
+        'Animation Director',
+        'UI/UX Designer',
+        'Sound Director',
+        'Music Composer',
+        'Sound Effects Designer',
+        'Audio Engineer',
+        'Quality Assurance Lead',
+        'Lead Tester',
+        'Bug Hunter',
+        'Narrative Designer',
+        'Dialogue Writer',
+        'Localization Manager',
+        'Marketing Director',
+        'Community Manager',
+        'Technical Director',
+        'Engine Developer',
+        'Tool Programmer',
+        'DevOps Engineer',
+        'Project Manager',
+        'Producer',
+        'Catering',
+        'Coffee Maker',
+        'Moral Support',
+        'Everything Else'
     ];
-    const startY = canvas.height + 20 - t * 0.25;
-    ctx.fillStyle = '#fff'; ctx.font = '9px monospace';
-    credits.forEach((line, i) => { ctx.fillText(line, canvas.width/2, startY + i*16); });
+
+    // Scrolling credits
+    const scrollSpeed = isMecha ? 0.3 : 0.25;
+    const startY = canvas.height + 80 - t * scrollSpeed;
+    const lineHeight = isMecha ? 20 : 18;
+
+    ctx.font = isMecha ? '9px monospace' : '8px monospace';
+
+    credits.forEach((role, i) => {
+        const y = startY + i * lineHeight;
+        if (y > 70 && y < canvas.height - 20) {
+            if (isMecha) {
+                // Fancy golden text with role
+                ctx.fillStyle = '#ffd700';
+                ctx.fillText(role + ':', canvas.width / 2, y);
+                ctx.fillStyle = '#fff';
+                ctx.fillText('Erwin Esener', canvas.width / 2, y + 10);
+            } else {
+                // Simple white text
+                ctx.fillStyle = '#ccc';
+                ctx.fillText(role + ': Erwin Esener', canvas.width / 2, y);
+            }
+        }
+    });
+
+    // Final thank you message (appears after credits scroll)
+    const thankYouY = startY + credits.length * lineHeight + 40;
+    if (thankYouY > 70 && thankYouY < canvas.height - 20) {
+        ctx.font = isMecha ? 'bold 12px monospace' : 'bold 10px monospace';
+        ctx.fillStyle = isMecha ? '#ffd700' : '#eab308';
+        ctx.fillText('THANK YOU FOR PLAYING!', canvas.width / 2, thankYouY);
+        if (isMecha) {
+            ctx.font = '8px monospace';
+            ctx.fillStyle = '#ff6600';
+            ctx.fillText('You are the Ultimate Safety Champion!', canvas.width / 2, thankYouY + 16);
+        }
+    }
+
+    ctx.globalAlpha = 1;
     ctx.textAlign = 'left';
+
+    // Skip prompt
     if (GAME.stateTimer > 600) {
-        ctx.fillStyle = '#94a3b8'; ctx.font = '8px monospace';
-        ctx.fillText('[SPACE TO SKIP]', 8, canvas.height - 10);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '8px monospace';
+        ctx.fillText('[SPACE TO CONTINUE]', 8, canvas.height - 10);
     }
 }
 
