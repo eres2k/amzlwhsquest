@@ -3,20 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMZL WHS Coordinator Quest</title>
+    <title>AMZL WHS Quest - GameCube Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
         :root {
-            --bg-color: #0a0a12;
-            --accent-gold: #ffd700;
-            --accent-cyan: #00ffff;
-            --accent-orange: #ff9900;
+            /* GameCube Signature Colors */
+            --gc-purple: #4B0082;
+            --gc-indigo: #663399;
+            --gc-violet: #8B5CF6;
+            --gc-lavender: #C4B5FD;
+            --gc-dark: #1a0a2e;
+            --gc-darker: #0d0518;
+            --bg-color: #0d0518;
+            --accent-gold: #ffd93d;
+            --accent-cyan: #00d4ff;
+            --accent-orange: #ff6b35;
+            --bloom-purple: rgba(139, 92, 246, 0.4);
+            --bloom-cyan: rgba(0, 212, 255, 0.3);
         }
 
         body {
             margin: 0; padding: 0;
-            background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a12 50%, #000 100%);
+            background: radial-gradient(ellipse at center, var(--gc-dark) 0%, var(--gc-darker) 50%, #000 100%);
             display: flex; justify-content: center; align-items: center;
             height: 100vh; overflow: hidden;
             font-family: 'Press Start 2P', monospace; color: white; user-select: none;
@@ -24,12 +33,13 @@
 
         #game-wrapper {
             position: relative; width: 768px; height: 672px;
-            background: linear-gradient(135deg, #0f0f1a 0%, #000 100%);
-            border: 4px solid #333;
-            border-radius: 24px;
+            background: linear-gradient(135deg, var(--gc-dark) 0%, var(--gc-darker) 100%);
+            border: 4px solid var(--gc-violet);
+            border-radius: 30px;
             box-shadow:
-                0 0 60px rgba(255, 153, 0, 0.15),
-                0 0 120px rgba(0, 255, 255, 0.08),
+                0 0 60px var(--bloom-purple),
+                0 0 120px var(--bloom-cyan),
+                0 8px 0 var(--gc-purple),
                 inset 0 0 60px rgba(0, 0, 0, 0.8);
             overflow: hidden;
         }
@@ -38,12 +48,12 @@
             content: '';
             position: absolute;
             top: -4px; left: -4px; right: -4px; bottom: -4px;
-            background: linear-gradient(45deg, #ff9900, #00ffff, #ff00ff, #ff9900);
+            background: linear-gradient(45deg, var(--gc-purple), var(--gc-violet), var(--gc-indigo), var(--gc-purple));
             background-size: 400% 400%;
             animation: borderGlow 8s ease infinite;
-            border-radius: 28px;
+            border-radius: 34px;
             z-index: -1;
-            opacity: 0.5;
+            opacity: 0.6;
         }
 
         @keyframes borderGlow {
@@ -53,28 +63,23 @@
 
         canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
 
+        /* GameCube Component Video Effect - cleaner than CRT */
         #crt-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background:
-                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
-                linear-gradient(90deg, rgba(255, 100, 0, 0.03), rgba(0, 255, 100, 0.02), rgba(100, 0, 255, 0.03));
-            background-size: 100% 3px, 4px 100%; pointer-events: none; z-index: 900;
-            animation: flicker 0.08s infinite, scanline 10s linear infinite;
+                radial-gradient(ellipse at center, transparent 60%, rgba(75, 0, 130, 0.2) 100%);
+            pointer-events: none; z-index: 900;
         }
 
-        @keyframes scanline {
-            0% { background-position: 0 0, 0 0; }
-            100% { background-position: 0 100%, 0 0; }
-        }
-
+        /* Bloom overlay for GameCube style */
         #vignette {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.5) 80%, rgba(0,0,0,0.8) 100%);
-            pointer-events: none; z-index: 901; border-radius: 20px;
+            background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.05) 0%, rgba(0,0,0,0) 40%, rgba(75, 0, 130, 0.3) 100%);
+            pointer-events: none; z-index: 901; border-radius: 26px;
         }
 
         @keyframes flicker {
-            0%, 100% { opacity: 0.97; }
+            0%, 100% { opacity: 0.98; }
             50% { opacity: 1; }
         }
 
@@ -86,41 +91,41 @@
 
         #dialog-box {
             width: 100%; min-height: 140px;
-            background: linear-gradient(180deg, #0a1628 0%, #061020 100%);
-            border: 3px solid #3b82f6;
-            border-radius: 12px; display: none;
+            background: linear-gradient(180deg, rgba(75, 0, 130, 0.9) 0%, rgba(45, 31, 61, 0.95) 100%);
+            border: 3px solid var(--gc-violet);
+            border-radius: 20px; display: none;
             flex-direction: row; padding: 16px; box-sizing: border-box;
             box-shadow:
-                0 0 20px rgba(59, 130, 246, 0.4),
-                6px 6px 0px rgba(0,0,0,0.6),
-                inset 0 0 30px rgba(59, 130, 246, 0.1);
+                0 0 30px var(--bloom-purple),
+                0 6px 0 var(--gc-purple),
+                inset 0 0 30px rgba(139, 92, 246, 0.1);
             pointer-events: auto;
         }
 
         #portrait {
             width: 64px; height: 64px;
-            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a14 100%);
-            border: 3px solid #ffd700;
-            border-radius: 8px;
+            background: linear-gradient(135deg, var(--gc-dark) 0%, var(--gc-darker) 100%);
+            border: 3px solid var(--gc-lavender);
+            border-radius: 12px;
             margin-right: 20px; flex-shrink: 0; image-rendering: pixelated;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 15px var(--bloom-purple);
         }
 
         #text-content {
-            flex-grow: 1; font-size: 13px; line-height: 1.7; color: #f0f0ff;
-            text-shadow: 2px 2px 4px #000, 0 0 10px rgba(255, 255, 255, 0.1);
+            flex-grow: 1; font-size: 13px; line-height: 1.7; color: var(--gc-lavender);
+            text-shadow: 2px 2px 4px #000, 0 0 10px rgba(139, 92, 246, 0.3);
             white-space: pre-wrap;
         }
 
         #press-space-hint {
-            font-size: 10px; color: #ffd700; margin-top: 10px;
+            font-size: 10px; color: var(--accent-cyan); margin-top: 10px;
             animation: blink 0.8s ease-in-out infinite; display: block;
-            text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+            text-shadow: 0 0 10px var(--accent-cyan);
         }
 
         .gemini-badge {
-            font-size: 9px; color: #00ffff; margin-bottom: 8px; display: none;
-            text-transform: uppercase; text-shadow: 0 0 8px #00ffff;
+            font-size: 9px; color: var(--gc-lavender); margin-bottom: 8px; display: none;
+            text-transform: uppercase; text-shadow: 0 0 8px var(--gc-violet);
             letter-spacing: 1px;
         }
         
@@ -146,46 +151,96 @@
             position: absolute; top: 12px; right: 12px; color: white;
             text-align: right; text-shadow: 0 0 8px rgba(0,0,0,0.8), 2px 2px 4px black; font-size: 11px;
             font-family: 'Press Start 2P', monospace;
-            background: linear-gradient(135deg, rgba(10, 15, 30, 0.95) 0%, rgba(5, 8, 20, 0.98) 100%);
-            padding: 10px 14px; border: 2px solid #fbbf24; border-radius: 6px;
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.4), inset 0 0 15px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(135deg, rgba(75, 0, 130, 0.9) 0%, rgba(45, 31, 61, 0.95) 100%);
+            padding: 10px 14px; border: 3px solid var(--gc-violet); border-radius: 15px;
+            box-shadow: 0 0 25px var(--bloom-purple), 0 4px 0 var(--gc-purple), inset 0 0 15px rgba(0, 0, 0, 0.6);
         }
-        .hud-text div:first-child { color: #ef4444; margin-bottom: 6px; letter-spacing: 1px; }
-        .hud-text div:last-child { color: #22c55e; letter-spacing: 1px; }
+        .hud-text div:first-child { color: #ff6b6b; margin-bottom: 6px; letter-spacing: 1px; }
+        .hud-text div:last-child { color: #39ff14; letter-spacing: 1px; }
 
         #boss-hud {
             position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
             width: 65%; display: none;
-            background: linear-gradient(180deg, rgba(40, 10, 10, 0.9) 0%, rgba(20, 5, 5, 0.95) 100%);
-            padding: 10px 16px; border-radius: 10px;
-            border: 2px solid #dc2626;
-            box-shadow: 0 0 20px rgba(220, 38, 38, 0.4);
+            background: linear-gradient(180deg, rgba(100, 20, 40, 0.9) 0%, rgba(60, 10, 25, 0.95) 100%);
+            padding: 10px 16px; border-radius: 15px;
+            border: 3px solid #ff6b35;
+            box-shadow: 0 0 25px rgba(255, 107, 53, 0.4), 0 4px 0 #8B0000;
         }
 
         .boss-bar-bg {
             width: 100%; height: 14px;
-            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
-            border: 2px solid #444; border-radius: 4px;
+            background: linear-gradient(180deg, #2a1020 0%, #150810 100%);
+            border: 2px solid #666; border-radius: 8px;
             box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
         }
         .boss-bar-fill {
             width: 100%; height: 100%;
-            background: linear-gradient(180deg, #ff4444 0%, #cc0000 50%, #aa0000 100%);
+            background: linear-gradient(180deg, #ff6b35 0%, #ff4444 50%, #cc0000 100%);
             transition: width 0.3s ease-out;
-            border-radius: 2px;
-            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.3);
         }
         .boss-name {
-            color: #ff4444; text-align: center; font-size: 11px; margin-bottom: 6px;
-            text-shadow: 2px 2px 4px black, 0 0 10px rgba(255, 0, 0, 0.5);
+            color: #ff6b35; text-align: center; font-size: 11px; margin-bottom: 6px;
+            text-shadow: 2px 2px 4px black, 0 0 15px rgba(255, 107, 53, 0.6);
             letter-spacing: 2px;
         }
-        
+
         #ai-status {
-            display: none !important; 
-            position: absolute; top: 10px; left: 10px; font-size: 10px; color: #00ffff;
-            background: rgba(0,0,0,0.8); padding: 4px; border: 1px solid #00ffff; pointer-events: none;
-            z-index: 2000; 
+            display: none !important;
+            position: absolute; top: 10px; left: 10px; font-size: 10px; color: var(--gc-lavender);
+            background: rgba(75, 0, 130, 0.9); padding: 4px; border: 1px solid var(--gc-violet); pointer-events: none;
+            z-index: 2000; border-radius: 8px;
+        }
+
+        /* GameCube Memory Card Indicator */
+        .gc-memory-card {
+            position: absolute; bottom: 15px; right: 15px;
+            background: linear-gradient(135deg, rgba(45, 31, 61, 0.9), rgba(26, 10, 46, 0.95));
+            border: 2px solid var(--gc-violet);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 7px;
+            color: var(--gc-lavender);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 0 10px var(--bloom-purple);
+            pointer-events: none;
+        }
+
+        .gc-memory-icon {
+            width: 14px; height: 18px;
+            background: linear-gradient(135deg, #666, #444);
+            border-radius: 2px;
+            position: relative;
+            border: 1px solid #888;
+        }
+
+        .gc-memory-icon::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 50%;
+            transform: translateX(-50%);
+            width: 8px; height: 4px;
+            background: #222;
+            border-radius: 1px;
+        }
+
+        /* GameCube Edition Badge */
+        .gc-edition-badge {
+            position: absolute; top: 15px; left: 15px;
+            background: linear-gradient(135deg, var(--gc-indigo), var(--gc-purple));
+            border: 2px solid var(--gc-violet);
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-size: 7px;
+            color: var(--gc-lavender);
+            z-index: 1001;
+            box-shadow: 0 0 15px var(--bloom-purple);
+            pointer-events: none;
+            text-shadow: 0 0 5px var(--accent-cyan);
         }
     </style>
 </head>
@@ -196,6 +251,13 @@
         <canvas id="gameCanvas" width="256" height="224"></canvas>
         <div id="crt-overlay"></div>
         <div id="vignette"></div>
+
+        <!-- GameCube UI Elements -->
+        <div class="gc-edition-badge">GAMECUBE EDITION</div>
+        <div class="gc-memory-card">
+            <div class="gc-memory-icon"></div>
+            <span>SLOT A</span>
+        </div>
 
         <div id="ui-overlay">
             <div id="slogan-display"></div>
