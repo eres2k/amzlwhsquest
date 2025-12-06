@@ -348,6 +348,20 @@ const SIMULATED_AI = {
         "Performance: CATASTROPHIC. Entropy won.",
         "You failed. Gravity and stupidity destroyed us.",
         "Safety is binary. You are a zero."
+    ],
+    omega_simon_taunts: [
+        "FOOLISH MORTAL! YOU THOUGHT YOU COULD WIN?!",
+        "THIS ISN'T EVEN MY FINAL FORM!",
+        "OMEGA PROTOCOL ENGAGED! RESISTANCE IS FUTILE!",
+        "I AM SAFETY INCARNATE! YOU CANNOT DEFEAT ME!",
+        "DID YOU REALLY THINK IT WOULD BE THAT EASY?!",
+        "BEHOLD MY TRUE POWER! THE AUDIT NEVER ENDS!"
+    ],
+    reviews_mega_simon_unbeatable: [
+        "Performance Review: AMUSING. You almost had me. Almost. Nobody defeats Mega Simon. It's in the employee handbook, section 47-B.",
+        "Nice try, but the Safety Protocol is unbreakable. I exist outside your understanding of 'winnable'. Terminated.",
+        "You fought valiantly. Irrelevant. Nobody has ever defeated Mega Simon. Nobody ever will. It's company policy.",
+        "Impressive effort. Still failed. Did you really think you could beat ME? I wrote the rules. ALL of them."
     ]
 };
 
@@ -607,8 +621,14 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
         ]);
     }
     if (is("taunt")) {
-         if(prompt.includes("Simon")) return pick(SIMULATED_AI.simon_taunts);
+         if(prompt.includes("Simon") || prompt.includes("OMEGA")) return pick(SIMULATED_AI.omega_simon_taunts || SIMULATED_AI.simon_taunts);
          return pick(SIMULATED_AI.taunts);
+    }
+    if (is("omega_transformation")) {
+        return pick(SIMULATED_AI.omega_simon_taunts);
+    }
+    if (is("reviews_mega_simon_unbeatable")) {
+        return pick(SIMULATED_AI.reviews_mega_simon_unbeatable);
     }
     if ((is("reviews_loss") || is("reviews_win")) && stats) {
         const time = stats.time ?? "?";
@@ -3191,6 +3211,8 @@ window.addEventListener('keyup', e => {
 function handleAction() {
     AudioSys.init(); AudioSys.resume(); MusicSys.init(); MusicSys.resume(); updateMusicForState();
     if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') return;
+    // MEGA_SIMON_TWIST: Allow space only in final phase after reveal
+    if (GAME.state === 'MEGA_SIMON_TWIST' && (GAME.twistPhase < 3 || GAME.stateTimer <= 240)) return;
     if (GAME.state === 'LOGO') { advanceState(); }
     else if (['INTRO', 'STORY'].includes(GAME.state)) { AudioSys.sfx.start(); advanceState(); }
     else if (['TITLE', 'HOWTO'].includes(GAME.state)) {
@@ -3244,6 +3266,12 @@ function handleAction() {
     else if (GAME.state === 'GAMEOVER_SPLASH') {
         // After viewing game over screen, go back to title
         if (GAME.stateTimer > 60) { // Short delay before allowing skip
+            GAME.state = 'TITLE'; updateMusicForState();
+        }
+    }
+    else if (GAME.state === 'MEGA_SIMON_TWIST') {
+        // The ultimate twist: even after "beating" Mega Simon, you still lose
+        if (GAME.twistPhase >= 3 && GAME.stateTimer > 240) {
             GAME.state = 'TITLE'; updateMusicForState();
         }
     }
@@ -3442,6 +3470,75 @@ function initSimonBoss() {
     };
     GAME.entities = []; GAME.projectiles = [];
     updateMusicForState();
+}
+
+// --- OMEGA SIMON TRANSFORMATION: When Mega Simon gets close to defeat ---
+function triggerOmegaSimonTransformation() {
+    if (GAME.boss.isOmega) return; // Already transformed
+
+    GAME.boss.isOmega = true;
+    GAME.boss.name = "OMEGA SIMON";
+    GAME.boss.title = "THE UNBEATABLE";
+    GAME.boss.desc = "Nobody defeats Mega Simon. NOBODY.";
+    GAME.boss.attackName = "ABSOLUTE TERMINATION";
+    GAME.boss.hp = 40; // Fully restored with even MORE HP
+    GAME.boss.maxHp = 40;
+    GAME.boss.speed = 2.5; // Much faster
+    GAME.boss.attackDelay = 15; // Much faster attacks
+    GAME.boss.tauntThresholds = [0.6, 0.3]; // New taunt thresholds
+
+    // Clear projectiles and show transformation
+    GAME.projectiles = [];
+    GAME.shake = 30;
+    GAME.flash = 20;
+    AudioSys.sfx.bossIntro();
+
+    // Show transformation dialogue
+    const currentGen = GAME.genId;
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+    showThinking("OMEGA SIMON", GFX.simonBoss);
+
+    callGemini("You are Mega Simon, WHS boss, transforming into OMEGA SIMON after nearly being defeated. You're laughing maniacally, declaring this isn't your final form and that NOBODY can defeat Mega Simon. It's literally impossible. Company policy. Max 35 words.", "omega_transformation").then(text => {
+        if (GAME.genId === currentGen) {
+            showDialog(text, "OMEGA SIMON", GFX.simonBoss, true);
+        }
+    }).catch(() => {
+        showDialog(pick(SIMULATED_AI.omega_simon_taunts), "OMEGA SIMON", GFX.simonBoss, false);
+    });
+
+    updateBossHud();
+}
+
+// --- MEGA SIMON UNBEATABLE TWIST: Even if you "win", you lose ---
+function triggerMegaSimonUnbeatableTwist() {
+    // The player thinks they won... but they didn't
+    GAME.gameOverTriggered = true;
+    GAME.nextState = 'TITLE';
+    GAME.state = 'MEGA_SIMON_TWIST';
+    GAME.splashTimer = 400; // Longer for the dramatic reveal
+    GAME.aiResultText = null;
+    GAME.stateTimer = 0;
+    GAME.twistPhase = 0;
+
+    document.getElementById('boss-hud').style.display = 'none';
+    document.getElementById('dialog-box').style.display = 'none';
+    document.getElementById('hud-layer').style.display = 'none';
+
+    // Brief victory music before the twist
+    AudioSys.sfx.start();
+    MusicSys.play('victory');
+
+    const time = Math.floor((Date.now() - GAME.startTime)/1000);
+    const currentGen = GAME.genId;
+    const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
+
+    // Generate the special "you thought you won but you didn't" review
+    callGemini(`You are OMEGA SIMON, the unbeatable WHS final boss. The coordinator THOUGHT they won after ${time}s, ${GAME.issuesFixed}/5 hazards, ${GAME.booksFired} rule books. But nobody defeats Mega Simon - it's company policy section 47-B. Deliver a mocking performance review explaining they still failed because Mega Simon is literally unbeatable. Be smug and include the stat that nobody has ever won. Max 60 words.`, "reviews_mega_simon_unbeatable", { stats }).then(review => {
+        if (GAME.genId === currentGen) {
+            GAME.aiResultText = review;
+        }
+    });
 }
 
 function initBossEncounter() {
@@ -4944,11 +5041,29 @@ function updateBoss() {
     b.timer++;
     if (b.timer > b.attackDelay) {
         b.timer = 0;
-        for (let i = -1; i <= 1; i++) {
-            let angle = Math.atan2(p.y - b.y, p.x - b.x) + (i * 0.3);
-            GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*10, y: b.y + 16 + Math.sin(angle)*10, vx: Math.cos(angle)*2.5, vy: Math.sin(angle)*2.5, life: 100, boss: true, grace: 10 });
+
+        // OMEGA SIMON has devastating attack patterns
+        if (b.isOmega) {
+            // Omega attack: 8-way burst + targeted shots
+            for (let i = 0; i < 8; i++) {
+                let angle = (Math.PI * 2 / 8) * i + (b.timer * 0.1);
+                GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*10, y: b.y + 16 + Math.sin(angle)*10, vx: Math.cos(angle)*3.0, vy: Math.sin(angle)*3.0, life: 120, boss: true, grace: 8 });
+            }
+            // Plus targeted shots at player
+            for (let i = -2; i <= 2; i++) {
+                let angle = Math.atan2(p.y - b.y, p.x - b.x) + (i * 0.2);
+                GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*10, y: b.y + 16 + Math.sin(angle)*10, vx: Math.cos(angle)*3.5, vy: Math.sin(angle)*3.5, life: 100, boss: true, grace: 5 });
+            }
+            GAME.shake = 8;
+        } else {
+            // Normal Mega Simon attack
+            for (let i = -1; i <= 1; i++) {
+                let angle = Math.atan2(p.y - b.y, p.x - b.x) + (i * 0.3);
+                GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*10, y: b.y + 16 + Math.sin(angle)*10, vx: Math.cos(angle)*2.5, vy: Math.sin(angle)*2.5, life: 100, boss: true, grace: 10 });
+            }
+            GAME.shake = 5;
         }
-        AudioSys.sfx.alert(); GAME.shake = 5; 
+        AudioSys.sfx.alert();
     }
 }
 
@@ -4974,6 +5089,14 @@ function updateProjectiles() {
                 if (Math.hypot(p.x - (GAME.boss.x+16), p.y - (GAME.boss.y+16)) < 24) {
                     GAME.boss.hp--; updateBossHud(); AudioSys.sfx.bossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, attackMeta.color || '#ff0000', -2); GAME.projectiles.splice(i,1);
                     spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, attackMeta.text || 'Hit!', attackMeta.color || '#ff0000');
+
+                    // MEGA SIMON UNBEATABLE TWIST: Transform before defeat, then still lose
+                    if (GAME.boss.name === "MEGA SIMON" && GAME.boss.hp <= 5 && !GAME.boss.isOmega) {
+                        triggerOmegaSimonTransformation(); continue;
+                    }
+                    if (GAME.boss.isOmega && GAME.boss.hp <= 0) {
+                        triggerMegaSimonUnbeatableTwist(); continue;
+                    }
                     if (GAME.boss.hp <= 0) winGame(); continue;
                 }
             }
@@ -5534,6 +5657,130 @@ function drawGameOverSplash() {
             ctx.font = '10px monospace';
             ctx.fillStyle = '#666';
             ctx.fillText('[PRESS SPACE]', canvas.width/2, canvas.height - 20);
+        }
+    }
+
+    ctx.textAlign = 'start';
+}
+
+// MEGA SIMON TWIST: The dramatic reveal that you still lost
+function drawMegaSimonTwist() {
+    const t = GAME.stateTimer;
+    const phase = GAME.twistPhase || 0;
+
+    // Phase transitions
+    if (t === 60 && phase === 0) {
+        GAME.twistPhase = 1; // Victory fading
+        MusicSys.stop();
+    }
+    if (t === 120 && phase === 1) {
+        GAME.twistPhase = 2; // Simon laughing
+        MusicSys.play('menu');
+        AudioSys.sfx.bossIntro();
+    }
+    if (t === 180 && phase === 2) {
+        GAME.twistPhase = 3; // Full defeat reveal
+    }
+
+    // Background transitions from victory blue to defeat red
+    let primary, accent;
+    if (phase === 0) {
+        // Brief victory colors
+        primary = '#0d1b4c';
+        accent = '#7dd3fc';
+    } else if (phase === 1) {
+        // Transition - flickering between victory and defeat
+        const flicker = Math.floor(t / 5) % 2;
+        primary = flicker ? '#0d1b4c' : '#2d0a0f';
+        accent = flicker ? '#7dd3fc' : '#f87171';
+    } else {
+        // Full defeat colors
+        primary = '#2d0a0f';
+        accent = '#f87171';
+    }
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, phase < 2 ? '#0a102a' : '#1a0408');
+    gradient.addColorStop(0.5, primary);
+    gradient.addColorStop(1, '#000');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Moving scanlines
+    for (let y = 0; y < canvas.height; y += 8) {
+        const offset = Math.sin((t / 8) + y * 0.12) * 3;
+        ctx.fillStyle = `rgba(255,255,255,0.05)`;
+        ctx.fillRect(offset, y, canvas.width, 2);
+    }
+
+    // Screen shake during transition
+    if (phase === 1 || phase === 2) {
+        const shakeX = (Math.random() - 0.5) * 10;
+        const shakeY = (Math.random() - 0.5) * 10;
+        ctx.translate(shakeX, shakeY);
+    }
+
+    ctx.textAlign = 'center';
+
+    if (phase === 0) {
+        // Initial fake victory
+        ctx.font = '22px monospace';
+        ctx.fillStyle = '#000';
+        const shadowOffsets = [[2,2],[-2,2],[2,-2],[-2,-2]];
+        shadowOffsets.forEach(([dx, dy]) => ctx.fillText('COMPLIANT!', canvas.width/2 + dx, canvas.height/2 - 50 + dy));
+        ctx.fillStyle = accent;
+        ctx.fillText('COMPLIANT!', canvas.width/2, canvas.height/2 - 50);
+    } else if (phase === 1) {
+        // Glitching text
+        ctx.font = '22px monospace';
+        const glitchText = Math.random() > 0.5 ? 'COMPLIANT!' : 'TERMINATED';
+        ctx.fillStyle = accent;
+        ctx.fillText(glitchText, canvas.width/2 + (Math.random() - 0.5) * 20, canvas.height/2 - 50);
+
+        ctx.font = '12px monospace';
+        ctx.fillStyle = '#ff0';
+        ctx.fillText('WAIT...', canvas.width/2, canvas.height/2);
+    } else if (phase === 2) {
+        // Simon's reveal
+        ctx.font = 'bold 18px monospace';
+        ctx.fillStyle = '#ff0';
+        const reveal = [
+            "NOT SO FAST!",
+            "NOBODY DEFEATS MEGA SIMON!",
+            "IT'S COMPANY POLICY!"
+        ];
+        reveal.forEach((line, i) => {
+            if (t > 120 + i * 20) {
+                ctx.fillText(line, canvas.width/2, canvas.height/2 - 60 + i * 25);
+            }
+        });
+    } else {
+        // Phase 3: Full defeat with AI review
+        ctx.font = 'bold 20px monospace';
+        ctx.fillStyle = '#000';
+        const shadowOffsets = [[2,2],[-2,2],[2,-2],[-2,-2]];
+        shadowOffsets.forEach(([dx, dy]) => ctx.fillText('TERMINATED ANYWAY', canvas.width/2 + dx, canvas.height/2 - 70 + dy));
+        ctx.fillStyle = accent;
+        ctx.fillText('TERMINATED ANYWAY', canvas.width/2, canvas.height/2 - 70);
+
+        ctx.font = '11px monospace';
+        ctx.fillStyle = '#fef9c3';
+        ctx.fillText("MEGA SIMON'S FINAL REVIEW:", canvas.width/2, canvas.height/2 - 35);
+
+        // Show the AI generated (or fallback) review
+        ctx.font = '10px monospace';
+        ctx.fillStyle = '#fff';
+        const review = GAME.aiResultText || 'Nobody defeats Mega Simon. It is literally impossible. Section 47-B of the employee handbook. Terminated.';
+        wrapText(ctx, review, canvas.width/2, canvas.height/2 - 5, canvas.width - 40, 14);
+
+        // Press space prompt
+        if (t > 240) {
+            const blink = Math.floor(t / 30) % 2 === 0;
+            if (blink) {
+                ctx.font = '10px monospace';
+                ctx.fillStyle = '#666';
+                ctx.fillText('[PRESS SPACE TO ACCEPT DEFEAT]', canvas.width/2, canvas.height - 20);
+            }
         }
     }
 
@@ -7791,6 +8038,7 @@ function draw() {
     if (GAME.state === 'LOSE_SPLASH') { drawSnesSplash(false); return; }
     if (GAME.state === 'WIN_SPLASH') { drawSnesSplash(true); return; }
     if (GAME.state === 'GAMEOVER_SPLASH') { drawGameOverSplash(); return; }
+    if (GAME.state === 'MEGA_SIMON_TWIST') { drawMegaSimonTwist(); return; }
 
     ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width, canvas.height);
     let dxShake = 0, dyShake = 0;
