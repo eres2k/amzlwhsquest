@@ -666,7 +666,7 @@ const TTSSys = {
         // Bosses & antagonists - gender-appropriate voices
         "Jeff Bezos": { pitch: 0.6, rate: 0.8, volume: 1.0, desc: "Megalomaniac" },
         "Mecha Jeff": { pitch: 0.3, rate: 0.6, volume: 1.0, desc: "Robotic, terrifying" },
-        "MECHA MEGA SIMON": { pitch: 0.25, rate: 0.5, volume: 1.0, desc: "Mechanical overlord" },
+        "MECHA MEGA SIMON": { pitch: 0.25, rate: 1.1, volume: 1.0, desc: "Mechanical overlord" },
         "MEGA SIMON": { pitch: 0.7, rate: 0.82, volume: 1.0, desc: "Final boss authority" },
         "Labour Inspector": { pitch: 1.1, rate: 1.0, volume: 1.0, desc: "Stern female enforcer" },
         "Compliance Auditor": { pitch: 1.05, rate: 0.85, volume: 0.9, desc: "Meticulous female watcher" },
@@ -3303,6 +3303,12 @@ function handleAction() {
             beginMechaEncounter(); // Proceed to Mecha boss fight
         }
     }
+    else if (GAME.state === 'SIMON_MECHA_TRANSFORM') {
+        // Only allow skip after animation has played and text is ready
+        if (GAME.stateTimer > 180 && GAME.simonTransformTextFetched) {
+            completeSimonMechaTransformation(); // Proceed to Mecha Simon dialog
+        }
+    }
     else if (GAME.state === 'BEZOS_ESCAPE') {
         // Handle escape scene dialogue advances
         const scene = GAME.escapeScene;
@@ -3526,33 +3532,45 @@ function triggerMechaSimonTransformation() {
     // Clear existing projectiles
     GAME.projectiles = [];
 
-    // Show dramatic transformation dialog
-    const currentGen = GAME.genId;
-    showThinking("MEGA SIMON", GFX.simonBoss);
+    // Start the transformation animation state
+    GAME.state = 'SIMON_MECHA_TRANSFORM';
+    GAME.stateTimer = 0;
+    GAME.simonTransformTextFetched = false;
+    GAME.simonTransformText = null;
 
+    // Pre-fetch the AI text during animation
+    const currentGen = GAME.genId;
     callGemini(
         "You are Simon Unglaube transforming into MECHA MEGA SIMON. Announce your transformation with terrifying mechanical corporate speak. You are now unstoppable. Max 35 words.",
         "taunt"
     ).then(text => {
         if (GAME.genId === currentGen) {
-            // Transform the boss
-            GAME.boss.name = "MECHA MEGA SIMON";
-            GAME.boss.title = "THE ULTIMATE WHS AUTHORITY";
-            GAME.boss.sprite = "mechaMegaSimon";
-            GAME.boss.isMecha = true;
-            GAME.boss.hp = 999; // Effectively invincible
-            GAME.boss.maxHp = 999;
-            GAME.boss.speed = 2.5; // Faster
-            GAME.boss.attackDelay = 15; // More aggressive
-            GAME.boss.attackName = "COMPLIANCE ANNIHILATION";
-            GAME.boss.mechaTimer = 0; // Timer to trigger game over
-            document.getElementById('boss-name-el').innerText = GAME.boss.name;
-            updateBossHud();
-
-            showDialog(text + "\n\n[SAFETY PROTOCOL: ABSOLUTE]", "MECHA MEGA SIMON", GFX.mechaMegaSimon, true);
-            GAME.nextState = 'BOSS';
+            GAME.simonTransformText = text;
+            GAME.simonTransformTextFetched = true;
         }
     });
+}
+
+// Complete Simon's mecha transformation after animation
+function completeSimonMechaTransformation() {
+    // Transform the boss
+    GAME.boss.name = "MECHA MEGA SIMON";
+    GAME.boss.title = "THE ULTIMATE WHS AUTHORITY";
+    GAME.boss.sprite = "mechaMegaSimon";
+    GAME.boss.isMecha = true;
+    GAME.boss.hp = 999; // Effectively invincible
+    GAME.boss.maxHp = 999;
+    GAME.boss.speed = 2.5; // Faster
+    GAME.boss.attackDelay = 15; // More aggressive
+    GAME.boss.attackName = "COMPLIANCE ANNIHILATION";
+    GAME.boss.mechaTimer = 0; // Timer to trigger game over
+    document.getElementById('boss-name-el').innerText = GAME.boss.name;
+    updateBossHud();
+
+    // Show dialog with fetched text or fallback
+    const dialogText = GAME.simonTransformText || "TRANSFORMATION COMPLETE. RESISTANCE IS FUTILE. SAFETY PROTOCOL: ABSOLUTE.";
+    showDialog(dialogText + "\n\n[SAFETY PROTOCOL: ABSOLUTE]", "MECHA MEGA SIMON", GFX.mechaMegaSimon, true);
+    GAME.nextState = 'BOSS';
 }
 
 function initBossEncounter() {
@@ -4270,7 +4288,7 @@ function update() {
         return;
     }
 
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM', 'BEZOS_ESCAPE', 'BEZOS_ESCAPE_MECHA_LINE', 'BEZOS_ESCAPE_JEFF_LINE', 'BEZOS_ESCAPE_DIALOGUE'].includes(GAME.state)) return;
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM', 'SIMON_MECHA_TRANSFORM', 'BEZOS_ESCAPE', 'BEZOS_ESCAPE_MECHA_LINE', 'BEZOS_ESCAPE_JEFF_LINE', 'BEZOS_ESCAPE_DIALOGUE'].includes(GAME.state)) return;
 
     // Bezos victory screen
     if (GAME.state === 'BEZOS_WIN') {
@@ -5089,6 +5107,8 @@ function updateBoss() {
 function updateProjectiles() {
     for(let i=GAME.projectiles.length-1; i>=0; i--) {
         let p = GAME.projectiles[i];
+        // Guard against undefined projectiles (can happen during state transitions)
+        if (!p) { GAME.projectiles.splice(i, 1); continue; }
         p.x += p.vx; p.y += p.vy; p.life--; if(p.grace > 0) p.grace--;
         // Skip wall collision check in Bezos boss level
         if (GAME.state !== 'BEZOS_BOSS') {
@@ -5571,7 +5591,7 @@ function updateMusicForState() {
     else if (['HOWTO', 'SELECT'].includes(GAME.state)) track = 'menu';
     else if (['PLAY', 'YARD_INTRO', 'YARD_LEVEL'].includes(GAME.state)) track = 'ingame';
     else if (GAME.state === 'VISITOR_SPLASH') track = 'boss';
-    else if (GAME.state === 'BOSS' || GAME.state === 'BOSS_INTRO') track = 'boss';
+    else if (GAME.state === 'BOSS' || GAME.state === 'BOSS_INTRO' || GAME.state === 'SIMON_MECHA_TRANSFORM') track = 'boss';
     else if (GAME.state === 'MECHA_BOSS' || GAME.state === 'MECHA_BOSS_INTRO' || GAME.state === 'MECHA_TRANSFORM' || GAME.state === 'THRONE_CONFRONTATION') { track = 'boss'; rate = 0.85; }
     else if (GAME.state === 'BEZOS_ESCAPE') track = 'victory';
     else if (GAME.state === 'CREDITS') track = 'victory';
@@ -6790,6 +6810,154 @@ function drawMechaTransform() {
             ctx.font = '8px "Press Start 2P"';
             const blink = Math.sin(t * 0.15) > 0;
             if (blink) ctx.fillText('[PRESS SPACE]', canvas.width / 2, 215);
+        }
+    }
+
+    ctx.textAlign = 'left';
+}
+
+// === SIMON MECHA TRANSFORMATION CUTSCENE ===
+function drawSimonMechaTransform() {
+    const t = GAME.stateTimer;
+
+    // Dark dramatic background with WHS colors
+    ctx.fillStyle = '#080808';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Red warning flashes
+    if (t % 25 < 4 || (t > 50 && t % 18 < 3) || (t > 100 && t % 12 < 4)) {
+        ctx.fillStyle = 'rgba(220, 38, 38, 0.25)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Dramatic lines radiating from center (WHS gold and red)
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2 - 15);
+    for (let i = 0; i < 12; i++) {
+        const angle = (i / 12) * Math.PI * 2 + t * 0.025;
+        const len = 40 + Math.sin(t * 0.12 + i) * 25;
+        ctx.strokeStyle = i % 2 === 0 ? '#eab308' : '#dc2626';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
+        ctx.stroke();
+    }
+    ctx.restore();
+
+    // Phase 1: Power surge (frames 0-70)
+    if (t < 70) {
+        const scale = 1 + Math.sin(t * 0.18) * 0.12;
+        const shakeX = (Math.random() - 0.5) * (t / 15);
+        const shakeY = (Math.random() - 0.5) * (t / 15);
+
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2 - 15);
+        ctx.scale(scale, scale);
+        // Draw Mega Simon sprite (32x32)
+        ctx.drawImage(GFX.simonBoss, -16 + shakeX, -16 + shakeY);
+        ctx.restore();
+
+        // Warning text
+        ctx.fillStyle = '#dc2626';
+        ctx.font = '10px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        const warningFlash = Math.sin(t * 0.18) > 0;
+        if (warningFlash) {
+            ctx.fillText('!! DANGER !!', canvas.width / 2, 175);
+        }
+        ctx.fillStyle = '#eab308';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillText('SAFETY PROTOCOL', canvas.width / 2, 190);
+        ctx.fillText('INITIATING', canvas.width / 2, 202);
+    }
+    // Phase 2: Transformation (frames 70-140)
+    else if (t < 140) {
+        const progress = (t - 70) / 70;
+        const shakeIntensity = 8 + progress * 15;
+
+        // Intense shaking
+        const shakeX = (Math.random() - 0.5) * shakeIntensity;
+        const shakeY = (Math.random() - 0.5) * shakeIntensity;
+
+        // Morphing between sprites
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2 - 15);
+
+        // Glowing energy effect (WHS colors)
+        const glowGrad = ctx.createRadialGradient(0, 0, 8, 0, 0, 70);
+        glowGrad.addColorStop(0, `rgba(234, 179, 8, ${0.85 - progress * 0.25})`);
+        glowGrad.addColorStop(0.5, `rgba(220, 38, 38, ${0.5})`);
+        glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = glowGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, 70, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw morphing sprites - fade from Simon to Mecha Simon
+        if (progress < 0.5) {
+            ctx.globalAlpha = 1 - progress * 2;
+            ctx.drawImage(GFX.simonBoss, -16 + shakeX, -16 + shakeY);
+        }
+        ctx.globalAlpha = Math.min(1, progress * 2);
+        // Mecha Simon is 48x48
+        ctx.drawImage(GFX.mechaMegaSimon, -24 + shakeX, -24 + shakeY);
+        ctx.globalAlpha = 1;
+
+        ctx.restore();
+
+        // Text
+        const texts = ['INITIATING...', 'UPGRADE...', 'COMPLETE!'];
+        const textIdx = Math.min(2, Math.floor(progress * 3));
+        ctx.fillStyle = progress > 0.7 ? '#ff4444' : '#eab308';
+        ctx.font = '11px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText(texts[textIdx], canvas.width / 2, 185);
+    }
+    // Phase 3: Mecha Reveal (frames 140+)
+    else {
+        const revealProgress = Math.min(1, (t - 140) / 50);
+
+        // Epic glow
+        const glowGrad = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2 - 15, 15, canvas.width / 2, canvas.height / 2 - 15, 90);
+        glowGrad.addColorStop(0, 'rgba(220, 38, 38, 0.65)');
+        glowGrad.addColorStop(0.5, 'rgba(234, 179, 8, 0.35)');
+        glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = glowGrad;
+        ctx.beginPath();
+        ctx.arc(canvas.width / 2, canvas.height / 2 - 15, 90, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Mecha Mega Simon revealed with pulse
+        const scale = 1 + Math.sin(t * 0.08) * 0.04;
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2 - 15);
+        ctx.scale(scale, scale);
+        ctx.drawImage(GFX.mechaMegaSimon, -24, -24);
+        ctx.restore();
+
+        // Title text
+        ctx.fillStyle = '#dc2626';
+        ctx.font = '12px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('MECHA MEGA', canvas.width / 2, 168);
+        ctx.fillText('SIMON', canvas.width / 2, 183);
+
+        ctx.fillStyle = '#eab308';
+        ctx.font = '8px monospace';
+        ctx.fillText('ULTIMATE WHS AUTHORITY', canvas.width / 2, 198);
+
+        // Continue prompt after delay (or when text is ready)
+        if (t > 180 && GAME.simonTransformTextFetched) {
+            ctx.fillStyle = '#fff';
+            ctx.font = '8px "Press Start 2P"';
+            const blink = Math.sin(t * 0.15) > 0;
+            if (blink) ctx.fillText('[PRESS SPACE]', canvas.width / 2, 215);
+        } else if (t > 180) {
+            // Show loading if text not ready yet
+            ctx.fillStyle = '#888';
+            ctx.font = '7px monospace';
+            ctx.fillText('SYNCING PROTOCOL...', canvas.width / 2, 215);
         }
     }
 
@@ -8369,6 +8537,7 @@ function draw() {
         return;
     }
     if (GAME.state === 'MECHA_TRANSFORM') { drawMechaTransform(); ctx.restore(); return; }
+    if (GAME.state === 'SIMON_MECHA_TRANSFORM') { drawSimonMechaTransform(); ctx.restore(); return; }
     if (GAME.state === 'BEZOS_ESCAPE') { updateBezosEscape(); drawBezosEscape(); ctx.restore(); return; }
     if (GAME.state === 'CREDITS') { drawCredits(); ctx.restore(); return; }
     if (GAME.state === 'BOSS_INTRO' && GAME.boss) {
