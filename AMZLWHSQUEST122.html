@@ -253,35 +253,45 @@ const CHAR_DATA = {
         backstory: "Precision hawk who spots crooked tape from 50 meters and breathes calm into chaotic clusters.",
         attack: "Label Maker Burst",
         speed: 1.5,
-        lives: 5
+        lives: 5,
+        ability: "PRECISION FOCUS",
+        abilityDesc: "Attacks deal 2x damage to bosses"
     },
     "Nevena": {
         role: "The Oracle",
         backstory: "Safety oracle who predicts mishaps, carries emergency Palatschinken, and documents everything twice.",
         attack: "Clipboard Shockwave",
         speed: 1.5,
-        lives: 5
+        lives: 5,
+        ability: "FORESIGHT",
+        abilityDesc: "Longer invincibility after taking damage"
     },
     "Joao": {
         role: "The Siren",
         backstory: "Espresso cannon whose warnings ring louder than the fire alarm and kick energy through the floor.",
         attack: "Sonic Shout",
         speed: 1.5,
-        lives: 5
+        lives: 5,
+        ability: "CAFFEINE RUSH",
+        abilityDesc: "Attacks have faster cooldown"
     },
     "Roman": {
         role: "The Ghost",
         backstory: "Bald audit phantom. Appears, fixes, vanishes. Hazards straighten themselves when he is near.",
         attack: "Stealth Audit",
         speed: 1.5,
-        lives: 5
+        lives: 5,
+        ability: "PHANTOM STEP",
+        abilityDesc: "Hazards have smaller collision radius"
     },
     "Erwin": {
         role: "The Manager",
         backstory: "Rolls in with a kid-sized Tesla and slides into briefings faster than gossip spreads.",
         attack: "Tesla Energy Pulse",
-        speed: 2.0,
-        lives: 1
+        speed: 1.7,
+        lives: 1,
+        ability: "EXECUTIVE OVERRIDE",
+        abilityDesc: "1 life but deals 3x boss damage"
     }
 };
 
@@ -656,6 +666,8 @@ const TTSSys = {
         // Bosses & antagonists - gender-appropriate voices
         "Jeff Bezos": { pitch: 0.6, rate: 0.8, volume: 1.0, desc: "Megalomaniac" },
         "Mecha Jeff": { pitch: 0.3, rate: 0.6, volume: 1.0, desc: "Robotic, terrifying" },
+        "MECHA MEGA SIMON": { pitch: 0.25, rate: 0.5, volume: 1.0, desc: "Mechanical overlord" },
+        "MEGA SIMON": { pitch: 0.7, rate: 0.82, volume: 1.0, desc: "Final boss authority" },
         "Labour Inspector": { pitch: 1.1, rate: 1.0, volume: 1.0, desc: "Stern female enforcer" },
         "Compliance Auditor": { pitch: 1.05, rate: 0.85, volume: 0.9, desc: "Meticulous female watcher" },
         "Sebastian Sprigade": { pitch: 0.75, rate: 1.15, volume: 1.0, desc: "Fast, TPH obsessed male" },
@@ -1189,6 +1201,65 @@ function generateAssets() {
         // Large badge
         ctx.fillStyle = '#fff'; ctx.fillRect(11,23,10,4);
         ctx.fillStyle = '#dc2626'; ctx.fillRect(13,24,6,2);
+    });
+
+    // MECHA MEGA SIMON - Transformed final boss
+    GFX.mechaMegaSimon = c(48,48, ctx => {
+        // Dark energy aura
+        const aura = ctx.createRadialGradient(24, 24, 8, 24, 24, 24);
+        aura.addColorStop(0, 'rgba(220, 38, 38, 0.4)');
+        aura.addColorStop(0.5, 'rgba(234, 179, 8, 0.2)');
+        aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = aura; ctx.fillRect(0, 0, 48, 48);
+        // Mecha body frame
+        ctx.fillStyle = '#1a1f2e'; ctx.fillRect(8,26,32,18);
+        ctx.fillStyle = '#252b3d'; ctx.fillRect(10,28,28,14);
+        // Body armor plates
+        ctx.fillStyle = '#3d4556'; ctx.fillRect(12,30,24,10);
+        ctx.fillStyle = '#4a5568'; ctx.fillRect(14,32,20,6);
+        // WHS logo on chest (glowing gold)
+        ctx.fillStyle = '#eab308'; ctx.fillRect(18,33,12,6);
+        ctx.fillStyle = '#fbbf24'; ctx.fillRect(20,34,8,4);
+        ctx.fillText('WHS', 24, 38);
+        // Shoulder cannons
+        ctx.fillStyle = '#374151'; ctx.fillRect(2,22,10,20);
+        ctx.fillStyle = '#4b5563'; ctx.fillRect(4,24,6,16);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(5,28,4,4);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(6,29,2,2);
+        ctx.fillStyle = '#374151'; ctx.fillRect(36,22,10,20);
+        ctx.fillStyle = '#4b5563'; ctx.fillRect(38,24,6,16);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(39,28,4,4);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(40,29,2,2);
+        // Neck/collar chrome
+        ctx.fillStyle = '#6b7280'; ctx.fillRect(14,22,20,5);
+        ctx.fillStyle = '#9ca3af'; ctx.fillRect(16,23,16,3);
+        // Short brown hair with mecha headgear
+        ctx.fillStyle = '#374151'; ctx.fillRect(10,2,28,8);
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(12,4,24,5);
+        ctx.fillStyle = '#6b4423'; ctx.fillRect(14,5,20,3);
+        // Face
+        ctx.fillStyle = '#c4956a'; ctx.fillRect(12,9,24,12);
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(14,11,20,8);
+        // Angry brown eyebrows with mecha enhancement
+        ctx.fillStyle = '#374151'; ctx.fillRect(14,10,8,3); ctx.fillRect(26,10,8,3);
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(15,11,6,2); ctx.fillRect(27,11,6,2);
+        // Glowing red cyber-glasses
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(14,13,8,5); ctx.fillRect(26,13,8,5);
+        ctx.fillStyle = '#7f1d1d'; ctx.fillRect(15,14,6,3); ctx.fillRect(27,14,6,3);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(16,15,4,2); ctx.fillRect(28,15,4,2);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(17,15,2,1); ctx.fillRect(29,15,2,1);
+        ctx.fillStyle = '#475569'; ctx.fillRect(22,15,4,1);
+        // Brown beard with mecha jaw
+        ctx.fillStyle = '#374151'; ctx.fillRect(10,18,28,6);
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(12,19,24,4);
+        ctx.fillStyle = '#6b4423'; ctx.fillRect(14,19,20,3);
+        // Ear comm devices
+        ctx.fillStyle = '#4b5563'; ctx.fillRect(8,12,4,8); ctx.fillRect(36,12,4,8);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(9,14,2,4); ctx.fillRect(37,14,2,4);
+        // Legs/thrusters
+        ctx.fillStyle = '#374151'; ctx.fillRect(14,42,8,6); ctx.fillRect(26,42,8,6);
+        ctx.fillStyle = '#4b5563'; ctx.fillRect(16,44,4,4); ctx.fillRect(28,44,4,4);
+        ctx.fillStyle = '#f97316'; ctx.fillRect(17,46,2,2); ctx.fillRect(29,46,2,2);
     });
 
     // IMPROVED OPS MANAGER NPC
@@ -3285,6 +3356,7 @@ function resetGame() {
     GAME.state = 'PLAY';
     GAME.genId++;
     GAME.gameOverTriggered = false;
+    GAME.mechaSimonDefeat = false; // Reset Mecha Mega Simon defeat flag
     const stats = getCharStats(GAME.selectedChar);
     GAME.player = { x: 100, y: 100, dir: 0, speed: stats.speed, iframe: 0, cooldown: 0, cooldownMax: 120 };
     GAME.entities = []; GAME.projectiles = []; GAME.particles = []; GAME.floatingTexts = [];
@@ -3435,13 +3507,52 @@ function initSimonBoss() {
     GAME.state = 'BOSS_INTRO';
     AudioSys.sfx.bossIntro();
     GAME.boss = {
-        name: "MEGA SIMON", sprite: "simonBoss", hp: 25, speed: 1.5, attackDelay: 30, 
+        name: "MEGA SIMON", sprite: "simonBoss", hp: 25, speed: 1.5, attackDelay: 30,
         title: "THE WHS FINAL BOSS", desc: "He is not impressed.", attackName: "TERMINATION PROTOCOL",
         tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25], maxHp: 25,
-        x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, timer: 0 
+        x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, timer: 0,
+        transformTriggered: false, isMecha: false
     };
     GAME.entities = []; GAME.projectiles = [];
     updateMusicForState();
+}
+
+// Mecha Mega Simon transformation - triggered when boss HP drops to 5 or below
+function triggerMechaSimonTransformation() {
+    GAME.shake = 30;
+    GAME.flash = 20;
+    AudioSys.sfx.bossIntro();
+
+    // Clear existing projectiles
+    GAME.projectiles = [];
+
+    // Show dramatic transformation dialog
+    const currentGen = GAME.genId;
+    showThinking("MEGA SIMON", GFX.simonBoss);
+
+    callGemini(
+        "You are Simon Unglaube transforming into MECHA MEGA SIMON. Announce your transformation with terrifying mechanical corporate speak. You are now unstoppable. Max 35 words.",
+        "taunt"
+    ).then(text => {
+        if (GAME.genId === currentGen) {
+            // Transform the boss
+            GAME.boss.name = "MECHA MEGA SIMON";
+            GAME.boss.title = "THE ULTIMATE WHS AUTHORITY";
+            GAME.boss.sprite = "mechaMegaSimon";
+            GAME.boss.isMecha = true;
+            GAME.boss.hp = 999; // Effectively invincible
+            GAME.boss.maxHp = 999;
+            GAME.boss.speed = 2.5; // Faster
+            GAME.boss.attackDelay = 15; // More aggressive
+            GAME.boss.attackName = "COMPLIANCE ANNIHILATION";
+            GAME.boss.mechaTimer = 0; // Timer to trigger game over
+            document.getElementById('boss-name-el').innerText = GAME.boss.name;
+            updateBossHud();
+
+            showDialog(text + "\n\n[SAFETY PROTOCOL: ABSOLUTE]", "MECHA MEGA SIMON", GFX.mechaMegaSimon, true);
+            GAME.nextState = 'BOSS';
+        }
+    });
 }
 
 function initBossEncounter() {
@@ -4309,8 +4420,9 @@ function updateYardLevel() {
         const f = y.forklifts[i];
         f.x += f.dir * f.speed;
         if (f.x < -60 || f.x > canvas.width + 60) { y.forklifts.splice(i, 1); continue; }
-        // Forklift collision
-        if (Math.abs((f.x + f.w/2) - (y.playerX + 8)) < (f.w/2 + 4) && Math.abs((f.y + f.h/2) - (y.playerY + 8)) < (f.h/2 + 4)) {
+        // Forklift collision - Roman's PHANTOM STEP reduces collision hitbox
+        const romanMod = GAME.selectedChar === 'Roman' ? 0.6 : 1.0;
+        if (Math.abs((f.x + f.w/2) - (y.playerX + 8)) < (f.w/2 + 4) * romanMod && Math.abs((f.y + f.h/2) - (y.playerY + 8)) < (f.h/2 + 4) * romanMod) {
             if (GAME.player.iframe <= 0) {
                 GAME.lives--; GAME.flash = 15; GAME.shake = 20; AudioSys.sfx.hurt(); updateHud();
                 // Teleport to start - no iframe needed since player is repositioned
@@ -4329,7 +4441,9 @@ function updateYardLevel() {
         const v = y.vehicles[i];
         v.x += v.dir * v.speed;
         if (v.x < -80 || v.x > canvas.width + 80) { y.vehicles.splice(i,1); continue; }
-        if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 5) && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 5)) {
+        // Roman's PHANTOM STEP reduces collision hitbox
+        const romanModV = GAME.selectedChar === 'Roman' ? 0.6 : 1.0;
+        if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 5) * romanModV && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 5) * romanModV) {
             if (GAME.player.iframe <= 0) {
                 GAME.lives--; GAME.flash = 12; GAME.shake = 15; AudioSys.sfx.hurt(); updateHud();
                 // FULL RESET - player goes back to starting position, no iframe since teleporting
@@ -4916,15 +5030,31 @@ function updateEntities() {
 function updateBoss() {
     const b = GAME.boss; const p = GAME.player;
     document.getElementById('boss-hud').style.display = 'block'; document.getElementById('boss-name-el').innerText = b.name; updateBossHud();
-    
+
+    // Mecha Mega Simon timer - triggers inevitable game over
+    if (b.isMecha) {
+        b.mechaTimer = (b.mechaTimer || 0) + 1;
+        // After ~8 seconds (480 ticks at 60fps), trigger game over
+        if (b.mechaTimer >= 480 && !GAME.gameOverTriggered) {
+            GAME.mechaSimonDefeat = true; // Flag for special game over message
+            triggerGameOver("COMPLIANCE ENFORCED!");
+            return;
+        }
+        // Periodic warning messages during mecha phase
+        if (b.mechaTimer === 120 || b.mechaTimer === 300) {
+            spawnFloatingText(b.x + 24, b.y, "RESISTANCE IS FUTILE!", "#dc2626");
+        }
+    }
+
     let hpPct = b.hp / b.maxHp;
-    if (b.tauntThresholds.length > 0 && hpPct < b.tauntThresholds[0]) {
-         b.tauntThresholds.shift(); 
+    if (b.tauntThresholds && b.tauntThresholds.length > 0 && hpPct < b.tauntThresholds[0]) {
+         b.tauntThresholds.shift();
          const currentGen = GAME.genId;
          let prompt = b.name === "SIMON UNGLAUBE" ? "Simon Unglaube final warning. Max 25 words." : `Taunt from boss ${b.name}. Max 25 words.`;
-         
-         let portrait = b.name.includes("Simon") ? GFX.simonBoss : GFX.boss_manager;
-         
+
+         // Use appropriate portrait for Mecha Mega Simon
+         let portrait = b.isMecha ? GFX.mechaMegaSimon : (b.name.includes("Simon") ? GFX.simonBoss : GFX.boss_manager);
+
          // --- CHANGED: IMMEDIATE PAUSE WITH LOADING DIALOG ---
          showThinking(b.name, portrait);
 
@@ -4944,11 +5074,15 @@ function updateBoss() {
     b.timer++;
     if (b.timer > b.attackDelay) {
         b.timer = 0;
-        for (let i = -1; i <= 1; i++) {
-            let angle = Math.atan2(p.y - b.y, p.x - b.x) + (i * 0.3);
-            GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*10, y: b.y + 16 + Math.sin(angle)*10, vx: Math.cos(angle)*2.5, vy: Math.sin(angle)*2.5, life: 100, boss: true, grace: 10 });
+        // Mecha Mega Simon fires more projectiles in a wider spread
+        const spreadCount = b.isMecha ? 5 : 3;
+        const spreadRange = b.isMecha ? 0.5 : 0.3;
+        for (let i = -(spreadCount-1)/2; i <= (spreadCount-1)/2; i++) {
+            let angle = Math.atan2(p.y - b.y, p.x - b.x) + (i * spreadRange);
+            const projSpeed = b.isMecha ? 3.5 : 2.5;
+            GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*10, y: b.y + 16 + Math.sin(angle)*10, vx: Math.cos(angle)*projSpeed, vy: Math.sin(angle)*projSpeed, life: 100, boss: true, grace: 10 });
         }
-        AudioSys.sfx.alert(); GAME.shake = 5; 
+        AudioSys.sfx.alert(); GAME.shake = b.isMecha ? 8 : 5;
     }
 }
 
@@ -4961,9 +5095,13 @@ function updateProjectiles() {
             if (p.grace <= 0 && checkCol(p.x, p.y)) { GAME.projectiles.splice(i,1); continue; }
         }
         if (p.life <= 0) { GAME.projectiles.splice(i,1); continue; }
-        if ((p.type === 'req') && Math.hypot(p.x-GAME.player.x, p.y-GAME.player.y) < 10) {
+        // Roman's PHANTOM STEP - smaller collision radius for projectiles
+        const projectileRadius = GAME.selectedChar === 'Roman' ? 6 : 10;
+        if ((p.type === 'req') && Math.hypot(p.x-GAME.player.x, p.y-GAME.player.y) < projectileRadius) {
             if (GAME.player.iframe<=0) {
-                GAME.lives--; GAME.player.iframe = 120; GAME.shake = 10; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
+                // Nevena's FORESIGHT ability - longer invincibility frames
+                const iframeBonus = GAME.selectedChar === 'Nevena' ? 180 : 120;
+                GAME.lives--; GAME.player.iframe = iframeBonus; GAME.shake = 10; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
                 if (GAME.lives<=0 && !GAME.gameOverTriggered) triggerGameOver("OVERWHELMED!");
             }
             GAME.projectiles.splice(i,1);
@@ -4972,8 +5110,26 @@ function updateProjectiles() {
             const attackMeta = getAttackData(p.owner);
             if (GAME.state === 'BOSS' && GAME.boss) {
                 if (Math.hypot(p.x - (GAME.boss.x+16), p.y - (GAME.boss.y+16)) < 24) {
-                    GAME.boss.hp--; updateBossHud(); AudioSys.sfx.bossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, attackMeta.color || '#ff0000', -2); GAME.projectiles.splice(i,1);
-                    spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, attackMeta.text || 'Hit!', attackMeta.color || '#ff0000');
+                    // If Mecha Mega Simon, attacks are ineffective
+                    if (GAME.boss.isMecha) {
+                        GAME.projectiles.splice(i,1);
+                        spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, "INEFFECTIVE!", "#666");
+                        AudioSys.sfx.alert();
+                        continue;
+                    }
+                    // Character ability damage multipliers
+                    let dmg = 1;
+                    if (GAME.selectedChar === 'Carrie') dmg = 2; // PRECISION FOCUS
+                    if (GAME.selectedChar === 'Erwin') dmg = 3; // EXECUTIVE OVERRIDE
+                    GAME.boss.hp -= dmg; updateBossHud(); AudioSys.sfx.bossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, attackMeta.color || '#ff0000', -2); GAME.projectiles.splice(i,1);
+                    const dmgText = dmg > 1 ? `${attackMeta.text || 'Hit!'} x${dmg}` : (attackMeta.text || 'Hit!');
+                    spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, dmgText, attackMeta.color || '#ff0000');
+                    // Check for Mecha Mega Simon transformation at low HP (5 or below)
+                    if (GAME.boss.hp <= 5 && GAME.boss.name === "MEGA SIMON" && !GAME.boss.transformTriggered) {
+                        GAME.boss.transformTriggered = true;
+                        triggerMechaSimonTransformation();
+                        continue;
+                    }
                     if (GAME.boss.hp <= 0) winGame(); continue;
                 }
             }
@@ -5081,7 +5237,11 @@ function spawnSparkles(x, y, color) {
 }
 
 function throwBook() {
-    const p = GAME.player; if (p.cooldown > 0) return; const attackMeta = getAttackData(GAME.selectedChar); p.cooldown = attackMeta.cooldown || 120; p.cooldownMax = attackMeta.cooldown || 120; GAME.booksFired++;
+    const p = GAME.player; if (p.cooldown > 0) return; const attackMeta = getAttackData(GAME.selectedChar);
+    // Joao's CAFFEINE RUSH ability - faster cooldown
+    const cooldownMod = GAME.selectedChar === 'Joao' ? 0.65 : 1.0;
+    const finalCooldown = Math.floor((attackMeta.cooldown || 120) * cooldownMod);
+    p.cooldown = finalCooldown; p.cooldownMax = finalCooldown; GAME.booksFired++;
     const speed = attackMeta.speed || 4;
     let vx=0, vy=0;
     if (GAME.state === 'BOSS' && GAME.boss) {
@@ -5185,11 +5345,24 @@ function triggerGameOver(reason) {
     GAME.characterDefeatLine = pickRandom(charLines);
     GAME.gameOverReason = reason;
 
+    // Special message for Mecha Mega Simon defeat
+    if (GAME.mechaSimonDefeat) {
+        GAME.corporateMessage = "MECHA MEGA SIMON has achieved ultimate safety compliance. All resistance has been optimized.";
+        GAME.characterDefeatLine = "No one could have survived that transformation...";
+    }
+
     // Don't speak corporate message immediately - wait for Simon's dialog like win flow
     MusicSys.play('menu'); // Play game over music
 
     const time = Math.floor((Date.now() - GAME.startTime)/1000); const currentGen = GAME.genId;
     if (reason === "FIRED!") { GAME.aiResultText = "Terminated for unsafe behavior."; }
+    else if (GAME.mechaSimonDefeat) {
+        // Special Mecha Mega Simon performance review
+        const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
+        callGemini(`You are MECHA MEGA SIMON, the ultimate WHS authority. You just transformed into your unstoppable mecha form and defeated the coordinator. Deliver a terrifying mechanical performance review explaining how your transformation made you invincible and how no human could ever hope to defeat pure safety compliance given form. Mention your transformation was triggered by their futile resistance. Max 60 words.`, "reviews_loss", { stats }).then(review => {
+             if (GAME.genId === currentGen) { GAME.aiResultText = review; }
+        });
+    }
     else {
         const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
         callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator failed after ${time}s with ${GAME.issuesFixed}/5 hazards fixed, ${GAME.booksFired} rule books thrown, ${GAME.opsPushed} ops pushed. Deliver a scathing yet funny performance review that weaves those stats into a safety lesson. Max 50 words.`, "reviews_loss", { stats }).then(review => {
@@ -8066,7 +8239,13 @@ function draw() {
         ctx.fillStyle='#fff'; backstoryLines.forEach((l, idx) => ctx.fillText(l, textStartX, textStartY + 14 + idx * 12));
 
         ctx.fillStyle='#ff00ff';
-        ctx.fillText("ATTACK: " + data.attack, frameX + 18, frameY + frameH - 30);
+        ctx.fillText("ATTACK: " + data.attack, frameX + 18, frameY + frameH - 45);
+
+        // Display unique ability
+        ctx.fillStyle='#22d3ee';
+        ctx.fillText("ABILITY: " + data.ability, frameX + 18, frameY + frameH - 32);
+        ctx.fillStyle='#94a3b8'; ctx.font='7px monospace';
+        ctx.fillText(data.abilityDesc, frameX + 18, frameY + frameH - 20);
 
         ctx.textAlign = 'center';
         ctx.fillStyle='#888'; ctx.font='10px monospace';
@@ -8545,7 +8724,11 @@ function draw() {
         if (e.maxHp) {
             let img = (e.sprite && GFX[e.sprite]) ? GFX[e.sprite] : GFX.boss_manager;
             if (e.name === "SIMON UNGLAUBE") img = GFX.simonBoss;
-            ctx.drawImage(img, dx, dy, 32, 32);
+            if (e.name === "MEGA SIMON") img = GFX.simonBoss;
+            if (e.name === "MECHA MEGA SIMON" || e.isMecha) img = GFX.mechaMegaSimon;
+            // Draw Mecha Mega Simon larger (48x48) vs normal bosses (32x32)
+            const bossSize = (e.isMecha || e.name === "MECHA MEGA SIMON") ? 48 : 32;
+            ctx.drawImage(img, dx - (bossSize - 32)/2, dy - (bossSize - 32)/2, bossSize, bossSize);
         } else {
             ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(dx+8, dy+14, 6, 3, 0, 0, Math.PI*2); ctx.fill();
             if (e.type === 'simon') ctx.drawImage(GFX.simon, dx, dy);
