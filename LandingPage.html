@@ -890,29 +890,33 @@
             // Shadow
             ctx.fillStyle = 'rgba(0,0,0,0.4)';
             ctx.beginPath(); ctx.ellipse(8, 15, 6, 2, 0, 0, Math.PI*2); ctx.fill();
-            // Blonde hair
-            ctx.fillStyle = '#ca8a04'; ctx.fillRect(3,0,10,3);
-            ctx.fillStyle = '#eab308'; ctx.fillRect(4,0,8,2);
-            // Face
-            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(5,2,6,7);
-            ctx.fillStyle = '#e8c090'; ctx.fillRect(5,2,2,5);
+            // Bald head (no hair)
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(4,0,8,7);
+            ctx.fillStyle = '#e8c090'; ctx.fillRect(5,1,6,5);
+            ctx.fillStyle = '#faebd7'; ctx.fillRect(5,0,5,2); // Shine on bald head
+            ctx.fillStyle = '#fce8d0'; ctx.fillRect(6,0,4,1); // Top shine
             // Eyes
-            ctx.fillStyle = '#1d4ed8'; ctx.fillRect(6,4,2,2);
-            ctx.fillStyle = '#3b82f6'; ctx.fillRect(9,4,2,2);
+            ctx.fillStyle = '#1d4ed8'; ctx.fillRect(5,3,2,2);
+            ctx.fillStyle = '#3b82f6'; ctx.fillRect(9,3,2,2);
+            // Slight beard (stubble/light beard)
+            ctx.fillStyle = '#8b7355'; ctx.fillRect(5,5,6,2); // Beard area
+            ctx.fillStyle = '#7a6248'; ctx.fillRect(6,6,4,1); // Chin beard
+            ctx.fillStyle = '#6b5340'; ctx.fillRect(7,5,2,1); // Mustache hint
             // Blue suit
-            ctx.fillStyle = '#1d4ed8'; ctx.fillRect(3,8,10,1);
-            ctx.fillStyle = '#1e40af'; ctx.fillRect(2,9,12,7);
-            ctx.fillStyle = '#2563eb'; ctx.fillRect(3,9,10,5);
+            ctx.fillStyle = '#1d4ed8'; ctx.fillRect(3,7,10,1);
+            ctx.fillStyle = '#1e40af'; ctx.fillRect(2,8,12,8);
+            ctx.fillStyle = '#2563eb'; ctx.fillRect(3,8,10,6);
             // Orange accent
-            ctx.fillStyle = '#f97316'; ctx.fillRect(7,11,2,2);
+            ctx.fillStyle = '#f97316'; ctx.fillRect(7,10,2,2);
         },
         boss_jelly: ctx => {
             // Shadow
             ctx.fillStyle = 'rgba(0,0,0,0.4)';
             ctx.beginPath(); ctx.ellipse(8, 15, 6, 2, 0, 0, Math.PI*2); ctx.fill();
-            // Pink hair
-            ctx.fillStyle = '#be185d'; ctx.fillRect(3,0,10,6);
-            ctx.fillStyle = '#ec4899'; ctx.fillRect(4,1,8,4);
+            // Brown hair
+            ctx.fillStyle = '#5c3d2e'; ctx.fillRect(3,0,10,6);
+            ctx.fillStyle = '#7a5142'; ctx.fillRect(4,1,8,4);
+            ctx.fillStyle = '#8b6352'; ctx.fillRect(5,1,3,2);
             // Face
             ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,6);
             ctx.fillStyle = '#e8b888'; ctx.fillRect(4,5,2,4);
