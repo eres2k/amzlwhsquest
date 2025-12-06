@@ -288,10 +288,10 @@ const CHAR_DATA = {
         role: "The Manager",
         backstory: "Rolls in with a kid-sized Tesla and slides into briefings faster than gossip spreads.",
         attack: "Tesla Energy Pulse",
-        speed: 1.7,
+        speed: 1.95,
         lives: 1,
-        ability: "EXECUTIVE OVERRIDE",
-        abilityDesc: "1 life but deals 3x boss damage"
+        ability: "TESLA RUSH",
+        abilityDesc: "1 life but 30% faster movement"
     }
 };
 
@@ -3507,7 +3507,7 @@ function initSimonBoss() {
     GAME.state = 'BOSS_INTRO';
     AudioSys.sfx.bossIntro();
     GAME.boss = {
-        name: "MEGA SIMON", sprite: "simonBoss", hp: 25, speed: 1.5, attackDelay: 30,
+        name: "MEGA SIMON", sprite: "simonBoss", hp: 25, speed: 1.3, attackDelay: 30,
         title: "THE WHS FINAL BOSS", desc: "He is not impressed.", attackName: "TERMINATION PROTOCOL",
         tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25], maxHp: 25,
         x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, timer: 0,
@@ -5120,7 +5120,6 @@ function updateProjectiles() {
                     // Character ability damage multipliers
                     let dmg = 1;
                     if (GAME.selectedChar === 'Carrie') dmg = 2; // PRECISION FOCUS
-                    if (GAME.selectedChar === 'Erwin') dmg = 3; // EXECUTIVE OVERRIDE
                     GAME.boss.hp -= dmg; updateBossHud(); AudioSys.sfx.bossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, attackMeta.color || '#ff0000', -2); GAME.projectiles.splice(i,1);
                     const dmgText = dmg > 1 ? `${attackMeta.text || 'Hit!'} x${dmg}` : (attackMeta.text || 'Hit!');
                     spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, dmgText, attackMeta.color || '#ff0000');
