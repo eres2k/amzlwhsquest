@@ -3285,6 +3285,7 @@ function handleAction() {
     else if (GAME.state === 'BOSS_INTRO') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
     else if (GAME.state === 'BEZOS_INTRO') { GAME.state = 'BEZOS_BOSS'; GAME.nextState = 'BEZOS_BOSS'; updateMusicForState(); }
     else if (GAME.state === 'MECHA_BOSS_INTRO') { GAME.state = 'MECHA_BOSS'; GAME.nextState = 'MECHA_BOSS'; updateMusicForState(); }
+    else if (GAME.state === 'MECHA_SIMON_SPLASH') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
     else if (GAME.state === 'THRONE_CONFRONTATION') {
         // Throne confrontation cutscene using AI-powered showDialog system
         const scene = GAME.throneScene;
@@ -3570,7 +3571,14 @@ function completeSimonMechaTransformation() {
     // Show dialog with fetched text or fallback
     const dialogText = GAME.simonTransformText || "TRANSFORMATION COMPLETE. RESISTANCE IS FUTILE. SAFETY PROTOCOL: ABSOLUTE.";
     showDialog(dialogText + "\n\n[SAFETY PROTOCOL: ABSOLUTE]", "MECHA MEGA SIMON", GFX.mechaMegaSimon, true);
-    GAME.nextState = 'BOSS';
+    GAME.nextState = 'MECHA_SIMON_SPLASH'; // Go to splash screen after dialog
+}
+
+// Show Mecha Mega Simon splash screen before boss fight
+function showMechaSimonSplash() {
+    GAME.state = 'MECHA_SIMON_SPLASH';
+    GAME.stateTimer = 0;
+    AudioSys.sfx.bossIntro();
 }
 
 function initBossEncounter() {
@@ -4288,7 +4296,7 @@ function update() {
         return;
     }
 
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM', 'SIMON_MECHA_TRANSFORM', 'BEZOS_ESCAPE', 'BEZOS_ESCAPE_MECHA_LINE', 'BEZOS_ESCAPE_JEFF_LINE', 'BEZOS_ESCAPE_DIALOGUE'].includes(GAME.state)) return;
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM', 'SIMON_MECHA_TRANSFORM', 'MECHA_SIMON_SPLASH', 'BEZOS_ESCAPE', 'BEZOS_ESCAPE_MECHA_LINE', 'BEZOS_ESCAPE_JEFF_LINE', 'BEZOS_ESCAPE_DIALOGUE'].includes(GAME.state)) return;
 
     // Bezos victory screen
     if (GAME.state === 'BEZOS_WIN') {
@@ -5378,13 +5386,13 @@ function triggerGameOver(reason) {
     else if (GAME.mechaSimonDefeat) {
         // Special Mecha Mega Simon performance review
         const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
-        callGemini(`You are MECHA MEGA SIMON, the ultimate WHS authority. You just transformed into your unstoppable mecha form and defeated the coordinator. Deliver a terrifying mechanical performance review explaining how your transformation made you invincible and how no human could ever hope to defeat pure safety compliance given form. Mention your transformation was triggered by their futile resistance. Max 60 words.`, "reviews_loss", { stats }).then(review => {
+        callGemini(`You are MECHA MEGA SIMON, the ultimate WHS authority. You just transformed into your unstoppable mecha form and defeated the coordinator. Deliver a terrifying mechanical performance review explaining how your transformation made you invincible and how no human could ever hope to defeat pure safety compliance given form. Mention that this defeat will be permanently recorded on their performance review that will be delivered to your ultimate form - MECHA MEGA SIMON. Remind them that Mega Simon's transformation was triggered by their futile resistance. Max 70 words.`, "reviews_loss", { stats }).then(review => {
              if (GAME.genId === currentGen) { GAME.aiResultText = review; }
         });
     }
     else {
         const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
-        callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator failed after ${time}s with ${GAME.issuesFixed}/5 hazards fixed, ${GAME.booksFired} rule books thrown, ${GAME.opsPushed} ops pushed. Deliver a scathing yet funny performance review that weaves those stats into a safety lesson. Max 50 words.`, "reviews_loss", { stats }).then(review => {
+        callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator failed after ${time}s with ${GAME.issuesFixed}/5 hazards fixed, ${GAME.booksFired} rule books thrown, ${GAME.opsPushed} ops pushed. Deliver a scathing yet funny performance review that weaves those stats into a safety lesson. Threaten that their failure will be documented and sent to MEGA SIMON or worse - MECHA MEGA SIMON for ultimate judgment. Max 55 words.`, "reviews_loss", { stats }).then(review => {
              if (GAME.genId === currentGen) { GAME.aiResultText = review; }
         });
     }
@@ -6964,6 +6972,104 @@ function drawSimonMechaTransform() {
     ctx.textAlign = 'left';
 }
 
+// === MECHA MEGA SIMON SPLASH SCREEN ===
+function drawMechaSimonSplash() {
+    const t = GAME.stateTimer;
+
+    // Dark dramatic background with WHS/Amazon colors
+    ctx.fillStyle = '#080008';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Red warning flashes
+    if (t % 40 < 5) {
+        ctx.fillStyle = 'rgba(220, 38, 38, 0.2)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Dramatic radiating lines (gold and red - WHS colors)
+    ctx.save();
+    ctx.translate(canvas.width / 2, 100);
+    for (let i = 0; i < 16; i++) {
+        const angle = (i / 16) * Math.PI * 2 + t * 0.02;
+        const len = 80 + Math.sin(t * 0.1 + i) * 30;
+        ctx.strokeStyle = i % 2 === 0 ? 'rgba(234, 179, 8, 0.6)' : 'rgba(220, 38, 38, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
+        ctx.stroke();
+    }
+    ctx.restore();
+
+    // Epic glow behind sprite
+    const glowGrad = ctx.createRadialGradient(canvas.width / 2, 100, 10, canvas.width / 2, 100, 80);
+    glowGrad.addColorStop(0, 'rgba(220, 38, 38, 0.7)');
+    glowGrad.addColorStop(0.4, 'rgba(234, 179, 8, 0.4)');
+    glowGrad.addColorStop(0.7, 'rgba(139, 0, 0, 0.2)');
+    glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = glowGrad;
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, 100, 80, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Mecha Mega Simon sprite (pulsing)
+    const scale = 1.8 + Math.sin(t * 0.08) * 0.1;
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.translate(canvas.width / 2, 100);
+    ctx.scale(scale, scale);
+    ctx.drawImage(GFX.mechaMegaSimon, -24, -24);
+    ctx.restore();
+
+    // Title text with shadow effect
+    ctx.textAlign = 'center';
+
+    // "ULTIMATE THREAT" warning
+    ctx.fillStyle = '#dc2626';
+    ctx.font = '10px "Press Start 2P"';
+    const flashWarning = Math.sin(t * 0.12) > 0;
+    if (flashWarning) {
+        ctx.fillText('!! ULTIMATE THREAT !!', canvas.width / 2, 28);
+    }
+
+    // Main title
+    ctx.fillStyle = '#000';
+    ctx.font = '14px "Press Start 2P"';
+    ctx.fillText('MECHA MEGA', canvas.width / 2 + 1, 165);
+    ctx.fillText('SIMON', canvas.width / 2 + 1, 182);
+    ctx.fillStyle = '#dc2626';
+    ctx.fillText('MECHA MEGA', canvas.width / 2, 164);
+    ctx.fillText('SIMON', canvas.width / 2, 181);
+
+    // Subtitle
+    ctx.fillStyle = '#eab308';
+    ctx.font = '8px "Press Start 2P"';
+    ctx.fillText('THE ULTIMATE WHS AUTHORITY', canvas.width / 2, 198);
+
+    // Attack description
+    ctx.fillStyle = '#ff9900';
+    ctx.font = '7px monospace';
+    ctx.fillText('ATTACK: COMPLIANCE ANNIHILATION', canvas.width / 2, 212);
+
+    // Performance review warning
+    ctx.fillStyle = '#ff4444';
+    ctx.font = '6px monospace';
+    const reviewFlash = Math.sin(t * 0.1) > 0;
+    if (reviewFlash) {
+        ctx.fillText('Your performance review awaits...', canvas.width / 2, 225);
+    }
+
+    // Continue prompt
+    if (t > 60) {
+        ctx.fillStyle = '#fff';
+        ctx.font = '8px "Press Start 2P"';
+        const blink = Math.sin(t * 0.15) > 0;
+        if (blink) ctx.fillText('[PRESS SPACE]', canvas.width / 2, 240);
+    }
+
+    ctx.textAlign = 'left';
+}
+
 // === BEZOS ESCAPE SEQUENCE ===
 // Mecha Jeff's defeat one-liner (shown right after defeat)
 const MECHA_JEFF_DEFEAT_LINE = {
@@ -7844,117 +7950,345 @@ function drawBezosEscape() {
     ctx.globalAlpha = 1;
 }
 
-// Draw throne room backdrop for escape sequence
+// Draw throne room backdrop for escape sequence - AMAZON THEMED
 function drawThroneRoomBackdrop(t) {
-    // Dark royal purple/black gradient
+    // Dark Amazon-themed gradient (orange tinted dark)
     const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    grad.addColorStop(0, '#0a0515');
-    grad.addColorStop(0.4, '#15082a');
-    grad.addColorStop(0.7, '#1a0a2e');
-    grad.addColorStop(1, '#0d0618');
+    grad.addColorStop(0, '#0a0508');
+    grad.addColorStop(0.4, '#150810');
+    grad.addColorStop(0.7, '#1a0a12');
+    grad.addColorStop(1, '#0d0608');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Throne room pillars on sides
-    ctx.fillStyle = '#2a1f3d';
-    ctx.fillRect(0, 20, 20, canvas.height - 20);
-    ctx.fillRect(canvas.width - 20, 20, 20, canvas.height - 20);
+    // Subtle Amazon orange ambient glow
+    const ambientGlow = Math.sin(t * 0.02) * 0.02 + 0.04;
+    ctx.fillStyle = `rgba(255, 153, 0, ${ambientGlow})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Pillar details
-    ctx.fillStyle = '#3d2d55';
-    ctx.fillRect(5, 25, 10, 8);
-    ctx.fillRect(canvas.width - 15, 25, 10, 8);
+    // Amazon-themed pillars on sides (orange accents)
+    ctx.fillStyle = '#2a1a10';
+    ctx.fillRect(0, 20, 24, canvas.height - 20);
+    ctx.fillRect(canvas.width - 24, 20, 24, canvas.height - 20);
 
-    // Ornate golden trim on pillars
-    ctx.fillStyle = '#ffd700';
-    ctx.fillRect(0, 18, 22, 3);
-    ctx.fillRect(canvas.width - 22, 18, 22, 3);
-
-    // Throne in background (upper center) - golden with red cushion
-    const throneX = canvas.width / 2 - 25;
-    const throneY = 60;
-
-    // Throne back
-    ctx.fillStyle = '#4a3520';
-    ctx.fillRect(throneX - 5, throneY - 20, 60, 50);
-    ctx.fillStyle = '#ffd700';
-    ctx.fillRect(throneX, throneY - 15, 50, 3);
-    ctx.fillRect(throneX, throneY + 25, 50, 3);
-
-    // Throne seat
-    ctx.fillStyle = '#8b0000';
-    ctx.fillRect(throneX + 5, throneY - 5, 40, 25);
-
-    // Amazon logo on throne
+    // Amazon orange stripe on pillars
     ctx.fillStyle = '#ff9900';
-    ctx.font = '8px "Press Start 2P"';
+    ctx.fillRect(20, 20, 4, canvas.height - 20);
+    ctx.fillRect(canvas.width - 24, 20, 4, canvas.height - 20);
+
+    // Pillar details with Prime blue accents
+    ctx.fillStyle = '#00a8e1';
+    ctx.fillRect(5, 25, 10, 5);
+    ctx.fillRect(canvas.width - 15, 25, 10, 5);
+
+    // Golden Amazon trim on pillars
+    ctx.fillStyle = '#ff9900';
+    ctx.fillRect(0, 18, 26, 3);
+    ctx.fillRect(canvas.width - 26, 18, 26, 3);
+
+    // PRIME banners on pillars
+    ctx.fillStyle = '#00a8e1';
+    ctx.font = '5px "Press Start 2P"';
+    ctx.save();
+    ctx.translate(12, 80);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('PRIME', 0, 0);
+    ctx.restore();
+    ctx.save();
+    ctx.translate(canvas.width - 8, 80);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('PRIME', 0, 0);
+    ctx.restore();
+
+    // Amazon package stacks decorating the sides
+    for (let i = 0; i < 3; i++) {
+        // Left side packages
+        const pkgY = canvas.height - 55 - i * 18;
+        ctx.fillStyle = '#8b6914';
+        ctx.fillRect(28, pkgY, 16, 14);
+        ctx.fillStyle = '#a67c00';
+        ctx.fillRect(30, pkgY + 2, 12, 10);
+        // Amazon smile on package
+        ctx.strokeStyle = '#232f3e';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(32, pkgY + 8);
+        ctx.quadraticCurveTo(36, pkgY + 12, 40, pkgY + 7);
+        ctx.stroke();
+
+        // Right side packages
+        ctx.fillStyle = '#8b6914';
+        ctx.fillRect(canvas.width - 44, pkgY, 16, 14);
+        ctx.fillStyle = '#a67c00';
+        ctx.fillRect(canvas.width - 42, pkgY + 2, 12, 10);
+        ctx.strokeStyle = '#232f3e';
+        ctx.beginPath();
+        ctx.moveTo(canvas.width - 40, pkgY + 8);
+        ctx.quadraticCurveTo(canvas.width - 36, pkgY + 12, canvas.width - 32, pkgY + 7);
+        ctx.stroke();
+    }
+
+    // Grand Amazon Throne in background
+    const throneX = canvas.width / 2 - 25;
+    const throneY = 55;
+
+    // Throne back (cardboard box styled)
+    ctx.fillStyle = '#5a4020';
+    ctx.fillRect(throneX - 8, throneY - 25, 66, 55);
+    ctx.fillStyle = '#8b6914';
+    ctx.fillRect(throneX - 3, throneY - 20, 56, 45);
+
+    // Amazon orange trim on throne
+    ctx.fillStyle = '#ff9900';
+    ctx.fillRect(throneX - 3, throneY - 22, 56, 4);
+    ctx.fillRect(throneX - 3, throneY + 22, 56, 4);
+
+    // Throne seat (Prime blue cushion)
+    ctx.fillStyle = '#00a8e1';
+    ctx.fillRect(throneX + 5, throneY - 8, 40, 25);
+    ctx.fillStyle = '#0090c5';
+    ctx.fillRect(throneX + 8, throneY - 5, 34, 19);
+
+    // Large Amazon smile logo on throne (pulsing)
+    const logoPulse = Math.sin(t * 0.08) * 0.15 + 0.85;
+    ctx.fillStyle = `rgba(255, 153, 0, ${logoPulse})`;
+    ctx.font = '10px "Press Start 2P"';
     ctx.textAlign = 'center';
-    ctx.fillText('A', throneX + 25, throneY + 12);
+    ctx.fillText('a', throneX + 25, throneY + 8);
+    // Amazon smile arrow
+    ctx.strokeStyle = `rgba(255, 153, 0, ${logoPulse})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(throneX + 10, throneY + 12);
+    ctx.quadraticCurveTo(throneX + 25, throneY + 22, throneX + 42, throneY + 10);
+    ctx.stroke();
 
-    // Royal carpet/floor
-    ctx.fillStyle = '#1a0a1f';
-    ctx.fillRect(0, canvas.height - 35, canvas.width, 35);
+    // "FULFILLMENT CENTER" text above throne
+    ctx.fillStyle = '#ff9900';
+    ctx.font = '5px "Press Start 2P"';
+    ctx.fillText('FULFILLMENT', throneX + 25, throneY - 30);
+    ctx.fillText('CENTER', throneX + 25, throneY - 22);
 
-    // Red carpet runner
-    ctx.fillStyle = '#8b0000';
-    ctx.fillRect(canvas.width / 2 - 30, canvas.height - 35, 60, 35);
-    ctx.fillStyle = '#a52a2a';
-    ctx.fillRect(canvas.width / 2 - 25, canvas.height - 35, 50, 3);
+    // Royal carpet/floor (Amazon branded)
+    ctx.fillStyle = '#1a0a08';
+    ctx.fillRect(0, canvas.height - 38, canvas.width, 38);
 
-    // Torch lights on walls
+    // Orange carpet runner with smile pattern
+    ctx.fillStyle = '#cc7a00';
+    ctx.fillRect(canvas.width / 2 - 35, canvas.height - 38, 70, 38);
+    ctx.fillStyle = '#ff9900';
+    ctx.fillRect(canvas.width / 2 - 30, canvas.height - 38, 60, 4);
+    // Smile pattern on carpet
+    ctx.strokeStyle = '#232f3e';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2 - 20, canvas.height - 15);
+    ctx.quadraticCurveTo(canvas.width / 2, canvas.height - 5, canvas.width / 2 + 20, canvas.height - 18);
+    ctx.stroke();
+
+    // Torch lights styled as warehouse lights (Amazon orange flames)
     for (let i = 0; i < 2; i++) {
-        const torchX = i === 0 ? 35 : canvas.width - 45;
+        const torchX = i === 0 ? 50 : canvas.width - 60;
         const flicker = Math.sin(t * 0.15 + i) * 3;
 
-        // Torch holder
-        ctx.fillStyle = '#4a3520';
-        ctx.fillRect(torchX, 50, 10, 20);
+        // Industrial torch holder
+        ctx.fillStyle = '#333';
+        ctx.fillRect(torchX, 45, 10, 25);
 
-        // Flame
+        // Amazon orange flame
         ctx.fillStyle = '#ff9900';
         ctx.beginPath();
-        ctx.arc(torchX + 5, 45 + flicker, 8, 0, Math.PI * 2);
+        ctx.arc(torchX + 5, 40 + flicker, 10, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = '#ffcc00';
         ctx.beginPath();
-        ctx.arc(torchX + 5, 45 + flicker, 4, 0, Math.PI * 2);
+        ctx.arc(torchX + 5, 40 + flicker, 5, 0, Math.PI * 2);
         ctx.fill();
+    }
+
+    // Floating Prime delivery drones in background
+    for (let i = 0; i < 2; i++) {
+        const droneX = 60 + i * (canvas.width - 120);
+        const droneY = 100 + Math.sin(t * 0.05 + i * 2) * 8;
+        ctx.fillStyle = '#444';
+        ctx.fillRect(droneX - 6, droneY, 12, 6);
+        ctx.fillStyle = '#00a8e1';
+        ctx.fillRect(droneX - 3, droneY + 1, 6, 4);
+        // Rotor blur
+        ctx.fillStyle = `rgba(100, 100, 100, ${0.3 + Math.sin(t * 0.5 + i) * 0.2})`;
+        ctx.fillRect(droneX - 10, droneY - 2, 8, 2);
+        ctx.fillRect(droneX + 2, droneY - 2, 8, 2);
     }
 
     ctx.textAlign = 'left';
 }
 
-// Draw victory backdrop for Simon joining
+// Draw victory backdrop for Simon joining - STAY IN AMAZON THEMED THRONE ROOM
 function drawVictoryBackdrop(t) {
-    // Night sky gradient (post-battle calm)
+    // Keep the Amazon throne room backdrop (post-battle calm with victory atmosphere)
     const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    grad.addColorStop(0, '#050515');
-    grad.addColorStop(0.4, '#0a0a25');
-    grad.addColorStop(0.7, '#0f0f2a');
-    grad.addColorStop(1, '#1a1a35');
+    grad.addColorStop(0, '#0a0508');
+    grad.addColorStop(0.4, '#150810');
+    grad.addColorStop(0.7, '#1a0a12');
+    grad.addColorStop(1, '#0d0608');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Stars
-    for (let i = 0; i < 40; i++) {
-        const starX = (i * 73 + t * 0.1) % canvas.width;
-        const starY = (i * 41) % (canvas.height - 40);
-        const brightness = 0.4 + Math.sin(t * 0.05 + i) * 0.3;
-        ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
-        ctx.fillRect(starX, starY, 1, 1);
+    // Victory glow effect (celebratory Amazon orange/gold tint)
+    const victoryGlow = Math.sin(t * 0.03) * 0.05 + 0.12;
+    ctx.fillStyle = `rgba(255, 153, 0, ${victoryGlow})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Amazon-themed pillars on sides (matching throne room)
+    ctx.fillStyle = '#2a1a10';
+    ctx.fillRect(0, 20, 24, canvas.height - 20);
+    ctx.fillRect(canvas.width - 24, 20, 24, canvas.height - 20);
+
+    // Amazon orange stripe on pillars
+    ctx.fillStyle = '#ff9900';
+    ctx.fillRect(20, 20, 4, canvas.height - 20);
+    ctx.fillRect(canvas.width - 24, 20, 4, canvas.height - 20);
+
+    // Pillar details with Prime blue accents
+    ctx.fillStyle = '#00a8e1';
+    ctx.fillRect(5, 25, 10, 5);
+    ctx.fillRect(canvas.width - 15, 25, 10, 5);
+
+    // Golden Amazon trim on pillars
+    ctx.fillStyle = '#ff9900';
+    ctx.fillRect(0, 18, 26, 3);
+    ctx.fillRect(canvas.width - 26, 18, 26, 3);
+
+    // Scattered packages on sides (some knocked over from battle)
+    for (let i = 0; i < 3; i++) {
+        const pkgY = canvas.height - 55 - i * 18;
+        // Left side packages (some tilted)
+        ctx.save();
+        ctx.translate(36, pkgY + 7);
+        ctx.rotate(Math.sin(i * 0.5) * 0.2);
+        ctx.fillStyle = '#8b6914';
+        ctx.fillRect(-8, -7, 16, 14);
+        ctx.fillStyle = '#a67c00';
+        ctx.fillRect(-6, -5, 12, 10);
+        ctx.restore();
+
+        // Right side packages
+        ctx.save();
+        ctx.translate(canvas.width - 36, pkgY + 7);
+        ctx.rotate(-Math.sin(i * 0.7) * 0.15);
+        ctx.fillStyle = '#8b6914';
+        ctx.fillRect(-8, -7, 16, 14);
+        ctx.fillStyle = '#a67c00';
+        ctx.fillRect(-6, -5, 12, 10);
+        ctx.restore();
     }
 
-    // Warehouse/ground
-    ctx.fillStyle = '#1a1f2e';
-    ctx.fillRect(0, canvas.height - 35, canvas.width, 35);
-    ctx.fillStyle = '#2d3748';
-    ctx.fillRect(0, canvas.height - 35, canvas.width, 4);
+    // Empty Amazon Throne in background (Bezos escaped!)
+    const throneX = canvas.width / 2 - 25;
+    const throneY = 55;
 
-    // Warehouse entrance silhouette on left
-    ctx.fillStyle = '#0a0f1a';
-    ctx.fillRect(-10, canvas.height - 70, 50, 70);
-    ctx.fillStyle = '#fbbf24';
-    ctx.fillRect(10, canvas.height - 60, 20, 25);
+    // Throne back (cardboard box styled - slightly damaged)
+    ctx.fillStyle = '#5a4020';
+    ctx.fillRect(throneX - 8, throneY - 25, 66, 55);
+    ctx.fillStyle = '#8b6914';
+    ctx.fillRect(throneX - 3, throneY - 20, 56, 45);
+
+    // Amazon orange trim on throne
+    ctx.fillStyle = '#ff9900';
+    ctx.fillRect(throneX - 3, throneY - 22, 56, 4);
+    ctx.fillRect(throneX - 3, throneY + 22, 56, 4);
+
+    // Throne seat (Prime blue cushion - empty)
+    ctx.fillStyle = '#00a8e1';
+    ctx.fillRect(throneX + 5, throneY - 8, 40, 25);
+    ctx.fillStyle = '#0090c5';
+    ctx.fillRect(throneX + 8, throneY - 5, 34, 19);
+
+    // Dimmed Amazon smile logo on empty throne
+    ctx.fillStyle = 'rgba(255, 153, 0, 0.4)';
+    ctx.font = '10px "Press Start 2P"';
+    ctx.textAlign = 'center';
+    ctx.fillText('a', throneX + 25, throneY + 8);
+    // Dimmed smile arrow
+    ctx.strokeStyle = 'rgba(255, 153, 0, 0.4)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(throneX + 10, throneY + 12);
+    ctx.quadraticCurveTo(throneX + 25, throneY + 22, throneX + 42, throneY + 10);
+    ctx.stroke();
+
+    // "VACANT - WORKER VICTORY!" sign on throne (blinking)
+    if (Math.sin(t * 0.1) > 0) {
+        ctx.fillStyle = '#22c55e';
+        ctx.font = '5px "Press Start 2P"';
+        ctx.fillText('WORKER VICTORY!', throneX + 25, throneY - 30);
+    } else {
+        ctx.fillStyle = '#ff9900';
+        ctx.font = '5px "Press Start 2P"';
+        ctx.fillText('POSITION VACANT', throneX + 25, throneY - 30);
+    }
+
+    // Royal carpet/floor (Amazon branded)
+    ctx.fillStyle = '#1a0a08';
+    ctx.fillRect(0, canvas.height - 38, canvas.width, 38);
+
+    // Orange carpet runner
+    ctx.fillStyle = '#cc7a00';
+    ctx.fillRect(canvas.width / 2 - 35, canvas.height - 38, 70, 38);
+    ctx.fillStyle = '#ff9900';
+    ctx.fillRect(canvas.width / 2 - 30, canvas.height - 38, 60, 4);
+
+    // Victory confetti particles (Amazon themed colors)
+    for (let i = 0; i < 20; i++) {
+        const confettiX = (i * 37 + t * 0.6) % canvas.width;
+        const confettiY = (i * 53 + t * 0.4) % (canvas.height - 45);
+        const colors = ['#ff9900', '#ffd700', '#00a8e1', '#22c55e', '#fff'];
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.globalAlpha = 0.7 + Math.sin(t * 0.1 + i) * 0.3;
+        ctx.fillRect(confettiX, confettiY, 3 + (i % 2), 3 + (i % 3));
+    }
+    ctx.globalAlpha = 1;
+
+    // Celebratory warehouse lights (Amazon orange flames - bigger for victory)
+    for (let i = 0; i < 2; i++) {
+        const torchX = i === 0 ? 50 : canvas.width - 60;
+        const flicker = Math.sin(t * 0.2 + i) * 4;
+
+        // Industrial torch holder
+        ctx.fillStyle = '#333';
+        ctx.fillRect(torchX, 45, 10, 25);
+
+        // Celebratory bright Amazon orange flame
+        ctx.fillStyle = '#ff9900';
+        ctx.beginPath();
+        ctx.arc(torchX + 5, 40 + flicker, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.arc(torchX + 5, 40 + flicker, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(torchX + 5, 40 + flicker, 3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Celebratory Prime drones doing victory loops
+    for (let i = 0; i < 2; i++) {
+        const droneAngle = t * 0.03 + i * Math.PI;
+        const droneX = canvas.width / 2 + Math.cos(droneAngle) * 60 * (i === 0 ? 1 : -1);
+        const droneY = 90 + Math.sin(droneAngle * 2) * 15;
+        ctx.fillStyle = '#444';
+        ctx.fillRect(droneX - 6, droneY, 12, 6);
+        ctx.fillStyle = '#22c55e'; // Victory green instead of Prime blue
+        ctx.fillRect(droneX - 3, droneY + 1, 6, 4);
+        // Rotor blur
+        ctx.fillStyle = `rgba(100, 100, 100, ${0.4 + Math.sin(t * 0.5 + i) * 0.2})`;
+        ctx.fillRect(droneX - 10, droneY - 2, 8, 2);
+        ctx.fillRect(droneX + 2, droneY - 2, 8, 2);
+    }
+
+    ctx.textAlign = 'left';
 }
 
 function drawCredits() {
@@ -8538,6 +8872,7 @@ function draw() {
     }
     if (GAME.state === 'MECHA_TRANSFORM') { drawMechaTransform(); ctx.restore(); return; }
     if (GAME.state === 'SIMON_MECHA_TRANSFORM') { drawSimonMechaTransform(); ctx.restore(); return; }
+    if (GAME.state === 'MECHA_SIMON_SPLASH') { drawMechaSimonSplash(); ctx.restore(); return; }
     if (GAME.state === 'BEZOS_ESCAPE') { updateBezosEscape(); drawBezosEscape(); ctx.restore(); return; }
     if (GAME.state === 'CREDITS') { drawCredits(); ctx.restore(); return; }
     if (GAME.state === 'BOSS_INTRO' && GAME.boss) {
