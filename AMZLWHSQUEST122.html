@@ -808,7 +808,10 @@ const MusicSys = {
         menu: new Audio('Game Over But Not Really.mp3'),
         ingame: new Audio('Pixel Warehouse Crawl.mp3'),
         boss: new Audio('Pixel Panic.mp3'),
-        victory: new Audio('Pixel Victory.mp3')
+        victory: new Audio('Pixel Victory.mp3'),
+        mechaJeff: new Audio('Mecha Jeff Bezos Showdown.mp3'),
+        megaSimon: new Audio('Mega Simon MEU WHS Regional Manager.mp3'),
+        credits: new Audio('Game Over Symphony.mp3')
     },
     currentName: null,
     currentRate: 1,
@@ -5379,7 +5382,7 @@ function triggerGameOver(reason) {
     }
 
     // Don't speak corporate message immediately - wait for Simon's dialog like win flow
-    MusicSys.play('menu'); // Play game over music
+    MusicSys.play('title'); // Play menu music (Pixel Reverie)
 
     const time = Math.floor((Date.now() - GAME.startTime)/1000); const currentGen = GAME.genId;
     if (reason === "FIRED!") { GAME.aiResultText = "Terminated for unsafe behavior."; }
@@ -5592,17 +5595,30 @@ function closeDialog() {
 }
 
 function updateMusicForState() {
+    // Don't change music during dialogues - let current track continue
+    if (GAME.state === 'DIALOG') return;
+
     let rate = 1;
     let track = 'title';
 
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE'].includes(GAME.state)) track = 'title';
-    else if (['HOWTO', 'SELECT'].includes(GAME.state)) track = 'menu';
+    // Pixel Reverie - for Menus (title, intro, story, how to play)
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO'].includes(GAME.state)) track = 'title';
+    // Game Over But Not Really - for character select screen
+    else if (GAME.state === 'SELECT') track = 'menu';
+    // Pixel Warehouse Crawl - for warehouse gameplay
     else if (['PLAY', 'YARD_INTRO', 'YARD_LEVEL'].includes(GAME.state)) track = 'ingame';
-    else if (GAME.state === 'VISITOR_SPLASH') track = 'boss';
-    else if (GAME.state === 'BOSS' || GAME.state === 'BOSS_INTRO' || GAME.state === 'SIMON_MECHA_TRANSFORM') track = 'boss';
-    else if (GAME.state === 'MECHA_BOSS' || GAME.state === 'MECHA_BOSS_INTRO' || GAME.state === 'MECHA_TRANSFORM' || GAME.state === 'THRONE_CONFRONTATION') { track = 'boss'; rate = 0.85; }
+    // Pixel Panic - for boss reveals and transformation splash screens
+    else if (['VISITOR_SPLASH', 'BOSS_INTRO', 'SIMON_MECHA_TRANSFORM', 'MECHA_SIMON_SPLASH'].includes(GAME.state)) track = 'boss';
+    // Mega Simon MEU WHS Regional Manager - for the Simon boss fight
+    else if (GAME.state === 'BOSS') track = 'megaSimon';
+    // Mecha Jeff Bezos Showdown - for Mecha Jeff fight
+    else if (['MECHA_BOSS', 'MECHA_BOSS_INTRO', 'MECHA_TRANSFORM', 'THRONE_CONFRONTATION'].includes(GAME.state)) track = 'mechaJeff';
+    // Pixel Victory - for beating the game
     else if (GAME.state === 'BEZOS_ESCAPE') track = 'victory';
-    else if (GAME.state === 'CREDITS') track = 'victory';
+    // Game Over Symphony - for both Credits Scenes
+    else if (GAME.state === 'CREDITS') track = 'credits';
+    // WIN_SPLASH and LOSE_SPLASH - don't change music (handled elsewhere or continue current)
+    else if (GAME.state === 'WIN_SPLASH' || GAME.state === 'LOSE_SPLASH' || GAME.state === 'GAMEOVER_SPLASH') return;
 
     MusicSys.play(track, rate);
 }
