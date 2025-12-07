@@ -123,7 +123,7 @@
             text-transform: uppercase; text-shadow: 0 0 8px #00ffff;
             letter-spacing: 1px;
         }
-        
+
         .loading-dots::after {
             content: ' .';
             animation: dots 1.5s steps(5, end) infinite;
@@ -133,6 +133,37 @@
             40% { content: ' ..'; }
             60% { content: ' ...'; }
             80%, 100% { content: ''; }
+        }
+
+        /* TTS Loading indicator */
+        #tts-loading {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-size: 8px;
+            color: #a855f7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        #tts-loading-bar {
+            flex-grow: 1;
+            height: 4px;
+            background: rgba(168, 85, 247, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            max-width: 120px;
+        }
+        #tts-loading-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #a855f7, #ec4899);
+            border-radius: 2px;
+            animation: tts-loading-pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes tts-loading-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
         
         /* Banner hidden as requested */
@@ -213,6 +244,10 @@
             <div id="dialog-box">
                 <canvas id="portrait" width="32" height="32"></canvas>
                 <div style="display:flex; flex-direction:column; width:100%;">
+                    <div id="tts-loading">
+                        <span>🎙️ LOADING VOICE</span>
+                        <div id="tts-loading-bar"><div id="tts-loading-fill"></div></div>
+                    </div>
                     <div id="gemini-badge" class="gemini-badge">✨ SIMON IS ANALYZING...</div>
                     <div id="text-content"></div>
                     <div id="press-space-hint">▼ PRESS SPACE</div>
@@ -852,7 +887,12 @@ const TTS_SETTINGS = {
     preloadedAudio: new Map(), // Cache for preloaded Gemini TTS audio
     preloadQueue: [], // Queue of texts to preload
     isPreloading: false,
-    pendingPreloads: new Set() // Track what's currently being preloaded
+    pendingPreloads: new Set(), // Track what's currently being preloaded
+    // Loading state for UI indicator
+    isLoading: false,
+    loadingProgress: 0,
+    loadingStartTime: 0,
+    TTS_TIMEOUT_MS: 10000 // 10 second timeout for TTS generation
 };
 
 // --- GEMINI VOICE TTS SYSTEM ---
@@ -951,14 +991,27 @@ const GeminiTTS = {
         };
 
         try {
+            // Create abort controller for timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), TTS_SETTINGS.TTS_TIMEOUT_MS);
+
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
+                signal: controller.signal
             });
 
+            clearTimeout(timeoutId);
+
             if (!response.ok) {
-                console.log('[GeminiTTS] API error:', response.status);
+                // Handle rate limit (429) and other errors
+                if (response.status === 429) {
+                    console.log('[GeminiTTS] Rate limit reached, falling back to browser TTS');
+                    this.rateLimitHit = true;
+                } else {
+                    console.log('[GeminiTTS] API error:', response.status);
+                }
                 return null;
             }
 
@@ -998,10 +1051,17 @@ const GeminiTTS = {
             }
             return null;
         } catch (e) {
-            console.log('[GeminiTTS] Error:', e);
+            // Handle timeout specifically
+            if (e.name === 'AbortError') {
+                console.log('[GeminiTTS] Request timed out after 10s, falling back to browser TTS');
+            } else {
+                console.log('[GeminiTTS] Error:', e);
+            }
             return null;
         }
     },
+
+    rateLimitHit: false, // Track if rate limit was hit to avoid repeated failed requests
 
     async speak(text, speakerName = "System", callback = null) {
         if (!text) {
@@ -1012,13 +1072,28 @@ const GeminiTTS = {
         // Stop any currently playing audio
         this.stop();
 
+        // If rate limit was hit, fall back immediately to browser TTS
+        if (this.rateLimitHit) {
+            console.log('[GeminiTTS] Using browser TTS due to previous rate limit');
+            TTSSys.speak(text, speakerName, callback);
+            return;
+        }
+
         // Check preloaded cache first
         const cacheKey = `${speakerName}:${text}`;
         let audioUrl = TTS_SETTINGS.preloadedAudio.get(cacheKey);
 
         if (!audioUrl) {
+            // Show loading indicator while generating TTS
+            TTS_SETTINGS.isLoading = true;
+            TTS_SETTINGS.loadingStartTime = Date.now();
+            TTS_SETTINGS.loadingProgress = 0;
+
             // Generate new TTS
             audioUrl = await this.generateTTS(text, speakerName);
+
+            // Hide loading indicator
+            TTS_SETTINGS.isLoading = false;
         }
 
         if (audioUrl) {
@@ -1033,18 +1108,20 @@ const GeminiTTS = {
 
             this.currentAudio.onerror = () => {
                 this.isPlaying = false;
-                if (callback) callback();
+                console.log('[GeminiTTS] Audio playback error, falling back to browser TTS');
                 // Fallback to browser TTS on error
-                TTSSys.speak(text, speakerName);
+                TTSSys.speak(text, speakerName, callback);
             };
 
             this.isPlaying = true;
             this.currentAudio.play().catch(() => {
+                console.log('[GeminiTTS] Audio play() failed, falling back to browser TTS');
                 // Fallback to browser TTS
                 TTSSys.speak(text, speakerName, callback);
             });
         } else {
             // Fallback to browser TTS
+            console.log('[GeminiTTS] No audio URL, falling back to browser TTS');
             TTSSys.speak(text, speakerName, callback);
         }
     },
@@ -1167,6 +1244,23 @@ const TTSPreloader = {
     }
 };
 
+// Update TTS loading indicator in the UI
+function updateTTSLoadingIndicator() {
+    const loadingEl = document.getElementById('tts-loading');
+    const fillEl = document.getElementById('tts-loading-fill');
+
+    if (TTS_SETTINGS.isLoading && TTS_SETTINGS.mode === 'advanced') {
+        loadingEl.style.display = 'flex';
+        // Animate the progress bar based on elapsed time (max 10 seconds)
+        const elapsed = Date.now() - TTS_SETTINGS.loadingStartTime;
+        const progress = Math.min((elapsed / TTS_SETTINGS.TTS_TIMEOUT_MS) * 100, 95);
+        fillEl.style.width = progress + '%';
+    } else {
+        loadingEl.style.display = 'none';
+        fillEl.style.width = '0%';
+    }
+}
+
 // Unified TTS function that uses the selected mode
 function speakTTS(text, speakerName = "System", callback = null) {
     if (TTS_SETTINGS.mode === 'advanced') {
@@ -1179,6 +1273,7 @@ function speakTTS(text, speakerName = "System", callback = null) {
 function cancelTTS() {
     TTSSys.cancel();
     GeminiTTS.cancel();
+    TTS_SETTINGS.isLoading = false;
 }
 
 // --- AUDIO ---
@@ -4787,6 +4882,9 @@ function update() {
     if (GAME.shake > 0) GAME.shake--;
     if (GAME.flash > 0) GAME.flash--;
 
+    // Update TTS loading indicator
+    updateTTSLoadingIndicator();
+
     if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') {
         GAME.splashTimer--;
         const isWin = GAME.state === 'WIN_SPLASH';
@@ -4820,8 +4918,8 @@ function update() {
 
     if (GAME.state === 'LOGO' && GAME.stateTimer > 240) advanceState();
 
-    // TTS mode toggle in HOWTO screen
-    if (GAME.state === 'HOWTO') {
+    // TTS mode toggle in TITLE screen
+    if (GAME.state === 'TITLE') {
         if ((KEYS.up || KEYS.down) && GAME.ticks % 15 === 0) {
             AudioSys.sfx.select();
             if (TTS_SETTINGS.mode === 'classic') {
@@ -4834,6 +4932,10 @@ function update() {
                 speakTTS("Classic voice mode enabled", "System");
             }
         }
+        return;
+    }
+
+    if (GAME.state === 'HOWTO') {
         return;
     }
 
@@ -6292,10 +6394,22 @@ function updateMusicForState() {
     else if (GAME.state === 'SELECT') track = 'menu';
     // Pixel Warehouse Crawl - for warehouse gameplay
     else if (['PLAY', 'YARD_INTRO', 'YARD_LEVEL'].includes(GAME.state)) track = 'ingame';
-    // Pixel Panic - for boss reveals and transformation splash screens
-    else if (['VISITOR_SPLASH', 'BOSS_INTRO', 'SIMON_MECHA_TRANSFORM', 'MECHA_SIMON_SPLASH'].includes(GAME.state)) track = 'boss';
-    // SNES BOSS FIGHT MUSIC - for ALL boss fights (5 random bosses + Simon) and fake victory
-    else if (GAME.state === 'BOSS' || GAME.state === 'SIMON_FAKE_VICTORY') track = 'snesBoss';
+    // Pixel Panic - for boss reveals (regular bosses only)
+    else if (GAME.state === 'VISITOR_SPLASH') track = 'boss';
+    // MEGA SIMON's theme - for Simon boss intro, fight, and transformation
+    else if (['BOSS_INTRO', 'SIMON_MECHA_TRANSFORM', 'MECHA_SIMON_SPLASH'].includes(GAME.state) &&
+             GAME.boss && (GAME.boss.name === 'MEGA SIMON' || GAME.boss.name === 'MECHA MEGA SIMON')) {
+        track = 'megaSimon';
+    }
+    // Pixel Panic - for regular boss intros
+    else if (GAME.state === 'BOSS_INTRO') track = 'boss';
+    // MEGA SIMON's theme - for Simon fight and fake victory sequence
+    else if ((GAME.state === 'BOSS' || GAME.state === 'SIMON_FAKE_VICTORY') &&
+             GAME.boss && (GAME.boss.name === 'MEGA SIMON' || GAME.boss.name === 'MECHA MEGA SIMON')) {
+        track = 'megaSimon';
+    }
+    // SNES BOSS FIGHT MUSIC - for regular boss fights (5 random bosses)
+    else if (GAME.state === 'BOSS') track = 'snesBoss';
     // SNES BOSS FIGHT MUSIC - for Mecha Jeff fight
     else if (['MECHA_BOSS', 'MECHA_BOSS_INTRO', 'MECHA_TRANSFORM', 'THRONE_CONFRONTATION'].includes(GAME.state)) track = 'snesBoss';
     // Pixel Victory - for beating the game
@@ -9280,25 +9394,57 @@ function draw() {
         ctx.drawImage(GFX.chars[charName], canvas.width / 2 - 16, 85 + charBounce, 32, 32);
         ctx.restore();
 
+        // Voice Mode Selector on Title Screen
+        ctx.textAlign = 'left';
+        const isClassic = TTS_SETTINGS.mode === 'classic';
+        const isAdvanced = TTS_SETTINGS.mode === 'advanced';
+
+        // Voice mode label
+        ctx.fillStyle = '#a855f7';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText('VOICE:', 20, 135);
+
+        // Classic option
+        ctx.fillStyle = isClassic ? '#22c55e' : '#64748b';
+        ctx.font = '6px monospace';
+        ctx.fillText(isClassic ? '>' : ' ', 55, 135);
+        ctx.fillText('CLASSIC', 62, 135);
+
+        // Advanced option with BETA badge
+        ctx.fillStyle = isAdvanced ? '#22c55e' : '#64748b';
+        ctx.fillText(isAdvanced ? '>' : ' ', 112, 135);
+        ctx.fillText('ADVANCED', 119, 135);
+
+        // BETA badge for Advanced mode
+        ctx.fillStyle = '#ef4444';
+        ctx.font = 'bold 5px monospace';
+        ctx.fillText('BETA', 175, 135);
+
+        // Toggle hint
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#64748b';
+        ctx.font = '5px monospace';
+        ctx.fillText('[ UP/DOWN to change ]', canvas.width / 2, 145);
+
         // Animated prompt with pulse
         const blink = Math.sin(t * 0.12) > 0;
         const pulseScale = 1 + Math.sin(t * 0.1) * 0.05;
         if (blink) {
             ctx.fillStyle = '#fff';
             ctx.font = '9px "Press Start 2P"';
-            ctx.fillText('PRESS SPACE', canvas.width / 2, 140);
+            ctx.fillText('PRESS SPACE', canvas.width / 2, 160);
         }
 
         // Decorative lines
         ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(40, 155, 176, 2);
+        ctx.fillRect(40, 170, 176, 2);
         ctx.fillStyle = '#22d3ee';
-        ctx.fillRect(60, 160, 136, 1);
+        ctx.fillRect(60, 175, 136, 1);
 
         // Credits with style
         ctx.fillStyle = '#64748b';
         ctx.font = '7px monospace';
-        ctx.fillText('CREATED BY ERWIN ESENER', canvas.width / 2, 175);
+        ctx.fillText('CREATED BY ERWIN ESENER', canvas.width / 2, 190);
         ctx.fillStyle = '#475569';
         ctx.font = '6px monospace';
         ctx.fillText('© 2024 ERWIN ESENER PRODUCTIONS', canvas.width / 2, 220);
@@ -9358,38 +9504,17 @@ function draw() {
         ctx.fillText('2. Dodge crazy Ops requests!', 25, 140);
         ctx.fillText('3. Defeat the surprise visitor', 25, 152);
 
-        // TTS Voice Mode Toggle Section
-        ctx.fillStyle = '#a855f7';
+        // Tips section
+        ctx.fillStyle = '#22d3ee';
         ctx.font = '8px "Press Start 2P"';
-        ctx.fillText('VOICE MODE:', 25, 175);
-
-        // Draw toggle options
-        const isClassic = TTS_SETTINGS.mode === 'classic';
-        const isAdvanced = TTS_SETTINGS.mode === 'advanced';
-
-        // Classic option
-        ctx.fillStyle = isClassic ? '#22c55e' : '#64748b';
-        ctx.font = isClassic ? 'bold 8px monospace' : '8px monospace';
-        ctx.fillText(isClassic ? '> CLASSIC' : '  CLASSIC', 25, 190);
+        ctx.fillText('TIPS:', 25, 175);
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '6px monospace';
-        ctx.fillText('(Browser TTS - Fast)', 100, 190);
-
-        // Advanced option
-        ctx.fillStyle = isAdvanced ? '#22c55e' : '#64748b';
-        ctx.font = isAdvanced ? 'bold 8px monospace' : '8px monospace';
-        ctx.fillText(isAdvanced ? '> ADVANCED' : '  ADVANCED', 25, 204);
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '6px monospace';
-        ctx.fillText('(Gemini AI TTS - Premium)', 100, 204);
-
-        // Instructions for toggle
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = '6px monospace';
-        ctx.fillText('[ UP/DOWN to change voice mode ]', canvas.width / 2, 216);
+        ctx.font = '7px monospace';
+        ctx.fillText('- Collect packages for power-ups', 25, 188);
+        ctx.fillText('- Fire books to push back enemies', 25, 200);
 
         // Animated prompt
+        ctx.textAlign = 'center';
         const blink = Math.sin(t * 0.12) > 0;
         if (blink) {
             ctx.fillStyle = '#fff';
