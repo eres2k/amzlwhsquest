@@ -228,6 +228,107 @@ let apiKey = null;
 let apiKeyPromise = null;
 const MODEL_NAME = "gemini-2.5-flash-lite";
 
+// --- GAME CONSTANTS (Performance: Avoid magic numbers) ---
+const GAME_CONSTANTS = {
+    // Timing
+    PARTICLE_LIFE_BASE: 50,
+    PARTICLE_LIFE_VARIANCE: 20,
+    FLOATING_TEXT_LIFE: 210,
+    IFRAME_DURATION: 60,
+    CASTLE_IFRAME_DURATION: 120,
+    BANTER_COOLDOWN: 5000,
+    AI_BANTER_COOLDOWN: 15000,
+
+    // Physics
+    PARTICLE_GRAVITY: 0.2,
+    PARTICLE_BOUNCE: -0.6,
+    DIAGONAL_FACTOR: 0.707,
+
+    // Pool sizes
+    MAX_PARTICLES: 200,
+    MAX_FLOATING_TEXTS: 30,
+    MAX_PROJECTILES: 50,
+
+    // Rendering
+    VIEWPORT_PADDING: 16,
+    SCREEN_WIDTH: 256,
+    SCREEN_HEIGHT: 224
+};
+
+// --- OBJECT POOL SYSTEM (Performance: Reduce GC pressure) ---
+const ObjectPool = {
+    particles: [],
+    floatingTexts: [],
+
+    // Get a particle from pool or create new one
+    getParticle() {
+        const pool = this.particles;
+        for (let i = 0; i < pool.length; i++) {
+            if (!pool[i].active) {
+                pool[i].active = true;
+                return pool[i];
+            }
+        }
+        // Create new if pool is empty or all active
+        if (pool.length < GAME_CONSTANTS.MAX_PARTICLES) {
+            const p = { active: true, x: 0, y: 0, vx: 0, vy: 0, life: 0, color: '', size: 2, alpha: 1, groundY: 0, sparkle: false };
+            pool.push(p);
+            return p;
+        }
+        // Reuse oldest if at max capacity
+        pool[0].active = true;
+        return pool[0];
+    },
+
+    releaseParticle(p) {
+        p.active = false;
+    },
+
+    // Get a floating text from pool or create new one
+    getFloatingText() {
+        const pool = this.floatingTexts;
+        for (let i = 0; i < pool.length; i++) {
+            if (!pool[i].active) {
+                pool[i].active = true;
+                return pool[i];
+            }
+        }
+        if (pool.length < GAME_CONSTANTS.MAX_FLOATING_TEXTS) {
+            const t = { active: true, x: 0, y: 0, text: '', color: '#fff', life: 0, vy: 0 };
+            pool.push(t);
+            return t;
+        }
+        pool[0].active = true;
+        return pool[0];
+    },
+
+    releaseFloatingText(t) {
+        t.active = false;
+    },
+
+    // Reset all pools (call on game restart)
+    reset() {
+        this.particles.forEach(p => p.active = false);
+        this.floatingTexts.forEach(t => t.active = false);
+    }
+};
+
+// --- CACHED VALUES (Performance: Avoid repeated calculations) ---
+const CachedValues = {
+    // Will be populated at runtime
+    canvasWidth: 0,
+    canvasHeight: 0,
+    halfCanvasWidth: 0,
+    halfCanvasHeight: 0,
+
+    init(canvas) {
+        this.canvasWidth = canvas.width;
+        this.canvasHeight = canvas.height;
+        this.halfCanvasWidth = canvas.width / 2;
+        this.halfCanvasHeight = canvas.height / 2;
+    }
+};
+
 // --- BANTER DATA ---
 const BANTER_DB = {
     ops: [
@@ -3350,6 +3451,9 @@ function handleAction() {
 }
 
 function init() {
+    // Initialize cached values for performance
+    CachedValues.init(canvas);
+
     generateAssets();
     GAME.state = 'LOGO';
     updateMusicForState();
@@ -3373,6 +3477,8 @@ function resetGame() {
     const stats = getCharStats(GAME.selectedChar);
     GAME.player = { x: 100, y: 100, dir: 0, speed: stats.speed, iframe: 0, cooldown: 0, cooldownMax: 120 };
     GAME.entities = []; GAME.projectiles = []; GAME.particles = []; GAME.floatingTexts = [];
+    // Performance: Reset object pools on game restart
+    ObjectPool.reset();
     GAME.activeIssues = []; GAME.clutter = [];
     GAME.issuesFixed = 0; GAME.lives = stats.lives; GAME.simonHits = 0; GAME.boss = null; GAME.pendingBossIntro = false;
     GAME.hiddenDoor = null; GAME.yard = null; GAME.mecha = null;
@@ -4333,10 +4439,12 @@ function update() {
 
 function updatePlayer() {
     const p = GAME.player;
+    // Guard against undefined player state
+    if (!p) return;
     if (p.iframe>0) p.iframe--; if (p.cooldown>0) p.cooldown--;
     let dx=0, dy=0;
     if (KEYS.up) dy = -p.speed; if (KEYS.down) dy = p.speed; if (KEYS.left) dx = -p.speed; if (KEYS.right) dx = p.speed;
-    if (dx!==0 && dy!==0) { dx *= 0.707; dy *= 0.707; }
+    if (dx!==0 && dy!==0) { dx *= GAME_CONSTANTS.DIAGONAL_FACTOR; dy *= GAME_CONSTANTS.DIAGONAL_FACTOR; }
     if (dx!==0 || dy!==0) {
         // In Bezos boss mode, no collision detection with walls
         if (GAME.state === 'BEZOS_BOSS') {
@@ -4382,7 +4490,7 @@ function updateYardLevel() {
 
     let dx = 0, dy = 0;
     if (KEYS.up) dy = -y.speed; if (KEYS.down) dy = y.speed; if (KEYS.left) dx = -y.speed; if (KEYS.right) dx = y.speed;
-    if (dx!==0 && dy!==0) { dx *= 0.707; dy *= 0.707; }
+    if (dx!==0 && dy!==0) { dx *= GAME_CONSTANTS.DIAGONAL_FACTOR; dy *= GAME_CONSTANTS.DIAGONAL_FACTOR; }
 
     // Check for static hazard slowdown (puddles slow you down) - only in yard section
     let inHazard = false;
@@ -4651,7 +4759,7 @@ function updateMechaBattle() {
     // Player movement
     let dx = 0, dy = 0;
     if (KEYS.up) dy = -p.speed; if (KEYS.down) dy = p.speed; if (KEYS.left) dx = -p.speed; if (KEYS.right) dx = p.speed;
-    if (dx!==0 && dy!==0) { dx *= 0.707; dy *= 0.707; }
+    if (dx!==0 && dy!==0) { dx *= GAME_CONSTANTS.DIAGONAL_FACTOR; dy *= GAME_CONSTANTS.DIAGONAL_FACTOR; }
     p.x = Math.max(4, Math.min(canvas.width - 20, p.x + dx));
     p.y = Math.max(40, Math.min(canvas.height - 20, p.y + dy));
 
@@ -4985,10 +5093,13 @@ function updateMechaBattle() {
 
 // --- BANTER SYSTEM ---
 function spawnFloatingText(x, y, text, color='#fff') {
+    // Performance: Limit max floating texts to prevent buildup
+    if (GAME.floatingTexts.length >= GAME_CONSTANTS.MAX_FLOATING_TEXTS) return;
+
     GAME.floatingTexts.push({
-        x: x + 8, y: y, 
-        text: text, color: color, 
-        life: 210, vy: -0.2 // Slower, longer life (3.5s)
+        x: x + 8, y: y,
+        text: text, color: color,
+        life: GAME_CONSTANTS.FLOATING_TEXT_LIFE, vy: -0.2 // Slower, longer life (3.5s)
     });
     AudioSys.sfx.pop();
 }
@@ -5061,6 +5172,8 @@ function updateEntities() {
 
 function updateBoss() {
     const b = GAME.boss; const p = GAME.player;
+    // Guard against undefined boss or player state
+    if (!b || !p) return;
     document.getElementById('boss-hud').style.display = 'block'; document.getElementById('boss-name-el').innerText = b.name; updateBossHud();
 
     // Mecha Mega Simon timer - triggers inevitable game over
@@ -5270,41 +5383,79 @@ function updateProjectiles() {
 }
 
 function updateParticles() {
-    for(let i=GAME.particles.length-1; i>=0; i--) {
-        let p = GAME.particles[i]; p.life--; p.x += p.vx; p.y += p.vy; p.vy += 0.2;
-        if (p.y > p.groundY) { p.y = p.groundY; p.vy *= -0.6; }
-        if (p.life <= 0) GAME.particles.splice(i,1);
+    // Performance: Use constants and avoid splice in hot loop
+    const gravity = GAME_CONSTANTS.PARTICLE_GRAVITY;
+    const bounce = GAME_CONSTANTS.PARTICLE_BOUNCE;
+    const particles = GAME.particles;
+    let writeIdx = 0;
+
+    for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.life--;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += gravity;
+
+        if (p.y > p.groundY) {
+            p.y = p.groundY;
+            p.vy *= bounce;
+        }
+
+        if (p.life > 0) {
+            // Keep this particle - swap to write position if needed
+            if (writeIdx !== i) particles[writeIdx] = p;
+            writeIdx++;
+        }
     }
+    // Truncate array to remove dead particles
+    particles.length = writeIdx;
 }
 
 function updateFloatingTexts() {
-    for(let i=GAME.floatingTexts.length-1; i>=0; i--) {
-        let t = GAME.floatingTexts[i];
-        t.y += t.vy; t.life--;
-        if (t.life <= 0) GAME.floatingTexts.splice(i,1);
+    // Performance: Avoid splice in hot loop
+    const texts = GAME.floatingTexts;
+    let writeIdx = 0;
+
+    for (let i = 0; i < texts.length; i++) {
+        const t = texts[i];
+        t.y += t.vy;
+        t.life--;
+
+        if (t.life > 0) {
+            if (writeIdx !== i) texts[writeIdx] = t;
+            writeIdx++;
+        }
     }
+    texts.length = writeIdx;
 }
 
 function spawnParticle(x, y, color, forceY = 0) {
+    // Performance: Reuse objects where possible, limit max particles
+    if (GAME.particles.length >= GAME_CONSTANTS.MAX_PARTICLES) return;
+
     GAME.particles.push({
         x: x,
         y: y,
         color: color,
-        life: 50 + Math.random() * 20,
+        life: GAME_CONSTANTS.PARTICLE_LIFE_BASE + Math.random() * GAME_CONSTANTS.PARTICLE_LIFE_VARIANCE,
         vx: (Math.random() - 0.5) * 3,
         vy: forceY || (Math.random() * -3 - 1),
         groundY: y + 5,
         size: 1 + Math.random() * 2,
-        alpha: 1
+        alpha: 1,
+        sparkle: false
     });
 }
 
 // Enhanced particle burst for special effects
 function spawnParticleBurst(x, y, colors, count) {
-    for (let i = 0; i < count; i++) {
+    const maxToAdd = Math.min(count, GAME_CONSTANTS.MAX_PARTICLES - GAME.particles.length);
+    const colorsLen = colors.length;
+
+    for (let i = 0; i < maxToAdd; i++) {
         const angle = (i / count) * Math.PI * 2;
         const speed = 1 + Math.random() * 2;
-        const color = colors[Math.floor(Math.random() * colors.length)];
+        const color = colors[Math.floor(Math.random() * colorsLen)];
         GAME.particles.push({
             x: x,
             y: y,
@@ -5314,14 +5465,17 @@ function spawnParticleBurst(x, y, colors, count) {
             vy: Math.sin(angle) * speed - 1,
             groundY: y + 20,
             size: 1 + Math.random() * 2,
-            alpha: 1
+            alpha: 1,
+            sparkle: false
         });
     }
 }
 
 // Sparkle effect for special moments
 function spawnSparkles(x, y, color) {
-    for (let i = 0; i < 8; i++) {
+    const maxToAdd = Math.min(8, GAME_CONSTANTS.MAX_PARTICLES - GAME.particles.length);
+
+    for (let i = 0; i < maxToAdd; i++) {
         GAME.particles.push({
             x: x + (Math.random() - 0.5) * 10,
             y: y + (Math.random() - 0.5) * 10,
@@ -9309,8 +9463,18 @@ function draw() {
     if (GAME.state === 'BOSS' && GAME.boss) renderList.push(GAME.boss);
     renderList.sort((a,b) => a.y - b.y);
 
+    // Performance: Cache screen bounds for visibility culling
+    const screenPadding = 32; // Extra padding for large sprites
+    const screenLeft = -screenPadding;
+    const screenRight = canvas.width + screenPadding;
+    const screenTop = -screenPadding;
+    const screenBottom = canvas.height + screenPadding;
+
     renderList.forEach(e => {
         let dx = Math.floor(e.x - cx); let dy = Math.floor(e.y - cy);
+        // Performance: Skip offscreen entities
+        if (dx < screenLeft || dx > screenRight || dy < screenTop || dy > screenBottom) return;
+
         if (e.maxHp) {
             let img = (e.sprite && GFX[e.sprite]) ? GFX[e.sprite] : GFX.boss_manager;
             if (e.name === "SIMON UNGLAUBE") img = GFX.simonBoss;
@@ -9339,26 +9503,41 @@ function draw() {
         }
     });
 
-    GAME.particles.forEach(p => {
+    // Performance: Batch particle rendering with visibility checks
+    const particles = GAME.particles;
+    const particleLen = particles.length;
+    for (let i = 0; i < particleLen; i++) {
+        const p = particles[i];
+        const px = p.x - cx;
+        const py = p.y - cy;
+        // Skip offscreen particles
+        if (px < -10 || px > canvas.width + 10 || py < -10 || py > canvas.height + 10) continue;
+
         const alpha = p.alpha || (p.life / 50);
         ctx.globalAlpha = Math.min(1, alpha);
         if (p.sparkle) {
             ctx.fillStyle = '#fff';
-            ctx.fillRect(p.x - cx - 1, p.y - cy, 3, 1);
-            ctx.fillRect(p.x - cx, p.y - cy - 1, 1, 3);
+            ctx.fillRect(px - 1, py, 3, 1);
+            ctx.fillRect(px, py - 1, 1, 3);
         }
         ctx.fillStyle = p.color;
-        ctx.fillRect(p.x - cx, p.y - cy, p.size || 2, p.size || 2);
-        ctx.globalAlpha = 1;
-    });
+        ctx.fillRect(px, py, p.size || 2, p.size || 2);
+    }
+    ctx.globalAlpha = 1;
 
-    // Render Floating Text
+    // Render Floating Text with visibility checks
     ctx.font = '8px "Press Start 2P"'; ctx.textAlign = 'center';
-    GAME.floatingTexts.forEach(t => {
-        let dx = Math.floor(t.x - cx); let dy = Math.floor(t.y - cy);
+    const texts = GAME.floatingTexts;
+    const textsLen = texts.length;
+    for (let i = 0; i < textsLen; i++) {
+        const t = texts[i];
+        const dx = Math.floor(t.x - cx);
+        const dy = Math.floor(t.y - cy);
+        // Skip offscreen texts
+        if (dx < -50 || dx > canvas.width + 50 || dy < -20 || dy > canvas.height + 20) continue;
         ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.strokeText(t.text, dx, dy);
         ctx.fillStyle = t.color; ctx.fillText(t.text, dx, dy);
-    });
+    }
     ctx.textAlign = 'left'; // Reset
 
     if (GAME.flash > 0) { ctx.globalAlpha = GAME.flash / 10; ctx.fillStyle = 'white'; ctx.fillRect(0,0,canvas.width, canvas.height); ctx.globalAlpha = 1.0; }
