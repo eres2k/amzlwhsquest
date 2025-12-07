@@ -1,0 +1,24 @@
+{
+  "name": "amzl-whs-quest",
+  "version": "12.2.5",
+  "description": "AMZL WHS Coordinator Quest - A retro-style warehouse safety game",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  },
+  "keywords": [
+    "game",
+    "html5",
+    "canvas",
+    "retro",
+    "warehouse",
+    "safety"
+  ],
+  "author": "Erwin Esener Productions",
+  "license": "MIT"
+}

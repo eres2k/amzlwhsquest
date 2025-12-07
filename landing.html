@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMZL WHS QUEST - DVI1 Portal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+        :root {
+            --neon-green: #00ff00;
+            --neon-cyan: #22d3ee;
+            --neon-pink: #ff00ff;
+            --warning-yellow: #fbbf24;
+            --amazon-orange: #ff9900;
+            --corp-blue: #0f172a;
+            --bg-dark: #050510;
+            --glass: rgba(10, 21, 37, 0.85);
+            --terminal-gray: #0a1525;
+            --gold-accent: #fbbf24;
+            --premium-border: linear-gradient(135deg, #fbbf24, #22d3ee, #fbbf24);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0; padding: 0;
+            background: linear-gradient(180deg, #050510 0%, #0a1525 50%, #0f172a 100%);
+            font-family: 'VT323', monospace;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- BACKGROUND CANVAS --- */
+        #bg-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none; opacity: 0.4;
+        }
+
+        /* --- CRT EFFECTS --- */
+        body::after {
+            content: " "; display: block; position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px; z-index: 999; pointer-events: none;
+        }
+
+        /* --- TURN ON ANIMATION --- */
+        .crt-turn-on {
+            animation: turn-on 2s ease-out forwards;
+        }
+        @keyframes turn-on {
+            0% { transform: scale(1, 0.002); opacity: 0; filter: brightness(30); }
+            20% { transform: scale(1, 0.002); opacity: 1; }
+            50% { transform: scale(1, 1.1); filter: brightness(5); }
+            100% { transform: scale(1, 1); filter: brightness(1); }
+        }
+
+        .container {
+            max-width: 1000px; margin: 0 auto; padding: 20px;
+            position: relative; z-index: 1; width: 100%;
+        }
+
+        /* --- HEADER --- */
+        header {
+            text-align: center; margin-bottom: 20px;
+            border-bottom: 3px solid transparent;
+            border-image: linear-gradient(90deg, transparent, var(--gold-accent), var(--neon-cyan), var(--gold-accent), transparent) 1;
+            padding-bottom: 25px;
+            position: relative;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+        }
+
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            color: var(--gold-accent);
+            font-size: clamp(1.5rem, 4vw, 3rem);
+            text-shadow: 3px 3px #7c2d12, 0 0 20px rgba(251, 191, 36, 0.5);
+            margin: 0; line-height: 1.5;
+            position: relative;
+        }
+
+        /* GLITCH EFFECT */
+        .glitch { position: relative; display: inline-block; }
+        .glitch::before, .glitch::after {
+            content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        }
+        .glitch::before { left: 2px; text-shadow: -1px 0 red; clip: rect(44px, 450px, 56px, 0); animation: glitch-anim 5s infinite linear alternate-reverse; }
+        .glitch::after { left: -2px; text-shadow: -1px 0 blue; clip: rect(44px, 450px, 56px, 0); animation: glitch-anim2 5s infinite linear alternate-reverse; }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(10px, 9999px, 30px, 0); } 20% { clip: rect(80px, 9999px, 100px, 0); }
+            40% { clip: rect(40px, 9999px, 60px, 0); } 60% { clip: rect(20px, 9999px, 10px, 0); }
+            80% { clip: rect(60px, 9999px, 50px, 0); } 100% { clip: rect(90px, 9999px, 90px, 0); }
+        }
+        @keyframes glitch-anim2 {
+            0% { clip: rect(50px, 9999px, 10px, 0); } 20% { clip: rect(20px, 9999px, 80px, 0); }
+            40% { clip: rect(90px, 9999px, 20px, 0); } 60% { clip: rect(10px, 9999px, 50px, 0); }
+            80% { clip: rect(30px, 9999px, 70px, 0); } 100% { clip: rect(60px, 9999px, 40px, 0); }
+        }
+
+        .subtitle {
+            color: var(--neon-cyan); font-size: 1.5rem; letter-spacing: 2px;
+            text-transform: uppercase; animation: blink 1s infinite;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        /* --- GEMINI LIVE FEED --- */
+        #live-feed {
+            background: linear-gradient(135deg, rgba(10, 15, 30, 0.95) 0%, rgba(5, 8, 20, 0.98) 100%);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 4px;
+            padding: 12px; margin-bottom: 20px; font-family: 'VT323', monospace;
+            color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.4), inset 0 0 20px rgba(0, 0, 0, 0.5);
+            min-height: 60px; display: flex; align-items: center; justify-content: center;
+            text-align: center; font-size: 1.2rem; overflow: hidden;
+            position: relative; white-space: nowrap;
+        }
+
+        .ticker-track {
+            display: inline-block; white-space: nowrap; padding-left: 100%;
+            animation: ticker-scroll var(--scroll-duration, 40s) linear infinite;
+        }
+
+        @keyframes ticker-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        .loading-dots:after { content: '.'; animation: dots 1s steps(5, end) infinite; }
+        @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60% { content: '...'; } 80%, 100% { content: ''; } }
+
+        section {
+            background: linear-gradient(135deg, rgba(10, 21, 37, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border: 2px solid #334155;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            transition: transform 0.2s, border-color 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold-accent), var(--neon-cyan), var(--gold-accent), transparent);
+            border-radius: 8px 8px 0 0;
+        }
+        section:hover {
+            transform: translateY(-3px);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 8px 30px rgba(34, 211, 238, 0.2), inset 0 0 30px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.2rem;
+            color: var(--gold-accent);
+            border-bottom: 2px solid #334155;
+            padding-bottom: 12px;
+            margin-top: 0;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+        }
+
+        p { font-size: 1.1rem; line-height: 1.6; margin-bottom: 15px; color: #cbd5e1; }
+        strong { color: var(--gold-accent); }
+
+        .char-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+        .char-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(10, 15, 30, 0.95) 100%);
+            border: 2px solid #475569;
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: transform 0.2s, border-color 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        .char-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 10%; right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .char-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 4px 15px rgba(34, 211, 238, 0.15);
+        }
+        .char-card:hover::after { opacity: 1; }
+        .char-card h3 { color: var(--gold-accent); margin: 0 0 5px 0; font-family: 'Press Start 2P'; font-size: 0.9rem; text-shadow: 0 0 8px rgba(251, 191, 36, 0.3); }
+        .card-content { display: flex; align-items: center; gap: 12px; }
+        .card-content img, .card-content canvas {
+            image-rendering: pixelated;
+            width: 72px; height: 72px;
+            border: 2px solid #334155;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #0a0a14 0%, #1a1a2e 100%);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .char-text { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        .char-role { color: var(--neon-cyan); font-size: 1rem; text-transform: uppercase; margin: 0; border-bottom: 1px solid #334155; padding-bottom: 5px; }
+        .char-desc { font-size: 0.9rem; color: #94a3b8; line-height: 1.4; flex-grow: 1; margin: 0;}
+        .char-stat { margin: 0; font-size: 0.8rem; color: var(--gold-accent); font-style: italic; opacity: 0.8; }
+
+        .play-btn {
+            background: linear-gradient(135deg, #ff9900 0%, #ea580c 50%, #dc2626 100%);
+            color: white;
+            font-family: 'Press Start 2P';
+            font-size: 1.5rem;
+            padding: 25px 50px;
+            text-decoration: none;
+            border: 3px solid var(--gold-accent);
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(255, 153, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.3);
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+            cursor: pointer;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .play-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(255, 153, 0, 0.7), inset 0 0 20px rgba(0, 0, 0, 0.3);
+            border-color: #fff;
+        }
+
+        /* Shine effect on button */
+        .play-btn::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shine 3s infinite;
+        }
+
+        /* --- AI UTILITIES STYLES --- */
+        .ai-tools-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 600px) { .ai-tools-grid { grid-template-columns: 1fr; } }
+
+        .ai-tool {
+            background: linear-gradient(135deg, rgba(10, 21, 37, 0.9) 0%, rgba(5, 10, 20, 0.95) 100%);
+            border: 2px solid #334155;
+            border-radius: 6px;
+            padding: 18px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            transition: border-color 0.3s;
+        }
+        .ai-tool:hover { border-color: var(--neon-cyan); }
+        .ai-tool h3 { font-size: 1rem; color: var(--neon-cyan); margin-top: 0; text-shadow: 0 0 8px rgba(34, 211, 238, 0.3); }
+        .ai-tool p { flex-grow: 1; color: #94a3b8; }
+
+        .ai-controls {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ai-btn {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            color: var(--neon-cyan);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 4px;
+            font-family: 'Press Start 2P'; font-size: 0.7rem; padding: 12px;
+            cursor: pointer; width: 100%;
+            transition: all 0.2s;
+            text-shadow: 0 0 5px var(--neon-cyan);
+        }
+        .ai-btn:hover {
+            background: linear-gradient(135deg, #2d4a6f 0%, #1e3a5f 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(34, 211, 238, 0.3);
+        }
+        .ai-btn:disabled { background: #1a1a2e; cursor: not-allowed; border-color: #475569; color: #64748b; text-shadow: none; }
+
+        .ai-output {
+            margin-top: 15px;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(10, 10, 20, 0.9) 100%);
+            border: 1px solid var(--gold-accent);
+            border-radius: 4px;
+            min-height: 60px;
+            font-size: 0.9rem;
+            color: var(--gold-accent);
+            white-space: pre-wrap;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes shine { 0% { left: -100%; } 20% { left: 100%; } 100% { left: 100%; } }
+        @keyframes blink { 50% { opacity: 0; } }
+        @keyframes pulse { 0% { box-shadow: 0 0 30px rgba(255, 153, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.3); } 50% { box-shadow: 0 0 40px rgba(255, 153, 0, 0.7), 0 0 0 10px rgba(255, 153, 0, 0.1), inset 0 0 20px rgba(0, 0, 0, 0.3); } 100% { box-shadow: 0 0 30px rgba(255, 153, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.3); } }
+    </style>
+</head>
+<body class="crt-turn-on">
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="container">
+    <header>
+        <h1><span class="glitch" data-text="AMZL WHS QUEST">AMZL WHS QUEST</span><br><span style="font-size:0.5em; color:#fff;">v12.2.5 - DVI1 EDITION</span></h1>
+        <div class="subtitle">> WHS COORDINATOR TERMINAL_</div>
+    </header>
+
+    <div id="live-feed">
+        <span id="feed-track" class="ticker-track">ESTABLISHING SECURE LINK TO AMAZON HQ...<span class="loading-dots"></span></span>
+    </div>
+
+    <div style="text-align: center; margin: 60px 0;">
+        <a href="AMZLWHSQUEST122.html" class="play-btn">▶ START SHIFT</a>
+        <p style="color: #aaa; font-size: 0.8rem; margin-top: 15px;">(INPUT: KEYBOARD | REWARD: PIZZA PARTY)</p>
+    </div>
+
+    <main>
+        <section>
+            <h2>> MISSION BRIEFING</h2>
+            <p><strong>IDENTITY:</strong> Tier 1 WHS Coordinator</p>
+            <p><strong>LOCATION:</strong> Delivery Station DVI1 (Vienna)</p>
+            <p><strong>STATUS:</strong> Caffeinated but Panicked</p>
+            <p>Welcome to DVI1. Your mission, should you choose to accept it (you have no choice, you signed the contract), is to survive a standard shift. The floor is a minefield of blocked exits, rogue pallet jacks, and Associates who believe safety shoes are "optional fashion statements".</p>
+            <p>The Ops Managers are obsessed with TPH (Throughput Per Hour). They will throw crazy production requests at you. <strong>Do not fold.</strong> Find the 5 hazardous crimes against safety, audit the floor, and "take care" of the Visitor before the VOA board catches fire.</p>
+        </section>
+
+        <section>
+            <h2>> THE SQUAD (WHS Austria)</h2>
+            <div class="char-grid">
+                <div class="char-card">
+                    <h3>CARRIE</h3>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="carrie"></div>
+                        <div class="char-text">
+                            <div class="char-role">The 5S Monk</div>
+                            <p class="char-desc">Precision hawk who spots crooked tape from 50 meters and keeps Ops chaos calm.</p>
+                            <p class="char-stat">PRECISION FOCUS: 2x boss damage</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="char-card">
+                    <h3>NEVENA</h3>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="nevena"></div>
+                        <div class="char-text">
+                            <div class="char-role">The Oracle</div>
+                            <p class="char-desc">Safety oracle who predicts mishaps, packs Palatschinken, and documents everything twice.</p>
+                            <p class="char-stat">FORESIGHT: Longer invincibility</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="char-card">
+                    <h3>JOAO</h3>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="joao"></div>
+                        <div class="char-text">
+                            <div class="char-role">The Siren</div>
+                            <p class="char-desc">Espresso cannon whose warnings cut through alarms and kick energy across the floor.</p>
+                            <p class="char-stat">CAFFEINE RUSH: Faster attack cooldown</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="char-card">
+                    <h3>ROMAN</h3>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="roman"></div>
+                        <div class="char-text">
+                            <div class="char-role">The Ghost</div>
+                            <p class="char-desc">Bald audit phantom. Appears, fixes, vanishes—hazards correct themselves when he is near.</p>
+                            <p class="char-stat">PHANTOM STEP: Smaller collision radius</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="char-card">
+                    <h3>ERWIN</h3>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="erwin"></div>
+                        <div class="char-text">
+                            <div class="char-role">The Manager</div>
+                            <p class="char-desc">Rolls in with a kid-sized Tesla and slides into briefings faster than gossip spreads.</p>
+                            <p class="char-stat">TESLA RUSH: 1 life, 30% faster</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>> THREAT DATABASE (VISITORS)</h2>
+            <div class="char-grid">
+                <div class="char-card" style="border-color: #ff4444;">
+                    <h3 style="color: #ff4444;">LABOUR INSPECTOR</h3>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="boss_inspector"></div>
+                        <div class="char-text">
+                            <div class="char-role" style="color: #ff4444;">The Enforcer</div>
+                            <p class="char-desc">Clipboard crusader who signs nothing unless the exit lines are laser straight.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="char-card" style="border-color: #ff4444;">
+                    <h3 style="color: #ff4444;">COMPLIANCE</h3>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="boss_compliance"></div>
+                        <div class="char-text">
+                            <div class="char-role" style="color: #ff4444;">The Auditor</div>
+                            <p class="char-desc">Carries the SOP binder with endless patience and will quote the correct version in her sleep.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="char-card" style="border-color: #ff4444;">
+                    <h3 style="color: #ff4444;">SEBASTIAN</h3>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="boss_sebastian"></div>
+                        <div class="char-text">
+                            <div class="char-role" style="color: #ff4444;">THE Station Commander</div>
+                            <p class="char-desc">Obsessed with rates. Believes "Safety Stops" are a myth invented to lower volume.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="char-card" style="border-color: #ff4444;">
+                    <h3 style="color: #ff4444;">REGIONAL OPS MGR</h3>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="boss_regional"></div>
+                        <div class="char-text">
+                            <div class="char-role" style="color: #ff4444;">The Executive</div>
+                            <p class="char-desc">Arrives with gold tie energy and KPI thunder. If rates dip, expect a full audit storm.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="char-card" style="border-color: #ff4444;">
+                    <h3 style="color: #ff4444;">AVETTA AI</h3>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="boss_avetta"></div>
+                        <div class="char-text">
+                            <div class="char-role" style="color: #ff4444;">The Algorithm</div>
+                            <p class="char-desc">A sentient cloud platform. It knows you forgot your gloves. It is watching.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="char-card" style="border-color: #ff4444;">
+                    <h3 style="color: #ff4444;">JELENA "JELLY"</h3>
+                    <div class="card-content">
+                        <div class="char-portrait" data-sprite="boss_jelly"></div>
+                        <div class="char-text">
+                            <div class="char-role" style="color: #ff4444;">The HR Sentinel</div>
+                            <p class="char-desc">From HR and always smiling, until policies are ignored. Remembers every infraction.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW AI SECTION (MOVED TO BOTTOM) -->
+        <section>
+            <h2>> WORKER UTILITIES</h2>
+            <div class="ai-tools-grid">
+                <!-- TOOL 1: EXCUSE GENERATOR -->
+                <div class="ai-tool">
+                    <div>
+                        <h3>THE EXCUSE GENERATOR</h3>
+                        <p style="font-size:0.8rem; color:#ccc;">Missed a TPH goal? Need to explain why you were in the breakroom for 17 minutes? Let the tool fabricate a technically plausible excuse.</p>
+                    </div>
+                    <div class="ai-controls">
+                        <!-- ADDED INPUT FIELD HERE -->
+                        <input type="text" id="excuse-input" placeholder="e.g. late for shift" style="width:100%; background:#222; border:1px solid #555; color:white; font-family:'VT323'; padding:5px;">
+                        <button class="ai-btn" onclick="generateExcuse()" id="btn-excuse">GENERATE EXCUSE</button>
+                        <div class="ai-output" id="out-excuse">// WAITING FOR INPUT...</div>
+                    </div>
+                </div>
+
+                <!-- TOOL 2: OPS SPEAK TRANSLATOR -->
+                <div class="ai-tool">
+                    <div>
+                        <h3>OPS SPEAK TRANSLATOR</h3>
+                        <p style="font-size:0.8rem; color:#ccc;">Translate your complaints into "High Performance" corporate jargon that managers love.</p>
+                    </div>
+                    <div class="ai-controls">
+                        <input type="text" id="translate-input" placeholder="e.g. I hate this job" style="width:100%; background:#222; border:1px solid #555; color:white; font-family:'VT323'; padding:5px;">
+                        <button class="ai-btn" onclick="translateSpeak()" id="btn-translate">TRANSLATE</button>
+                        <div class="ai-output" id="out-translate" style="color: #00ffff; border-color: #00ffff;">// WAITING FOR INPUT...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 ERWIN ESENER PRODUCTIONS // WHS MEU // DVI1 VIENNA //</p>
+    </footer>
+</div>
+
+<script>
+    // --- 1. RETRO GRID BACKGROUND ANIMATION ---
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let offset = 0;
+    let starField = [];
+    for (let i = 0; i < 50; i++) {
+        starField.push({
+            x: Math.random() * 2000,
+            y: Math.random() * 2000,
+            twinkleOffset: Math.random() * Math.PI * 2,
+            size: Math.random() * 1.5 + 0.5
+        });
+    }
+
+    function animateGrid() {
+        ctx.fillStyle = '#050510';
+        ctx.fillRect(0, 0, width, height);
+
+        // Animated stars
+        const t = Date.now() * 0.001;
+        starField.forEach(star => {
+            const twinkle = Math.sin(t * 2 + star.twinkleOffset) * 0.4 + 0.6;
+            ctx.fillStyle = `rgba(255, 255, 255, ${twinkle * 0.5})`;
+            ctx.fillRect(star.x % width, star.y % height, star.size, star.size);
+        });
+
+        // Horizon line
+        const horizon = height * 0.4;
+
+        // Vertical lines (Perspective) - cyan color
+        ctx.strokeStyle = 'rgba(34, 211, 238, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        const cx = width / 2;
+        for(let i = -20; i <= 20; i++) {
+            const x = cx + (i * 100);
+            ctx.moveTo(cx, horizon);
+            ctx.lineTo(x * 4, height);
+        }
+        ctx.stroke();
+
+        // Horizontal lines (Moving towards viewer) - gradient cyan to gold
+        offset = (offset + 0.5) % 20;
+        for(let i = 0; i < 40; i++) {
+            let y = horizon + Math.pow(i, 2.5) + offset;
+            if (y > height) continue;
+
+            let alpha = (y - horizon) / (height - horizon);
+            // Blend from cyan to gold based on depth
+            const r = Math.floor(34 + (251 - 34) * alpha);
+            const g = Math.floor(211 + (191 - 211) * alpha);
+            const b = Math.floor(238 + (36 - 238) * alpha);
+            ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha * 0.25})`;
+
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+        }
+
+        requestAnimationFrame(animateGrid);
+    }
+    animateGrid();
+
+    // --- 2. KEY FETCHING (NEW) ---
+    let apiKey = null;
+
+    async function fetchApiKeyFromNetlify() {
+        try {
+            // This endpoint must exist in your Netlify functions folder
+            const res = await fetch('/.netlify/functions/get-gemini-key', { cache: 'no-store' });
+            if (!res.ok) throw new Error(`Netlify key endpoint returned ${res.status}`);
+            const data = await res.json();
+            const key = (data && data.apiKey ? String(data.apiKey) : '').trim();
+            if (!key) throw new Error('No apiKey field in Netlify response');
+            apiKey = key;
+            console.log("SECURE LINK ESTABLISHED. KEY LOADED.");
+            return apiKey;
+        } catch (err) {
+            console.error("FAILED TO LOAD KEY:", err);
+            return null;
+        }
+    }
+
+    // --- 3. GEMINI API INTEGRATION ---
+    const defaultMessages = [
+        "ATTENTION DVI1: IF YOU CAN READ THIS, YOU're NOT MOVING PALLETS FAST ENOUGH.",
+        "ATTENTION DVI1: TPH GOAL UPDATED TO WHATEVER IS HIGHER THAN CURRENT. PLEASE COMPLY.",
+        "ATTENTION DVI1: BREAKS ARE LIKE UNICORNS. HEARD OFTEN, RARELY SEEN.",
+        "ATTENTION DVI1: REMEMBER, SAFETY FIRST, BUT ALSO SECOND, THIRD, AND MAYBE FOURTH.",
+        "ATTENTION DVI1: LOST A RACK? PLEASE FILE A TICKET WITH FACILITIES AND YOUR THERAPIST.",
+        "ATTENTION DVI1: OPS SAYS WE'RE FAMILY. FAMILY DOES 60 TPH, RIGHT?"
+    ];
+
+    function renderTicker(messages) {
+        const track = document.getElementById('feed-track');
+        const separator = "  ⚡  ";
+        const text = messages.join(separator);
+        track.innerText = text + separator + text;
+
+        const duration = Math.max(30, Math.min(90, text.length / 1.5));
+        track.style.setProperty('--scroll-duration', `${duration}s`);
+    }
+
+    async function callGemini(prompt) {
+        if (!apiKey) await fetchApiKeyFromNetlify();
+        if (!apiKey) return null;
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            const data = await response.json();
+            return data.candidates?.[0]?.content?.parts?.[0]?.text;
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    }
+
+    async function fetchAnnouncement() {
+        const track = document.getElementById('feed-track');
+        track.innerText = "CONNECTING TO HQ...";
+        
+        await fetchApiKeyFromNetlify(); // Ensure key is loaded
+        
+        if (!apiKey) {
+            renderTicker(defaultMessages);
+            return;
+        }
+
+        const prompt = "Write a single, short (max 15 words), funny, cynical, dystopic announcement for an Amazon logistics warehouse worker. Mention safety shoes, TOT, or rates. Use ALL CAPS. Start with 'ATTENTION:'.";
+        const text = await callGemini(prompt);
+        
+        if(text) renderTicker([text, ...defaultMessages]);
+        else renderTicker(defaultMessages);
+    }
+
+    // --- 4. NEW AI TOOLS ---
+    async function generateExcuse() {
+        const out = document.getElementById('out-excuse');
+        const btn = document.getElementById('btn-excuse');
+        const input = document.getElementById('excuse-input').value; // GET INPUT
+        
+        btn.disabled = true;
+        btn.innerText = "CALCULATING...";
+        out.innerText = "// ACCESSING MAINFRAME...";
+        
+        // DEFAULT TOPIC IF EMPTY
+        let topic = "having low rates";
+        if (input && input.trim() !== "") {
+            topic = `the issue: "${input}"`;
+        }
+        
+       const prompt = `Invent a technically plausible, realistic excuse based on this short input: "${input}". Max 25 Words. Amazon related with humour.`;
+        const text = await callGemini(prompt);
+        
+        if (text) out.innerText = "> " + text;
+        else out.innerText = "> ERROR: EXCUSE MODULE OFFLINE. TRY TELLING THE TRUTH (NOT RECOMMENDED).";
+        
+        btn.disabled = false;
+        btn.innerText = "GENERATE EXCUSE";
+    }
+
+    async function translateSpeak() {
+        const input = document.getElementById('translate-input').value;
+        const out = document.getElementById('out-translate');
+        const btn = document.getElementById('btn-translate');
+        
+        if (!input) { out.innerText = "> ERROR: NO INPUT DETECTED."; return; }
+
+        btn.disabled = true;
+        btn.innerText = "OPTIMIZING...";
+        out.innerText = "// APPLYING SYNERGY...";
+        
+        const prompt = `Translate this worker complaint: "${input}" into overly positive, corporate, Amazon-style management speak. Max 25 words.`;
+        const text = await callGemini(prompt);
+        
+        if (text) out.innerText = "> " + text;
+        else out.innerText = "> ERROR: TRANSLATION FAILED.";
+        
+        btn.disabled = false;
+        btn.innerText = "TRANSLATE";
+    }
+
+    // --- 5. PIXEL PORTRAITS (Enhanced to match game graphics) ---
+    const spritePainters = {
+        carrie: ctx => {
+            // Shadow base
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Hair with highlight
+            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(2,0,12,6);
+            ctx.fillStyle = '#1a2540'; ctx.fillRect(3,1,10,3);
+            // Face with shading
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(4,5,8,6);
+            ctx.fillStyle = '#e8c090'; ctx.fillRect(4,5,2,4);
+            // Eyes
+            ctx.fillStyle = '#1e3a5a'; ctx.fillRect(5,7,2,2);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(9,7,2,2);
+            ctx.fillStyle = '#fff'; ctx.fillRect(6,7,1,1); ctx.fillRect(10,7,1,1);
+            // Robe with gradient effect
+            ctx.fillStyle = '#7c3aed'; ctx.fillRect(3,11,10,5);
+            ctx.fillStyle = '#a855f7'; ctx.fillRect(4,11,8,4);
+            ctx.fillStyle = '#c4b5fd'; ctx.fillRect(7,12,2,2);
+            // Boots
+            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1);
+        },
+        nevena: ctx => {
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Brown hair
+            ctx.fillStyle = '#7c2d12'; ctx.fillRect(3,1,10,5);
+            ctx.fillStyle = '#9a3c1c'; ctx.fillRect(4,2,8,3);
+            // Face
+            ctx.fillStyle = '#f5c89a'; ctx.fillRect(5,5,6,6);
+            ctx.fillStyle = '#e8b888'; ctx.fillRect(5,5,2,4);
+            // Eyes
+            ctx.fillStyle = '#15803d'; ctx.fillRect(6,7,2,2);
+            ctx.fillStyle = '#22c55e'; ctx.fillRect(9,7,2,2);
+            ctx.fillStyle = '#fff'; ctx.fillRect(7,7,1,1); ctx.fillRect(10,7,1,1);
+            // Headband
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(3,3,10,2);
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,3,8,1);
+            // Jacket
+            ctx.fillStyle = '#7f1d1d'; ctx.fillRect(3,11,10,5);
+            ctx.fillStyle = '#991b1b'; ctx.fillRect(4,11,8,4);
+            // Clipboard
+            ctx.fillStyle = '#eab308'; ctx.fillRect(4,12,2,2); ctx.fillRect(10,12,2,2);
+            // Boots
+            ctx.fillStyle = '#334155'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        },
+        joao: ctx => {
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Hair
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(4,0,8,4);
+            ctx.fillStyle = '#1e293b'; ctx.fillRect(5,1,6,2);
+            // Face
+            ctx.fillStyle = '#f0a16b'; ctx.fillRect(5,3,6,6);
+            ctx.fillStyle = '#e09050'; ctx.fillRect(5,3,2,4);
+            // Eyes
+            ctx.fillStyle = '#422006'; ctx.fillRect(6,5,2,2);
+            ctx.fillStyle = '#78350f'; ctx.fillRect(9,5,2,2);
+            ctx.fillStyle = '#fff'; ctx.fillRect(7,5,1,1); ctx.fillRect(10,5,1,1);
+            // Mic wire
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,8,8,1);
+            // Vest
+            ctx.fillStyle = '#ea580c'; ctx.fillRect(3,9,10,7);
+            ctx.fillStyle = '#fb923c'; ctx.fillRect(4,10,8,5);
+            ctx.fillStyle = '#f97316'; ctx.fillRect(4,11,2,2); ctx.fillRect(10,11,2,2);
+            // Boots
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        },
+        roman: ctx => {
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Bald head
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(4,2,8,8);
+            ctx.fillStyle = '#e8c090'; ctx.fillRect(4,2,2,6);
+            ctx.fillStyle = '#fce4c8'; ctx.fillRect(6,3,4,2);
+            // Eyes
+            ctx.fillStyle = '#374151'; ctx.fillRect(5,6,2,2);
+            ctx.fillStyle = '#6b7280'; ctx.fillRect(9,6,2,2);
+            ctx.fillStyle = '#fff'; ctx.fillRect(6,6,1,1); ctx.fillRect(10,6,1,1);
+            // Stealth coat
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(3,10,10,6);
+            ctx.fillStyle = '#1e293b'; ctx.fillRect(4,10,8,5);
+            ctx.fillStyle = '#94a3b8'; ctx.fillRect(4,11,2,2); ctx.fillRect(10,11,2,2);
+            // Boots
+            ctx.fillStyle = '#0b1224'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1);
+        },
+        erwin: ctx => {
+            // Tesla body with metallic look
+            ctx.fillStyle = '#4b5563'; ctx.fillRect(2,8,12,6);
+            ctx.fillStyle = '#6b7280'; ctx.fillRect(3,9,10,4);
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(4,10,8,2);
+            // Wheels
+            ctx.fillStyle = '#1f2937'; ctx.fillRect(1,12,3,2); ctx.fillRect(12,12,3,2);
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(2,12,1,1); ctx.fillRect(13,12,1,1);
+            // Windshield
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,9,8,3);
+            ctx.fillStyle = '#67e8f9'; ctx.fillRect(5,10,6,1);
+            // Head in car
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(5,3,6,4);
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(6,4,4,3);
+            ctx.fillStyle = '#000'; ctx.fillRect(7,5,1,1); ctx.fillRect(9,5,1,1);
+            ctx.fillStyle = '#eab308'; ctx.fillRect(6,6,4,1);
+            // Bumper
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(3,14,10,2);
+            ctx.fillStyle = '#dc2626'; ctx.fillRect(3,14,2,1); ctx.fillRect(11,14,2,1);
+        },
+        boss_inspector: ctx => {
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath(); ctx.ellipse(8, 15, 6, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Gray hair
+            ctx.fillStyle = '#6b7280'; ctx.fillRect(3,0,10,5);
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(4,1,8,3);
+            // Face
+            ctx.fillStyle = '#f5cba7'; ctx.fillRect(4,4,8,6);
+            ctx.fillStyle = '#e5b090'; ctx.fillRect(4,4,2,4);
+            // Stern eyes
+            ctx.fillStyle = '#1e3a5a'; ctx.fillRect(5,6,2,2);
+            ctx.fillStyle = '#3b82f6'; ctx.fillRect(9,6,2,2);
+            // Yellow uniform
+            ctx.fillStyle = '#ca8a04'; ctx.fillRect(3,10,10,6);
+            ctx.fillStyle = '#facc15'; ctx.fillRect(4,10,8,5);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,11,2,2); ctx.fillRect(10,11,2,2);
+            // Boots
+            ctx.fillStyle = '#1f2937'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        },
+        boss_compliance: ctx => {
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath(); ctx.ellipse(8, 15, 6, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Dark hair
+            ctx.fillStyle = '#0b162a'; ctx.fillRect(3,0,10,5);
+            ctx.fillStyle = '#1e293b'; ctx.fillRect(4,1,8,3);
+            // Face
+            ctx.fillStyle = '#ffcc99'; ctx.fillRect(5,4,6,6);
+            ctx.fillStyle = '#e8b888'; ctx.fillRect(5,4,2,4);
+            // Eyes
+            ctx.fillStyle = '#7c3aed'; ctx.fillRect(6,6,2,2);
+            ctx.fillStyle = '#a855f7'; ctx.fillRect(9,6,2,2);
+            // Cyan outfit
+            ctx.fillStyle = '#0891b2'; ctx.fillRect(3,10,10,6);
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,10,8,5);
+            ctx.fillStyle = '#14b8a6'; ctx.fillRect(7,11,2,3);
+            // Boots
+            ctx.fillStyle = '#c084fc'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        },
+        boss_regional: ctx => {
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath(); ctx.ellipse(8, 15, 6, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Executive hair
+            ctx.fillStyle = '#312e81'; ctx.fillRect(2,0,12,5);
+            ctx.fillStyle = '#4338ca'; ctx.fillRect(3,1,10,3);
+            // Face
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(4,5,8,6);
+            ctx.fillStyle = '#e8c090'; ctx.fillRect(4,5,2,4);
+            // Eyes
+            ctx.fillStyle = '#1e3a5a'; ctx.fillRect(5,7,2,2);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(9,7,2,2);
+            // Purple suit
+            ctx.fillStyle = '#581c87'; ctx.fillRect(3,10,10,6);
+            ctx.fillStyle = '#7c3aed'; ctx.fillRect(4,10,8,5);
+            // Gold tie
+            ctx.fillStyle = '#fbbf24'; ctx.fillRect(7,11,2,3);
+            // Boots
+            ctx.fillStyle = '#cbd5e1'; ctx.fillRect(5,15,2,1); ctx.fillRect(9,15,2,1);
+        },
+        boss_sebastian: ctx => {
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath(); ctx.ellipse(8, 15, 6, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Bald head (no hair)
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(4,0,8,7);
+            ctx.fillStyle = '#e8c090'; ctx.fillRect(5,1,6,5);
+            ctx.fillStyle = '#faebd7'; ctx.fillRect(5,0,5,2); // Shine on bald head
+            ctx.fillStyle = '#fce8d0'; ctx.fillRect(6,0,4,1); // Top shine
+            // Eyes
+            ctx.fillStyle = '#1d4ed8'; ctx.fillRect(5,3,2,2);
+            ctx.fillStyle = '#3b82f6'; ctx.fillRect(9,3,2,2);
+            // Slight beard (stubble/light beard)
+            ctx.fillStyle = '#8b7355'; ctx.fillRect(5,5,6,2); // Beard area
+            ctx.fillStyle = '#7a6248'; ctx.fillRect(6,6,4,1); // Chin beard
+            ctx.fillStyle = '#6b5340'; ctx.fillRect(7,5,2,1); // Mustache hint
+            // Blue suit
+            ctx.fillStyle = '#1d4ed8'; ctx.fillRect(3,7,10,1);
+            ctx.fillStyle = '#1e40af'; ctx.fillRect(2,8,12,8);
+            ctx.fillStyle = '#2563eb'; ctx.fillRect(3,8,10,6);
+            // Orange accent
+            ctx.fillStyle = '#f97316'; ctx.fillRect(7,10,2,2);
+        },
+        boss_jelly: ctx => {
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath(); ctx.ellipse(8, 15, 6, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Brown hair
+            ctx.fillStyle = '#5c3d2e'; ctx.fillRect(3,0,10,6);
+            ctx.fillStyle = '#7a5142'; ctx.fillRect(4,1,8,4);
+            ctx.fillStyle = '#8b6352'; ctx.fillRect(5,1,3,2);
+            // Face
+            ctx.fillStyle = '#ffcc99'; ctx.fillRect(4,5,8,6);
+            ctx.fillStyle = '#e8b888'; ctx.fillRect(4,5,2,4);
+            // Eyes
+            ctx.fillStyle = '#166534'; ctx.fillRect(5,7,2,2);
+            ctx.fillStyle = '#22c55e'; ctx.fillRect(9,7,2,2);
+            // Green HR outfit
+            ctx.fillStyle = '#15803d'; ctx.fillRect(3,10,10,6);
+            ctx.fillStyle = '#22c55e'; ctx.fillRect(4,10,8,5);
+            // Badge
+            ctx.fillStyle = '#f5f5f5'; ctx.fillRect(6,12,4,2);
+            ctx.fillStyle = '#10b981'; ctx.fillRect(2,9,2,2);
+        },
+        boss_avetta: ctx => {
+            // Digital frame
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(1,1,14,14);
+            ctx.fillStyle = '#1e293b'; ctx.fillRect(2,2,12,12);
+            // Screen glow
+            ctx.fillStyle = '#0891b2'; ctx.fillRect(3,3,10,10);
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,4,8,8);
+            // AI eye pattern
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,5,6,2);
+            ctx.fillStyle = '#34d399'; ctx.fillRect(4,7,8,1);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,9,6,2);
+            // Core
+            ctx.fillStyle = '#fcd34d'; ctx.fillRect(7,6,2,4);
+            ctx.fillStyle = '#fef3c7'; ctx.fillRect(7,7,2,2);
+        }
+    };
+
+    function renderPortraits() {
+        document.querySelectorAll('.char-portrait').forEach(div => {
+            const painter = spritePainters[div.dataset.sprite];
+            if (!painter) return;
+            const spriteCanvas = document.createElement('canvas');
+            spriteCanvas.width = 64; spriteCanvas.height = 64;
+            const sCtx = spriteCanvas.getContext('2d');
+            sCtx.imageSmoothingEnabled = false;
+            sCtx.scale(4,4);
+            painter(sCtx);
+            div.appendChild(spriteCanvas);
+        });
+    }
+
+    fetchAnnouncement();
+    renderPortraits();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
