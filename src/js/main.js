@@ -100,10 +100,14 @@ function handleAction() {
       document.getElementById('text-content').innerText = GAME.dialogVisible;
     } else {
       closeDialog();
-      if (GAME.nextState === GAME_STATES.YARD_INTRO) {
-        GAME.state = GAME_STATES.YARD_INTRO;
+      // Transition to next state (PLAY, YARD_INTRO, etc.)
+      if (GAME.nextState) {
+        GAME.state = GAME.nextState;
         GAME.stateTimer = 0;
-        startYardLevel();
+        if (GAME.nextState === GAME_STATES.YARD_INTRO) {
+          startYardLevel();
+        }
+        updateMusicForState();
       }
     }
   } else if (GAME.state === GAME_STATES.VISITOR_SPLASH) {
@@ -218,6 +222,19 @@ function update() {
   // Update shake/flash effects
   if (GAME.shake > 0) GAME.shake--;
   if (GAME.flash > 0) GAME.flash--;
+
+  // Auto-advance intro states
+  if (GAME.state === GAME_STATES.LOGO && GAME.stateTimer > 240) {
+    advanceState();
+    updateMusicForState();
+  }
+  if (GAME.state === GAME_STATES.INTRO && GAME.stateTimer > 300) {
+    advanceState();
+  }
+  if (GAME.state === GAME_STATES.STORY && GAME.stateTimer > 300) {
+    advanceState();
+    updateMusicForState();
+  }
 
   // State-specific updates
   if (GAME.state === GAME_STATES.SELECT) {
