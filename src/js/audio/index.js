@@ -162,14 +162,14 @@ export const AudioSys = {
 export const MusicSys = {
   tracks: {},
   trackUrls: {
-    title: 'Pixel Reverie.mp3',
-    menu: 'Game Over But Not Really.mp3',
-    ingame: 'Pixel Warehouse Crawl.mp3',
-    boss: 'Pixel Panic.mp3',
-    victory: 'Pixel Victory.mp3',
-    mechaJeff: 'Mecha Jeff Bezos Showdown.mp3',
-    megaSimon: 'Mega Simon MEU WHS Regional Manager.mp3',
-    credits: 'Game Over Symphony.mp3'
+    title: '/Pixel Reverie.mp3',
+    menu: '/Game Over But Not Really.mp3',
+    ingame: '/Pixel Warehouse Crawl.mp3',
+    boss: '/Pixel Panic.mp3',
+    victory: '/Pixel Victory.mp3',
+    mechaJeff: '/Mecha Jeff Bezos Showdown.mp3',
+    megaSimon: '/Mega Simon MEU WHS Regional Manager.mp3',
+    credits: '/Game Over Symphony.mp3'
   },
   currentName: null,
   currentRate: 1,

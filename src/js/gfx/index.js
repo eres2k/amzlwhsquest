@@ -338,6 +338,61 @@ function generateBossSprites() {
     ctx.arc(6, 6, 3, 0, Math.PI * 2);
     ctx.fill();
   });
+
+  // Simon Boss (larger for boss fight)
+  GFX.simonBoss = c(32, 32, ctx => {
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.beginPath(); ctx.ellipse(16, 30, 10, 4, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#5c3d2e'; ctx.fillRect(6,0,20,8);
+    ctx.fillStyle = '#6b4423'; ctx.fillRect(8,2,16,4);
+    ctx.fillStyle = '#d4a574'; ctx.fillRect(8,8,16,12);
+    ctx.fillStyle = '#e8c49a'; ctx.fillRect(10,10,12,8);
+    ctx.fillStyle = '#000'; ctx.fillRect(8,10,6,4); ctx.fillRect(18,10,6,4);
+    ctx.fillStyle = '#87ceeb'; ctx.fillRect(10,10,2,2); ctx.fillRect(20,10,2,2);
+    ctx.fillStyle = '#b45309'; ctx.fillRect(4,20,24,12);
+    ctx.fillStyle = '#d97706'; ctx.fillRect(6,20,20,8);
+    ctx.fillStyle = '#f59e0b'; ctx.fillRect(8,22,16,4);
+    ctx.fillStyle = '#fff'; ctx.fillRect(10,24,12,4);
+    ctx.fillStyle = '#1f2937'; ctx.fillRect(8,30,6,2); ctx.fillRect(18,30,6,2);
+  });
+
+  // Mecha Jeff
+  GFX.mechaJeff = c(64, 64, ctx => {
+    ctx.fillStyle = '#0a0f18'; ctx.fillRect(0,0,64,64);
+    ctx.fillStyle = '#2d3748'; ctx.fillRect(12,30,40,28);
+    ctx.fillStyle = '#3d4a5c'; ctx.fillRect(14,32,36,24);
+    ctx.fillStyle = '#ff9900'; ctx.fillRect(24,38,16,12);
+    ctx.fillStyle = '#ffb347'; ctx.fillRect(28,42,8,4);
+    ctx.fillStyle = '#374151'; ctx.fillRect(0,30,14,24);
+    ctx.fillStyle = '#374151'; ctx.fillRect(50,30,14,24);
+    ctx.fillStyle = '#dc2626'; ctx.fillRect(4,40,6,6);
+    ctx.fillStyle = '#dc2626'; ctx.fillRect(54,40,6,6);
+    ctx.fillStyle = '#f5deb3'; ctx.fillRect(18,4,28,26);
+    ctx.fillStyle = '#faebd7'; ctx.fillRect(22,2,20,12);
+    ctx.fillStyle = '#7f1d1d'; ctx.fillRect(22,16,8,8); ctx.fillRect(34,16,8,8);
+    ctx.fillStyle = '#dc2626'; ctx.fillRect(24,18,4,4); ctx.fillRect(36,18,4,4);
+    ctx.fillStyle = '#1a1a1a'; ctx.fillRect(26,26,12,3);
+    ctx.fillStyle = '#374151'; ctx.fillRect(18,56,12,8); ctx.fillRect(34,56,12,8);
+  });
+
+  // Mecha Mega Simon
+  GFX.mechaMegaSimon = c(48, 48, ctx => {
+    ctx.fillStyle = '#0a0f18'; ctx.fillRect(0,0,48,48);
+    ctx.fillStyle = '#b45309'; ctx.fillRect(8,22,32,20);
+    ctx.fillStyle = '#d97706'; ctx.fillRect(10,24,28,16);
+    ctx.fillStyle = '#f59e0b'; ctx.fillRect(18,28,12,8);
+    ctx.fillStyle = '#374151'; ctx.fillRect(0,22,10,18);
+    ctx.fillStyle = '#374151'; ctx.fillRect(38,22,10,18);
+    ctx.fillStyle = '#dc2626'; ctx.fillRect(2,28,6,6);
+    ctx.fillStyle = '#dc2626'; ctx.fillRect(40,28,6,6);
+    ctx.fillStyle = '#d4a574'; ctx.fillRect(14,2,20,18);
+    ctx.fillStyle = '#e8c49a'; ctx.fillRect(16,4,16,14);
+    ctx.fillStyle = '#6b4423'; ctx.fillRect(14,0,20,6);
+    ctx.fillStyle = '#7f1d1d'; ctx.fillRect(16,10,6,6); ctx.fillRect(26,10,6,6);
+    ctx.fillStyle = '#dc2626'; ctx.fillRect(18,12,2,2); ctx.fillRect(28,12,2,2);
+    ctx.fillStyle = '#1a1a1a'; ctx.fillRect(20,16,8,2);
+    ctx.fillStyle = '#374151'; ctx.fillRect(14,42,8,6); ctx.fillRect(26,42,8,6);
+  });
 }
 
 function generateNPCSprites() {
@@ -497,6 +552,47 @@ function generateEnvironmentSprites() {
     ctx.fillStyle = '#ca8a04'; ctx.fillRect(10,8,3,2);
     ctx.fillStyle = '#fbbf24'; ctx.fillRect(11,8,1,2);
     ctx.fillStyle = '#ecfdf5'; ctx.fillRect(5,10,6,2);
+  });
+
+  // Conveyor Belt
+  GFX.conveyorBelt = c(16, 16, ctx => {
+    ctx.fillStyle = '#374151'; ctx.fillRect(0,4,16,8);
+    ctx.fillStyle = '#4b5563'; ctx.fillRect(1,5,14,6);
+    ctx.fillStyle = '#1f2937';
+    for (let i = 0; i < 8; i++) {
+      ctx.fillRect(i * 2, 6, 1, 4);
+    }
+    ctx.fillStyle = '#6b7280'; ctx.fillRect(0,4,2,8); ctx.fillRect(14,4,2,8);
+    ctx.fillStyle = '#9ca3af'; ctx.fillRect(0,6,2,4); ctx.fillRect(14,6,2,4);
+    ctx.fillStyle = '#fbbf24'; ctx.fillRect(0,3,16,1); ctx.fillRect(0,12,16,1);
+  });
+
+  // Small package
+  GFX.packageSmall = c(12, 12, ctx => {
+    ctx.fillStyle = '#78350f'; ctx.fillRect(1,2,10,9);
+    ctx.fillStyle = '#a16207'; ctx.fillRect(2,3,8,7);
+    ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,5,4,2);
+    ctx.fillStyle = '#fbbf24'; ctx.fillRect(3,3,6,1);
+  });
+
+  // Large package
+  GFX.packageLarge = c(16, 14, ctx => {
+    ctx.fillStyle = '#78350f'; ctx.fillRect(1,2,14,11);
+    ctx.fillStyle = '#a16207'; ctx.fillRect(2,3,12,9);
+    ctx.fillStyle = '#fbbf24'; ctx.fillRect(2,2,12,2);
+    ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,6,6,2);
+    ctx.fillStyle = '#111'; ctx.fillRect(7,8,2,2);
+  });
+
+  // Pallet stack
+  GFX.palletStack = c(16, 16, ctx => {
+    ctx.fillStyle = '#92400e'; ctx.fillRect(1,13,14,3);
+    ctx.fillStyle = '#a16207'; ctx.fillRect(2,14,12,1);
+    ctx.fillStyle = '#78350f'; ctx.fillRect(2,9,5,4); ctx.fillRect(8,9,6,4);
+    ctx.fillStyle = '#a16207'; ctx.fillRect(3,10,3,2); ctx.fillRect(9,10,4,2);
+    ctx.fillStyle = '#b45309'; ctx.fillRect(3,5,4,4); ctx.fillRect(8,6,5,3);
+    ctx.fillStyle = '#d97706'; ctx.fillRect(4,6,2,2); ctx.fillRect(9,7,3,1);
+    ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,7,2,1); ctx.fillRect(10,7,2,1);
   });
 }
 
