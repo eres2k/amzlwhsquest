@@ -3806,6 +3806,15 @@ function handleAction() {
     }
     else if (GAME.state === 'SELECT') { AudioSys.sfx.select(); GAME.selectedChar = GAME.charList[GAME.charIndex]; resetGame(); }
     else if (GAME.state === 'DIALOG') {
+        // In Gemini TTS mode, don't allow skip while voice is loading or playing
+        if (TTS_SETTINGS.mode === 'advanced' && (TTS_SETTINGS.isLoading || GeminiTTS.isPlaying)) {
+            // Show the full text immediately but don't allow closing
+            if (GAME.dialogVisible.length < GAME.dialogText.length) {
+                GAME.dialogVisible = GAME.dialogText;
+                document.getElementById('text-content').innerText = GAME.dialogVisible;
+            }
+            return; // Block skip while TTS is active
+        }
         if (GAME.dialogVisible.length < GAME.dialogText.length) {
             GAME.dialogVisible = GAME.dialogText; document.getElementById('text-content').innerText = GAME.dialogVisible;
         } else {
@@ -4952,6 +4961,24 @@ function update() {
     }
 
     if (GAME.state === 'DIALOG') {
+        // Update press-space-hint based on TTS state
+        const hintEl = document.getElementById('press-space-hint');
+        if (TTS_SETTINGS.mode === 'advanced' && (TTS_SETTINGS.isLoading || GeminiTTS.isPlaying)) {
+            hintEl.innerText = '🎙️ LISTENING...';
+            hintEl.style.color = '#a855f7';
+            hintEl.style.animation = 'none';
+        } else {
+            hintEl.innerText = '▼ PRESS SPACE';
+            hintEl.style.color = '#ffd700';
+            hintEl.style.animation = 'blink 0.8s ease-in-out infinite';
+        }
+
+        // In Gemini TTS mode, wait for voice to load before starting typewriter
+        if (TTS_SETTINGS.mode === 'advanced' && TTS_SETTINGS.isLoading) {
+            // Don't start typewriter while voice is loading
+            return;
+        }
+
         if (GAME.dialogVisible.length < GAME.dialogText.length) {
             if (GAME.ticks % 2 === 0) {
                 GAME.dialogVisible += GAME.dialogText[GAME.dialogVisible.length];
@@ -9394,37 +9421,70 @@ function draw() {
         ctx.drawImage(GFX.chars[charName], canvas.width / 2 - 16, 85 + charBounce, 32, 32);
         ctx.restore();
 
-        // Voice Mode Selector on Title Screen
-        ctx.textAlign = 'left';
+        // Voice Mode Selector on Title Screen - More Prominent Design
         const isClassic = TTS_SETTINGS.mode === 'classic';
         const isAdvanced = TTS_SETTINGS.mode === 'advanced';
 
-        // Voice mode label
-        ctx.fillStyle = '#a855f7';
-        ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('VOICE:', 20, 135);
+        // Voice selector box background
+        const boxX = 28;
+        const boxY = 123;
+        const boxW = 200;
+        const boxH = 34;
+
+        // Animated glow effect for the box
+        const voiceGlow = Math.sin(t * 0.1) * 0.3 + 0.7;
+        ctx.shadowColor = '#a855f7';
+        ctx.shadowBlur = 10 * voiceGlow;
+
+        // Box background
+        ctx.fillStyle = 'rgba(15, 10, 30, 0.9)';
+        ctx.fillRect(boxX, boxY, boxW, boxH);
+
+        // Box border with gradient effect
+        ctx.strokeStyle = isAdvanced ? '#a855f7' : '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(boxX, boxY, boxW, boxH);
+        ctx.shadowBlur = 0;
+
+        // Voice mode label with icon
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillText('🎙️ VOICE', boxX + 8, boxY + 14);
+
+        // Mode options with larger font and better visibility
+        ctx.textAlign = 'center';
+        const optionY = boxY + 27;
 
         // Classic option
         ctx.fillStyle = isClassic ? '#22c55e' : '#64748b';
-        ctx.font = '6px monospace';
-        ctx.fillText(isClassic ? '>' : ' ', 55, 135);
-        ctx.fillText('CLASSIC', 62, 135);
+        ctx.shadowColor = isClassic ? '#22c55e' : 'transparent';
+        ctx.shadowBlur = isClassic ? 8 : 0;
+        ctx.font = isClassic ? '8px "Press Start 2P"' : '7px monospace';
+        ctx.fillText(isClassic ? '▶ CLASSIC' : 'CLASSIC', boxX + 55, optionY);
+        ctx.shadowBlur = 0;
 
-        // Advanced option with BETA badge
-        ctx.fillStyle = isAdvanced ? '#22c55e' : '#64748b';
-        ctx.fillText(isAdvanced ? '>' : ' ', 112, 135);
-        ctx.fillText('ADVANCED', 119, 135);
+        // Advanced option
+        ctx.fillStyle = isAdvanced ? '#a855f7' : '#64748b';
+        ctx.shadowColor = isAdvanced ? '#a855f7' : 'transparent';
+        ctx.shadowBlur = isAdvanced ? 8 : 0;
+        ctx.font = isAdvanced ? '8px "Press Start 2P"' : '7px monospace';
+        ctx.fillText(isAdvanced ? '▶ GEMINI AI' : 'GEMINI AI', boxX + 145, optionY);
+        ctx.shadowBlur = 0;
 
-        // BETA badge for Advanced mode
-        ctx.fillStyle = '#ef4444';
-        ctx.font = 'bold 5px monospace';
-        ctx.fillText('BETA', 175, 135);
+        // BETA badge for Advanced mode (always visible but highlighted when selected)
+        ctx.fillStyle = isAdvanced ? '#ef4444' : '#991b1b';
+        ctx.font = 'bold 6px monospace';
+        ctx.fillText('BETA', boxX + 185, boxY + 12);
 
-        // Toggle hint
+        // Toggle hint below the box
         ctx.textAlign = 'center';
-        ctx.fillStyle = '#64748b';
-        ctx.font = '5px monospace';
-        ctx.fillText('[ UP/DOWN to change ]', canvas.width / 2, 145);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '6px monospace';
+        const hintBlink = Math.sin(t * 0.15) > 0;
+        if (hintBlink) {
+            ctx.fillText('▲▼ UP/DOWN TO CHANGE', canvas.width / 2, boxY + boxH + 10);
+        }
 
         // Animated prompt with pulse
         const blink = Math.sin(t * 0.12) > 0;
