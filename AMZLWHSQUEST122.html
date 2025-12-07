@@ -3614,7 +3614,7 @@ const GAME = {
         { name: "Compliance Auditor", sprite: "boss_compliance", hp: 12, speed: 0.8, attackDelay: 70, title: "The Watcher", desc: "Nothing escapes.", attackName: "Audit Cascade", attackPattern: "tracking" },
         { name: "Sebastian Sprigade", sprite: "boss_sebastian", hp: 15, speed: 1.0, attackDelay: 60, title: "Delivery Station Mgr", desc: "Obsessed with TPH.", attackName: "TPH Overload", attackPattern: "burst" },
         { name: "Regional OPS MGR", sprite: "boss_regional", hp: 14, speed: 0.6, attackDelay: 90, title: "The Executive", desc: "Metrics first.", attackName: "KPI Crusher", attackPattern: "orbital" },
-        { name: "Avetta Platform", sprite: "boss_avetta", hp: 18, speed: 0.4, attackDelay: 100, title: "Risk Mgmt AI", desc: "Judges all.", attackName: "Risk Assessment Beam", attackPattern: "laser" },
+        { name: "Avetta Platform", sprite: "boss_avetta", hp: 18, speed: 0.4, attackDelay: 100, title: "Risk Manager", desc: "Judges all.", attackName: "Risk Assessment Beam", attackPattern: "laser" },
         { name: "Jelena \"Jelly\"", sprite: "boss_jelly", hp: 13, speed: 0.9, attackDelay: 65, title: "HR Guardian", desc: "HR legend who never forgets a policy.", attackName: "Write-Up Wave", attackPattern: "wave" }
     ]
 };
@@ -3806,14 +3806,9 @@ function handleAction() {
     }
     else if (GAME.state === 'SELECT') { AudioSys.sfx.select(); GAME.selectedChar = GAME.charList[GAME.charIndex]; resetGame(); }
     else if (GAME.state === 'DIALOG') {
-        // In Gemini TTS mode, don't allow skip while voice is loading or playing
+        // In Gemini TTS mode, don't allow any skip while voice is loading or playing
         if (TTS_SETTINGS.mode === 'advanced' && (TTS_SETTINGS.isLoading || GeminiTTS.isPlaying)) {
-            // Show the full text immediately but don't allow closing
-            if (GAME.dialogVisible.length < GAME.dialogText.length) {
-                GAME.dialogVisible = GAME.dialogText;
-                document.getElementById('text-content').innerText = GAME.dialogVisible;
-            }
-            return; // Block skip while TTS is active
+            return; // Block all skip actions while TTS is loading or playing
         }
         if (GAME.dialogVisible.length < GAME.dialogText.length) {
             GAME.dialogVisible = GAME.dialogText; document.getElementById('text-content').innerText = GAME.dialogVisible;
@@ -9425,11 +9420,11 @@ function draw() {
         const isClassic = TTS_SETTINGS.mode === 'classic';
         const isAdvanced = TTS_SETTINGS.mode === 'advanced';
 
-        // Voice selector box background
+        // Voice selector box background - positioned below character with good spacing
         const boxX = 28;
-        const boxY = 123;
+        const boxY = 120;
         const boxW = 200;
-        const boxH = 34;
+        const boxH = 30;
 
         // Animated glow effect for the box
         const voiceGlow = Math.sin(t * 0.1) * 0.3 + 0.7;
@@ -9454,7 +9449,7 @@ function draw() {
 
         // Mode options with larger font and better visibility
         ctx.textAlign = 'center';
-        const optionY = boxY + 27;
+        const optionY = boxY + 23;
 
         // Classic option
         ctx.fillStyle = isClassic ? '#22c55e' : '#64748b';
@@ -9469,7 +9464,7 @@ function draw() {
         ctx.shadowColor = isAdvanced ? '#a855f7' : 'transparent';
         ctx.shadowBlur = isAdvanced ? 8 : 0;
         ctx.font = isAdvanced ? '8px "Press Start 2P"' : '7px monospace';
-        ctx.fillText(isAdvanced ? '▶ GEMINI AI' : 'GEMINI AI', boxX + 145, optionY);
+        ctx.fillText(isAdvanced ? '▶ GEMINI' : 'GEMINI', boxX + 145, optionY);
         ctx.shadowBlur = 0;
 
         // BETA badge for Advanced mode (always visible but highlighted when selected)
