@@ -920,13 +920,14 @@ const AudioSys = {
 const MusicSys = {
     tracks: {
         title: new Audio('music/title-screen.mp3'),
+        intro: new Audio('music/title-eeproductions.mp3'),
         menu: new Audio('music/game-over.mp3'),
         ingame: new Audio('music/level-gameplay.mp3'),
         boss: new Audio('music/boss-battle.mp3'),
         victory: new Audio('music/victory.mp3'),
         mechaJeff: new Audio('music/boss-mecha-jeff.mp3'),
         megaSimon: new Audio('music/boss-mega-simon.mp3'),
-        credits: new Audio('music/game-over-full.mp3'),
+        credits: new Audio('music/credits.mp3'),
         snesBoss: new Audio('music/boss-snes-theme.mp3'),
         enraged: new Audio('music/boss-snes-theme.mp3') // Using boss-snes-theme as fallback for enraged
     },
@@ -936,6 +937,8 @@ const MusicSys = {
         Object.values(this.tracks).forEach(a => {
             a.loop = true; a.volume = 0.35; a.preload = 'auto';
         });
+        // Don't loop the intro track - it's timed to match the logo animation
+        this.tracks.intro.loop = false;
     },
     play(name, rate = 1) {
         const track = this.tracks[name];
@@ -4460,7 +4463,7 @@ function update() {
         return;
     }
 
-    if (GAME.state === 'LOGO' && GAME.stateTimer > 240) advanceState();
+    if (GAME.state === 'LOGO' && GAME.stateTimer > 420) advanceState();
 
     if (GAME.state === 'TITLE') {
         return;
@@ -6153,8 +6156,10 @@ function updateMusicForState() {
     let rate = 1;
     let track = 'title';
 
-    // Pixel Reverie - for Menus (title, intro, story, how to play)
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO'].includes(GAME.state)) track = 'title';
+    // Title EE Productions - for LOGO intro screen (7 seconds, non-looping)
+    if (GAME.state === 'LOGO') track = 'intro';
+    // Pixel Reverie - for Menus (intro, story, title, how to play)
+    else if (['INTRO', 'STORY', 'TITLE', 'HOWTO'].includes(GAME.state)) track = 'title';
     // Game Over But Not Really - for character select screen
     else if (GAME.state === 'SELECT') track = 'menu';
     // Pixel Warehouse Crawl - for warehouse gameplay
@@ -9051,13 +9056,96 @@ function draw() {
     if (GAME.shake > 0) { dxShake = (Math.random() - 0.5) * GAME.shake; dyShake = (Math.random() - 0.5) * GAME.shake; }
     ctx.save(); ctx.translate(dxShake, dyShake);
 
-    if (GAME.state === 'LOGO') { 
-        let alpha = 1.0; if(GAME.stateTimer < 30) alpha = GAME.stateTimer / 30; if(GAME.stateTimer > 200) alpha = (240 - GAME.stateTimer) / 40;
-        ctx.globalAlpha = Math.max(0, Math.min(1, alpha)); let offset = Math.max(0, 100 - GAME.stateTimer * 2);
+    if (GAME.state === 'LOGO') {
+        // Extended to 420 frames (7 seconds) for title-eeproductions.mp3
+        let alpha = 1.0;
+        if(GAME.stateTimer < 30) alpha = GAME.stateTimer / 30;
+        if(GAME.stateTimer > 380) alpha = (420 - GAME.stateTimer) / 40;
+
+        // SNES-style starfield background effect
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, 256, 224);
+        for(let i = 0; i < 30; i++) {
+            let seed = i * 123.456;
+            let x = ((seed * 9301 + 49297) % 233280) / 910;
+            let y = ((seed * 1234 + 8765) % 233280) / 1040;
+            let speed = (i % 3) + 1;
+            let starY = (y + GAME.stateTimer * speed * 0.3) % 224;
+            let brightness = Math.sin(GAME.stateTimer * 0.1 + i) * 0.3 + 0.7;
+            ctx.fillStyle = `rgba(255,255,255,${brightness * alpha})`;
+            ctx.fillRect(x, starY, 1, 1);
+        }
+
+        // Color cycling effect for background glow
+        let hue = (GAME.stateTimer * 2) % 360;
+        let gradient = ctx.createRadialGradient(128, 112, 0, 128, 112, 150);
+        gradient.addColorStop(0, `hsla(${hue}, 70%, 30%, ${alpha * 0.3})`);
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 256, 224);
+
+        ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+        let offset = Math.max(0, 100 - GAME.stateTimer * 2);
+
+        // Draw logo with chromatic aberration effect
+        if(GAME.stateTimer > 60 && GAME.stateTimer < 90) {
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.globalAlpha = alpha * 0.3;
+            ctx.drawImage(GFX.logo, 28 - offset - 2, 90);
+            ctx.globalAlpha = alpha * 0.3;
+            ctx.drawImage(GFX.logo, 28 - offset + 2, 90);
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
         ctx.drawImage(GFX.logo, 28 - offset, 90);
-        if (GAME.stateTimer > 80) { ctx.fillStyle = '#fff'; ctx.font = '10px monospace'; ctx.fillText("ERWIN ESENER", 80, 105); ctx.fillStyle = '#eab308'; ctx.font = '14px monospace'; ctx.fillText("PRODUCTIONS", 80, 125); }
-        if(GAME.stateTimer > 60 && GAME.stateTimer < 65) { ctx.fillStyle='white'; ctx.fillRect(0,0,256,224); }
-        ctx.restore(); return; 
+
+        // Enhanced text with color cycling
+        if (GAME.stateTimer > 80) {
+            let textHue = (GAME.stateTimer * 3) % 60 + 180; // Cycle through blue-cyan range
+            ctx.fillStyle = '#fff';
+            ctx.font = '10px monospace';
+            ctx.fillText("ERWIN ESENER", 80, 105);
+
+            // Color cycling on PRODUCTIONS text
+            let prodHue = (GAME.stateTimer * 5) % 60 + 30; // Cycle through yellow-orange range
+            ctx.fillStyle = `hsl(${prodHue}, 90%, 50%)`;
+            ctx.font = '14px monospace';
+            ctx.fillText("PRODUCTIONS", 80, 125);
+
+            // Add sparkle effects
+            for(let i = 0; i < 5; i++) {
+                let sparkleTime = (GAME.stateTimer - 80 - i * 15) % 120;
+                if(sparkleTime < 20) {
+                    let sparkleAlpha = sparkleTime < 10 ? sparkleTime / 10 : (20 - sparkleTime) / 10;
+                    ctx.globalAlpha = sparkleAlpha * alpha;
+                    ctx.fillStyle = '#fff';
+                    let sx = 75 + i * 30 + Math.sin(GAME.stateTimer * 0.1 + i) * 3;
+                    let sy = 100 + Math.cos(GAME.stateTimer * 0.15 + i) * 10;
+                    ctx.fillRect(sx, sy, 2, 2);
+                    ctx.fillRect(sx - 3, sy, 1, 1);
+                    ctx.fillRect(sx + 3, sy, 1, 1);
+                    ctx.fillRect(sx, sy - 3, 1, 1);
+                    ctx.fillRect(sx, sy + 3, 1, 1);
+                }
+            }
+        }
+
+        // White flash effect
+        if(GAME.stateTimer > 60 && GAME.stateTimer < 65) {
+            ctx.globalAlpha = 1.0;
+            ctx.fillStyle='white';
+            ctx.fillRect(0,0,256,224);
+        }
+
+        // SNES-style scanlines
+        ctx.globalAlpha = 0.15;
+        for(let y = 0; y < 224; y += 2) {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, y, 256, 1);
+        }
+
+        ctx.restore(); return;
     }
     if (GAME.state === 'INTRO') { 
         ctx.fillStyle='#eab308'; ctx.fillText("THE WAREHOUSE...", 20, 60); ctx.fillStyle='#fff';
