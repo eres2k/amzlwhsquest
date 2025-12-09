@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMZL WHS Coordinator Quest - Refactored MVP</title>
+    <link rel="stylesheet" href="styles/game.css">
+</head>
+<body>
+
+    <div id="game-wrapper">
+        <canvas id="gameCanvas" width="256" height="224"></canvas>
+        <div id="crt-overlay"></div>
+        <div id="vignette"></div>
+
+        <div id="ui-overlay">
+            <div class="hud-text" id="hud-layer" style="display:none;">
+                <div style="color:#ff4444; margin-bottom:5px;">LIFE <span id="life-val">❤️❤️❤️❤️❤️</span></div>
+                <div style="color:#44ff44;">HAZARDS: <span id="score-val">0/5</span></div>
+            </div>
+
+            <div id="boss-hud">
+                <div class="boss-name" id="boss-name-el">BOSS NAME</div>
+                <div class="boss-bar-bg"><div class="boss-bar-fill" id="boss-health-el"></div></div>
+            </div>
+
+            <div id="dialog-box">
+                <canvas id="portrait" width="32" height="32"></canvas>
+                <div style="display:flex; flex-direction:column; width:100%;">
+                    <div id="text-content"></div>
+                    <div id="press-space-hint">▼ PRESS SPACE</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load game as ES6 module -->
+    <script type="module" src="src/main.js"></script>
+
+</body>
+</html>
