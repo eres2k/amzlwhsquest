@@ -34,7 +34,6 @@ export class Game {
         // Game configuration
         this.tileSize = 16;
         this.debug = false;
-        this.ttsMode = 'classic'; // 'classic' or 'advanced'
 
         // Game data
         this.map = null;

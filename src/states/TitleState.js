@@ -66,17 +66,6 @@ export class TitleState extends State {
             }
         });
 
-        // Voice mode indicator
-        if (this.game.ttsMode) {
-            context.font = '8px "Press Start 2P"';
-            context.fillStyle = '#a855f7';
-            context.fillText(
-                `TTS: ${this.game.ttsMode.toUpperCase()} (▲▼ to change)`,
-                w / 2,
-                h - 30
-            );
-        }
-
         // Start prompt (blinking)
         if (this.showPrompt) {
             context.font = '10px "Press Start 2P"';
@@ -105,18 +94,6 @@ export class TitleState extends State {
             case ' ':
                 this.selectOption();
                 break;
-
-            // TTS mode switching
-            case 'ArrowUp':
-                if (event.shiftKey) {
-                    this.cycleTTSMode();
-                }
-                break;
-            case 'ArrowDown':
-                if (event.shiftKey) {
-                    this.cycleTTSMode();
-                }
-                break;
         }
     }
 
@@ -131,14 +108,6 @@ export class TitleState extends State {
             case 2: // Settings
                 this.changeState('SETTINGS');
                 break;
-        }
-    }
-
-    cycleTTSMode() {
-        if (this.game.ttsMode === 'classic') {
-            this.game.ttsMode = 'advanced';
-        } else {
-            this.game.ttsMode = 'classic';
         }
     }
 

@@ -40,7 +40,6 @@ export class CreditsState extends State {
             'HTML5 Canvas',
             'ES6 Modules',
             'Procedural Generation',
-            'Gemini AI Integration',
             '',
             '',
             'THANK YOU FOR PLAYING!',
