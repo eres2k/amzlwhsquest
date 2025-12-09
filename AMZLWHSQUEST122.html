@@ -135,37 +135,6 @@
             80%, 100% { content: ''; }
         }
 
-        /* TTS Loading indicator */
-        #tts-loading {
-            display: none;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
-            font-size: 8px;
-            color: #a855f7;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        #tts-loading-bar {
-            flex-grow: 1;
-            height: 4px;
-            background: rgba(168, 85, 247, 0.2);
-            border-radius: 2px;
-            overflow: hidden;
-            max-width: 120px;
-        }
-        #tts-loading-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #a855f7, #ec4899);
-            border-radius: 2px;
-            animation: tts-loading-pulse 1.5s ease-in-out infinite;
-        }
-        @keyframes tts-loading-pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-        
         /* Banner hidden as requested */
         #slogan-display {
             display: none; 
@@ -244,10 +213,6 @@
             <div id="dialog-box">
                 <canvas id="portrait" width="32" height="32"></canvas>
                 <div style="display:flex; flex-direction:column; width:100%;">
-                    <div id="tts-loading">
-                        <span>🎙️ LOADING VOICE</span>
-                        <div id="tts-loading-bar"><div id="tts-loading-fill"></div></div>
-                    </div>
                     <div id="gemini-badge" class="gemini-badge">✨ SIMON IS ANALYZING...</div>
                     <div id="text-content"></div>
                     <div id="press-space-hint">▼ PRESS SPACE</div>
@@ -883,397 +848,17 @@ TTSSys.init();
 
 // --- TTS SETTINGS ---
 const TTS_SETTINGS = {
-    mode: 'classic', // 'classic' (Browser TTS) or 'advanced' (Gemini TTS)
-    preloadedAudio: new Map(), // Cache for preloaded Gemini TTS audio
-    preloadQueue: [], // Queue of texts to preload
-    isPreloading: false,
-    pendingPreloads: new Set(), // Track what's currently being preloaded
-    // Loading state for UI indicator
-    isLoading: false,
-    loadingProgress: 0,
-    loadingStartTime: 0,
-    TTS_TIMEOUT_MS: 10000 // 10 second timeout for TTS generation
+    // TTS settings can be expanded here as needed
 };
 
-// --- GEMINI VOICE TTS SYSTEM ---
-const GeminiTTS = {
-    // Voice mappings for characters - using Gemini 2.5 Flash TTS voices
-    // Available voices: Puck, Charon, Kore, Fenrir, Aoede, Leda, Orus, Zephyr
-    characterVoices: {
-        // Main playable characters
-        "Carrie": { voice: "Kore", style: "Upbeat, precise, energetic female" },
-        "Nevena": { voice: "Aoede", style: "Calm, wise, oracle-like female" },
-        "Joao": { voice: "Puck", style: "Loud, energetic, expressive male" },
-        "Roman": { voice: "Fenrir", style: "Quiet, mysterious, ghostly male" },
-        "Erwin": { voice: "Orus", style: "Confident, managerial male" },
-        // Simon & variants
-        "Simon": { voice: "Charon", style: "Deep, authoritative, stern male" },
-        "Simon Unglaube": { voice: "Charon", style: "Deep, authoritative, stern male" },
-        "MEGA SIMON": { voice: "Charon", style: "Intense, powerful, commanding male" },
-        "MECHA MEGA SIMON": { voice: "Fenrir", style: "Mechanical, terrifying, robotic" },
-        // Bosses
-        "Jeff Bezos": { voice: "Orus", style: "Megalomaniacal, corporate, intense male" },
-        "Mecha Jeff": { voice: "Fenrir", style: "Robotic, menacing, mechanical" },
-        "Labour Inspector": { voice: "Kore", style: "Stern, authoritative female" },
-        "Compliance Auditor": { voice: "Aoede", style: "Meticulous, watchful female" },
-        "Sebastian Sprigade": { voice: "Puck", style: "Fast-talking, TPH-obsessed male" },
-        "Regional OPS MGR": { voice: "Orus", style: "Executive, commanding male" },
-        "Avetta Platform": { voice: "Fenrir", style: "Robotic, AI, monotone" },
-        "Jelena": { voice: "Leda", style: "HR professional, firm female" },
-        "Jelly": { voice: "Leda", style: "HR professional, firm female" },
-        // System voices
-        "System": { voice: "Aoede", style: "Clear, announcer female" },
-        "Corporate": { voice: "Charon", style: "Cold, corporate male" },
-        "Narrator": { voice: "Orus", style: "Dramatic, storytelling male" }
-    },
 
-    currentAudio: null,
-    audioQueue: [],
-    isPlaying: false,
-
-    getVoiceConfig(speakerName) {
-        for (const [name, config] of Object.entries(this.characterVoices)) {
-            if (speakerName && speakerName.includes(name)) return config;
-        }
-        return { voice: "Charon", style: "Default narrator" };
-    },
-
-    // Create WAV header for raw PCM audio data (Gemini TTS returns raw PCM)
-    createWavHeader(dataLength, sampleRate, numChannels, bitsPerSample) {
-        const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
-        const blockAlign = numChannels * (bitsPerSample / 8);
-        const header = new Uint8Array(44);
-        const view = new DataView(header.buffer);
-
-        // RIFF chunk descriptor
-        header.set([0x52, 0x49, 0x46, 0x46], 0); // "RIFF"
-        view.setUint32(4, 36 + dataLength, true); // File size - 8
-        header.set([0x57, 0x41, 0x56, 0x45], 8); // "WAVE"
-
-        // fmt sub-chunk
-        header.set([0x66, 0x6D, 0x74, 0x20], 12); // "fmt "
-        view.setUint32(16, 16, true); // Subchunk1Size (16 for PCM)
-        view.setUint16(20, 1, true); // AudioFormat (1 = PCM)
-        view.setUint16(22, numChannels, true); // NumChannels
-        view.setUint32(24, sampleRate, true); // SampleRate
-        view.setUint32(28, byteRate, true); // ByteRate
-        view.setUint16(32, blockAlign, true); // BlockAlign
-        view.setUint16(34, bitsPerSample, true); // BitsPerSample
-
-        // data sub-chunk
-        header.set([0x64, 0x61, 0x74, 0x61], 36); // "data"
-        view.setUint32(40, dataLength, true); // Subchunk2Size
-
-        return header;
-    },
-
-    async generateTTS(text, speakerName = "System") {
-        const activeKey = await ensureApiKey();
-        if (!activeKey) return null;
-
-        const config = this.getVoiceConfig(speakerName);
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${activeKey}`;
-
-        const payload = {
-            contents: [{
-                parts: [{ text: text }]
-            }],
-            generationConfig: {
-                responseModalities: ["AUDIO"],
-                speechConfig: {
-                    voiceConfig: {
-                        prebuiltVoiceConfig: {
-                            voiceName: config.voice
-                        }
-                    }
-                }
-            }
-        };
-
-        try {
-            // Create abort controller for timeout
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), TTS_SETTINGS.TTS_TIMEOUT_MS);
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-                signal: controller.signal
-            });
-
-            clearTimeout(timeoutId);
-
-            if (!response.ok) {
-                // Handle rate limit (429) and other errors
-                if (response.status === 429) {
-                    console.log('[GeminiTTS] Rate limit reached, falling back to browser TTS');
-                    this.rateLimitHit = true;
-                } else {
-                    console.log('[GeminiTTS] API error:', response.status);
-                }
-                return null;
-            }
-
-            const data = await response.json();
-            const audioData = data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-
-            if (audioData) {
-                // Convert base64 to audio blob
-                const binaryString = atob(audioData);
-                const pcmData = new Uint8Array(binaryString.length);
-                for (let i = 0; i < binaryString.length; i++) {
-                    pcmData[i] = binaryString.charCodeAt(i);
-                }
-
-                // Get MIME type from response (Gemini returns audio/L16;rate=24000 for raw PCM)
-                const mimeType = data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.mimeType || '';
-
-                // Check if it's raw PCM audio that needs WAV header
-                if (mimeType.includes('audio/L16') || mimeType.includes('audio/pcm')) {
-                    // Extract sample rate from MIME type (default 24000 for Gemini TTS)
-                    const rateMatch = mimeType.match(/rate=(\d+)/);
-                    const sampleRate = rateMatch ? parseInt(rateMatch[1]) : 24000;
-
-                    // Create WAV header for raw PCM data
-                    const wavHeader = this.createWavHeader(pcmData.length, sampleRate, 1, 16);
-                    const wavData = new Uint8Array(wavHeader.length + pcmData.length);
-                    wavData.set(wavHeader, 0);
-                    wavData.set(pcmData, wavHeader.length);
-
-                    const blob = new Blob([wavData], { type: 'audio/wav' });
-                    return URL.createObjectURL(blob);
-                } else {
-                    // For other formats (MP3, OGG, etc.), use the returned MIME type
-                    const blob = new Blob([pcmData], { type: mimeType || 'audio/mpeg' });
-                    return URL.createObjectURL(blob);
-                }
-            }
-            return null;
-        } catch (e) {
-            // Handle timeout specifically
-            if (e.name === 'AbortError') {
-                console.log('[GeminiTTS] Request timed out after 10s, falling back to browser TTS');
-            } else {
-                console.log('[GeminiTTS] Error:', e);
-            }
-            return null;
-        }
-    },
-
-    rateLimitHit: false, // Track if rate limit was hit to avoid repeated failed requests
-
-    async speak(text, speakerName = "System", callback = null) {
-        if (!text) {
-            if (callback) callback();
-            return;
-        }
-
-        // Stop any currently playing audio
-        this.stop();
-
-        // If rate limit was hit, fall back immediately to browser TTS
-        if (this.rateLimitHit) {
-            console.log('[GeminiTTS] Using browser TTS due to previous rate limit');
-            TTSSys.speak(text, speakerName, callback);
-            return;
-        }
-
-        // Check preloaded cache first
-        const cacheKey = `${speakerName}:${text}`;
-        let audioUrl = TTS_SETTINGS.preloadedAudio.get(cacheKey);
-
-        if (!audioUrl) {
-            // Show loading indicator while generating TTS
-            TTS_SETTINGS.isLoading = true;
-            TTS_SETTINGS.loadingStartTime = Date.now();
-            TTS_SETTINGS.loadingProgress = 0;
-
-            // Generate new TTS
-            audioUrl = await this.generateTTS(text, speakerName);
-
-            // Hide loading indicator
-            TTS_SETTINGS.isLoading = false;
-        }
-
-        if (audioUrl) {
-            this.currentAudio = new Audio(audioUrl);
-            this.currentAudio.volume = 0.85;
-
-            this.currentAudio.onended = () => {
-                this.isPlaying = false;
-                if (callback) callback();
-                this.playNextInQueue();
-            };
-
-            this.currentAudio.onerror = () => {
-                this.isPlaying = false;
-                console.log('[GeminiTTS] Audio playback error, falling back to browser TTS');
-                // Fallback to browser TTS on error
-                TTSSys.speak(text, speakerName, callback);
-            };
-
-            this.isPlaying = true;
-            this.currentAudio.play().catch(() => {
-                console.log('[GeminiTTS] Audio play() failed, falling back to browser TTS');
-                // Fallback to browser TTS
-                TTSSys.speak(text, speakerName, callback);
-            });
-        } else {
-            // Fallback to browser TTS
-            console.log('[GeminiTTS] No audio URL, falling back to browser TTS');
-            TTSSys.speak(text, speakerName, callback);
-        }
-    },
-
-    queue(text, speakerName = "System") {
-        this.audioQueue.push({ text, speakerName });
-        if (!this.isPlaying) {
-            this.playNextInQueue();
-        }
-    },
-
-    async playNextInQueue() {
-        if (this.audioQueue.length === 0 || this.isPlaying) return;
-        const next = this.audioQueue.shift();
-        await this.speak(next.text, next.speakerName);
-    },
-
-    stop() {
-        if (this.currentAudio) {
-            this.currentAudio.pause();
-            this.currentAudio.currentTime = 0;
-            this.currentAudio = null;
-        }
-        this.isPlaying = false;
-        this.audioQueue = [];
-    },
-
-    cancel() {
-        this.stop();
-    }
-};
-
-// --- TTS PRELOADING SYSTEM ---
-const TTSPreloader = {
-    // Hardcoded dialogue lines to preload for each game state
-    preloadLists: {
-        'SELECT': [
-            { text: "Carrie", speaker: "System" },
-            { text: "Nevena", speaker: "System" },
-            { text: "Joao", speaker: "System" },
-            { text: "Roman", speaker: "System" },
-            { text: "Erwin", speaker: "System" }
-        ],
-        'BOSS_INTRO': [
-            { text: "I AM THE SAFETY STANDARD!", speaker: "MEGA SIMON" },
-            { text: "YOU CANNOT ESCAPE THE AUDIT!", speaker: "MEGA SIMON" },
-            { text: "ENTROPY COMES FOR US ALL!", speaker: "MEGA SIMON" },
-            { text: "YOUR PPE IS INSUFFICIENT!", speaker: "MEGA SIMON" }
-        ],
-        'VISITOR_SPLASH': [
-            { text: "VISITOR ALERT!", speaker: "System" },
-            { text: "SURPRISE AUDIT INCOMING!", speaker: "System" }
-        ],
-        'SIMON_VICTORY_FAKE': [
-            { text: "Ha! Is that all you've got, Simon?", speaker: "Carrie" },
-            { text: "I actually did it! I won!", speaker: "Nevena" },
-            { text: "YES! Take that!", speaker: "Joao" },
-            { text: "Victory... achieved.", speaker: "Roman" },
-            { text: "The Manager always wins!", speaker: "Erwin" }
-        ],
-        'SIMON_TRANSFORM': [
-            { text: "You think this is over?", speaker: "MEGA SIMON" },
-            { text: "FOOL! THIS ISN'T EVEN MY FINAL FORM!", speaker: "MEGA SIMON" },
-            { text: "TRANSFORMATION COMPLETE. RESISTANCE IS FUTILE.", speaker: "MECHA MEGA SIMON" }
-        ]
-    },
-
-    async preloadForState(state) {
-        if (TTS_SETTINGS.mode !== 'advanced') return;
-
-        const list = this.preloadLists[state];
-        if (!list) return;
-
-        console.log(`[TTSPreloader] Preloading ${list.length} audio files for state: ${state}`);
-
-        for (const item of list) {
-            const cacheKey = `${item.speaker}:${item.text}`;
-
-            // Skip if already preloaded or currently preloading
-            if (TTS_SETTINGS.preloadedAudio.has(cacheKey) || TTS_SETTINGS.pendingPreloads.has(cacheKey)) {
-                continue;
-            }
-
-            TTS_SETTINGS.pendingPreloads.add(cacheKey);
-
-            // Generate and cache audio
-            const audioUrl = await GeminiTTS.generateTTS(item.text, item.speaker);
-            if (audioUrl) {
-                TTS_SETTINGS.preloadedAudio.set(cacheKey, audioUrl);
-                console.log(`[TTSPreloader] Cached: ${cacheKey}`);
-            }
-
-            TTS_SETTINGS.pendingPreloads.delete(cacheKey);
-        }
-    },
-
-    // Preload a specific custom text
-    async preloadCustom(text, speaker) {
-        if (TTS_SETTINGS.mode !== 'advanced') return;
-
-        const cacheKey = `${speaker}:${text}`;
-        if (TTS_SETTINGS.preloadedAudio.has(cacheKey) || TTS_SETTINGS.pendingPreloads.has(cacheKey)) {
-            return;
-        }
-
-        TTS_SETTINGS.pendingPreloads.add(cacheKey);
-        const audioUrl = await GeminiTTS.generateTTS(text, speaker);
-        if (audioUrl) {
-            TTS_SETTINGS.preloadedAudio.set(cacheKey, audioUrl);
-        }
-        TTS_SETTINGS.pendingPreloads.delete(cacheKey);
-    },
-
-    clearCache() {
-        // Revoke all blob URLs to free memory
-        for (const url of TTS_SETTINGS.preloadedAudio.values()) {
-            URL.revokeObjectURL(url);
-        }
-        TTS_SETTINGS.preloadedAudio.clear();
-    }
-};
-
-// Update TTS loading indicator in the UI
-function updateTTSLoadingIndicator() {
-    const loadingEl = document.getElementById('tts-loading');
-    const fillEl = document.getElementById('tts-loading-fill');
-
-    if (TTS_SETTINGS.isLoading && TTS_SETTINGS.mode === 'advanced') {
-        loadingEl.style.display = 'flex';
-        // Animate the progress bar based on elapsed time (max 10 seconds)
-        const elapsed = Date.now() - TTS_SETTINGS.loadingStartTime;
-        const progress = Math.min((elapsed / TTS_SETTINGS.TTS_TIMEOUT_MS) * 100, 95);
-        fillEl.style.width = progress + '%';
-    } else {
-        loadingEl.style.display = 'none';
-        fillEl.style.width = '0%';
-    }
-}
-
-// Unified TTS function that uses the selected mode
+// TTS function using browser's native speech synthesis
 function speakTTS(text, speakerName = "System", callback = null) {
-    if (TTS_SETTINGS.mode === 'advanced') {
-        GeminiTTS.speak(text, speakerName, callback);
-    } else {
-        TTSSys.speak(text, speakerName, callback);
-    }
+    TTSSys.speak(text, speakerName, callback);
 }
 
 function cancelTTS() {
     TTSSys.cancel();
-    GeminiTTS.cancel();
-    TTS_SETTINGS.isLoading = false;
 }
 
 // --- AUDIO ---
@@ -3806,10 +3391,6 @@ function handleAction() {
     }
     else if (GAME.state === 'SELECT') { AudioSys.sfx.select(); GAME.selectedChar = GAME.charList[GAME.charIndex]; resetGame(); }
     else if (GAME.state === 'DIALOG') {
-        // In Gemini TTS mode, don't allow any skip while voice is loading or playing
-        if (TTS_SETTINGS.mode === 'advanced' && (TTS_SETTINGS.isLoading || GeminiTTS.isPlaying)) {
-            return; // Block all skip actions while TTS is loading or playing
-        }
         if (GAME.dialogVisible.length < GAME.dialogText.length) {
             GAME.dialogVisible = GAME.dialogText; document.getElementById('text-content').innerText = GAME.dialogVisible;
         } else {
@@ -4086,9 +3667,6 @@ function triggerFakeVictoryDialogue() {
 
     // Hide boss HUD temporarily to sell the "victory"
     document.getElementById('boss-hud').style.display = 'none';
-
-    // Preload transformation dialogue if using advanced TTS
-    TTSPreloader.preloadForState('SIMON_TRANSFORM');
 
     // Character-specific victory lines
     const victoryLines = {
@@ -4886,9 +4464,6 @@ function update() {
     if (GAME.shake > 0) GAME.shake--;
     if (GAME.flash > 0) GAME.flash--;
 
-    // Update TTS loading indicator
-    updateTTSLoadingIndicator();
-
     if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') {
         GAME.splashTimer--;
         const isWin = GAME.state === 'WIN_SPLASH';
@@ -4922,20 +4497,7 @@ function update() {
 
     if (GAME.state === 'LOGO' && GAME.stateTimer > 240) advanceState();
 
-    // TTS mode toggle in TITLE screen
     if (GAME.state === 'TITLE') {
-        if ((KEYS.up || KEYS.down) && GAME.ticks % 15 === 0) {
-            AudioSys.sfx.select();
-            if (TTS_SETTINGS.mode === 'classic') {
-                TTS_SETTINGS.mode = 'advanced';
-                speakTTS("Advanced voice mode enabled", "System");
-                // Start preloading for upcoming states
-                TTSPreloader.preloadForState('SELECT');
-            } else {
-                TTS_SETTINGS.mode = 'classic';
-                speakTTS("Classic voice mode enabled", "System");
-            }
-        }
         return;
     }
 
@@ -4956,23 +4518,11 @@ function update() {
     }
 
     if (GAME.state === 'DIALOG') {
-        // Update press-space-hint based on TTS state
+        // Update press-space-hint
         const hintEl = document.getElementById('press-space-hint');
-        if (TTS_SETTINGS.mode === 'advanced' && (TTS_SETTINGS.isLoading || GeminiTTS.isPlaying)) {
-            hintEl.innerText = '🎙️ LISTENING...';
-            hintEl.style.color = '#a855f7';
-            hintEl.style.animation = 'none';
-        } else {
-            hintEl.innerText = '▼ PRESS SPACE';
-            hintEl.style.color = '#ffd700';
-            hintEl.style.animation = 'blink 0.8s ease-in-out infinite';
-        }
-
-        // In Gemini TTS mode, wait for voice to load before starting typewriter
-        if (TTS_SETTINGS.mode === 'advanced' && TTS_SETTINGS.isLoading) {
-            // Don't start typewriter while voice is loading
-            return;
-        }
+        hintEl.innerText = '▼ PRESS SPACE';
+        hintEl.style.color = '#ffd700';
+        hintEl.style.animation = 'blink 0.8s ease-in-out infinite';
 
         if (GAME.dialogVisible.length < GAME.dialogText.length) {
             if (GAME.ticks % 2 === 0) {
@@ -9416,72 +8966,8 @@ function draw() {
         ctx.drawImage(GFX.chars[charName], canvas.width / 2 - 16, 85 + charBounce, 32, 32);
         ctx.restore();
 
-        // Voice Mode Selector on Title Screen - More Prominent Design
-        const isClassic = TTS_SETTINGS.mode === 'classic';
-        const isAdvanced = TTS_SETTINGS.mode === 'advanced';
-
-        // Voice selector box background - positioned below character with good spacing
-        const boxX = 28;
-        const boxY = 120;
-        const boxW = 200;
-        const boxH = 30;
-
-        // Animated glow effect for the box
-        const voiceGlow = Math.sin(t * 0.1) * 0.3 + 0.7;
-        ctx.shadowColor = '#a855f7';
-        ctx.shadowBlur = 10 * voiceGlow;
-
-        // Box background
-        ctx.fillStyle = 'rgba(15, 10, 30, 0.9)';
-        ctx.fillRect(boxX, boxY, boxW, boxH);
-
-        // Box border with gradient effect
-        ctx.strokeStyle = isAdvanced ? '#a855f7' : '#3b82f6';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(boxX, boxY, boxW, boxH);
-        ctx.shadowBlur = 0;
-
-        // Voice mode label with icon
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = '8px "Press Start 2P"';
-        ctx.fillText('🎙️ VOICE', boxX + 8, boxY + 14);
-
-        // Mode options with larger font and better visibility
-        ctx.textAlign = 'center';
-        const optionY = boxY + 23;
-
-        // Classic option
-        ctx.fillStyle = isClassic ? '#22c55e' : '#64748b';
-        ctx.shadowColor = isClassic ? '#22c55e' : 'transparent';
-        ctx.shadowBlur = isClassic ? 8 : 0;
-        ctx.font = isClassic ? '8px "Press Start 2P"' : '7px monospace';
-        ctx.fillText(isClassic ? '▶ CLASSIC' : 'CLASSIC', boxX + 55, optionY);
-        ctx.shadowBlur = 0;
-
-        // Advanced option
-        ctx.fillStyle = isAdvanced ? '#a855f7' : '#64748b';
-        ctx.shadowColor = isAdvanced ? '#a855f7' : 'transparent';
-        ctx.shadowBlur = isAdvanced ? 8 : 0;
-        ctx.font = isAdvanced ? '8px "Press Start 2P"' : '7px monospace';
-        ctx.fillText(isAdvanced ? '▶ GEMINI' : 'GEMINI', boxX + 145, optionY);
-        ctx.shadowBlur = 0;
-
-        // BETA badge for Advanced mode (always visible but highlighted when selected)
-        ctx.fillStyle = isAdvanced ? '#ef4444' : '#991b1b';
-        ctx.font = 'bold 6px monospace';
-        ctx.fillText('BETA', boxX + 185, boxY + 12);
-
-        // Toggle hint below the box
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '6px monospace';
-        const hintBlink = Math.sin(t * 0.15) > 0;
-        if (hintBlink) {
-            ctx.fillText('▲▼ UP/DOWN TO CHANGE', canvas.width / 2, boxY + boxH + 10);
-        }
-
         // Animated prompt with pulse
+        ctx.textAlign = 'center';
         const blink = Math.sin(t * 0.12) > 0;
         const pulseScale = 1 + Math.sin(t * 0.1) * 0.05;
         if (blink) {
