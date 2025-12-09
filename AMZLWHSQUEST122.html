@@ -3388,7 +3388,7 @@ window.addEventListener('keyup', e => {
 function handleAction() {
     AudioSys.init(); AudioSys.resume(); MusicSys.init(); MusicSys.resume(); updateMusicForState();
     if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') return;
-    if (GAME.state === 'LOGO') { advanceState(); }
+    if (GAME.state === 'LOGO') { return; } // Let intro music play, will auto-advance after timer
     else if (['INTRO', 'STORY'].includes(GAME.state)) { AudioSys.sfx.start(); advanceState(); }
     else if (['TITLE', 'HOWTO'].includes(GAME.state)) {
         GAME.state = (GAME.state==='TITLE')?'HOWTO':'SELECT'; AudioSys.sfx.select(); updateMusicForState();
@@ -4273,6 +4273,8 @@ function updateMechaBezos() {
             GAME.shake = 5;
             GAME.projectiles.splice(i, 1);
             spawnParticle(proj.x, proj.y, '#ff9900', 5);
+            // Damage number above boss head
+            spawnFloatingText(b.x + 24, b.y - 10, '-1', '#ffffff');
 
             if (b.hp <= 0) {
                 winBezosLevel();
@@ -5167,6 +5169,8 @@ function updateMechaBattle() {
             GAME.projectiles.splice(i, 1);
             AudioSys.sfx.bossHit();
             spawnFloatingText(m.x + 32, m.y + 12, 'HIT!', '#ff2e63');
+            // Damage number above boss head
+            spawnFloatingText(m.x + 32, m.y - 10, '-1', '#ffffff');
 
             // Spawn hit particles
             for (let j = 0; j < 4; j++) {
@@ -5652,6 +5656,8 @@ function updateProjectiles() {
                     GAME.boss.hp -= dmg; updateBossHud(); AudioSys.sfx.bossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, attackMeta.color || '#ff0000', -2); GAME.projectiles.splice(i,1);
                     const dmgText = dmg > 1 ? `${attackMeta.text || 'Hit!'} x${dmg}` : (attackMeta.text || 'Hit!');
                     spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, dmgText, attackMeta.color || '#ff0000');
+                    // Damage number above boss head
+                    spawnFloatingText(GAME.boss.x+16, GAME.boss.y-8, `-${dmg}`, '#ffffff');
                     // Check for Mecha Mega Simon transformation at 0 HP with fake victory sequence
                     if (GAME.boss.hp <= 0 && GAME.boss.name === "MEGA SIMON" && !GAME.boss.transformTriggered) {
                         GAME.boss.transformTriggered = true;
@@ -5687,8 +5693,23 @@ function updateProjectiles() {
                 let hit = false;
                 GAME.entities.forEach(e => {
                     if (e.type === 'ops' && Math.hypot(p.x-e.x, p.y-e.y) < 12) {
+                        const rng = Math.random();
+                        // 🔥 10% DEFLECT CHANCE FOR OPS ENEMIES - throws projectile back at player
+                        if (rng < 0.1) {
+                            spawnFloatingText(e.x, e.y, "DEFLECTED!", "#ff4444");
+                            spawnParticleBurst(e.x, e.y, ['#ff4444', '#ff0000'], 8);
+                            AudioSys.sfx.alert();
+                            // Reverse projectile direction toward player
+                            const angle = Math.atan2(GAME.player.y - e.y, GAME.player.x - e.x);
+                            p.vx = Math.cos(angle) * 3.0;
+                            p.vy = Math.sin(angle) * 3.0;
+                            p.type = 'req'; // Change to boss projectile type so it damages player
+                            p.boss = true;
+                            p.grace = 15; // Give player a moment to react
+                            hit = false; // Don't remove projectile
+                        }
                         // 🔥 30% DODGE CHANCE FOR OPS ENEMIES
-                        if (Math.random() < 0.3) {
+                        else if (rng < 0.4) { // 0.1 to 0.4 = 30% chance
                             spawnFloatingText(e.x, e.y, "DODGED!", "#ff9900");
                             spawnParticleBurst(e.x, e.y, ['#ff9900', '#ffff00'], 6);
                             AudioSys.sfx.alert();
@@ -6186,8 +6207,10 @@ function updateMusicForState() {
     else if (GAME.state === 'BEZOS_ESCAPE') track = 'victory';
     // Game Over Symphony - for both Credits Scenes
     else if (GAME.state === 'CREDITS') track = 'credits';
-    // WIN_SPLASH and LOSE_SPLASH - don't change music (handled elsewhere or continue current)
-    else if (GAME.state === 'WIN_SPLASH' || GAME.state === 'LOSE_SPLASH' || GAME.state === 'GAMEOVER_SPLASH') return;
+    // WIN_SPLASH - don't change music (handled elsewhere or continue current)
+    else if (GAME.state === 'WIN_SPLASH' || GAME.state === 'GAMEOVER_SPLASH') return;
+    // LOSE_SPLASH - play game over music
+    else if (GAME.state === 'LOSE_SPLASH') track = 'menu';
 
     MusicSys.play(track, rate);
 }
@@ -7151,11 +7174,19 @@ function drawMechaBattle() {
         ctx.globalAlpha = 1;
     });
 
-    // Floating texts
+    // Floating texts with fade out and shrink effect
     GAME.floatingTexts.forEach(t => {
+        const lifePercent = t.life / GAME_CONSTANTS.FLOATING_TEXT_LIFE;
+        const alpha = Math.min(1, lifePercent); // Fade based on remaining life
+        const scale = 0.5 + (lifePercent * 0.5); // Shrink from 100% to 50% size
+        const fontSize = Math.floor(6 * scale);
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
         ctx.fillStyle = t.color;
-        ctx.font = '6px "Press Start 2P"';
+        ctx.font = `${fontSize}px "Press Start 2P"`;
         ctx.fillText(t.text, t.x, t.y);
+        ctx.restore();
     });
 }
 

@@ -15,7 +15,7 @@ export const MEGA_SIMON_CONFIG = {
     name: "MEGA SIMON",
     sprite: "mega_simon",
     hp: 20,
-    speed: 1.0,
+    speed: 0.75,
     attackDelay: 55,
     title: "MEU WHS Regional Manager",
     desc: "Final audit begins.",
