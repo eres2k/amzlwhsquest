@@ -13,6 +13,7 @@ import { AudioSystem } from '../systems/AudioSystem.js';
 import { ParticleSystem } from '../systems/ParticleSystem.js';
 import { ScreenEffects } from '../systems/ScreenEffects.js';
 import { FloatingTextSystem } from '../systems/FloatingTextSystem.js';
+import { HazardSystem } from '../systems/HazardSystem.js';
 import { LogoState } from '../states/LogoState.js';
 import { IntroState } from '../states/IntroState.js';
 import { StoryState } from '../states/StoryState.js';
@@ -52,6 +53,7 @@ export class Game {
         this.particles = null;
         this.effects = null;
         this.floatingTexts = null;
+        this.hazards = null;
 
         // Map-related arrays
         this.conveyorBelts = [];
@@ -167,6 +169,9 @@ export class Game {
             // Initialize floating text system
             this.initFloatingTexts();
 
+            // Initialize hazard system
+            this.initHazards();
+
             // Initialize main loop
             this.mainLoop = new MainLoop(this);
 
@@ -274,6 +279,16 @@ export class Game {
         }
 
         console.log('[Game] Floating text system initialized');
+    }
+
+    /**
+     * Initialize hazard system
+     */
+    initHazards() {
+        // Initialize hazard system with game reference
+        this.hazards = new HazardSystem(this);
+
+        console.log('[Game] Hazard system initialized (90+ hazard types)');
     }
 
     /**

@@ -4,6 +4,8 @@
  * Generates all game sprites, animations, and visual assets at runtime
  */
 
+import { HazardSystem } from '../systems/HazardSystem.js';
+
 export class AssetGenerator {
     constructor() {
         this.assets = {};
@@ -105,6 +107,7 @@ export class AssetGenerator {
         this.generateBossSprites();
         this.generateNPCSprites();
         this.generateEnvironmentAssets();
+        this.generateHazards();
         this.generateEffects();
         this.generateAnimations();
 
@@ -1034,6 +1037,14 @@ export class AssetGenerator {
             if (!current) return null;
         }
         return current;
+    }
+
+    /**
+     * Generate hazard sprites (90+ warehouse safety hazards)
+     */
+    generateHazards() {
+        // Generate all hazard sprites using HazardSystem
+        this.assets.hazards = HazardSystem.generateHazardSprites();
     }
 
     /**

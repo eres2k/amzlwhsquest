@@ -11,7 +11,6 @@ export class PlayState extends State {
         this.player = null;
         this.entities = [];
         this.projectiles = [];
-        this.activeIssues = [];
         this.issuesFixed = 0;
         this.inputState = {};
     }
@@ -70,7 +69,24 @@ export class PlayState extends State {
             this.game.palletStacks = mapData.palletStacks;
             this.game.cartWorkers = mapData.cartWorkers;
             this.game.clutter = mapData.clutter;
-            this.activeIssues = mapData.hazardSpawns;
+
+            // Clear and spawn hazards using centralized system
+            if (this.game.hazards) {
+                this.game.hazards.clear();
+
+                // Spawn 5 random hazards
+                this.game.hazards.spawnMultiple(5, () => this.getRandomFloorTile());
+
+                // Spawn blocked exit hazard at door
+                const door = mapData.door;
+                if (door) {
+                    this.game.hazards.spawn(
+                        door.hazardX * this.game.tileSize,
+                        door.hazardY * this.game.tileSize,
+                        { name: "Blocked Exit", type: "box" }
+                    );
+                }
+            }
         }
     }
 
@@ -240,34 +256,27 @@ export class PlayState extends State {
 
     checkHazardCollisions() {
         if (this.player.iframe > 0) return;
+        if (!this.game.hazards) return;
 
         const p = this.player;
-        const hazardRadius = 16;
+        const hazard = this.game.hazards.checkPlayerCollision(p, 16);
 
-        for (const issue of this.activeIssues) {
-            if (issue.fixed) continue;
+        if (hazard) {
+            // Can fix with space
+            if (this.inputState.attack) {
+                this.game.hazards.fixHazard(hazard);
+                this.issuesFixed++;
+                this.spawnParticleBurst(hazard.x, hazard.y, ['#22c55e', '#10b981', '#34d399']);
+                this.spawnFloatingText(hazard.x, hazard.y, 'FIXED!', '#22c55e');
 
-            const dx = p.x - issue.x;
-            const dy = p.y - issue.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+                // Play fix sound
+                if (this.game.audio) {
+                    this.game.audio.getSFX().fix();
+                }
 
-            if (dist < hazardRadius) {
-                // Can fix with space
-                if (this.inputState.attack) {
-                    issue.fixed = true;
-                    this.issuesFixed++;
-                    this.spawnParticleBurst(issue.x, issue.y, ['#22c55e', '#10b981', '#34d399']);
-                    this.spawnFloatingText(issue.x, issue.y, 'FIXED!', '#22c55e');
-
-                    // Play fix sound
-                    if (this.game.audio) {
-                        this.game.audio.getSFX().fix();
-                    }
-
-                    // Screen flash on fix
-                    if (this.game.effects) {
-                        this.game.effects.setFlash(5);
-                    }
+                // Screen flash on fix
+                if (this.game.effects) {
+                    this.game.effects.setFlash(5);
                 }
             }
         }
@@ -409,6 +418,11 @@ export class PlayState extends State {
         // Clear floating texts
         if (this.game.floatingTexts) {
             this.game.floatingTexts.clear();
+        }
+
+        // Clear hazards
+        if (this.game.hazards) {
+            this.game.hazards.clear();
         }
     }
 }

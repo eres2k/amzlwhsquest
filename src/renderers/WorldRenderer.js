@@ -164,28 +164,11 @@ export class WorldRenderer {
      * Render hazards
      */
     renderHazards(context, state) {
-        if (!state.activeIssues) return;
-
-        const camera = this.game.camera || { x: 0, y: 0 };
-
-        state.activeIssues.forEach(issue => {
-            if (issue.fixed) return;
-
-            const x = issue.x - camera.x;
-            const y = issue.y - camera.y;
-
-            // Hazard indicator
-            context.fillStyle = '#dc2626';
-            context.fillRect(x - 8, y - 8, 16, 16);
-            context.fillStyle = '#ef4444';
-            context.fillRect(x - 6, y - 6, 12, 12);
-
-            // Warning symbol
-            context.fillStyle = '#fef08a';
-            context.font = 'bold 12px monospace';
-            context.textAlign = 'center';
-            context.fillText('!', x, y + 4);
-        });
+        // Use centralized hazard system
+        if (this.game.hazards) {
+            const camera = this.game.camera || { x: 0, y: 0 };
+            this.game.hazards.render(context, camera);
+        }
     }
 
     /**

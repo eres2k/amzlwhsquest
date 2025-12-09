@@ -5,8 +5,8 @@ Incrementally refactor the monolithic AMZLWHSQUEST122.html (10,247 lines) into a
 
 ## 📊 Current Status
 
-**Modular Version Size:** 6,032 lines (59% of monolithic)
-**Completion:** ~30% (Core infrastructure + 4 major systems)
+**Modular Version Size:** 7,150 lines (70% of monolithic)
+**Completion:** ~40% (Core infrastructure + 5 major systems)
 
 ---
 
@@ -95,16 +95,47 @@ Incrementally refactor the monolithic AMZLWHSQUEST122.html (10,247 lines) into a
 - ✅ Removed local state from `PlayState` (now centralized)
 - ✅ Clean API: `game.floatingTexts.spawn()`, preset methods
 
+### 5. Hazard System ✅ COMPLETE
+**Status:** Extracted and integrated
+**Location:** `src/systems/HazardSystem.js` (1,118 lines)
+
+**Components:**
+- ✅ **Hazard Pool** - 90+ unique warehouse safety hazards
+- ✅ **Hazard Categories:**
+  - Powered Industrial Trucks (PITs) - 7 hazards
+  - Pack & Ship - 8 hazards
+  - Inbound & Receive - 7 hazards
+  - Problem Solve - 5 hazards
+  - Floor Hazards - 8 hazards
+  - Stow & Storage - 6 hazards
+  - Pick & Count - 5 hazards
+  - Equipment & Tools - 7 hazards
+  - Fire & Emergency - 5 hazards
+  - Ergonomic Hazards - 5 hazards
+  - People & Behavior - 6 hazards
+  - Outbound & Shipping - 6 hazards
+  - Compliance & Documentation - 6 hazards
+- ✅ **Sprite Generation** - 17 unique hazard type sprites
+- ✅ **Hazard Management** - Spawn, collision detection, fixing
+- ✅ **Random Selection** - Pick random hazards from pool
+
+**Integration:**
+- ✅ Imported into `Game.js`
+- ✅ Added to `AssetGenerator` for sprite generation
+- ✅ Connected to `PlayState` (removed local activeIssues array)
+- ✅ Integrated into `WorldRenderer` for rendering
+- ✅ Clean API: `game.hazards.spawn()`, `game.hazards.pickRandomHazards()`, collision detection
+
 ---
 
 ## 🔄 Next Steps
 
-### 5. Hazard System (NEXT)
-Port the complete hazard system:
-- 90+ unique hazards with sprites
-- Collision detection
-- Hazard spawning logic
-- Visual rendering
+### 6. NPC AI System (NEXT)
+Extract entity behaviors and AI:
+- Runner, Ops Manager, Associate behaviors
+- Pathfinding logic
+- State management
+- Animation control
 
 ---
 
@@ -138,7 +169,8 @@ src/
     ├── AudioSystem.js        ✅ Complete audio (TTS, SFX, Music)
     ├── ParticleSystem.js     ✅ 200-particle pool with physics
     ├── ScreenEffects.js      ✅ Shake, flash, vignette effects
-    └── FloatingTextSystem.js ✅ Floating text with presets
+    ├── FloatingTextSystem.js ✅ Floating text with presets
+    └── HazardSystem.js       ✅ 90+ hazards with sprite generation
 ```
 
 ---
@@ -152,16 +184,16 @@ The modular version now has:
 - ✅ Particle system (200-particle pool with physics)
 - ✅ Screen effects (shake, flash, vignette)
 - ✅ Floating text system (damage numbers, notifications)
+- ✅ Hazard system (90+ unique hazards with sprites)
 - ✅ Basic gameplay loop
 - ✅ State machine framework
 - ✅ Asset and map generation
 
 **Still Missing:**
-- ❌ Complete hazards (only basic spawns)
 - ❌ Boss mechanics
 - ❌ NPC AI
 - ❌ Gemini AI integration
-- ❌ Complete rendering
+- ❌ Complete state implementations
 
 ---
 
