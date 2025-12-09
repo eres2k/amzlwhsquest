@@ -1,0 +1,430 @@
+/**
+ * PlayState.js
+ * Main gameplay state - warehouse floor exploration
+ */
+
+import { State } from '../core/StateMachine.js';
+
+export class PlayState extends State {
+    constructor(game) {
+        super(game);
+        this.player = null;
+        this.entities = [];
+        this.projectiles = [];
+        this.issuesFixed = 0;
+        this.inputState = {};
+    }
+
+    onEnter(params) {
+        console.log('[PlayState] Entering play state');
+
+        // Initialize player
+        this.initializePlayer(params.character || 'Carrie');
+
+        // Generate map
+        this.generateMap();
+
+        // Spawn entities
+        this.spawnEntities();
+
+        // Setup input
+        this.setupInput();
+
+        // Start music
+        if (this.game.audio) {
+            this.game.audio.getMusic().play('ingame');
+        }
+    }
+
+    initializePlayer(characterName) {
+        const characterData = this.game.characters ? this.game.characters[characterName] : null;
+
+        this.player = {
+            x: 480,
+            y: 352,
+            vx: 0,
+            vy: 0,
+            speed: characterData?.speed || 1.5,
+            character: characterName,
+            dir: 0,
+            cooldown: 0,
+            maxCooldown: characterData?.attackCooldown || 120,
+            iframe: 0,
+            lives: characterData?.lives || 5,
+            invulnerable: false,
+            hitbox: { width: 14, height: 14 }
+        };
+    }
+
+    generateMap() {
+        if (this.game.mapGenerator) {
+            const mapData = this.game.mapGenerator.generate({
+                layout: 'warehouse',
+                difficulty: 'normal'
+            });
+
+            this.game.map = mapData.tiles;
+            this.game.conveyorBelts = mapData.conveyorBelts;
+            this.game.packages = mapData.packages;
+            this.game.palletStacks = mapData.palletStacks;
+            this.game.cartWorkers = mapData.cartWorkers;
+            this.game.clutter = mapData.clutter;
+
+            // Clear and spawn hazards using centralized system
+            if (this.game.hazards) {
+                this.game.hazards.clear();
+
+                // Spawn 5 random hazards
+                this.game.hazards.spawnMultiple(5, () => this.getRandomFloorTile());
+
+                // Spawn blocked exit hazard at door
+                const door = mapData.door;
+                if (door) {
+                    this.game.hazards.spawn(
+                        door.hazardX * this.game.tileSize,
+                        door.hazardY * this.game.tileSize,
+                        { name: "Blocked Exit", type: "box" }
+                    );
+                }
+            }
+        }
+    }
+
+    spawnEntities() {
+        // Spawn runner NPCs
+        for (let i = 0; i < 2; i++) {
+            this.spawnEntity('runner');
+        }
+
+        // Spawn ops managers
+        for (let i = 0; i < 8; i++) {
+            this.spawnEntity('ops');
+        }
+
+        // Spawn associates
+        for (let i = 0; i < 10; i++) {
+            this.spawnEntity('assoc');
+        }
+    }
+
+    spawnEntity(type) {
+        const pos = this.getRandomFloorTile();
+        this.entities.push({
+            type: type,
+            x: pos.x * this.game.tileSize,
+            y: pos.y * this.game.tileSize,
+            dir: 0,
+            timer: 0,
+            speed: type === 'runner' ? 1.0 : 0.5
+        });
+    }
+
+    getRandomFloorTile() {
+        if (this.game.mapGenerator) {
+            return this.game.mapGenerator.getRandomWalkableTile(this.game.map);
+        }
+
+        // Fallback
+        let x, y;
+        do {
+            x = Math.floor(Math.random() * 58) + 1;
+            y = Math.floor(Math.random() * 38) + 1;
+        } while (this.game.map[y][x] !== 0);
+
+        return { x, y };
+    }
+
+    setupInput() {
+        this.inputState = {
+            up: false,
+            down: false,
+            left: false,
+            right: false,
+            attack: false
+        };
+    }
+
+    onUpdate(deltaTime) {
+        super.onUpdate(deltaTime);
+
+        // Update player
+        this.updatePlayer(deltaTime);
+
+        // Update entities
+        this.updateEntities(deltaTime);
+
+        // Update projectiles
+        this.updateProjectiles(deltaTime);
+
+        // Update particles (via centralized system)
+        if (this.game.particles) {
+            this.game.particles.update(deltaTime);
+        }
+
+        // Note: Floating texts are updated in MainLoop via centralized system
+
+        // Check win condition
+        if (this.issuesFixed >= 5) {
+            this.changeState('BOSS_INTRO');
+        }
+    }
+
+    updatePlayer(deltaTime) {
+        const p = this.player;
+
+        // Update cooldown
+        if (p.cooldown > 0) p.cooldown--;
+
+        // Update iframe
+        if (p.iframe > 0) p.iframe--;
+
+        // Movement
+        let dx = 0, dy = 0;
+        if (this.inputState.left) dx -= 1;
+        if (this.inputState.right) dx += 1;
+        if (this.inputState.up) dy -= 1;
+        if (this.inputState.down) dy += 1;
+
+        // Normalize diagonal movement
+        if (dx !== 0 && dy !== 0) {
+            dx *= 0.707;
+            dy *= 0.707;
+        }
+
+        p.vx = dx * p.speed;
+        p.vy = dy * p.speed;
+
+        // Apply movement
+        const newX = p.x + p.vx;
+        const newY = p.y + p.vy;
+
+        // Collision detection
+        if (this.canMoveTo(newX, p.y)) {
+            p.x = newX;
+        }
+        if (this.canMoveTo(p.x, newY)) {
+            p.y = newY;
+        }
+
+        // Direction
+        if (dx !== 0 || dy !== 0) {
+            p.dir = Math.atan2(dy, dx);
+        }
+
+        // Attack
+        if (this.inputState.attack && p.cooldown <= 0) {
+            this.throwBook();
+            p.cooldown = p.maxCooldown;
+        }
+
+        // Collision with hazards
+        this.checkHazardCollisions();
+    }
+
+    canMoveTo(x, y) {
+        if (!this.game.map) return true;
+
+        const tx = Math.floor(x / this.game.tileSize);
+        const ty = Math.floor(y / this.game.tileSize);
+
+        if (ty < 0 || ty >= this.game.map.length) return false;
+        if (tx < 0 || tx >= this.game.map[0].length) return false;
+
+        const tile = this.game.map[ty][tx];
+        return tile === 0 || tile === 2; // Floor or conveyor
+    }
+
+    throwBook() {
+        const p = this.player;
+        const speed = 4.5;
+
+        this.projectiles.push({
+            x: p.x,
+            y: p.y,
+            vx: Math.cos(p.dir) * speed,
+            vy: Math.sin(p.dir) * speed,
+            character: p.character,
+            damage: 1,
+            active: true
+        });
+
+        // Play throw sound
+        if (this.game.audio) {
+            this.game.audio.getSFX().throw();
+        }
+    }
+
+    checkHazardCollisions() {
+        if (this.player.iframe > 0) return;
+        if (!this.game.hazards) return;
+
+        const p = this.player;
+        const hazard = this.game.hazards.checkPlayerCollision(p, 16);
+
+        if (hazard) {
+            // Can fix with space
+            if (this.inputState.attack) {
+                this.game.hazards.fixHazard(hazard);
+                this.issuesFixed++;
+                this.spawnParticleBurst(hazard.x, hazard.y, ['#22c55e', '#10b981', '#34d399']);
+                this.spawnFloatingText(hazard.x, hazard.y, 'FIXED!', '#22c55e');
+
+                // Play fix sound
+                if (this.game.audio) {
+                    this.game.audio.getSFX().fix();
+                }
+
+                // Screen flash on fix
+                if (this.game.effects) {
+                    this.game.effects.setFlash(5);
+                }
+            }
+        }
+    }
+
+    updateEntities(deltaTime) {
+        this.entities.forEach(entity => {
+            entity.timer += deltaTime;
+
+            // Simple AI - random movement
+            if (entity.timer > 2000) {
+                entity.dir = Math.random() * Math.PI * 2;
+                entity.timer = 0;
+            }
+
+            const dx = Math.cos(entity.dir) * entity.speed * 0.5;
+            const dy = Math.sin(entity.dir) * entity.speed * 0.5;
+
+            if (this.canMoveTo(entity.x + dx, entity.y + dy)) {
+                entity.x += dx;
+                entity.y += dy;
+            } else {
+                entity.dir = Math.random() * Math.PI * 2;
+            }
+        });
+    }
+
+    updateProjectiles(deltaTime) {
+        this.projectiles = this.projectiles.filter(proj => {
+            if (!proj.active) return false;
+
+            proj.x += proj.vx;
+            proj.y += proj.vy;
+
+            // Check bounds
+            if (proj.x < 0 || proj.x > 960 || proj.y < 0 || proj.y > 640) {
+                return false;
+            }
+
+            // Check wall collision
+            if (!this.canMoveTo(proj.x, proj.y)) {
+                this.spawnParticleBurst(proj.x, proj.y, ['#ffffff']);
+                return false;
+            }
+
+            return true;
+        });
+    }
+
+    spawnParticleBurst(x, y, colors, count = 10) {
+        if (this.game.particles) {
+            this.game.particles.burst(x, y, colors, count);
+        }
+    }
+
+    spawnFloatingText(x, y, text, color) {
+        if (this.game.floatingTexts) {
+            this.game.floatingTexts.spawn(x, y, text, color);
+        }
+    }
+
+    onRender(context) {
+        // Rendering is handled by renderer classes
+        // This is called by the renderer system
+    }
+
+    onInput(event) {
+        if (event.type === 'keydown') {
+            this.handleKeyDown(event.key);
+        } else if (event.type === 'keyup') {
+            this.handleKeyUp(event.key);
+        }
+    }
+
+    handleKeyDown(key) {
+        switch(key.toLowerCase()) {
+            case 'w':
+            case 'arrowup':
+                this.inputState.up = true;
+                break;
+            case 's':
+            case 'arrowdown':
+                this.inputState.down = true;
+                break;
+            case 'a':
+            case 'arrowleft':
+                this.inputState.left = true;
+                break;
+            case 'd':
+            case 'arrowright':
+                this.inputState.right = true;
+                break;
+            case ' ':
+                this.inputState.attack = true;
+                break;
+            case 'escape':
+                this.pushState('PAUSE');
+                break;
+        }
+    }
+
+    handleKeyUp(key) {
+        switch(key.toLowerCase()) {
+            case 'w':
+            case 'arrowup':
+                this.inputState.up = false;
+                break;
+            case 's':
+            case 'arrowdown':
+                this.inputState.down = false;
+                break;
+            case 'a':
+            case 'arrowleft':
+                this.inputState.left = false;
+                break;
+            case 'd':
+            case 'arrowright':
+                this.inputState.right = false;
+                break;
+            case ' ':
+                this.inputState.attack = false;
+                break;
+        }
+    }
+
+    onExit() {
+        console.log('[PlayState] Exiting play state');
+
+        // Clear particles when leaving play state
+        if (this.game.particles) {
+            this.game.particles.clear();
+        }
+
+        // Clear screen effects
+        if (this.game.effects) {
+            this.game.effects.clear();
+        }
+
+        // Clear floating texts
+        if (this.game.floatingTexts) {
+            this.game.floatingTexts.clear();
+        }
+
+        // Clear hazards
+        if (this.game.hazards) {
+            this.game.hazards.clear();
+        }
+    }
+}
+
+export default PlayState;
