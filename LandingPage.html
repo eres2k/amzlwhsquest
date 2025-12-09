@@ -320,6 +320,44 @@
         @keyframes shine { 0% { left: -100%; } 20% { left: 100%; } 100% { left: 100%; } }
         @keyframes blink { 50% { opacity: 0; } }
         @keyframes pulse { 0% { box-shadow: 0 0 30px rgba(255, 153, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.3); } 50% { box-shadow: 0 0 40px rgba(255, 153, 0, 0.7), 0 0 0 10px rgba(255, 153, 0, 0.1), inset 0 0 20px rgba(0, 0, 0, 0.3); } 100% { box-shadow: 0 0 30px rgba(255, 153, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.3); } }
+
+        /* Beta/Modular button styles */
+        .play-btn-small {
+            background: linear-gradient(135deg, #0891b2 0%, #0369a1 50%, #075985 100%);
+            color: white;
+            font-family: 'Press Start 2P';
+            font-size: 0.9rem;
+            padding: 15px 30px;
+            text-decoration: none;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 6px;
+            box-shadow: 0 0 20px rgba(34, 211, 238, 0.4), inset 0 0 15px rgba(0, 0, 0, 0.3);
+            display: inline-block;
+            cursor: pointer;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px;
+        }
+        .play-btn-small:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.6), inset 0 0 15px rgba(0, 0, 0, 0.3);
+            border-color: #fff;
+        }
+        .beta-badge {
+            display: inline-block;
+            background: #facc15;
+            color: #0a0a0a;
+            font-size: 0.5rem;
+            padding: 3px 8px;
+            border-radius: 3px;
+            margin-left: 8px;
+            font-weight: bold;
+            vertical-align: middle;
+            box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+        }
     </style>
 </head>
 <body class="crt-turn-on">
@@ -337,8 +375,9 @@
     </div>
 
     <div style="text-align: center; margin: 60px 0;">
-        <a href="index-modular.html" class="play-btn">▶ START SHIFT (NEW MODULAR)</a>
-        <a href="AMZLWHSQUEST122.html.bak" class="play-btn" style="opacity: 0.6;">▶ CLASSIC VERSION</a>
+        <a href="AMZLWHSQUEST122.html" class="play-btn">▶ START SHIFT</a>
+        <br>
+        <a href="index-modular.html" class="play-btn-small">▶ MODULAR VERSION <span class="beta-badge">BETA</span></a>
         <p style="color: #aaa; font-size: 0.8rem; margin-top: 15px;">(INPUT: KEYBOARD | REWARD: PIZZA PARTY)</p>
     </div>
 
