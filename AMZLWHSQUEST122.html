@@ -3386,7 +3386,13 @@ window.addEventListener('keyup', e => {
 });
 
 function handleAction() {
-    AudioSys.init(); AudioSys.resume(); MusicSys.init(); MusicSys.resume(); updateMusicForState();
+    AudioSys.init(); AudioSys.resume(); MusicSys.init(); MusicSys.resume();
+    // Force intro music to start on first user interaction (bypass autoplay restrictions)
+    if (GAME.state === 'LOGO') {
+        MusicSys.stop(); // Clear any failed attempts
+        MusicSys.currentName = null; // Force fresh start
+    }
+    updateMusicForState();
     if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') return;
     if (GAME.state === 'LOGO') { return; } // Let intro music play, will auto-advance after timer
     else if (['INTRO', 'STORY'].includes(GAME.state)) { AudioSys.sfx.start(); advanceState(); }
@@ -6207,10 +6213,15 @@ function updateMusicForState() {
     else if (GAME.state === 'BEZOS_ESCAPE') track = 'victory';
     // Game Over Symphony - for both Credits Scenes
     else if (GAME.state === 'CREDITS') track = 'credits';
-    // WIN_SPLASH - don't change music (handled elsewhere or continue current)
+    // WIN_SPLASH - don't change music (handled in winGame function)
     else if (GAME.state === 'WIN_SPLASH' || GAME.state === 'GAMEOVER_SPLASH') return;
-    // LOSE_SPLASH - play game over music
-    else if (GAME.state === 'LOSE_SPLASH') track = 'menu';
+    // LOSE_SPLASH - play game over music (Game Over But Not Really track)
+    else if (GAME.state === 'LOSE_SPLASH') {
+        track = 'menu';
+        // Force music change even if currently playing
+        MusicSys.stop();
+        MusicSys.currentName = null;
+    }
 
     MusicSys.play(track, rate);
 }
@@ -7177,14 +7188,23 @@ function drawMechaBattle() {
     // Floating texts with fade out and shrink effect
     GAME.floatingTexts.forEach(t => {
         const lifePercent = t.life / GAME_CONSTANTS.FLOATING_TEXT_LIFE;
-        const alpha = Math.min(1, lifePercent); // Fade based on remaining life
-        const scale = 0.5 + (lifePercent * 0.5); // Shrink from 100% to 50% size
-        const fontSize = Math.floor(6 * scale);
+
+        // Fade out slowly in the last 30% of life
+        let alpha = 1.0;
+        if (lifePercent < 0.3) {
+            alpha = lifePercent / 0.3; // Smooth fade out
+        }
+
+        // Shrink gradually from 100% to 70% size over entire lifetime
+        const scale = 0.7 + (lifePercent * 0.3);
+        const baseFontSize = 6;
+        const fontSize = Math.max(4, Math.floor(baseFontSize * scale));
 
         ctx.save();
-        ctx.globalAlpha = alpha;
+        ctx.globalAlpha = Math.max(0.1, Math.min(1, alpha)); // Keep minimum visibility
         ctx.fillStyle = t.color;
         ctx.font = `${fontSize}px "Press Start 2P"`;
+        ctx.textAlign = 'center';
         ctx.fillText(t.text, t.x, t.y);
         ctx.restore();
     });
