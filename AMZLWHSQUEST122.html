@@ -3195,12 +3195,12 @@ const GAME = {
     yardPedestrians: [], // NPC pedestrians in yard
 
     bossTypes: [
-        { name: "Labour Inspector", sprite: "boss_inspector", hp: 10, speed: 1.2, attackDelay: 50, title: "The Enforcer", desc: "Checks every corner.", attackName: "Violation Notice", attackPattern: "sweep" },
-        { name: "Compliance Auditor", sprite: "boss_compliance", hp: 12, speed: 0.8, attackDelay: 70, title: "The Watcher", desc: "Nothing escapes.", attackName: "Audit Cascade", attackPattern: "tracking" },
-        { name: "Sebastian Sprigade", sprite: "boss_sebastian", hp: 15, speed: 1.0, attackDelay: 60, title: "Delivery Station Mgr", desc: "Obsessed with TPH.", attackName: "TPH Overload", attackPattern: "burst" },
-        { name: "Regional OPS MGR", sprite: "boss_regional", hp: 14, speed: 0.6, attackDelay: 90, title: "The Executive", desc: "Metrics first.", attackName: "KPI Crusher", attackPattern: "orbital" },
-        { name: "Avetta Platform", sprite: "boss_avetta", hp: 18, speed: 0.4, attackDelay: 100, title: "Risk Manager", desc: "Judges all.", attackName: "Risk Assessment Beam", attackPattern: "laser" },
-        { name: "Jelena \"Jelly\"", sprite: "boss_jelly", hp: 13, speed: 0.9, attackDelay: 65, title: "HR Guardian", desc: "HR legend who never forgets a policy.", attackName: "Write-Up Wave", attackPattern: "wave" }
+        { name: "Labour Inspector", sprite: "boss_inspector", hp: 25, speed: 1.2, attackDelay: 50, title: "The Enforcer", desc: "Checks every corner.", attackName: "Violation Notice", attackPattern: "sweep" },
+        { name: "Compliance Auditor", sprite: "boss_compliance", hp: 30, speed: 0.8, attackDelay: 70, title: "The Watcher", desc: "Nothing escapes.", attackName: "Audit Cascade", attackPattern: "tracking" },
+        { name: "Sebastian Sprigade", sprite: "boss_sebastian", hp: 35, speed: 1.0, attackDelay: 60, title: "Delivery Station Mgr", desc: "Obsessed with TPH.", attackName: "TPH Overload", attackPattern: "burst" },
+        { name: "Regional OPS MGR", sprite: "boss_regional", hp: 32, speed: 0.6, attackDelay: 90, title: "The Executive", desc: "Metrics first.", attackName: "KPI Crusher", attackPattern: "orbital" },
+        { name: "Avetta Platform", sprite: "boss_avetta", hp: 40, speed: 0.4, attackDelay: 100, title: "Risk Manager", desc: "Judges all.", attackName: "Risk Assessment Beam", attackPattern: "laser" },
+        { name: "Jelena \"Jelly\"", sprite: "boss_jelly", hp: 28, speed: 0.9, attackDelay: 65, title: "HR Guardian", desc: "HR legend who never forgets a policy.", attackName: "Write-Up Wave", attackPattern: "wave" }
     ]
 };
 
@@ -3641,11 +3641,11 @@ function initSimonBoss() {
     GAME.state = 'BOSS_INTRO';
     AudioSys.sfx.bossIntro();
     GAME.boss = {
-        name: "MEGA SIMON", sprite: "simonBoss", hp: 25, speed: 1.3, attackDelay: 30,
+        name: "MEGA SIMON", sprite: "simonBoss", hp: 50, speed: 1.3, attackDelay: 30,
         title: "THE WHS FINAL BOSS", desc: "He is not impressed.", attackName: "SAFETY VIOLATION STORM", attackPattern: "storm",
-        tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25], maxHp: 25,
+        tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25], maxHp: 50,
         x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, timer: 0,
-        transformTriggered: false, isMecha: false
+        transformTriggered: false, isMecha: false, lowHealthAttackTriggered: false
     };
     GAME.entities = []; GAME.projectiles = [];
     updateMusicForState();
@@ -3776,7 +3776,7 @@ function initBossEncounter() {
     GAME.nextState = 'BOSS';
     AudioSys.sfx.bossIntro();
     const bossData = GAME.bossTypes[Math.floor(Math.random() * GAME.bossTypes.length)];
-    GAME.boss = { ...bossData, x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, w: 32, h: 32, maxHp: bossData.hp, timer: 0, tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25] };
+    GAME.boss = { ...bossData, x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, w: 32, h: 32, maxHp: bossData.hp, timer: 0, tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25], lowHealthAttackTriggered: false };
     GAME.entities = []; GAME.projectiles = [];
     document.getElementById('boss-name-el').innerText = GAME.boss.name;
     document.getElementById('boss-hud').style.display = 'block';
@@ -5327,6 +5327,128 @@ function updateBoss() {
             }
         });
     }
+
+    // ⚠️ DESPERATION PHASE - SPECIAL LOW-HEALTH ATTACK (triggers once at 40% HP) ⚠️
+    if (!b.lowHealthAttackTriggered && hpPct <= 0.4 && !b.isMecha) {
+        b.lowHealthAttackTriggered = true;
+        const baseAngle = Math.atan2(p.y - b.y, p.x - b.x);
+
+        // MASSIVE visual feedback - boss is desperate!
+        GAME.shake = 25;
+        GAME.flash = 15;
+        spawnFloatingText(b.x + 16, b.y - 25, "*** DESPERATION! ***", "#ff0000");
+        spawnParticleBurst(b.x + 16, b.y + 16, ['#ff0000', '#ff4444', '#ff9900', '#ffff00'], 40);
+
+        // Multiple alert sounds for emphasis
+        AudioSys.sfx.alert();
+        setTimeout(() => AudioSys.sfx.alert(), 100);
+        setTimeout(() => AudioSys.sfx.alert(), 200);
+
+        if (b.attackPattern === 'sweep') {
+            // Labour Inspector - "EMERGENCY FULL INSPECTION" - MASSIVE 15-way sweep covering entire screen
+            spawnFloatingText(b.x + 16, b.y - 10, "EMERGENCY INSPECTION!", "#ff0000");
+            spawnParticleBurst(b.x + 16, b.y + 16, ['#fbbf24', '#ff9900'], 30);
+            for (let i = -7; i <= 7; i++) {
+                let angle = baseAngle + (i * 0.22);
+                setTimeout(() => {
+                    if (GAME.state === 'BOSS' && GAME.boss) {
+                        GAME.projectiles.push({ type: 'req', x: b.x + 16, y: b.y + 16, vx: Math.cos(angle)*4.0, vy: Math.sin(angle)*4.0, life: 140, boss: true, grace: 18 });
+                    }
+                }, Math.abs(i) * 30);
+            }
+        }
+        else if (b.attackPattern === 'tracking') {
+            // Compliance Auditor - "TOTAL LOCKDOWN" - 12 homing projectiles in all directions
+            spawnFloatingText(b.x + 16, b.y - 10, "TOTAL SURVEILLANCE!", "#ff0000");
+            spawnParticleBurst(b.x + 16, b.y + 16, ['#22d3ee', '#0ea5e9'], 35);
+            for (let i = 0; i < 12; i++) {
+                let angle = (i / 12) * Math.PI * 2;
+                setTimeout(() => {
+                    if (GAME.state === 'BOSS' && GAME.boss) {
+                        GAME.projectiles.push({ type: 'req', x: b.x + 16, y: b.y + 16, vx: Math.cos(angle)*2.5, vy: Math.sin(angle)*2.5, life: 200, boss: true, grace: 20, tracking: true });
+                    }
+                }, i * 40);
+            }
+        }
+        else if (b.attackPattern === 'burst') {
+            // Sebastian - "MAXIMUM TPH OVERLOAD" - insane 15-shot ultra-rapid burst!
+            spawnFloatingText(b.x + 16, b.y - 10, "TPH MELTDOWN!", "#ff0000");
+            spawnFloatingText(b.x + 16, b.y + 5, "MAXIMUM THROUGHPUT!", "#ff9900");
+            spawnParticleBurst(b.x + 16, b.y + 16, ['#ff4444', '#ff9900'], 40);
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    if (GAME.state === 'BOSS' && GAME.boss) {
+                        let angle = Math.atan2(GAME.player.y - b.y, GAME.player.x - b.x) + (Math.random() - 0.5) * 0.6;
+                        GAME.projectiles.push({ type: 'req', x: b.x + 16, y: b.y + 16, vx: Math.cos(angle)*5.0, vy: Math.sin(angle)*5.0, life: 100, boss: true, grace: 10 });
+                        spawnParticle(b.x + 16, b.y + 16, '#ff0000', -2);
+                        AudioSys.sfx.alert();
+                    }
+                }, i * 35);
+            }
+        }
+        else if (b.attackPattern === 'orbital') {
+            // Regional OPS MGR - "FULL AUDIT STORM" - TRIPLE orbital rings (30 total projectiles!)
+            spawnFloatingText(b.x + 16, b.y - 10, "EXECUTIVE ORDER!", "#ff0000");
+            spawnFloatingText(b.x + 16, b.y + 5, "TRIPLE AUDIT!", "#fbbf24");
+            spawnParticleBurst(b.x + 16, b.y + 16, ['#eab308', '#fbbf24', '#ff9900'], 50);
+            for (let i = 0; i < 10; i++) {
+                let angle = (i / 10) * Math.PI * 2;
+                // Inner ring
+                GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*12, y: b.y + 16 + Math.sin(angle)*12, vx: Math.cos(angle + 0.4)*2.8, vy: Math.sin(angle + 0.4)*2.8, life: 120, boss: true, grace: 15 });
+                // Middle ring
+                GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*24, y: b.y + 16 + Math.sin(angle)*24, vx: Math.cos(angle)*2.2, vy: Math.sin(angle)*2.2, life: 130, boss: true, grace: 15 });
+                // Outer ring
+                GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*36, y: b.y + 16 + Math.sin(angle)*36, vx: Math.cos(angle - 0.4)*1.8, vy: Math.sin(angle - 0.4)*1.8, life: 140, boss: true, grace: 15 });
+            }
+        }
+        else if (b.attackPattern === 'laser') {
+            // Avetta Platform - "CRITICAL RISK MATRIX" - asterisk pattern (8 directions × 2 waves)
+            spawnFloatingText(b.x + 16, b.y - 10, "CRITICAL RISK!", "#ff0000");
+            spawnFloatingText(b.x + 16, b.y + 5, "FULL SCAN ACTIVE!", "#dc2626");
+            spawnParticleBurst(b.x + 16, b.y + 16, ['#dc2626', '#ff0000', '#ff4444'], 45);
+            for (let wave = 0; wave < 2; wave++) {
+                for (let i = 0; i < 8; i++) {
+                    let angle = (i / 8) * Math.PI * 2;
+                    setTimeout(() => {
+                        if (GAME.state === 'BOSS' && GAME.boss) {
+                            GAME.projectiles.push({ type: 'req', x: b.x + 16, y: b.y + 16, vx: Math.cos(angle)*6.0, vy: Math.sin(angle)*6.0, life: 90, boss: true, grace: 6 });
+                            AudioSys.sfx.alert();
+                        }
+                    }, (wave * 400) + (i * 40));
+                }
+            }
+        }
+        else if (b.attackPattern === 'wave') {
+            // Jelena HR - "TERMINATION NOTICE" - massive 9-wave tsunami
+            spawnFloatingText(b.x + 16, b.y - 10, "FINAL WARNING!", "#ff0000");
+            spawnFloatingText(b.x + 16, b.y + 5, "POLICY TSUNAMI!", "#a855f7");
+            spawnParticleBurst(b.x + 16, b.y + 16, ['#a855f7', '#c084fc', '#e9d5ff'], 40);
+            for (let i = -4; i <= 4; i++) {
+                let angle = baseAngle + (i * 0.18);
+                let proj = { type: 'req', x: b.x + 16, y: b.y + 16, vx: Math.cos(angle)*3.5, vy: Math.sin(angle)*3.5, life: 160, boss: true, grace: 18, wave: true, waveTime: i * 10, waveAmplitude: 1.5, baseAngle: angle };
+                GAME.projectiles.push(proj);
+            }
+        }
+        else if (b.attackPattern === 'storm') {
+            // MEGA SIMON - "TOTAL COMPLIANCE FAILURE" - absolute chaos (20 projectiles!)
+            spawnFloatingText(b.x + 16, b.y - 10, "AUDIT APOCALYPSE!", "#ff0000");
+            spawnFloatingText(b.x + 16, b.y + 5, "COMPLIANCE FAILURE!", "#ff9900");
+            spawnParticleBurst(b.x + 16, b.y + 16, ['#ff0000', '#ff9900', '#ffff00', '#ff4444'], 60);
+            for (let i = 0; i < 20; i++) {
+                let angle = (Math.random() * Math.PI * 2);
+                let speed = 2.0 + Math.random() * 3.0;
+                let scatter = (Math.random() - 0.5) * 40;
+                let delay = Math.random() * 150;
+                setTimeout(() => {
+                    if (GAME.state === 'BOSS' && GAME.boss) {
+                        GAME.projectiles.push({ type: 'req', x: b.x + 16 + scatter, y: b.y + 16 + scatter, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed, life: 150, boss: true, grace: 15 });
+                        spawnParticle(b.x + 16, b.y + 16, '#ff0000', -2);
+                    }
+                }, delay);
+            }
+        }
+    }
+
     if (isNaN(b.x) || isNaN(b.y)) return;
     let dx = 0, dy = 0; let dist = Math.hypot(p.x - b.x, p.y - b.y);
     if (dist > 50) {
@@ -5348,62 +5470,110 @@ function updateBoss() {
         }
         // Unique attack patterns based on boss personality
         else if (b.attackPattern === 'sweep') {
-            // Labour Inspector - Wide sweeping violation notices (5 projectiles in arc)
-            for (let i = -2; i <= 2; i++) {
-                let angle = baseAngle + (i * 0.4);
-                GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*10, y: b.y + 16 + Math.sin(angle)*10, vx: Math.cos(angle)*2.8, vy: Math.sin(angle)*2.8, life: 100, boss: true, grace: 10 });
+            // Labour Inspector - "INSPECTION LINE" - horizontal sweeping line (11 projectiles in wide arc)
+            // VISUAL: Wide horizontal sweep like checking every corner
+            GAME.shake = 8; // More visual feedback
+            spawnParticleBurst(b.x + 16, b.y + 16, ['#fbbf24', '#ff9900'], 12);
+            for (let i = -5; i <= 5; i++) {
+                let angle = baseAngle + (i * 0.25); // Wider spread
+                let offset = Math.abs(i) * 3; // Slight stagger
+                setTimeout(() => {
+                    if (GAME.state === 'BOSS' && GAME.boss) {
+                        GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*offset, y: b.y + 16 + Math.sin(angle)*offset, vx: Math.cos(angle)*3.2, vy: Math.sin(angle)*3.2, life: 120, boss: true, grace: 10 });
+                    }
+                }, Math.abs(i) * 15); // Sweep from center out
             }
         }
         else if (b.attackPattern === 'tracking') {
-            // Compliance Auditor - 3 slow tracking shots that follow longer
-            for (let i = -1; i <= 1; i++) {
-                let angle = baseAngle + (i * 0.2);
-                GAME.projectiles.push({ type: 'req', x: b.x + 16, y: b.y + 16, vx: Math.cos(angle)*1.8, vy: Math.sin(angle)*1.8, life: 150, boss: true, grace: 10 });
+            // Compliance Auditor - "AUDIT GRID" - 6 slow homing projectiles
+            // VISUAL: Grid pattern that slowly homes in on player
+            GAME.shake = 6;
+            spawnParticleBurst(b.x + 16, b.y + 16, ['#22d3ee', '#0ea5e9'], 15);
+            for (let row = -1; row <= 1; row++) {
+                for (let col = -1; col <= 1; col += 2) {
+                    if (row === 0 && col === -1) continue; // Skip center-left for pattern
+                    let angle = baseAngle + (col * 0.3) + (row * 0.25);
+                    GAME.projectiles.push({ type: 'req', x: b.x + 16, y: b.y + 16, vx: Math.cos(angle)*1.4, vy: Math.sin(angle)*1.4, life: 200, boss: true, grace: 15, tracking: true });
+                }
             }
         }
         else if (b.attackPattern === 'burst') {
-            // Sebastian - Rapid burst fire (TPH obsessed, high volume)
-            for (let i = 0; i < 4; i++) {
+            // Sebastian - "TPH BARRAGE" - 10-shot rapid machine gun burst!
+            // VISUAL: Relentless rapid-fire, overwhelming volume
+            GAME.shake = 10;
+            spawnFloatingText(b.x + 16, b.y - 15, "TPH RUSH!", "#ff4444");
+            for (let i = 0; i < 10; i++) {
                 setTimeout(() => {
                     if (GAME.state === 'BOSS' && GAME.boss) {
-                        let angle = Math.atan2(GAME.player.y - b.y, GAME.player.x - b.x) + (Math.random() - 0.5) * 0.3;
-                        GAME.projectiles.push({ type: 'req', x: b.x + 16, y: b.y + 16, vx: Math.cos(angle)*3.2, vy: Math.sin(angle)*3.2, life: 80, boss: true, grace: 10 });
+                        let angle = Math.atan2(GAME.player.y - b.y, GAME.player.x - b.x) + (Math.random() - 0.5) * 0.5;
+                        let speed = 3.5 + (i * 0.15); // Accelerates with each shot
+                        GAME.projectiles.push({ type: 'req', x: b.x + 16, y: b.y + 16, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed, life: 90, boss: true, grace: 7 });
+                        spawnParticle(b.x + 16, b.y + 16, '#ff9900', -1);
+                        if (i % 2 === 0) AudioSys.sfx.alert();
                     }
-                }, i * 80);
+                }, i * 50); // Faster burst
             }
         }
         else if (b.attackPattern === 'orbital') {
-            // Regional OPS MGR - Orbital ring of KPIs (circle of projectiles)
+            // Regional OPS MGR - "METRIC RINGS" - dual counter-rotating orbital rings (16 total projectiles!)
+            // VISUAL: Two rings rotating in opposite directions - impossible to dodge without precision
+            GAME.shake = 12;
+            spawnParticleBurst(b.x + 16, b.y + 16, ['#eab308', '#fbbf24'], 20);
             for (let i = 0; i < 8; i++) {
                 let angle = (i / 8) * Math.PI * 2;
-                GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*20, y: b.y + 16 + Math.sin(angle)*20, vx: Math.cos(angle)*2.2, vy: Math.sin(angle)*2.2, life: 90, boss: true, grace: 10 });
+                // Inner ring - clockwise
+                GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*18, y: b.y + 16 + Math.sin(angle)*18, vx: Math.cos(angle + 0.3)*2.2, vy: Math.sin(angle + 0.3)*2.2, life: 110, boss: true, grace: 10 });
+                // Outer ring - counter-clockwise
+                GAME.projectiles.push({ type: 'req', x: b.x + 16 + Math.cos(angle)*30, y: b.y + 16 + Math.sin(angle)*30, vx: Math.cos(angle - 0.3)*1.8, vy: Math.sin(angle - 0.3)*1.8, life: 120, boss: true, grace: 10 });
             }
         }
         else if (b.attackPattern === 'laser') {
-            // Avetta AI - Precise laser beam (fast narrow line)
-            for (let i = 0; i < 3; i++) {
+            // Avetta Platform - "RISK CROSS" - + shaped cross laser pattern (5 beams in cardinal + center)
+            // VISUAL: Cross/plus pattern of fast laser beams
+            GAME.shake = 14;
+            spawnFloatingText(b.x + 16, b.y - 15, "RISK SCAN!", "#dc2626");
+            spawnParticleBurst(b.x + 16, b.y + 16, ['#dc2626', '#ff0000'], 25);
+            // Fire cross pattern in sequence
+            const crossAngles = [0, Math.PI/2, Math.PI, Math.PI*1.5, baseAngle]; // 4 cardinal + aimed center
+            for (let i = 0; i < crossAngles.length; i++) {
                 setTimeout(() => {
                     if (GAME.state === 'BOSS' && GAME.boss) {
-                        let angle = Math.atan2(GAME.player.y - b.y, GAME.player.x - b.x);
-                        GAME.projectiles.push({ type: 'req', x: b.x + 16, y: b.y + 16, vx: Math.cos(angle)*4.5, vy: Math.sin(angle)*4.5, life: 60, boss: true, grace: 5 });
+                        let angle = crossAngles[i];
+                        GAME.projectiles.push({ type: 'req', x: b.x + 16, y: b.y + 16, vx: Math.cos(angle)*5.5, vy: Math.sin(angle)*5.5, life: 75, boss: true, grace: 5 });
+                        GAME.projectiles.push({ type: 'req', x: b.x + 16, y: b.y + 16, vx: Math.cos(angle)*6.5, vy: Math.sin(angle)*6.5, life: 65, boss: true, grace: 4 });
+                        AudioSys.sfx.alert();
                     }
-                }, i * 100);
+                }, i * 60);
             }
         }
         else if (b.attackPattern === 'wave') {
-            // Jelena HR - Wave pattern (sinusoidal write-ups)
-            for (let i = -1; i <= 1; i++) {
-                let angle = baseAngle + (i * 0.3);
-                let proj = { type: 'req', x: b.x + 16, y: b.y + 16, vx: Math.cos(angle)*2.5, vy: Math.sin(angle)*2.5, life: 120, boss: true, grace: 10, wave: true, waveTime: i * 20, baseAngle: angle };
+            // Jelena "Jelly" HR - "POLICY CASCADE" - 7-wave cascading sinusoidal attack
+            // VISUAL: Multiple waves that undulate visibly
+            GAME.shake = 7;
+            spawnParticleBurst(b.x + 16, b.y + 16, ['#a855f7', '#c084fc'], 18);
+            for (let i = -3; i <= 3; i++) {
+                let angle = baseAngle + (i * 0.22);
+                let proj = { type: 'req', x: b.x + 16, y: b.y + 16, vx: Math.cos(angle)*2.8, vy: Math.sin(angle)*2.8, life: 150, boss: true, grace: 12, wave: true, waveTime: i * 12, waveAmplitude: 1.2, baseAngle: angle };
                 GAME.projectiles.push(proj);
             }
         }
         else if (b.attackPattern === 'storm') {
-            // MEGA SIMON - Storm of safety violations (chaotic spread)
-            for (let i = 0; i < 6; i++) {
-                let angle = baseAngle + (Math.random() - 0.5) * 1.2;
-                let speed = 2.0 + Math.random() * 1.5;
-                GAME.projectiles.push({ type: 'req', x: b.x + 16 + (Math.random()-0.5)*20, y: b.y + 16 + (Math.random()-0.5)*20, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed, life: 100, boss: true, grace: 10 });
+            // MEGA SIMON - "CHAOS VORTEX" - complete 360° chaotic storm (14 projectiles)
+            // VISUAL: Absolute chaos, projectiles everywhere at varying speeds
+            GAME.shake = 15;
+            GAME.flash = 5;
+            spawnFloatingText(b.x + 16, b.y - 15, "VIOLATION STORM!", "#ff0000");
+            spawnParticleBurst(b.x + 16, b.y + 16, ['#ff0000', '#ff9900', '#ffff00'], 30);
+            for (let i = 0; i < 14; i++) {
+                let angle = (Math.random() * Math.PI * 2); // Completely random directions
+                let speed = 1.8 + Math.random() * 2.5; // Wildly varying speeds
+                let scatter = (Math.random() - 0.5) * 35;
+                let delay = Math.random() * 100;
+                setTimeout(() => {
+                    if (GAME.state === 'BOSS' && GAME.boss) {
+                        GAME.projectiles.push({ type: 'req', x: b.x + 16 + scatter, y: b.y + 16 + scatter, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed, life: 130, boss: true, grace: 10 });
+                    }
+                }, delay);
             }
         }
         else {
