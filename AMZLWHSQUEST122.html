@@ -3386,9 +3386,15 @@ window.addEventListener('keyup', e => {
 });
 
 function handleAction() {
-    AudioSys.init(); AudioSys.resume(); MusicSys.init(); MusicSys.resume(); updateMusicForState();
+    AudioSys.init(); AudioSys.resume(); MusicSys.init(); MusicSys.resume();
+    // Force intro music to start on first user interaction (bypass autoplay restrictions)
+    if (GAME.state === 'LOGO') {
+        MusicSys.stop(); // Clear any failed attempts
+        MusicSys.currentName = null; // Force fresh start
+    }
+    updateMusicForState();
     if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') return;
-    if (GAME.state === 'LOGO') { advanceState(); }
+    if (GAME.state === 'LOGO') { return; } // Let intro music play, will auto-advance after timer
     else if (['INTRO', 'STORY'].includes(GAME.state)) { AudioSys.sfx.start(); advanceState(); }
     else if (['TITLE', 'HOWTO'].includes(GAME.state)) {
         GAME.state = (GAME.state==='TITLE')?'HOWTO':'SELECT'; AudioSys.sfx.select(); updateMusicForState();
@@ -3475,7 +3481,8 @@ function init() {
 
     generateAssets();
     GAME.state = 'LOGO';
-    updateMusicForState();
+    // DON'T call updateMusicForState() here - it will fail due to autoplay policy
+    // Music will start on first user interaction in handleAction()
     requestAnimationFrame(loop);
 }
 
@@ -4273,6 +4280,8 @@ function updateMechaBezos() {
             GAME.shake = 5;
             GAME.projectiles.splice(i, 1);
             spawnParticle(proj.x, proj.y, '#ff9900', 5);
+            // Damage number above boss head
+            spawnFloatingText(b.x + 24, b.y - 10, '-1', '#ffffff');
 
             if (b.hp <= 0) {
                 winBezosLevel();
@@ -5167,6 +5176,8 @@ function updateMechaBattle() {
             GAME.projectiles.splice(i, 1);
             AudioSys.sfx.bossHit();
             spawnFloatingText(m.x + 32, m.y + 12, 'HIT!', '#ff2e63');
+            // Damage number above boss head
+            spawnFloatingText(m.x + 32, m.y - 10, '-1', '#ffffff');
 
             // Spawn hit particles
             for (let j = 0; j < 4; j++) {
@@ -5652,6 +5663,8 @@ function updateProjectiles() {
                     GAME.boss.hp -= dmg; updateBossHud(); AudioSys.sfx.bossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, attackMeta.color || '#ff0000', -2); GAME.projectiles.splice(i,1);
                     const dmgText = dmg > 1 ? `${attackMeta.text || 'Hit!'} x${dmg}` : (attackMeta.text || 'Hit!');
                     spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, dmgText, attackMeta.color || '#ff0000');
+                    // Damage number above boss head
+                    spawnFloatingText(GAME.boss.x+16, GAME.boss.y-8, `-${dmg}`, '#ffffff');
                     // Check for Mecha Mega Simon transformation at 0 HP with fake victory sequence
                     if (GAME.boss.hp <= 0 && GAME.boss.name === "MEGA SIMON" && !GAME.boss.transformTriggered) {
                         GAME.boss.transformTriggered = true;
@@ -5687,8 +5700,23 @@ function updateProjectiles() {
                 let hit = false;
                 GAME.entities.forEach(e => {
                     if (e.type === 'ops' && Math.hypot(p.x-e.x, p.y-e.y) < 12) {
+                        const rng = Math.random();
+                        // 🔥 10% DEFLECT CHANCE FOR OPS ENEMIES - throws projectile back at player
+                        if (rng < 0.1) {
+                            spawnFloatingText(e.x, e.y, "DEFLECTED!", "#ff4444");
+                            spawnParticleBurst(e.x, e.y, ['#ff4444', '#ff0000'], 8);
+                            AudioSys.sfx.alert();
+                            // Reverse projectile direction toward player
+                            const angle = Math.atan2(GAME.player.y - e.y, GAME.player.x - e.x);
+                            p.vx = Math.cos(angle) * 3.0;
+                            p.vy = Math.sin(angle) * 3.0;
+                            p.type = 'req'; // Change to boss projectile type so it damages player
+                            p.boss = true;
+                            p.grace = 15; // Give player a moment to react
+                            hit = false; // Don't remove projectile
+                        }
                         // 🔥 30% DODGE CHANCE FOR OPS ENEMIES
-                        if (Math.random() < 0.3) {
+                        else if (rng < 0.4) { // 0.1 to 0.4 = 30% chance
                             spawnFloatingText(e.x, e.y, "DODGED!", "#ff9900");
                             spawnParticleBurst(e.x, e.y, ['#ff9900', '#ffff00'], 6);
                             AudioSys.sfx.alert();
@@ -5930,8 +5958,10 @@ function triggerGameOver(reason) {
         GAME.characterDefeatLine = "No one could have survived that transformation...";
     }
 
-    // Don't speak corporate message immediately - wait for Simon's dialog like win flow
-    MusicSys.play('menu'); // Play game over music (Game Over But Not Really)
+    // Stop current music and play game over music
+    MusicSys.stop();
+    MusicSys.currentName = null;
+    MusicSys.play('menu'); // Game Over But Not Really track
 
     const time = Math.floor((Date.now() - GAME.startTime)/1000); const currentGen = GAME.genId;
     if (reason === "FIRED!") { GAME.aiResultText = "Terminated for unsafe behavior."; }
@@ -6186,8 +6216,15 @@ function updateMusicForState() {
     else if (GAME.state === 'BEZOS_ESCAPE') track = 'victory';
     // Game Over Symphony - for both Credits Scenes
     else if (GAME.state === 'CREDITS') track = 'credits';
-    // WIN_SPLASH and LOSE_SPLASH - don't change music (handled elsewhere or continue current)
-    else if (GAME.state === 'WIN_SPLASH' || GAME.state === 'LOSE_SPLASH' || GAME.state === 'GAMEOVER_SPLASH') return;
+    // WIN_SPLASH - don't change music (handled in winGame function)
+    else if (GAME.state === 'WIN_SPLASH' || GAME.state === 'GAMEOVER_SPLASH') return;
+    // LOSE_SPLASH - play game over music (Game Over But Not Really track)
+    else if (GAME.state === 'LOSE_SPLASH') {
+        track = 'menu';
+        // Force music change even if currently playing
+        MusicSys.stop();
+        MusicSys.currentName = null;
+    }
 
     MusicSys.play(track, rate);
 }
@@ -7151,11 +7188,28 @@ function drawMechaBattle() {
         ctx.globalAlpha = 1;
     });
 
-    // Floating texts
+    // Floating texts with fade out and shrink effect
     GAME.floatingTexts.forEach(t => {
+        const lifePercent = t.life / GAME_CONSTANTS.FLOATING_TEXT_LIFE;
+
+        // Fade out slowly in the last 30% of life
+        let alpha = 1.0;
+        if (lifePercent < 0.3) {
+            alpha = lifePercent / 0.3; // Smooth fade out
+        }
+
+        // Shrink gradually from 100% to 70% size over entire lifetime
+        const scale = 0.7 + (lifePercent * 0.3);
+        const baseFontSize = 6;
+        const fontSize = Math.max(4, Math.floor(baseFontSize * scale));
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0.1, Math.min(1, alpha)); // Keep minimum visibility
         ctx.fillStyle = t.color;
-        ctx.font = '6px "Press Start 2P"';
+        ctx.font = `${fontSize}px "Press Start 2P"`;
+        ctx.textAlign = 'center';
         ctx.fillText(t.text, t.x, t.y);
+        ctx.restore();
     });
 }
 
@@ -9977,8 +10031,8 @@ function draw() {
     }
     ctx.globalAlpha = 1;
 
-    // Render Floating Text with visibility checks
-    ctx.font = '8px "Press Start 2P"'; ctx.textAlign = 'center';
+    // Render Floating Text with fade out and shrink effect
+    ctx.textAlign = 'center';
     const texts = GAME.floatingTexts;
     const textsLen = texts.length;
     for (let i = 0; i < textsLen; i++) {
@@ -9987,8 +10041,29 @@ function draw() {
         const dy = Math.floor(t.y - cy);
         // Skip offscreen texts
         if (dx < -50 || dx > canvas.width + 50 || dy < -20 || dy > canvas.height + 20) continue;
-        ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.strokeText(t.text, dx, dy);
-        ctx.fillStyle = t.color; ctx.fillText(t.text, dx, dy);
+
+        const lifePercent = t.life / GAME_CONSTANTS.FLOATING_TEXT_LIFE;
+
+        // Fade out slowly in the last 30% of life
+        let alpha = 1.0;
+        if (lifePercent < 0.3) {
+            alpha = lifePercent / 0.3; // Smooth fade out
+        }
+
+        // Shrink gradually from 100% to 70% size over entire lifetime
+        const scale = 0.7 + (lifePercent * 0.3);
+        const baseFontSize = 8;
+        const fontSize = Math.max(5, Math.floor(baseFontSize * scale));
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0.1, Math.min(1, alpha));
+        ctx.font = `${fontSize}px "Press Start 2P"`;
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.strokeText(t.text, dx, dy);
+        ctx.fillStyle = t.color;
+        ctx.fillText(t.text, dx, dy);
+        ctx.restore();
     }
     ctx.textAlign = 'left'; // Reset
 
