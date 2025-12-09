@@ -1,235 +1,164 @@
 /**
- * ParticleSystem.js
- * High-performance particle system with 200-particle pool
- * Extracted from monolithic version
+ * Particle System - Visual effects and floating text
  */
 
-/**
- * ParticleSystem - Manages particle lifecycle, physics, and rendering
- */
+import { GAME_CONSTANTS } from '../constants.js';
+
 export class ParticleSystem {
-    constructor(config = {}) {
-        // Configuration
-        this.maxParticles = config.maxParticles || 200;
-        this.gravity = config.gravity !== undefined ? config.gravity : 0.2;
-        this.bounce = config.bounce !== undefined ? config.bounce : -0.6;
-        this.particleLifeBase = config.particleLifeBase || 50;
-        this.particleLifeVariance = config.particleLifeVariance || 20;
-
-        // Particle pool
+    constructor(objectPool) {
+        this.objectPool = objectPool;
         this.particles = [];
-
-        console.log('[ParticleSystem] Initialized with max', this.maxParticles, 'particles');
+        this.floatingTexts = [];
     }
 
-    /**
-     * Update all particles - applies physics and removes dead particles
-     */
-    update(deltaTime) {
-        const particles = this.particles;
-        let writeIdx = 0;
-
-        // Performance: Avoid splice in hot loop, use write index instead
-        for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
-
-            // Update lifetime
-            p.life--;
-
-            // Apply velocity
-            p.x += p.vx;
-            p.y += p.vy;
-
-            // Apply gravity
-            p.vy += this.gravity;
-
-            // Ground bounce
-            if (p.y > p.groundY) {
-                p.y = p.groundY;
-                p.vy *= this.bounce;
-            }
-
-            // Keep alive particles
-            if (p.life > 0) {
-                if (writeIdx !== i) {
-                    particles[writeIdx] = p;
-                }
-                writeIdx++;
-            }
-        }
-
-        // Truncate array to remove dead particles
-        particles.length = writeIdx;
+    spawnParticle(x, y, color, forceY = null) {
+        const p = this.objectPool.getParticle();
+        p.x = x;
+        p.y = y;
+        p.color = color;
+        p.vx = (Math.random() - 0.5) * 6;
+        p.vy = forceY !== null ? forceY : -Math.random() * 6 - 1;
+        p.life = GAME_CONSTANTS.PARTICLE_LIFE_BASE + Math.random() * GAME_CONSTANTS.PARTICLE_LIFE_VARIANCE;
+        p.groundY = y + 20;
+        p.size = Math.random() < 0.3 ? 3 : 2;
+        p.alpha = 1;
+        p.sparkle = false;
+        this.particles.push(p);
     }
 
-    /**
-     * Spawn a single particle
-     */
-    spawn(x, y, color, forceY = 0) {
-        // Check pool limit
-        if (this.particles.length >= this.maxParticles) {
-            return null;
-        }
-
-        const particle = {
-            x: x,
-            y: y,
-            color: color,
-            life: this.particleLifeBase + Math.random() * this.particleLifeVariance,
-            vx: (Math.random() - 0.5) * 3,
-            vy: forceY || (Math.random() * -3 - 1),
-            groundY: y + 5,
-            size: 1 + Math.random() * 2,
-            alpha: 1,
-            sparkle: false
-        };
-
-        this.particles.push(particle);
-        return particle;
-    }
-
-    /**
-     * Spawn a burst of particles in a circular pattern
-     */
-    burst(x, y, colors, count = 10) {
-        if (!Array.isArray(colors)) {
-            colors = [colors];
-        }
-
-        const maxToAdd = Math.min(count, this.maxParticles - this.particles.length);
-        const colorsLen = colors.length;
-        const spawned = [];
-
-        for (let i = 0; i < maxToAdd; i++) {
+    spawnParticleBurst(x, y, colors, count = 12) {
+        for (let i = 0; i < count; i++) {
             const angle = (i / count) * Math.PI * 2;
-            const speed = 1 + Math.random() * 2;
-            const color = colors[Math.floor(Math.random() * colorsLen)];
-
-            const particle = {
-                x: x,
-                y: y,
-                color: color,
-                life: 30 + Math.random() * 30,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed - 1,
-                groundY: y + 20,
-                size: 1 + Math.random() * 2,
-                alpha: 1,
-                sparkle: false
-            };
-
-            this.particles.push(particle);
-            spawned.push(particle);
+            const speed = 2 + Math.random() * 2;
+            const p = this.objectPool.getParticle();
+            p.x = x;
+            p.y = y;
+            p.color = colors[i % colors.length];
+            p.vx = Math.cos(angle) * speed;
+            p.vy = Math.sin(angle) * speed;
+            p.life = 40 + Math.random() * 20;
+            p.groundY = y + 30;
+            p.size = 2;
+            p.alpha = 1;
+            p.sparkle = false;
+            this.particles.push(p);
         }
-
-        return spawned;
     }
 
-    /**
-     * Spawn sparkle particles for special effects
-     */
-    sparkle(x, y, color, count = 8) {
-        const maxToAdd = Math.min(count, this.maxParticles - this.particles.length);
-        const spawned = [];
-
-        for (let i = 0; i < maxToAdd; i++) {
-            const particle = {
-                x: x + (Math.random() - 0.5) * 10,
-                y: y + (Math.random() - 0.5) * 10,
-                color: color,
-                life: 20 + Math.random() * 20,
-                vx: (Math.random() - 0.5) * 4,
-                vy: -Math.random() * 3,
-                groundY: y + 30,
-                size: 1 + Math.random(),
-                alpha: 1,
-                sparkle: true
-            };
-
-            this.particles.push(particle);
-            spawned.push(particle);
+    spawnSparkles(x, y, color) {
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const speed = 1.5;
+            const p = this.objectPool.getParticle();
+            p.x = x;
+            p.y = y;
+            p.color = color;
+            p.vx = Math.cos(angle) * speed;
+            p.vy = Math.sin(angle) * speed;
+            p.life = 30;
+            p.groundY = y + 20;
+            p.size = 1;
+            p.alpha = 1;
+            p.sparkle = true;
+            this.particles.push(p);
         }
-
-        return spawned;
     }
 
-    /**
-     * Render all particles to canvas
-     */
-    render(ctx, camera = { x: 0, y: 0 }) {
-        const particles = this.particles;
-        const particleLen = particles.length;
+    spawnFloatingText(x, y, text, color) {
+        const t = this.objectPool.getFloatingText();
+        t.x = x;
+        t.y = y;
+        t.text = text;
+        t.color = color;
+        t.life = GAME_CONSTANTS.FLOATING_TEXT_LIFE;
+        t.vy = -0.2;
+        this.floatingTexts.push(t);
+    }
 
-        // Get canvas bounds for culling
-        const canvasWidth = ctx.canvas.width;
-        const canvasHeight = ctx.canvas.height;
-        const cx = camera.x;
-        const cy = camera.y;
-
-        for (let i = 0; i < particleLen; i++) {
-            const p = particles[i];
-            const px = p.x - cx;
-            const py = p.y - cy;
-
-            // Skip offscreen particles (performance optimization)
-            if (px < -10 || px > canvasWidth + 10 || py < -10 || py > canvasHeight + 10) {
+    update() {
+        // Update particles with physics
+        let writeIdx = 0;
+        for (let i = 0; i < this.particles.length; i++) {
+            const p = this.particles[i];
+            p.life--;
+            if (p.life <= 0) {
+                this.objectPool.releaseParticle(p);
                 continue;
             }
 
-            // Calculate alpha (fade based on life)
-            const alpha = p.alpha || (p.life / 50);
-            ctx.globalAlpha = Math.min(1, alpha);
+            // Apply gravity
+            p.vy += GAME_CONSTANTS.PARTICLE_GRAVITY;
+            p.x += p.vx;
+            p.y += p.vy;
 
-            // Sparkle particles have special rendering (cross shape)
-            if (p.sparkle) {
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(px - 1, py, 3, 1);
-                ctx.fillRect(px, py - 1, 1, 3);
+            // Bounce off ground
+            if (p.y >= p.groundY && p.vy > 0) {
+                p.y = p.groundY;
+                p.vy *= GAME_CONSTANTS.PARTICLE_BOUNCE;
+                if (Math.abs(p.vy) < 0.5) p.vy = 0;
             }
 
-            // Draw particle
-            ctx.fillStyle = p.color;
-            ctx.fillRect(px, py, p.size || 2, p.size || 2);
-        }
+            // Fade out
+            p.alpha = p.life / (GAME_CONSTANTS.PARTICLE_LIFE_BASE + GAME_CONSTANTS.PARTICLE_LIFE_VARIANCE);
 
-        // Reset alpha
+            this.particles[writeIdx++] = p;
+        }
+        this.particles.length = writeIdx;
+
+        // Update floating texts
+        writeIdx = 0;
+        for (let i = 0; i < this.floatingTexts.length; i++) {
+            const t = this.floatingTexts[i];
+            t.life--;
+            if (t.life <= 0) {
+                this.objectPool.releaseFloatingText(t);
+                continue;
+            }
+            t.y += t.vy;
+            this.floatingTexts[writeIdx++] = t;
+        }
+        this.floatingTexts.length = writeIdx;
+    }
+
+    draw(ctx, camera) {
+        // Draw particles
+        for (const p of this.particles) {
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            if (p.sparkle) {
+                ctx.fillRect(p.x - camera.x, p.y - camera.y, p.size, p.size);
+                ctx.fillRect(p.x - camera.x - 1, p.y - camera.y, 1, 1);
+                ctx.fillRect(p.x - camera.x + 1, p.y - camera.y, 1, 1);
+                ctx.fillRect(p.x - camera.x, p.y - camera.y - 1, 1, 1);
+                ctx.fillRect(p.x - camera.x, p.y - camera.y + 1, 1, 1);
+            } else {
+                ctx.fillRect(p.x - camera.x, p.y - camera.y, p.size, p.size);
+            }
+        }
+        ctx.globalAlpha = 1;
+
+        // Draw floating texts
+        ctx.font = '8px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        for (const t of this.floatingTexts) {
+            const alpha = Math.min(1, t.life / 60);
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = '#000';
+            ctx.fillText(t.text, t.x - camera.x + 1, t.y - camera.y + 1);
+            ctx.fillStyle = t.color;
+            ctx.fillText(t.text, t.x - camera.x, t.y - camera.y);
+        }
         ctx.globalAlpha = 1;
     }
 
-    /**
-     * Clear all particles
-     */
-    clear() {
-        this.particles.length = 0;
-    }
-
-    /**
-     * Get current particle count
-     */
-    getCount() {
-        return this.particles.length;
-    }
-
-    /**
-     * Get max particles
-     */
-    getMaxParticles() {
-        return this.maxParticles;
-    }
-
-    /**
-     * Check if at capacity
-     */
-    isFull() {
-        return this.particles.length >= this.maxParticles;
-    }
-
-    /**
-     * Get all particles (for debugging or custom rendering)
-     */
-    getParticles() {
-        return this.particles;
+    reset() {
+        for (const p of this.particles) {
+            this.objectPool.releaseParticle(p);
+        }
+        for (const t of this.floatingTexts) {
+            this.objectPool.releaseFloatingText(t);
+        }
+        this.particles = [];
+        this.floatingTexts = [];
     }
 }
-
-export default ParticleSystem;
