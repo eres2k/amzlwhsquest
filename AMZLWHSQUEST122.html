@@ -10031,8 +10031,8 @@ function draw() {
     }
     ctx.globalAlpha = 1;
 
-    // Render Floating Text with visibility checks
-    ctx.font = '8px "Press Start 2P"'; ctx.textAlign = 'center';
+    // Render Floating Text with fade out and shrink effect
+    ctx.textAlign = 'center';
     const texts = GAME.floatingTexts;
     const textsLen = texts.length;
     for (let i = 0; i < textsLen; i++) {
@@ -10041,8 +10041,29 @@ function draw() {
         const dy = Math.floor(t.y - cy);
         // Skip offscreen texts
         if (dx < -50 || dx > canvas.width + 50 || dy < -20 || dy > canvas.height + 20) continue;
-        ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.strokeText(t.text, dx, dy);
-        ctx.fillStyle = t.color; ctx.fillText(t.text, dx, dy);
+
+        const lifePercent = t.life / GAME_CONSTANTS.FLOATING_TEXT_LIFE;
+
+        // Fade out slowly in the last 30% of life
+        let alpha = 1.0;
+        if (lifePercent < 0.3) {
+            alpha = lifePercent / 0.3; // Smooth fade out
+        }
+
+        // Shrink gradually from 100% to 70% size over entire lifetime
+        const scale = 0.7 + (lifePercent * 0.3);
+        const baseFontSize = 8;
+        const fontSize = Math.max(5, Math.floor(baseFontSize * scale));
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0.1, Math.min(1, alpha));
+        ctx.font = `${fontSize}px "Press Start 2P"`;
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.strokeText(t.text, dx, dy);
+        ctx.fillStyle = t.color;
+        ctx.fillText(t.text, dx, dy);
+        ctx.restore();
     }
     ctx.textAlign = 'left'; // Reset
 
