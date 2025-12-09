@@ -9,6 +9,7 @@ import { AssetGenerator } from '../generators/AssetGenerator.js';
 import { MapGenerator } from '../generators/MapGenerator.js';
 import { WorldRenderer } from '../renderers/WorldRenderer.js';
 import { UIRenderer } from '../renderers/UIRenderer.js';
+import { AudioSystem } from '../systems/AudioSystem.js';
 import { LogoState } from '../states/LogoState.js';
 import { IntroState } from '../states/IntroState.js';
 import { StoryState } from '../states/StoryState.js';
@@ -203,26 +204,10 @@ export class Game {
      * Initialize audio systems
      */
     initAudio() {
-        // Audio system integration
-        // This would connect to the existing TTSSys, GeminiTTS, MusicSys, AudioSys
-        // For now, create placeholder
-        this.audio = {
-            playMusic: (track) => {
-                console.log(`[Audio] Playing music: ${track}`);
-            },
-            stopMusic: () => {
-                console.log('[Audio] Stopping music');
-            },
-            update: (deltaTime) => {
-                // Update music/audio state
-            }
-        };
+        // Initialize complete audio system
+        this.audio = new AudioSystem();
 
-        this.tts = {
-            update: (deltaTime) => {
-                // Update TTS loading indicators
-            }
-        };
+        console.log('[Game] Audio system initialized');
     }
 
     /**

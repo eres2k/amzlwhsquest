@@ -35,7 +35,7 @@ export class PlayState extends State {
 
         // Start music
         if (this.game.audio) {
-            this.game.audio.playMusic('warehouse');
+            this.game.audio.getMusic().play('ingame');
         }
     }
 
@@ -232,6 +232,11 @@ export class PlayState extends State {
             damage: 1,
             active: true
         });
+
+        // Play throw sound
+        if (this.game.audio) {
+            this.game.audio.getSFX().throw();
+        }
     }
 
     checkHazardCollisions() {
@@ -254,6 +259,11 @@ export class PlayState extends State {
                     this.issuesFixed++;
                     this.spawnParticleBurst(issue.x, issue.y, '#22c55e');
                     this.spawnFloatingText(issue.x, issue.y, 'FIXED!', '#22c55e');
+
+                    // Play fix sound
+                    if (this.game.audio) {
+                        this.game.audio.getSFX().fix();
+                    }
                 }
             }
         }
