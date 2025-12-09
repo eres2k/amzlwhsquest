@@ -10,6 +10,7 @@ import { MapGenerator } from '../generators/MapGenerator.js';
 import { WorldRenderer } from '../renderers/WorldRenderer.js';
 import { UIRenderer } from '../renderers/UIRenderer.js';
 import { AudioSystem } from '../systems/AudioSystem.js';
+import { ParticleSystem } from '../systems/ParticleSystem.js';
 import { LogoState } from '../states/LogoState.js';
 import { IntroState } from '../states/IntroState.js';
 import { StoryState } from '../states/StoryState.js';
@@ -46,7 +47,7 @@ export class Game {
         this.renderers = {};
         this.transition = null;
         this.audio = null;
-        this.tts = null;
+        this.particles = null;
 
         // Map-related arrays
         this.conveyorBelts = [];
@@ -153,6 +154,9 @@ export class Game {
             // Initialize audio systems (if needed)
             this.initAudio();
 
+            // Initialize particle system
+            this.initParticles();
+
             // Initialize main loop
             this.mainLoop = new MainLoop(this);
 
@@ -208,6 +212,22 @@ export class Game {
         this.audio = new AudioSystem();
 
         console.log('[Game] Audio system initialized');
+    }
+
+    /**
+     * Initialize particle system
+     */
+    initParticles() {
+        // Initialize particle system with 200-particle pool
+        this.particles = new ParticleSystem({
+            maxParticles: 200,
+            gravity: 0.2,
+            bounce: -0.6,
+            particleLifeBase: 50,
+            particleLifeVariance: 20
+        });
+
+        console.log('[Game] Particle system initialized');
     }
 
     /**

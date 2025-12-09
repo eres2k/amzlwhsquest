@@ -273,22 +273,11 @@ export class WorldRenderer {
      * Render particles
      */
     renderParticles(context, state) {
-        if (!state.particles) return;
-
-        const camera = this.game.camera || { x: 0, y: 0 };
-
-        state.particles.forEach(p => {
-            if (!p.active) return;
-
-            const x = p.x - camera.x;
-            const y = p.y - camera.y;
-
-            context.save();
-            context.globalAlpha = p.alpha;
-            context.fillStyle = p.color;
-            context.fillRect(x - 1, y - 1, 2, 2);
-            context.restore();
-        });
+        // Use centralized particle system
+        if (this.game.particles) {
+            const camera = this.game.camera || { x: 0, y: 0 };
+            this.game.particles.render(context, camera);
+        }
     }
 
     /**

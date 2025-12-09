@@ -11,7 +11,6 @@ export class PlayState extends State {
         this.player = null;
         this.entities = [];
         this.projectiles = [];
-        this.particles = [];
         this.floatingTexts = [];
         this.activeIssues = [];
         this.issuesFixed = 0;
@@ -142,8 +141,10 @@ export class PlayState extends State {
         // Update projectiles
         this.updateProjectiles(deltaTime);
 
-        // Update particles
-        this.updateParticles(deltaTime);
+        // Update particles (via centralized system)
+        if (this.game.particles) {
+            this.game.particles.update(deltaTime);
+        }
 
         // Update floating texts
         this.updateFloatingTexts(deltaTime);
@@ -257,7 +258,7 @@ export class PlayState extends State {
                 if (this.inputState.attack) {
                     issue.fixed = true;
                     this.issuesFixed++;
-                    this.spawnParticleBurst(issue.x, issue.y, '#22c55e');
+                    this.spawnParticleBurst(issue.x, issue.y, ['#22c55e', '#10b981', '#34d399']);
                     this.spawnFloatingText(issue.x, issue.y, 'FIXED!', '#22c55e');
 
                     // Play fix sound
@@ -305,26 +306,11 @@ export class PlayState extends State {
 
             // Check wall collision
             if (!this.canMoveTo(proj.x, proj.y)) {
-                this.spawnParticleBurst(proj.x, proj.y, '#ffffff');
+                this.spawnParticleBurst(proj.x, proj.y, ['#ffffff']);
                 return false;
             }
 
             return true;
-        });
-    }
-
-    updateParticles(deltaTime) {
-        this.particles = this.particles.filter(p => {
-            if (!p.active) return false;
-
-            p.x += p.vx;
-            p.y += p.vy;
-            p.vy += 0.1; // Gravity
-            p.life--;
-
-            p.alpha = p.life / p.maxLife;
-
-            return p.life > 0;
         });
     }
 
@@ -340,22 +326,9 @@ export class PlayState extends State {
         });
     }
 
-    spawnParticleBurst(x, y, color) {
-        for (let i = 0; i < 10; i++) {
-            const angle = (Math.PI * 2 / 10) * i;
-            const speed = 2 + Math.random();
-
-            this.particles.push({
-                x: x,
-                y: y,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                color: color,
-                life: 30,
-                maxLife: 30,
-                alpha: 1,
-                active: true
-            });
+    spawnParticleBurst(x, y, colors, count = 10) {
+        if (this.game.particles) {
+            this.game.particles.burst(x, y, colors, count);
         }
     }
 
@@ -438,6 +411,11 @@ export class PlayState extends State {
 
     onExit() {
         console.log('[PlayState] Exiting play state');
+
+        // Clear particles when leaving play state
+        if (this.game.particles) {
+            this.game.particles.clear();
+        }
     }
 }
 
