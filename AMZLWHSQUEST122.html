@@ -919,15 +919,16 @@ const AudioSys = {
 
 const MusicSys = {
     tracks: {
-        title: new Audio('Pixel Reverie.mp3'),
-        menu: new Audio('Game Over But Not Really.mp3'),
-        ingame: new Audio('Pixel Warehouse Crawl.mp3'),
-        boss: new Audio('Pixel Panic.mp3'),
-        victory: new Audio('Pixel Victory.mp3'),
-        mechaJeff: new Audio('Mecha Jeff Bezos Showdown.mp3'),
-        megaSimon: new Audio('Mega Simon MEU WHS Regional Manager.mp3'),
-        credits: new Audio('Game Over Symphony.mp3'),
-        snesBoss: new Audio('SNES BOSS FIGHT MUSIC.mp3')
+        title: new Audio('music/title-screen.mp3'),
+        menu: new Audio('music/game-over.mp3'),
+        ingame: new Audio('music/level-gameplay.mp3'),
+        boss: new Audio('music/boss-battle.mp3'),
+        victory: new Audio('music/victory.mp3'),
+        mechaJeff: new Audio('music/boss-mecha-jeff.mp3'),
+        megaSimon: new Audio('music/boss-mega-simon.mp3'),
+        credits: new Audio('music/game-over-full.mp3'),
+        snesBoss: new Audio('music/boss-snes-theme.mp3'),
+        enraged: new Audio('music/boss-snes-theme.mp3') // Using boss-snes-theme as fallback for enraged
     },
     currentName: null,
     currentRate: 1,
@@ -5332,6 +5333,17 @@ function updateBoss() {
     if (!b.lowHealthAttackTriggered && hpPct <= 0.4 && !b.isMecha) {
         b.lowHealthAttackTriggered = true;
         b.desperationMode = true; // 🔥 ENRAGED STATE - 30% faster, 30% dodge chance!
+
+        // 🔥 RESTORE BOSS HEALTH TO 70% (excluding Simon)
+        if (b.name !== "MEGA SIMON") {
+            b.hp = Math.floor(b.maxHp * 0.7);
+            updateBossHud();
+            spawnFloatingText(b.x + 16, b.y - 40, "HEALTH RESTORED!", "#ffff00");
+        }
+
+        // 🔥 PLAY ENRAGED MUSIC
+        MusicSys.play('enraged', 1.0);
+
         const baseAngle = Math.atan2(p.y - b.y, p.x - b.x);
 
         // MASSIVE visual feedback - boss is desperate!
@@ -5672,9 +5684,17 @@ function updateProjectiles() {
                 let hit = false;
                 GAME.entities.forEach(e => {
                     if (e.type === 'ops' && Math.hypot(p.x-e.x, p.y-e.y) < 12) {
-                        e.type = 'assoc'; AudioSys.sfx.hit(); spawnParticle(e.x, e.y, attackMeta.color || '#fff', -2); GAME.opsPushed++;
-                        spawnFloatingText(e.x, e.y, attackMeta.text || "My Rates!", attackMeta.color || "#ff0000");
-                        hit = true;
+                        // 🔥 30% DODGE CHANCE FOR OPS ENEMIES
+                        if (Math.random() < 0.3) {
+                            spawnFloatingText(e.x, e.y, "DODGED!", "#ff9900");
+                            spawnParticleBurst(e.x, e.y, ['#ff9900', '#ffff00'], 6);
+                            AudioSys.sfx.alert();
+                            hit = true;
+                        } else {
+                            e.type = 'assoc'; AudioSys.sfx.hit(); spawnParticle(e.x, e.y, attackMeta.color || '#fff', -2); GAME.opsPushed++;
+                            spawnFloatingText(e.x, e.y, attackMeta.text || "My Rates!", attackMeta.color || "#ff0000");
+                            hit = true;
+                        }
                     }
                 });
                 if (hit) GAME.projectiles.splice(i,1);
@@ -5908,7 +5928,7 @@ function triggerGameOver(reason) {
     }
 
     // Don't speak corporate message immediately - wait for Simon's dialog like win flow
-    MusicSys.play('title'); // Play menu music (Pixel Reverie)
+    MusicSys.play('menu'); // Play game over music (Game Over But Not Really)
 
     const time = Math.floor((Date.now() - GAME.startTime)/1000); const currentGen = GAME.genId;
     if (reason === "FIRED!") { GAME.aiResultText = "Terminated for unsafe behavior."; }
@@ -9886,7 +9906,16 @@ function draw() {
 
     if (GAME.flash > 0) { ctx.globalAlpha = GAME.flash / 10; ctx.fillStyle = 'white'; ctx.fillRect(0,0,canvas.width, canvas.height); ctx.globalAlpha = 1.0; }
 
-    // 🔥 DESPERATION MODE WARNING - Pulsing text at top of screen
+    // 🔥 DESPERATION MODE - Full screen red pulse effect
+    if (GAME.state === 'BOSS' && GAME.boss && GAME.boss.desperationMode) {
+        const pulse = Math.sin(GAME.ticks * 0.1) * 0.5 + 0.5; // Pulsing value between 0 and 1
+        ctx.globalAlpha = pulse * 0.15; // Max 15% opacity for red overlay
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 1.0;
+    }
+
+    // 🔥 DESPERATION MODE WARNING - Pulsing text below boss health bar
     if (GAME.state === 'BOSS' && GAME.boss && GAME.boss.desperationMode) {
         const pulse = Math.sin(GAME.ticks * 0.15) * 0.3 + 0.7; // Pulsing alpha between 0.4 and 1.0
         ctx.globalAlpha = pulse;
@@ -9894,9 +9923,9 @@ function draw() {
         ctx.textAlign = 'center';
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 3;
-        ctx.strokeText("* DESPERATION MODE! *", canvas.width / 2, 16);
+        ctx.strokeText("* DESPERATION MODE! *", canvas.width / 2, 60);
         ctx.fillStyle = '#ff0000';
-        ctx.fillText("* DESPERATION MODE! *", canvas.width / 2, 16);
+        ctx.fillText("* DESPERATION MODE! *", canvas.width / 2, 60);
         ctx.globalAlpha = 1.0;
         ctx.textAlign = 'left';
     }
