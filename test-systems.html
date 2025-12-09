@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Tests - Audio & Particle</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: monospace;
+            background: #1a1f2e;
+            color: #00ff00;
+        }
+        h1 { color: #ffd700; }
+        h2 { color: #00ffff; }
+        #canvas {
+            border: 2px solid #00ff00;
+            display: block;
+            margin: 20px auto;
+            background: #0a0f1f;
+        }
+        .controls {
+            max-width: 800px;
+            margin: 20px auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        button {
+            padding: 12px 20px;
+            background: #0891b2;
+            color: white;
+            border: 2px solid #00ffff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: monospace;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #00ffff;
+            color: #0a0f1f;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .status {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 15px;
+            background: #252b3d;
+            border: 2px solid #374151;
+            border-radius: 4px;
+        }
+        .status-item {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        .info { color: #60a5fa; }
+    </style>
+</head>
+<body>
+    <h1>🧪 System Tests - Phase 1</h1>
+    <p>Testing Audio and Particle systems in isolation</p>
+
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <div class="controls">
+        <button onclick="testAudioSFX()">🔊 Test SFX</button>
+        <button onclick="testAudioMusic()">🎵 Test Music</button>
+        <button onclick="testAudioTTS()">🗣️ Test TTS</button>
+        <button onclick="testParticleSingle()">✨ Single Particle</button>
+        <button onclick="testParticleBurst()">💥 Particle Burst</button>
+        <button onclick="testParticleSparkle()">⭐ Sparkle Effect</button>
+        <button onclick="testParticleStress()">🔥 Stress Test (200)</button>
+        <button onclick="clearParticles()">🧹 Clear Particles</button>
+    </div>
+
+    <div class="status">
+        <h2>System Status</h2>
+        <div id="status">Initializing...</div>
+    </div>
+
+    <script type="module">
+        import { AudioSystem } from './src/systems/AudioSystem.js';
+        import { ParticleSystem } from './src/systems/ParticleSystem.js';
+
+        // Initialize canvas
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Initialize systems
+        let audioSystem, particleSystem;
+        let statusDiv = document.getElementById('status');
+
+        function log(message, type = 'info') {
+            const color = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            const timestamp = new Date().toLocaleTimeString();
+            statusDiv.innerHTML += `<div class="status-item ${color}">[${timestamp}] ${message}</div>`;
+            statusDiv.scrollTop = statusDiv.scrollHeight;
+        }
+
+        // Initialize
+        try {
+            log('Initializing Audio System...', 'info');
+            audioSystem = new AudioSystem();
+            audioSystem.resume();
+            log('✅ Audio System initialized', 'success');
+
+            log('Initializing Particle System...', 'info');
+            particleSystem = new ParticleSystem({
+                maxParticles: 200,
+                gravity: 0.2,
+                bounce: -0.6
+            });
+            log('✅ Particle System initialized (max: 200)', 'success');
+
+            log('Systems ready for testing!', 'success');
+        } catch (error) {
+            log('❌ Initialization failed: ' + error.message, 'error');
+        }
+
+        // Expose to global for button handlers
+        window.audioSystem = audioSystem;
+        window.particleSystem = particleSystem;
+
+        // Render loop
+        function render() {
+            // Clear canvas
+            ctx.fillStyle = '#0a0f1f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Update particles
+            particleSystem.update(1);
+
+            // Render particles
+            particleSystem.render(ctx, { x: 0, y: 0 });
+
+            // Show particle count
+            ctx.fillStyle = '#00ff00';
+            ctx.font = '14px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Particles: ${particleSystem.getCount()} / ${particleSystem.getMaxParticles()}`, 10, 20);
+            ctx.fillText(`FPS: 60 (target)`, 10, 40);
+
+            requestAnimationFrame(render);
+        }
+        render();
+
+        // Test functions (exposed globally for buttons)
+        window.testAudioSFX = function() {
+            log('Playing SFX: Fix sound', 'info');
+            audioSystem.getSFX().fix();
+        };
+
+        window.testAudioMusic = function() {
+            log('Playing Music: Ingame track', 'info');
+            audioSystem.getMusic().play('ingame');
+        };
+
+        window.testAudioTTS = function() {
+            log('Speaking with TTS: Carrie voice', 'info');
+            audioSystem.getTTS().speak('Testing text to speech system with Carrie voice', 'Carrie');
+        };
+
+        window.testParticleSingle = function() {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height;
+            particleSystem.spawn(x, y, '#00ffff', -5);
+            log(`Spawned single particle at (${Math.floor(x)}, ${Math.floor(y)})`, 'info');
+        };
+
+        window.testParticleBurst = function() {
+            const x = canvas.width / 2;
+            const y = canvas.height / 2;
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+            particleSystem.burst(x, y, colors, 20);
+            log(`Spawned particle burst at center (20 particles)`, 'success');
+        };
+
+        window.testParticleSparkle = function() {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height;
+            particleSystem.sparkle(x, y, '#ffd700', 8);
+            log(`Spawned sparkle effect at (${Math.floor(x)}, ${Math.floor(y)})`, 'info');
+        };
+
+        window.testParticleStress = function() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            for (let i = 0; i < 200; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                particleSystem.spawn(x, y, color, -3 - Math.random() * 5);
+            }
+            log(`⚠️ Stress test: Spawned 200 particles`, 'info');
+            log(`Current count: ${particleSystem.getCount()} (should cap at 200)`, particleSystem.getCount() <= 200 ? 'success' : 'error');
+        };
+
+        window.clearParticles = function() {
+            const count = particleSystem.getCount();
+            particleSystem.clear();
+            log(`Cleared ${count} particles`, 'success');
+        };
+
+        // Click to spawn particles
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
+            particleSystem.burst(x, y, colors, 15);
+            audioSystem.getSFX().pop();
+            log(`Click burst at (${Math.floor(x)}, ${Math.floor(y)})`, 'info');
+        });
+
+        log('💡 Tip: Click on the canvas to spawn particle bursts!', 'success');
+    </script>
+</body>
+</html>
