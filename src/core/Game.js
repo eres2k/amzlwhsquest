@@ -10,8 +10,16 @@ import { MapGenerator } from '../generators/MapGenerator.js';
 import { WorldRenderer } from '../renderers/WorldRenderer.js';
 import { UIRenderer } from '../renderers/UIRenderer.js';
 import { LogoState } from '../states/LogoState.js';
+import { IntroState } from '../states/IntroState.js';
+import { StoryState } from '../states/StoryState.js';
 import { TitleState } from '../states/TitleState.js';
+import { HowToState } from '../states/HowToState.js';
+import { SelectState } from '../states/SelectState.js';
 import { PlayState } from '../states/PlayState.js';
+import { DialogState } from '../states/DialogState.js';
+import { BossState } from '../states/BossState.js';
+import { CreditsState } from '../states/CreditsState.js';
+import { GameOverState } from '../states/GameOverState.js';
 
 export class Game {
     constructor(canvas) {
@@ -166,18 +174,29 @@ export class Game {
      * Register all game states
      */
     registerStates() {
+        // Core flow states
         this.stateMachine.register('LOGO', LogoState);
+        this.stateMachine.register('INTRO', IntroState);
+        this.stateMachine.register('STORY', StoryState);
         this.stateMachine.register('TITLE', TitleState);
-        this.stateMachine.register('PLAY', PlayState);
+        this.stateMachine.register('HOWTO', HowToState);
+        this.stateMachine.register('SELECT', SelectState);
 
-        // TODO: Register other states (SELECT, HOWTO, BOSS, etc.)
-        // For now, create stubs
-        this.stateMachine.register('INTRO', TitleState); // Stub
-        this.stateMachine.register('SELECT', TitleState); // Stub
-        this.stateMachine.register('HOWTO', TitleState); // Stub
-        this.stateMachine.register('SETTINGS', TitleState); // Stub
-        this.stateMachine.register('BOSS_INTRO', PlayState); // Stub
-        this.stateMachine.register('PAUSE', TitleState); // Stub
+        // Gameplay states
+        this.stateMachine.register('PLAY', PlayState);
+        this.stateMachine.register('DIALOG', DialogState);
+        this.stateMachine.register('BOSS', BossState);
+
+        // End states
+        this.stateMachine.register('CREDITS', CreditsState);
+        this.stateMachine.register('GAMEOVER', GameOverState);
+        this.stateMachine.register('GAMEOVER_SPLASH', GameOverState);
+
+        // Additional states (stubs for now)
+        this.stateMachine.register('BOSS_INTRO', DialogState);
+        this.stateMachine.register('VISITOR_SPLASH', DialogState);
+        this.stateMachine.register('PAUSE', TitleState);
+        this.stateMachine.register('SETTINGS', TitleState);
     }
 
     /**
