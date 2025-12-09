@@ -27,6 +27,11 @@ export class Boss {
         this.isMecha = false;
         this.mechaTimer = 0;
         this.transformTriggered = false;
+
+        // Health bar animation for transformation
+        this.healthBarAnimating = false;
+        this.animatedHp = this.hp;
+        this.targetHp = this.hp;
     }
 
     update(playerX, playerY) {
@@ -46,6 +51,18 @@ export class Boss {
         // Update mecha timer if applicable
         if (this.isMecha && this.mechaTimer > 0) {
             this.mechaTimer--;
+        }
+
+        // Update animated health bar
+        if (this.healthBarAnimating) {
+            const diff = this.targetHp - this.animatedHp;
+            if (Math.abs(diff) > 0.5) {
+                // Smooth animation - move 8% of the remaining distance per frame
+                this.animatedHp += diff * 0.08;
+            } else {
+                this.animatedHp = this.targetHp;
+                this.healthBarAnimating = false;
+            }
         }
     }
 
@@ -86,5 +103,33 @@ export class Boss {
     setMechaMode(mechaTimer) {
         this.isMecha = true;
         this.mechaTimer = mechaTimer;
+    }
+
+    animateHealthBarTo(targetHp) {
+        this.targetHp = targetHp;
+        this.healthBarAnimating = true;
+    }
+
+    transformToMecha(mechaConfig) {
+        this.name = mechaConfig.name;
+        this.sprite = mechaConfig.sprite;
+        this.title = mechaConfig.title;
+        this.desc = mechaConfig.desc;
+        this.attackName = mechaConfig.attackName;
+        this.attackPattern = mechaConfig.attackPattern;
+        this.maxHp = mechaConfig.hp;
+        this.hp = mechaConfig.hp;
+        this.speed = mechaConfig.speed;
+        this.attackDelay = mechaConfig.attackDelay;
+        this.isMecha = true;
+        this.transformTriggered = true;
+
+        // Set animated HP to match actual HP
+        this.animatedHp = this.hp;
+        this.targetHp = this.hp;
+    }
+
+    getAnimatedHealthPercent() {
+        return this.animatedHp / this.maxHp;
     }
 }

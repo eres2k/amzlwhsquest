@@ -41,6 +41,10 @@ export class Game {
         this.simonHits = 0;
         this.pendingBossIntro = false;
 
+        // Boss Transformation
+        this.bossTransformationState = null; // 'surprise', 'reveal', 'animating', 'transformed'
+        this.transformationTimer = 0;
+
         // Visual Effects
         this.shake = 0;
         this.flash = 0;

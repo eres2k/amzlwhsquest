@@ -19,7 +19,7 @@ import { ParticleSystem } from './systems/ParticleSystem.js';
 import { CameraSystem } from './systems/CameraSystem.js';
 import { MapGenerator } from './utils/mapGenerator.js';
 import { getAttackData } from './data/characters.js';
-import { BOSS_TYPES } from './data/bosses.js';
+import { BOSS_TYPES, MECHA_SIMON_CONFIG } from './data/bosses.js';
 import { GAME_CONSTANTS } from './constants.js';
 
 class GameEngine {
@@ -239,6 +239,17 @@ class GameEngine {
                 game.camera.x = this.cameraSystem.x;
                 game.camera.y = this.cameraSystem.y;
             }
+        } else if (game.state === 'BOSS_TRANSFORM') {
+            // Update boss transformation sequence
+            this.updateBossTransformation();
+
+            // Still update boss animation
+            if (game.boss) {
+                game.boss.update(game.player.x, game.player.y);
+            }
+
+            // Update particles for visual effects
+            this.particleSystem.update();
         }
 
         game.ticks++;
@@ -275,8 +286,11 @@ class GameEngine {
 
                     console.log('Boss hit! HP:', game.boss.hp, '/', game.boss.maxHp);
 
-                    if (game.boss.hp <= 0) {
-                        console.log('Boss defeated!');
+                    if (game.boss.hp <= 0 && !game.boss.transformTriggered) {
+                        console.log('Boss defeated - triggering transformation!');
+                        this.triggerBossTransformation();
+                    } else if (game.boss.hp <= 0 && game.boss.transformTriggered) {
+                        console.log('Mecha Boss defeated!');
                         this.winGame();
                     }
 
@@ -342,6 +356,119 @@ class GameEngine {
         }
 
         this.audioSystem.sfx.alert();
+    }
+
+    triggerBossTransformation() {
+        console.log('Starting boss transformation sequence...');
+
+        // Prevent boss from taking more damage during transformation
+        this.game.boss.hp = 1; // Keep boss "alive" during transformation
+
+        // Start transformation sequence
+        this.game.bossTransformationState = 'surprise';
+        this.game.transformationTimer = 0;
+        this.game.state = 'BOSS_TRANSFORM';
+    }
+
+    updateBossTransformation() {
+        const game = this.game;
+        const boss = game.boss;
+
+        game.transformationTimer++;
+
+        // Typewriter effect for dialogue
+        if (game.dialogText && game.dialogVisible.length < game.dialogText.length) {
+            if (game.transformationTimer % 2 === 0) { // Add one character every 2 frames
+                game.dialogVisible = game.dialogText.substring(0, game.dialogVisible.length + 1);
+            }
+        }
+
+        if (game.bossTransformationState === 'surprise') {
+            // Phase 1: Player surprised how easy the fight was
+            if (game.transformationTimer === 1) {
+                console.log('[Transform] Phase 1: Player surprised');
+                game.dialogText = "That was... surprisingly easy?";
+                game.dialogSpeaker = game.player.character || "Player";
+                game.dialogVisible = "";
+                game.dialogTimer = 0;
+            }
+
+            // Wait for dialogue (about 2 seconds at 60fps = 120 frames)
+            if (game.transformationTimer > 120) {
+                game.bossTransformationState = 'reveal';
+                game.transformationTimer = 0;
+                game.dialogText = "";
+                game.dialogVisible = "";
+            }
+        } else if (game.bossTransformationState === 'reveal') {
+            // Phase 2: Simon mentions his true form
+            if (game.transformationTimer === 1) {
+                console.log('[Transform] Phase 2: Simon reveals true form');
+                game.dialogText = "You fool... That wasn't even my final form! BEHOLD MY TRUE POWER!";
+                game.dialogSpeaker = "Simon Unglaube";
+                game.dialogVisible = "";
+                game.dialogTimer = 0;
+
+                // Start health bar animation from 0 to max HP
+                boss.animateHealthBarTo(boss.maxHp);
+
+                // Visual effects
+                game.shake = 15;
+                game.flash = 10;
+                this.particleSystem.spawnParticleBurst(boss.x, boss.y, ['#ff0000', '#ff4444', '#ff8800'], 30);
+            }
+
+            // Wait for dialogue and health bar animation (about 3 seconds = 180 frames)
+            if (game.transformationTimer > 180) {
+                game.bossTransformationState = 'animating';
+                game.transformationTimer = 0;
+                game.dialogText = "";
+                game.dialogVisible = "";
+            }
+        } else if (game.bossTransformationState === 'animating') {
+            // Phase 3: Health bar animating to 100%
+            if (game.transformationTimer === 1) {
+                console.log('[Transform] Phase 3: Animating health bar to 100%');
+                boss.animateHealthBarTo(MECHA_SIMON_CONFIG.hp);
+            }
+
+            // Continuous visual effects during transformation
+            if (game.transformationTimer % 10 === 0) {
+                this.particleSystem.spawnParticleBurst(boss.x, boss.y, ['#ff0000', '#ffaa00', '#ff00ff'], 20);
+                game.shake = 3;
+            }
+
+            // Wait for health bar animation to complete (about 2 seconds = 120 frames)
+            if (game.transformationTimer > 120 && !boss.healthBarAnimating) {
+                game.bossTransformationState = 'transformed';
+                game.transformationTimer = 0;
+            }
+        } else if (game.bossTransformationState === 'transformed') {
+            // Phase 4: Transform boss to Mecha Mega Simon
+            if (game.transformationTimer === 1) {
+                console.log('[Transform] Phase 4: Transforming to Mecha Mega Simon');
+
+                // Transform the boss
+                boss.transformToMecha(MECHA_SIMON_CONFIG);
+
+                // Massive visual effect
+                game.shake = 20;
+                game.flash = 15;
+                this.particleSystem.spawnParticleBurst(boss.x, boss.y, ['#ff0000', '#ffaa00', '#ff00ff', '#0088ff'], 50);
+
+                // Play boss intro sound again
+                this.audioSystem.sfx.bossIntro();
+            }
+
+            // Wait a moment then return to boss fight
+            if (game.transformationTimer > 60) {
+                console.log('[Transform] Transformation complete - returning to boss fight!');
+                game.bossTransformationState = null;
+                game.transformationTimer = 0;
+                game.state = 'BOSS';
+                game.dialogText = "";
+            }
+        }
     }
 
     winGame() {

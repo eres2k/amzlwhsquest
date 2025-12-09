@@ -40,7 +40,7 @@ export class UIRenderer {
     updateBossHUD(game) {
         if (!this.bossHudElement) return;
 
-        if (game.state === 'BOSS' && game.boss) {
+        if ((game.state === 'BOSS' || game.state === 'BOSS_TRANSFORM') && game.boss) {
             this.bossHudElement.style.display = 'block';
 
             if (this.bossNameElement) {
@@ -48,7 +48,10 @@ export class UIRenderer {
             }
 
             if (this.bossHealthElement) {
-                const percent = (game.boss.hp / game.boss.maxHp) * 100;
+                // Use animated health bar if available for smooth transformation effect
+                const percent = game.boss.getAnimatedHealthPercent ?
+                    game.boss.getAnimatedHealthPercent() * 100 :
+                    (game.boss.hp / game.boss.maxHp) * 100;
                 this.bossHealthElement.style.width = percent + '%';
             }
         } else {

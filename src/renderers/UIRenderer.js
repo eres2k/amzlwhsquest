@@ -134,8 +134,10 @@ export class UIRenderer {
         context.fillStyle = '#1a1a1a';
         context.fillRect(hpBarX, hpBarY, hpBarWidth, 14);
 
-        // HP bar fill
-        const hpPercent = state.boss.hp / state.boss.maxHp;
+        // HP bar fill (use animated HP if available for smooth transitions)
+        const hpPercent = state.boss.getAnimatedHealthPercent ?
+            state.boss.getAnimatedHealthPercent() :
+            state.boss.hp / state.boss.maxHp;
         const fillWidth = hpBarWidth * hpPercent;
 
         const gradient = context.createLinearGradient(hpBarX, 0, hpBarX + fillWidth, 0);
