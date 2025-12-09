@@ -3481,7 +3481,8 @@ function init() {
 
     generateAssets();
     GAME.state = 'LOGO';
-    updateMusicForState();
+    // DON'T call updateMusicForState() here - it will fail due to autoplay policy
+    // Music will start on first user interaction in handleAction()
     requestAnimationFrame(loop);
 }
 
@@ -5957,8 +5958,10 @@ function triggerGameOver(reason) {
         GAME.characterDefeatLine = "No one could have survived that transformation...";
     }
 
-    // Don't speak corporate message immediately - wait for Simon's dialog like win flow
-    MusicSys.play('menu'); // Play game over music (Game Over But Not Really)
+    // Stop current music and play game over music
+    MusicSys.stop();
+    MusicSys.currentName = null;
+    MusicSys.play('menu'); // Game Over But Not Really track
 
     const time = Math.floor((Date.now() - GAME.startTime)/1000); const currentGen = GAME.genId;
     if (reason === "FIRED!") { GAME.aiResultText = "Terminated for unsafe behavior."; }
