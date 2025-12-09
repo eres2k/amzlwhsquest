@@ -107,6 +107,11 @@ export class MainLoop {
             this.game.effects.update(deltaTime);
         }
 
+        // Update floating texts
+        if (this.game.floatingTexts) {
+            this.game.floatingTexts.update(deltaTime);
+        }
+
         // Update TTS loading indicator
         if (this.game.tts) {
             this.game.tts.update(deltaTime);

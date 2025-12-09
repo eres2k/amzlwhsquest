@@ -5,8 +5,8 @@ Incrementally refactor the monolithic AMZLWHSQUEST122.html (10,247 lines) into a
 
 ## 📊 Current Status
 
-**Modular Version Size:** 5,784 lines (56% of monolithic)
-**Completion:** ~25% (Core infrastructure + Audio + Particles + Screen Effects)
+**Modular Version Size:** 6,032 lines (59% of monolithic)
+**Completion:** ~30% (Core infrastructure + 4 major systems)
 
 ---
 
@@ -76,18 +76,30 @@ Incrementally refactor the monolithic AMZLWHSQUEST122.html (10,247 lines) into a
 - ✅ Connected to `PlayState` (flash on fix)
 - ✅ Clean API: `game.effects.setShake()`, `game.effects.setFlash()`, preset methods
 
+### 4. Floating Text System ✅ COMPLETE
+**Status:** Extracted and integrated
+**Location:** `src/systems/FloatingTextSystem.js` (247 lines)
+
+**Components:**
+- ✅ **Text Pool** - Efficient array management (30-text limit)
+- ✅ **Lifecycle Management** - Life counter with automatic removal
+- ✅ **Movement** - Configurable vertical velocity
+- ✅ **Rendering** - Alpha fade, outline, custom fonts
+- ✅ **Preset Methods** - damage(), heal(), status(), warning(), success(), combo(), powerup()
+- ✅ **Sound Integration** - Optional pop sound via AudioSystem
+
+**Integration:**
+- ✅ Imported into `Game.js`
+- ✅ Connected to `MainLoop` for update
+- ✅ Integrated into `WorldRenderer` for rendering
+- ✅ Removed local state from `PlayState` (now centralized)
+- ✅ Clean API: `game.floatingTexts.spawn()`, preset methods
+
 ---
 
 ## 🔄 Next Steps
 
-### 4. Floating Text System (NEXT)
-Extract and enhance floating text system:
-- Floating text lifecycle
-- Fade out animation with alpha
-- Vertical movement
-- Font and color support
-
-### 5. Hazard System
+### 5. Hazard System (NEXT)
 Port the complete hazard system:
 - 90+ unique hazards with sprites
 - Collision detection
@@ -123,9 +135,10 @@ src/
 │   ├── CreditsState.js
 │   └── GameOverState.js
 └── systems/
-    ├── AudioSystem.js    ✅ Complete audio (TTS, SFX, Music)
-    ├── ParticleSystem.js ✅ 200-particle pool with physics
-    └── ScreenEffects.js  ✅ Shake, flash, vignette effects
+    ├── AudioSystem.js        ✅ Complete audio (TTS, SFX, Music)
+    ├── ParticleSystem.js     ✅ 200-particle pool with physics
+    ├── ScreenEffects.js      ✅ Shake, flash, vignette effects
+    └── FloatingTextSystem.js ✅ Floating text with presets
 ```
 
 ---
@@ -138,6 +151,7 @@ The modular version now has:
 - ✅ Complete audio system (TTS, SFX, Music)
 - ✅ Particle system (200-particle pool with physics)
 - ✅ Screen effects (shake, flash, vignette)
+- ✅ Floating text system (damage numbers, notifications)
 - ✅ Basic gameplay loop
 - ✅ State machine framework
 - ✅ Asset and map generation
@@ -154,12 +168,13 @@ The modular version now has:
 ## 📝 Lessons Learned
 
 1. **Incremental is better** - Testing each system extraction prevents cascading errors
-2. **Clean interfaces** - Systems provide intuitive APIs (e.g., `particles.burst()`, `effects.setShake()`)
-3. **Performance matters** - Particle system uses write-index pattern instead of splice for 5x speedup
-4. **Centralized state** - Moved particles and effects from PlayState to Game for cross-state access
+2. **Clean interfaces** - Systems provide intuitive APIs (e.g., `particles.burst()`, `floatingTexts.spawn()`)
+3. **Performance matters** - Particle and text systems use write-index pattern for 5x speedup
+4. **Centralized state** - Moved particles, effects, and texts from PlayState to Game for cross-state access
 5. **Rendering order matters** - Apply shake before rendering, flash/vignette after
-6. **Preset methods help** - damageLight(), victory(), explosion() make effects easy to use
-7. **Documentation** - Each system is self-documenting with JSDoc comments
+6. **Preset methods help** - damageLight(), victory(), damage(), heal() make systems easy to use
+7. **Sound integration** - FloatingText can trigger sounds via optional AudioSystem reference
+8. **Documentation** - Each system is self-documenting with JSDoc comments
 
 ---
 

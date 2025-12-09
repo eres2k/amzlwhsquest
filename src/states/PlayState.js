@@ -11,7 +11,6 @@ export class PlayState extends State {
         this.player = null;
         this.entities = [];
         this.projectiles = [];
-        this.floatingTexts = [];
         this.activeIssues = [];
         this.issuesFixed = 0;
         this.inputState = {};
@@ -146,8 +145,7 @@ export class PlayState extends State {
             this.game.particles.update(deltaTime);
         }
 
-        // Update floating texts
-        this.updateFloatingTexts(deltaTime);
+        // Note: Floating texts are updated in MainLoop via centralized system
 
         // Check win condition
         if (this.issuesFixed >= 5) {
@@ -319,18 +317,6 @@ export class PlayState extends State {
         });
     }
 
-    updateFloatingTexts(deltaTime) {
-        this.floatingTexts = this.floatingTexts.filter(t => {
-            if (!t.active) return false;
-
-            t.y -= 0.5;
-            t.life--;
-            t.alpha = t.life / t.maxLife;
-
-            return t.life > 0;
-        });
-    }
-
     spawnParticleBurst(x, y, colors, count = 10) {
         if (this.game.particles) {
             this.game.particles.burst(x, y, colors, count);
@@ -338,16 +324,9 @@ export class PlayState extends State {
     }
 
     spawnFloatingText(x, y, text, color) {
-        this.floatingTexts.push({
-            x: x,
-            y: y,
-            text: text,
-            color: color,
-            life: 60,
-            maxLife: 60,
-            alpha: 1,
-            active: true
-        });
+        if (this.game.floatingTexts) {
+            this.game.floatingTexts.spawn(x, y, text, color);
+        }
     }
 
     onRender(context) {
@@ -425,6 +404,11 @@ export class PlayState extends State {
         // Clear screen effects
         if (this.game.effects) {
             this.game.effects.clear();
+        }
+
+        // Clear floating texts
+        if (this.game.floatingTexts) {
+            this.game.floatingTexts.clear();
         }
     }
 }

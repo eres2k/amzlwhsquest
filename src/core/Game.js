@@ -12,6 +12,7 @@ import { UIRenderer } from '../renderers/UIRenderer.js';
 import { AudioSystem } from '../systems/AudioSystem.js';
 import { ParticleSystem } from '../systems/ParticleSystem.js';
 import { ScreenEffects } from '../systems/ScreenEffects.js';
+import { FloatingTextSystem } from '../systems/FloatingTextSystem.js';
 import { LogoState } from '../states/LogoState.js';
 import { IntroState } from '../states/IntroState.js';
 import { StoryState } from '../states/StoryState.js';
@@ -50,6 +51,7 @@ export class Game {
         this.audio = null;
         this.particles = null;
         this.effects = null;
+        this.floatingTexts = null;
 
         // Map-related arrays
         this.conveyorBelts = [];
@@ -162,6 +164,9 @@ export class Game {
             // Initialize screen effects
             this.initEffects();
 
+            // Initialize floating text system
+            this.initFloatingTexts();
+
             // Initialize main loop
             this.mainLoop = new MainLoop(this);
 
@@ -249,6 +254,26 @@ export class Game {
         });
 
         console.log('[Game] Screen effects initialized');
+    }
+
+    /**
+     * Initialize floating text system
+     */
+    initFloatingTexts() {
+        // Initialize floating text system
+        this.floatingTexts = new FloatingTextSystem({
+            maxTexts: 30,
+            defaultLife: 210, // ~3.5 seconds at 60 FPS
+            defaultVelocity: -0.2,
+            playSound: true
+        });
+
+        // Connect audio system for sound effects
+        if (this.audio) {
+            this.floatingTexts.setAudioSystem(this.audio);
+        }
+
+        console.log('[Game] Floating text system initialized');
     }
 
     /**

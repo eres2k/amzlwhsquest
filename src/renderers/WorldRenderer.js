@@ -284,24 +284,11 @@ export class WorldRenderer {
      * Render floating texts
      */
     renderFloatingTexts(context, state) {
-        if (!state.floatingTexts) return;
-
-        const camera = this.game.camera || { x: 0, y: 0 };
-
-        state.floatingTexts.forEach(t => {
-            if (!t.active) return;
-
-            const x = t.x - camera.x;
-            const y = t.y - camera.y;
-
-            context.save();
-            context.globalAlpha = t.alpha;
-            context.fillStyle = t.color;
-            context.font = 'bold 10px "Press Start 2P"';
-            context.textAlign = 'center';
-            context.fillText(t.text, x, y);
-            context.restore();
-        });
+        // Use centralized floating text system
+        if (this.game.floatingTexts) {
+            const camera = this.game.camera || { x: 0, y: 0 };
+            this.game.floatingTexts.render(context, camera);
+        }
     }
 }
 
