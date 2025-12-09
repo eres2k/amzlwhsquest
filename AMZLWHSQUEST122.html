@@ -3427,9 +3427,9 @@ function handleAction() {
         }
     }
     else if (GAME.state === 'SIMON_MECHA_TRANSFORM') {
-        // Only allow skip after animation has played and text is ready
-        if (GAME.stateTimer > 180 && GAME.simonTransformTextFetched) {
-            completeSimonMechaTransformation(); // Proceed to Mecha Simon dialog
+        // Only allow proceeding after health bar animation completes (120 frames = 2 seconds)
+        if (GAME.stateTimer > 120) {
+            completeSimonMechaTransformation(); // Proceed to Phase 4: Transformation
         }
     }
     else if (GAME.state === 'BEZOS_ESCAPE') {
@@ -3653,6 +3653,7 @@ function initSimonBoss() {
 
 // Fake victory dialogue - player thinks they won at 0 HP, but Simon transforms
 function triggerFakeVictoryDialogue() {
+    // Phase 1: Player Surprise
     // Stop the action
     GAME.projectiles = [];
     GAME.shake = 15;
@@ -3668,23 +3669,12 @@ function triggerFakeVictoryDialogue() {
     // Hide boss HUD temporarily to sell the "victory"
     document.getElementById('boss-hud').style.display = 'none';
 
-    // Character-specific victory lines
-    const victoryLines = {
-        "Carrie": "Ha! Is that all you've got, Simon? My 5S training paid off!",
-        "Nevena": "The Oracle foresaw this... I actually won! I can't believe it!",
-        "Joao": "YES! TAKE THAT, SIMON! The Siren's voice triumphs!",
-        "Roman": "Victory... achieved. Even ghosts can win.",
-        "Erwin": "The Manager ALWAYS wins! Time to file this victory report!"
-    };
-
-    const playerVictoryLine = victoryLines[GAME.selectedChar] || "I... I did it! I actually beat Simon!";
-
-    // Start the dialogue sequence
+    // Start the dialogue sequence after a short delay
     setTimeout(() => {
         if (GAME.state !== 'SIMON_FAKE_VICTORY') return;
 
-        // Player celebrates
-        showDialog(playerVictoryLine, GAME.selectedChar, GFX.chars[GAME.selectedChar], false);
+        // Phase 1: Player expresses surprise (~2 seconds)
+        showDialog("That was... surprisingly easy?", GAME.selectedChar, GFX.chars[GAME.selectedChar], false);
         GAME.fakeVictoryPhase = 1;
         GAME.nextState = 'SIMON_FAKE_VICTORY_CONTINUE';
     }, 500);
@@ -3695,44 +3685,17 @@ function continueFakeVictoryDialogue() {
     GAME.fakeVictoryPhase++;
 
     if (GAME.fakeVictoryPhase === 2) {
-        // Simon's ominous response
-        const simonResponses = [
-            "Heh... heheheh... You think this is OVER?",
-            "Oh, how adorable. You actually believe you've won.",
-            "Victory? No, no, no... This is merely the BEGINNING.",
-            "Fool... Did you really think I could be defeated so easily?"
-        ];
-        const simonLine = simonResponses[Math.floor(Math.random() * simonResponses.length)];
-
-        // Show boss HUD again
-        document.getElementById('boss-hud').style.display = 'block';
-        GAME.boss.hp = 25; // Restore some HP for visual effect
-        GAME.boss.maxHp = 25;
-        updateBossHud();
-
-        showDialog(simonLine, "MEGA SIMON", GFX.simonBoss, false);
-        GAME.nextState = 'SIMON_FAKE_VICTORY_CONTINUE';
-    }
-    else if (GAME.fakeVictoryPhase === 3) {
-        // Player's shocked reaction
-        const shockLines = {
-            "Carrie": "W-what?! But your HP... it was at zero!",
-            "Nevena": "This... this wasn't in my predictions...",
-            "Joao": "No... NO! This can't be happening!",
-            "Roman": "Impossible... The audit was complete...",
-            "Erwin": "Wait, that's not how the metrics work!"
-        };
-        const playerShockLine = shockLines[GAME.selectedChar] || "What?! How is this possible?!";
-
-        showDialog(playerShockLine, GAME.selectedChar, GFX.chars[GAME.selectedChar], false);
-        GAME.nextState = 'SIMON_FAKE_VICTORY_CONTINUE';
-    }
-    else if (GAME.fakeVictoryPhase === 4) {
-        // Simon's transformation announcement
+        // Phase 2: Simon's Reveal
         GAME.shake = 20;
         AudioSys.sfx.angry();
 
-        showDialog("FOOL! THIS ISN'T EVEN MY FINAL FORM!\n\nWITNESS TRUE COMPLIANCE!", "MEGA SIMON", GFX.simonBoss, false);
+        // Show boss HUD again with HP at 0 to start the animation
+        document.getElementById('boss-hud').style.display = 'block';
+        GAME.boss.hp = 0;
+        GAME.boss.maxHp = 999;
+        updateBossHud();
+
+        showDialog("You fool... That wasn't even my final form!\n\nBEHOLD MY TRUE POWER!", "MEGA SIMON", GFX.simonBoss, false);
         GAME.nextState = 'SIMON_FAKE_VICTORY_TRANSFORM';
     }
 }
@@ -3750,6 +3713,7 @@ function handleFakeVictoryDialogClose() {
 
 // Mecha Mega Simon transformation - triggered after fake victory dialogue
 function triggerMechaSimonTransformation() {
+    // Phase 3: Health Bar Animation
     GAME.shake = 30;
     GAME.flash = 20;
     AudioSys.sfx.bossIntro();
@@ -3760,42 +3724,42 @@ function triggerMechaSimonTransformation() {
     // Start the transformation animation state
     GAME.state = 'SIMON_MECHA_TRANSFORM';
     GAME.stateTimer = 0;
-    GAME.simonTransformTextFetched = false;
-    GAME.simonTransformText = null;
 
-    // Pre-fetch the AI text during animation
-    const currentGen = GAME.genId;
-    callGemini(
-        "You are Simon Unglaube transforming into MECHA MEGA SIMON. Announce your transformation with terrifying mechanical corporate speak. You are now unstoppable. Max 35 words.",
-        "taunt"
-    ).then(text => {
-        if (GAME.genId === currentGen) {
-            GAME.simonTransformText = text;
-            GAME.simonTransformTextFetched = true;
-        }
-    });
+    // Initialize health bar animation from 0% to 100%
+    GAME.boss.hp = 0;
+    GAME.boss.maxHp = 999;
+    GAME.healthBarAnimProgress = 0; // Track animation progress (0 to 1)
+
+    // Set flag to indicate transformation is in progress
+    GAME.simonTransformTextFetched = true; // Skip AI text for simplified version
+    GAME.simonTransformText = null;
 }
 
 // Complete Simon's mecha transformation after animation
 function completeSimonMechaTransformation() {
+    // Phase 4: Transformation Complete
     // Transform the boss
     GAME.boss.name = "MECHA MEGA SIMON";
-    GAME.boss.title = "THE ULTIMATE WHS AUTHORITY";
+    GAME.boss.title = "MECHANIZED AUDIT ENFORCER";
     GAME.boss.sprite = "mechaMegaSimon";
     GAME.boss.isMecha = true;
-    GAME.boss.hp = 999; // Effectively invincible
+    GAME.boss.hp = 999;
     GAME.boss.maxHp = 999;
-    GAME.boss.speed = 2.5; // Faster
-    GAME.boss.attackDelay = 15; // More aggressive
+    GAME.boss.speed = 1.2; // Faster than before (was 1.0)
+    GAME.boss.attackDelay = 40; // Faster attacks (was 55)
     GAME.boss.attackName = "COMPLIANCE ANNIHILATION";
     GAME.boss.mechaTimer = 0; // Timer to trigger game over
     document.getElementById('boss-name-el').innerText = GAME.boss.name;
     updateBossHud();
 
-    // Show dialog with fetched text or fallback
-    const dialogText = GAME.simonTransformText || "TRANSFORMATION COMPLETE. RESISTANCE IS FUTILE. SAFETY PROTOCOL: ABSOLUTE.";
-    showDialog(dialogText + "\n\n[SAFETY PROTOCOL: ABSOLUTE]", "MECHA MEGA SIMON", GFX.mechaMegaSimon, true);
-    GAME.nextState = 'MECHA_SIMON_SPLASH'; // Go to splash screen after dialog
+    // Return to boss fight immediately with massive visual effects
+    GAME.state = 'BOSS';
+    GAME.nextState = 'BOSS';
+    GAME.shake = 50; // Massive screen shake
+    GAME.flash = 30; // Massive flash
+
+    // Spawn massive particle burst
+    spawnParticleBurst(GAME.boss.x + 24, GAME.boss.y + 24, ['#eab308', '#dc2626', '#ff9900', '#ff4444'], 50);
 }
 
 // Show Mecha Mega Simon splash screen before boss fight
@@ -4534,7 +4498,35 @@ function update() {
         return;
     }
 
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM', 'SIMON_MECHA_TRANSFORM', 'MECHA_SIMON_SPLASH', 'BEZOS_ESCAPE', 'BEZOS_ESCAPE_MECHA_LINE', 'BEZOS_ESCAPE_JEFF_LINE', 'BEZOS_ESCAPE_DIALOGUE', 'SIMON_FAKE_VICTORY'].includes(GAME.state)) return;
+    // Phase 3: Health Bar Animation during Simon transformation
+    if (GAME.state === 'SIMON_MECHA_TRANSFORM') {
+        // Animate health bar from 0% to 100% over 120 frames (~2 seconds at 60fps)
+        const animDuration = 120;
+        if (GAME.stateTimer <= animDuration) {
+            // Smooth easing animation (ease-in-out)
+            const t = GAME.stateTimer / animDuration;
+            const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+            GAME.healthBarAnimProgress = eased;
+            GAME.boss.hp = Math.floor(eased * 999);
+            updateBossHud();
+
+            // Continuous particle effects during animation
+            if (GAME.ticks % 3 === 0) {
+                spawnParticle(
+                    GAME.boss.x + 16 + (Math.random() - 0.5) * 20,
+                    GAME.boss.y + 16 + (Math.random() - 0.5) * 20,
+                    Math.random() > 0.5 ? '#eab308' : '#dc2626',
+                    -1 - Math.random() * 2
+                );
+            }
+
+            // Continuous screen shake
+            if (GAME.shake < 5) GAME.shake = 5;
+        }
+        return;
+    }
+
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM', 'MECHA_SIMON_SPLASH', 'BEZOS_ESCAPE', 'BEZOS_ESCAPE_MECHA_LINE', 'BEZOS_ESCAPE_JEFF_LINE', 'BEZOS_ESCAPE_DIALOGUE', 'SIMON_FAKE_VICTORY'].includes(GAME.state)) return;
 
     // Bezos victory screen
     if (GAME.state === 'BEZOS_WIN') {
