@@ -9,6 +9,11 @@ import { AssetGenerator } from '../generators/AssetGenerator.js';
 import { MapGenerator } from '../generators/MapGenerator.js';
 import { WorldRenderer } from '../renderers/WorldRenderer.js';
 import { UIRenderer } from '../renderers/UIRenderer.js';
+import { AudioSystem } from '../systems/AudioSystem.js';
+import { ParticleSystem } from '../systems/ParticleSystem.js';
+import { ScreenEffects } from '../systems/ScreenEffects.js';
+import { FloatingTextSystem } from '../systems/FloatingTextSystem.js';
+import { HazardSystem } from '../systems/HazardSystem.js';
 import { LogoState } from '../states/LogoState.js';
 import { IntroState } from '../states/IntroState.js';
 import { StoryState } from '../states/StoryState.js';
@@ -45,7 +50,10 @@ export class Game {
         this.renderers = {};
         this.transition = null;
         this.audio = null;
-        this.tts = null;
+        this.particles = null;
+        this.effects = null;
+        this.floatingTexts = null;
+        this.hazards = null;
 
         // Map-related arrays
         this.conveyorBelts = [];
@@ -152,6 +160,18 @@ export class Game {
             // Initialize audio systems (if needed)
             this.initAudio();
 
+            // Initialize particle system
+            this.initParticles();
+
+            // Initialize screen effects
+            this.initEffects();
+
+            // Initialize floating text system
+            this.initFloatingTexts();
+
+            // Initialize hazard system
+            this.initHazards();
+
             // Initialize main loop
             this.mainLoop = new MainLoop(this);
 
@@ -203,26 +223,72 @@ export class Game {
      * Initialize audio systems
      */
     initAudio() {
-        // Audio system integration
-        // This would connect to the existing TTSSys, GeminiTTS, MusicSys, AudioSys
-        // For now, create placeholder
-        this.audio = {
-            playMusic: (track) => {
-                console.log(`[Audio] Playing music: ${track}`);
-            },
-            stopMusic: () => {
-                console.log('[Audio] Stopping music');
-            },
-            update: (deltaTime) => {
-                // Update music/audio state
-            }
-        };
+        // Initialize complete audio system
+        this.audio = new AudioSystem();
 
-        this.tts = {
-            update: (deltaTime) => {
-                // Update TTS loading indicators
-            }
-        };
+        console.log('[Game] Audio system initialized');
+    }
+
+    /**
+     * Initialize particle system
+     */
+    initParticles() {
+        // Initialize particle system with 200-particle pool
+        this.particles = new ParticleSystem({
+            maxParticles: 200,
+            gravity: 0.2,
+            bounce: -0.6,
+            particleLifeBase: 50,
+            particleLifeVariance: 20
+        });
+
+        console.log('[Game] Particle system initialized');
+    }
+
+    /**
+     * Initialize screen effects
+     */
+    initEffects() {
+        // Initialize screen effects
+        this.effects = new ScreenEffects({
+            shakeDecay: 1,
+            flashDecay: 1,
+            vignetteEnabled: false,
+            vignetteAlpha: 0.3,
+            vignetteFlicker: false
+        });
+
+        console.log('[Game] Screen effects initialized');
+    }
+
+    /**
+     * Initialize floating text system
+     */
+    initFloatingTexts() {
+        // Initialize floating text system
+        this.floatingTexts = new FloatingTextSystem({
+            maxTexts: 30,
+            defaultLife: 210, // ~3.5 seconds at 60 FPS
+            defaultVelocity: -0.2,
+            playSound: true
+        });
+
+        // Connect audio system for sound effects
+        if (this.audio) {
+            this.floatingTexts.setAudioSystem(this.audio);
+        }
+
+        console.log('[Game] Floating text system initialized');
+    }
+
+    /**
+     * Initialize hazard system
+     */
+    initHazards() {
+        // Initialize hazard system with game reference
+        this.hazards = new HazardSystem(this);
+
+        console.log('[Game] Hazard system initialized (90+ hazard types)');
     }
 
     /**

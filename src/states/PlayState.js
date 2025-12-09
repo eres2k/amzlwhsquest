@@ -11,9 +11,6 @@ export class PlayState extends State {
         this.player = null;
         this.entities = [];
         this.projectiles = [];
-        this.particles = [];
-        this.floatingTexts = [];
-        this.activeIssues = [];
         this.issuesFixed = 0;
         this.inputState = {};
     }
@@ -35,7 +32,7 @@ export class PlayState extends State {
 
         // Start music
         if (this.game.audio) {
-            this.game.audio.playMusic('warehouse');
+            this.game.audio.getMusic().play('ingame');
         }
     }
 
@@ -72,7 +69,24 @@ export class PlayState extends State {
             this.game.palletStacks = mapData.palletStacks;
             this.game.cartWorkers = mapData.cartWorkers;
             this.game.clutter = mapData.clutter;
-            this.activeIssues = mapData.hazardSpawns;
+
+            // Clear and spawn hazards using centralized system
+            if (this.game.hazards) {
+                this.game.hazards.clear();
+
+                // Spawn 5 random hazards
+                this.game.hazards.spawnMultiple(5, () => this.getRandomFloorTile());
+
+                // Spawn blocked exit hazard at door
+                const door = mapData.door;
+                if (door) {
+                    this.game.hazards.spawn(
+                        door.hazardX * this.game.tileSize,
+                        door.hazardY * this.game.tileSize,
+                        { name: "Blocked Exit", type: "box" }
+                    );
+                }
+            }
         }
     }
 
@@ -142,11 +156,12 @@ export class PlayState extends State {
         // Update projectiles
         this.updateProjectiles(deltaTime);
 
-        // Update particles
-        this.updateParticles(deltaTime);
+        // Update particles (via centralized system)
+        if (this.game.particles) {
+            this.game.particles.update(deltaTime);
+        }
 
-        // Update floating texts
-        this.updateFloatingTexts(deltaTime);
+        // Note: Floating texts are updated in MainLoop via centralized system
 
         // Check win condition
         if (this.issuesFixed >= 5) {
@@ -232,28 +247,36 @@ export class PlayState extends State {
             damage: 1,
             active: true
         });
+
+        // Play throw sound
+        if (this.game.audio) {
+            this.game.audio.getSFX().throw();
+        }
     }
 
     checkHazardCollisions() {
         if (this.player.iframe > 0) return;
+        if (!this.game.hazards) return;
 
         const p = this.player;
-        const hazardRadius = 16;
+        const hazard = this.game.hazards.checkPlayerCollision(p, 16);
 
-        for (const issue of this.activeIssues) {
-            if (issue.fixed) continue;
+        if (hazard) {
+            // Can fix with space
+            if (this.inputState.attack) {
+                this.game.hazards.fixHazard(hazard);
+                this.issuesFixed++;
+                this.spawnParticleBurst(hazard.x, hazard.y, ['#22c55e', '#10b981', '#34d399']);
+                this.spawnFloatingText(hazard.x, hazard.y, 'FIXED!', '#22c55e');
 
-            const dx = p.x - issue.x;
-            const dy = p.y - issue.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+                // Play fix sound
+                if (this.game.audio) {
+                    this.game.audio.getSFX().fix();
+                }
 
-            if (dist < hazardRadius) {
-                // Can fix with space
-                if (this.inputState.attack) {
-                    issue.fixed = true;
-                    this.issuesFixed++;
-                    this.spawnParticleBurst(issue.x, issue.y, '#22c55e');
-                    this.spawnFloatingText(issue.x, issue.y, 'FIXED!', '#22c55e');
+                // Screen flash on fix
+                if (this.game.effects) {
+                    this.game.effects.setFlash(5);
                 }
             }
         }
@@ -295,7 +318,7 @@ export class PlayState extends State {
 
             // Check wall collision
             if (!this.canMoveTo(proj.x, proj.y)) {
-                this.spawnParticleBurst(proj.x, proj.y, '#ffffff');
+                this.spawnParticleBurst(proj.x, proj.y, ['#ffffff']);
                 return false;
             }
 
@@ -303,63 +326,16 @@ export class PlayState extends State {
         });
     }
 
-    updateParticles(deltaTime) {
-        this.particles = this.particles.filter(p => {
-            if (!p.active) return false;
-
-            p.x += p.vx;
-            p.y += p.vy;
-            p.vy += 0.1; // Gravity
-            p.life--;
-
-            p.alpha = p.life / p.maxLife;
-
-            return p.life > 0;
-        });
-    }
-
-    updateFloatingTexts(deltaTime) {
-        this.floatingTexts = this.floatingTexts.filter(t => {
-            if (!t.active) return false;
-
-            t.y -= 0.5;
-            t.life--;
-            t.alpha = t.life / t.maxLife;
-
-            return t.life > 0;
-        });
-    }
-
-    spawnParticleBurst(x, y, color) {
-        for (let i = 0; i < 10; i++) {
-            const angle = (Math.PI * 2 / 10) * i;
-            const speed = 2 + Math.random();
-
-            this.particles.push({
-                x: x,
-                y: y,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                color: color,
-                life: 30,
-                maxLife: 30,
-                alpha: 1,
-                active: true
-            });
+    spawnParticleBurst(x, y, colors, count = 10) {
+        if (this.game.particles) {
+            this.game.particles.burst(x, y, colors, count);
         }
     }
 
     spawnFloatingText(x, y, text, color) {
-        this.floatingTexts.push({
-            x: x,
-            y: y,
-            text: text,
-            color: color,
-            life: 60,
-            maxLife: 60,
-            alpha: 1,
-            active: true
-        });
+        if (this.game.floatingTexts) {
+            this.game.floatingTexts.spawn(x, y, text, color);
+        }
     }
 
     onRender(context) {
@@ -428,6 +404,26 @@ export class PlayState extends State {
 
     onExit() {
         console.log('[PlayState] Exiting play state');
+
+        // Clear particles when leaving play state
+        if (this.game.particles) {
+            this.game.particles.clear();
+        }
+
+        // Clear screen effects
+        if (this.game.effects) {
+            this.game.effects.clear();
+        }
+
+        // Clear floating texts
+        if (this.game.floatingTexts) {
+            this.game.floatingTexts.clear();
+        }
+
+        // Clear hazards
+        if (this.game.hazards) {
+            this.game.hazards.clear();
+        }
     }
 }
 

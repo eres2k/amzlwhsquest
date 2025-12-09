@@ -102,6 +102,16 @@ export class MainLoop {
             this.game.audio.update(deltaTime);
         }
 
+        // Update screen effects
+        if (this.game.effects) {
+            this.game.effects.update(deltaTime);
+        }
+
+        // Update floating texts
+        if (this.game.floatingTexts) {
+            this.game.floatingTexts.update(deltaTime);
+        }
+
         // Update TTS loading indicator
         if (this.game.tts) {
             this.game.tts.update(deltaTime);
@@ -120,6 +130,12 @@ export class MainLoop {
         // Clear screen
         context.fillStyle = '#0a0a12';
         context.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Apply shake effect (before rendering)
+        context.save();
+        if (this.game.effects) {
+            this.game.effects.applyShake(context);
+        }
 
         // Render current state via renderers
         if (this.game.stateMachine && this.game.renderers) {
@@ -141,6 +157,14 @@ export class MainLoop {
                     this.game.renderers.ui.render(context, state);
                 }
             }
+        }
+
+        // Restore context after shake
+        context.restore();
+
+        // Render screen effects (flash, vignette) - always on top
+        if (this.game.effects) {
+            this.game.effects.renderEffects(context);
         }
 
         // Render transitions

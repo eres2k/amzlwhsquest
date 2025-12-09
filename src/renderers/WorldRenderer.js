@@ -164,28 +164,11 @@ export class WorldRenderer {
      * Render hazards
      */
     renderHazards(context, state) {
-        if (!state.activeIssues) return;
-
-        const camera = this.game.camera || { x: 0, y: 0 };
-
-        state.activeIssues.forEach(issue => {
-            if (issue.fixed) return;
-
-            const x = issue.x - camera.x;
-            const y = issue.y - camera.y;
-
-            // Hazard indicator
-            context.fillStyle = '#dc2626';
-            context.fillRect(x - 8, y - 8, 16, 16);
-            context.fillStyle = '#ef4444';
-            context.fillRect(x - 6, y - 6, 12, 12);
-
-            // Warning symbol
-            context.fillStyle = '#fef08a';
-            context.font = 'bold 12px monospace';
-            context.textAlign = 'center';
-            context.fillText('!', x, y + 4);
-        });
+        // Use centralized hazard system
+        if (this.game.hazards) {
+            const camera = this.game.camera || { x: 0, y: 0 };
+            this.game.hazards.render(context, camera);
+        }
     }
 
     /**
@@ -273,46 +256,22 @@ export class WorldRenderer {
      * Render particles
      */
     renderParticles(context, state) {
-        if (!state.particles) return;
-
-        const camera = this.game.camera || { x: 0, y: 0 };
-
-        state.particles.forEach(p => {
-            if (!p.active) return;
-
-            const x = p.x - camera.x;
-            const y = p.y - camera.y;
-
-            context.save();
-            context.globalAlpha = p.alpha;
-            context.fillStyle = p.color;
-            context.fillRect(x - 1, y - 1, 2, 2);
-            context.restore();
-        });
+        // Use centralized particle system
+        if (this.game.particles) {
+            const camera = this.game.camera || { x: 0, y: 0 };
+            this.game.particles.render(context, camera);
+        }
     }
 
     /**
      * Render floating texts
      */
     renderFloatingTexts(context, state) {
-        if (!state.floatingTexts) return;
-
-        const camera = this.game.camera || { x: 0, y: 0 };
-
-        state.floatingTexts.forEach(t => {
-            if (!t.active) return;
-
-            const x = t.x - camera.x;
-            const y = t.y - camera.y;
-
-            context.save();
-            context.globalAlpha = t.alpha;
-            context.fillStyle = t.color;
-            context.font = 'bold 10px "Press Start 2P"';
-            context.textAlign = 'center';
-            context.fillText(t.text, x, y);
-            context.restore();
-        });
+        // Use centralized floating text system
+        if (this.game.floatingTexts) {
+            const camera = this.game.camera || { x: 0, y: 0 };
+            this.game.floatingTexts.render(context, camera);
+        }
     }
 }
 
