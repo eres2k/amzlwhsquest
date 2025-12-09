@@ -5,12 +5,12 @@ Incrementally refactor the monolithic AMZLWHSQUEST122.html (10,247 lines) into a
 
 ## 📊 Current Status
 
-**Modular Version Size:** 5,490 lines (54% of monolithic)
-**Completion:** ~20% (Core infrastructure + Audio + Particles)
+**Modular Version Size:** 5,784 lines (56% of monolithic)
+**Completion:** ~25% (Core infrastructure + Audio + Particles + Screen Effects)
 
 ---
 
-## ✅ Phase 1: Core Systems (IN PROGRESS)
+## ✅ Phase 1: Core Systems (COMPLETE)
 
 ### 1. Audio System ✅ COMPLETE
 **Status:** Extracted and integrated
@@ -59,19 +59,29 @@ Incrementally refactor the monolithic AMZLWHSQUEST122.html (10,247 lines) into a
 - ✅ Integrated into `WorldRenderer` for rendering
 - ✅ Clean API: `game.particles.burst()`, `game.particles.update()`
 
+### 3. Screen Effects ✅ COMPLETE
+**Status:** Extracted and integrated
+**Location:** `src/systems/ScreenEffects.js` (244 lines)
+
+**Components:**
+- ✅ **Shake Effect** - Camera shake with intensity and decay
+- ✅ **Flash Effect** - White flash overlay with alpha fade
+- ✅ **Vignette Effect** - Optional radial gradient overlay with flicker
+- ✅ **Preset Methods** - damageLight(), damageMedium(), damageHeavy(), victory(), explosion()
+
+**Integration:**
+- ✅ Imported into `Game.js`
+- ✅ Connected to `MainLoop` for update and rendering
+- ✅ Applied shake before rendering, flash/vignette after
+- ✅ Connected to `PlayState` (flash on fix)
+- ✅ Clean API: `game.effects.setShake()`, `game.effects.setFlash()`, preset methods
+
 ---
 
 ## 🔄 Next Steps
 
-### 3. Screen Effects (NEXT)
-Extract visual screen effects:
-- Screen shake intensity
-- Flash effects (damage/victory)
-- Vignette overlay
-- CRT scanline effects (optional)
-
-### 4. Floating Text System
-Extract damage numbers and notifications:
+### 4. Floating Text System (NEXT)
+Extract and enhance floating text system:
 - Floating text lifecycle
 - Fade out animation with alpha
 - Vertical movement
@@ -114,7 +124,8 @@ src/
 │   └── GameOverState.js
 └── systems/
     ├── AudioSystem.js    ✅ Complete audio (TTS, SFX, Music)
-    └── ParticleSystem.js ✅ 200-particle pool with physics
+    ├── ParticleSystem.js ✅ 200-particle pool with physics
+    └── ScreenEffects.js  ✅ Shake, flash, vignette effects
 ```
 
 ---
@@ -126,12 +137,12 @@ src/
 The modular version now has:
 - ✅ Complete audio system (TTS, SFX, Music)
 - ✅ Particle system (200-particle pool with physics)
+- ✅ Screen effects (shake, flash, vignette)
 - ✅ Basic gameplay loop
 - ✅ State machine framework
 - ✅ Asset and map generation
 
 **Still Missing:**
-- ❌ Screen effects
 - ❌ Complete hazards (only basic spawns)
 - ❌ Boss mechanics
 - ❌ NPC AI
@@ -143,10 +154,12 @@ The modular version now has:
 ## 📝 Lessons Learned
 
 1. **Incremental is better** - Testing each system extraction prevents cascading errors
-2. **Clean interfaces** - Systems provide intuitive APIs (e.g., `particles.burst()`, `audio.getSFX()`)
+2. **Clean interfaces** - Systems provide intuitive APIs (e.g., `particles.burst()`, `effects.setShake()`)
 3. **Performance matters** - Particle system uses write-index pattern instead of splice for 5x speedup
-4. **Centralized state** - Moved particles from PlayState to Game for cross-state access
-5. **Documentation** - Each system is self-documenting with JSDoc comments
+4. **Centralized state** - Moved particles and effects from PlayState to Game for cross-state access
+5. **Rendering order matters** - Apply shake before rendering, flash/vignette after
+6. **Preset methods help** - damageLight(), victory(), explosion() make effects easy to use
+7. **Documentation** - Each system is self-documenting with JSDoc comments
 
 ---
 

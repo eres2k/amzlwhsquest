@@ -265,6 +265,11 @@ export class PlayState extends State {
                     if (this.game.audio) {
                         this.game.audio.getSFX().fix();
                     }
+
+                    // Screen flash on fix
+                    if (this.game.effects) {
+                        this.game.effects.setFlash(5);
+                    }
                 }
             }
         }
@@ -415,6 +420,11 @@ export class PlayState extends State {
         // Clear particles when leaving play state
         if (this.game.particles) {
             this.game.particles.clear();
+        }
+
+        // Clear screen effects
+        if (this.game.effects) {
+            this.game.effects.clear();
         }
     }
 }

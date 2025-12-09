@@ -11,6 +11,7 @@ import { WorldRenderer } from '../renderers/WorldRenderer.js';
 import { UIRenderer } from '../renderers/UIRenderer.js';
 import { AudioSystem } from '../systems/AudioSystem.js';
 import { ParticleSystem } from '../systems/ParticleSystem.js';
+import { ScreenEffects } from '../systems/ScreenEffects.js';
 import { LogoState } from '../states/LogoState.js';
 import { IntroState } from '../states/IntroState.js';
 import { StoryState } from '../states/StoryState.js';
@@ -48,6 +49,7 @@ export class Game {
         this.transition = null;
         this.audio = null;
         this.particles = null;
+        this.effects = null;
 
         // Map-related arrays
         this.conveyorBelts = [];
@@ -157,6 +159,9 @@ export class Game {
             // Initialize particle system
             this.initParticles();
 
+            // Initialize screen effects
+            this.initEffects();
+
             // Initialize main loop
             this.mainLoop = new MainLoop(this);
 
@@ -228,6 +233,22 @@ export class Game {
         });
 
         console.log('[Game] Particle system initialized');
+    }
+
+    /**
+     * Initialize screen effects
+     */
+    initEffects() {
+        // Initialize screen effects
+        this.effects = new ScreenEffects({
+            shakeDecay: 1,
+            flashDecay: 1,
+            vignetteEnabled: false,
+            vignetteAlpha: 0.3,
+            vignetteFlicker: false
+        });
+
+        console.log('[Game] Screen effects initialized');
     }
 
     /**
