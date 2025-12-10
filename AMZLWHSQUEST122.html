@@ -3449,14 +3449,13 @@ function handleAction() {
         advanceState(); // Move to LOGO state
         return;
     }
-    if (GAME.state === 'LOGO') {
-        MusicSys.stop(); // Clear any failed attempts
-        MusicSys.currentName = null; // Force fresh start
-    }
-    updateMusicForState();
+    // Let intro music play - ignore input and auto-advance after timer
+    if (GAME.state === 'LOGO') { return; }
+    // Handle other states that should not process input
     if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') return;
-    if (GAME.state === 'LOGO') { return; } // Let intro music play, will auto-advance after timer
-    else if (['INTRO', 'STORY'].includes(GAME.state)) { AudioSys.sfx.start(); advanceState(); }
+
+    updateMusicForState();
+    if (['INTRO', 'STORY'].includes(GAME.state)) { AudioSys.sfx.start(); advanceState(); }
     else if (['TITLE', 'HOWTO'].includes(GAME.state)) {
         GAME.state = (GAME.state==='TITLE')?'HOWTO':'SELECT'; AudioSys.sfx.select(); updateMusicForState();
     }
