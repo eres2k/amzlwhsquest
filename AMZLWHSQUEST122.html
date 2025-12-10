@@ -1311,42 +1311,42 @@ function generateAssets() {
             ctx.fillStyle = '#0b1224'; ctx.fillRect(5,14,2,1); ctx.fillRect(10,14,2,1);
         }),
         "Erwin": c(16,16, ctx => {
+            // ERWIN - The Manager standing proud with mini Tesla behind
             // Shadow (ground effect)
             ctx.fillStyle = 'rgba(0,0,0,0.4)';
             ctx.beginPath(); ctx.ellipse(8, 15, 6, 2, 0, 0, Math.PI*2); ctx.fill();
-            // Kid-sized Tesla body - premium metallic design
-            ctx.fillStyle = '#27272a'; ctx.fillRect(1,8,14,6);
-            ctx.fillStyle = '#3f3f46'; ctx.fillRect(2,9,12,5);
-            ctx.fillStyle = '#52525b'; ctx.fillRect(3,10,10,3);
-            ctx.fillStyle = '#71717a'; ctx.fillRect(4,10,8,2); // Metallic shine
-            ctx.fillStyle = '#a1a1aa'; ctx.fillRect(5,10,6,1); // Bright metallic
-            // Hood with premium reflection
-            ctx.fillStyle = '#3f3f46'; ctx.fillRect(2,7,12,3);
-            ctx.fillStyle = '#4b5563'; ctx.fillRect(3,8,10,2);
-            ctx.fillStyle = '#6b7280'; ctx.fillRect(4,8,8,2);
-            ctx.fillStyle = '#9ca3af'; ctx.fillRect(5,8,6,1); // Premium reflection
-            ctx.fillStyle = '#d4d4d8'; ctx.fillRect(6,8,4,1); // Bright shine line
-            // Epic windshield glow (high-tech)
-            ctx.fillStyle = '#0369a1'; ctx.fillRect(3,9,10,3);
-            ctx.fillStyle = '#0891b2'; ctx.fillRect(4,9,8,2);
-            ctx.fillStyle = '#22d3ee'; ctx.fillRect(5,10,6,2);
-            ctx.fillStyle = '#67e8f9'; ctx.fillRect(6,10,4,1); // Bright glow
-            ctx.fillStyle = '#a5f3fc'; ctx.fillRect(7,10,2,1); // Ultra bright center
-            // Erwin's smug face visible through windshield (tiny)
-            ctx.fillStyle = '#d4a574'; ctx.fillRect(6,9,4,3);
-            ctx.fillStyle = '#e8c49a'; ctx.fillRect(7,10,2,2);
-            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(6,9,4,1); // Hair
-            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(7,10,1,1); ctx.fillRect(9,10,1,1); // Eyes
-            ctx.fillStyle = '#f59e0b'; ctx.fillRect(7,11,2,1); // Smug grin
-            // Premium wheels with detail
-            ctx.fillStyle = '#000'; ctx.fillRect(1,12,4,3); ctx.fillRect(11,12,4,3);
-            ctx.fillStyle = '#18181b'; ctx.fillRect(2,13,2,2); ctx.fillRect(12,13,2,2);
-            ctx.fillStyle = '#71717a'; ctx.fillRect(2,13,1,1); ctx.fillRect(12,13,1,1); // Metallic rims
-            // Underglow (RGB lighting)
-            ctx.fillStyle = 'rgba(34, 211, 238, 0.3)'; ctx.fillRect(3,14,10,1);
-            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,14,8,1);
-            // Headlights
-            ctx.fillStyle = '#fef08a'; ctx.fillRect(1,9,1,1); ctx.fillRect(14,9,1,1);
+            // Mini Tesla in background (smaller, behind Erwin)
+            ctx.fillStyle = '#27272a'; ctx.fillRect(0,12,16,3);
+            ctx.fillStyle = '#3f3f46'; ctx.fillRect(1,12,14,2);
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(2,12,4,1); ctx.fillRect(10,12,4,1); // Windows
+            ctx.fillStyle = '#000'; ctx.fillRect(0,14,3,2); ctx.fillRect(13,14,3,2); // Wheels
+            // Erwin's slicked dark hair
+            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(4,0,8,5);
+            ctx.fillStyle = '#1a2744'; ctx.fillRect(5,1,6,3);
+            ctx.fillStyle = '#2a3755'; ctx.fillRect(6,1,4,2); // Hair shine
+            // Face
+            ctx.fillStyle = '#c4956a'; ctx.fillRect(4,4,8,6);
+            ctx.fillStyle = '#d4a574'; ctx.fillRect(5,5,6,4);
+            ctx.fillStyle = '#e8c49a'; ctx.fillRect(6,5,4,3);
+            // Confident eyes with tech glint
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,5,2,2); ctx.fillRect(9,5,2,2);
+            ctx.fillStyle = '#0891b2'; ctx.fillRect(5,5,1,1); ctx.fillRect(9,5,1,1); // Cyan glint
+            // Well-groomed beard
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,7,6,3);
+            ctx.fillStyle = '#2d2d2d'; ctx.fillRect(6,8,4,2);
+            // Smug smile through beard
+            ctx.fillStyle = '#f59e0b'; ctx.fillRect(6,8,4,1);
+            // Tesla-gray suit jacket
+            ctx.fillStyle = '#27272a'; ctx.fillRect(2,10,12,5);
+            ctx.fillStyle = '#3f3f46'; ctx.fillRect(3,10,10,4);
+            ctx.fillStyle = '#52525b'; ctx.fillRect(4,11,8,2); // Suit highlight
+            // Cyan Tesla logo/tie
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(7,10,2,3);
+            // Arms (confident pose)
+            ctx.fillStyle = '#27272a'; ctx.fillRect(1,10,2,4); ctx.fillRect(13,10,2,4);
+            ctx.fillStyle = '#d4a574'; ctx.fillRect(1,13,2,1); ctx.fillRect(13,13,2,1); // Hands
+            // Shoes
+            ctx.fillStyle = '#000'; ctx.fillRect(3,14,4,2); ctx.fillRect(9,14,4,2);
         })
     };
 
@@ -1782,7 +1782,8 @@ function generateAssets() {
         "Joao": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFaces["Joao"],0,0,48,48,0,0,96,96); }),
         "Roman": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFaces["Roman"],0,0,48,48,0,0,96,96); }),
         "Erwin": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFaces["Erwin"],0,0,48,48,0,0,96,96); }),
-        "Simon Unglaube": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceLarge,0,0,48,48,0,0,96,96); })
+        "Simon Unglaube": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceLarge,0,0,48,48,0,0,96,96); }),
+        "Jeff Bezos": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.jeffFace,0,0,48,48,0,0,96,96); })
     };
 
     GFX.introPortraitsTalking = {
@@ -1791,7 +1792,8 @@ function generateAssets() {
         "Joao": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFacesTalking["Joao"],0,0,48,48,0,0,96,96); }),
         "Roman": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFacesTalking["Roman"],0,0,48,48,0,0,96,96); }),
         "Erwin": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFacesTalking["Erwin"],0,0,48,48,0,0,96,96); }),
-        "Simon Unglaube": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceTalking,0,0,48,48,0,0,96,96); })
+        "Simon Unglaube": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceTalking,0,0,48,48,0,0,96,96); }),
+        "Jeff Bezos": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.jeffFaceTalking,0,0,48,48,0,0,96,96); })
     };
 
     // ENHANCED SIMON BOSS - 32x32 detailed sprite - Short brown hair, glasses, brown beard
@@ -3763,6 +3765,66 @@ function generateAssets() {
         ctx.fillStyle = '#d4a574'; ctx.fillRect(12,10,3,6); ctx.fillRect(33,10,3,6);
         ctx.fillStyle = '#e8c49a'; ctx.fillRect(13,11,2,4); ctx.fillRect(33,11,2,4);
     });
+
+    // JEFF BEZOS PORTRAIT - 48x48 (for dialog boxes)
+    GFX.jeffFace = c(48,48, ctx => {
+        // Background (Amazon orange/gold gradient)
+        const grad = ctx.createRadialGradient(24,24,8,24,24,24);
+        grad.addColorStop(0, '#ff9900'); grad.addColorStop(1, '#b45309');
+        ctx.fillStyle = grad; ctx.fillRect(0,0,48,48);
+        // Money/power sparkles
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(4,4,2,2); ctx.fillRect(42,6,2,2); ctx.fillRect(8,38,2,2); ctx.fillRect(38,40,2,2);
+        // Bald dome with epic shine
+        ctx.fillStyle = '#c4956a'; ctx.fillRect(12,6,24,20);
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(14,7,20,17);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(16,8,16,14);
+        ctx.fillStyle = '#f5deb3'; ctx.fillRect(18,8,12,10);
+        // LEGENDARY BALD HEAD SHINE
+        ctx.fillStyle = '#faebd7'; ctx.fillRect(20,6,8,4);
+        ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fillRect(22,6,4,3);
+        // Arrogant eyebrows
+        ctx.fillStyle = '#3f3f46'; ctx.fillRect(16,14,6,2); ctx.fillRect(26,14,6,2);
+        // Intense blue eyes (looking down on you)
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(17,17,5,5); ctx.fillRect(26,17,5,5);
+        ctx.fillStyle = '#3b82f6'; ctx.fillRect(18,18,3,3); ctx.fillRect(27,18,3,3);
+        ctx.fillStyle = '#60a5fa'; ctx.fillRect(18,18,2,2); ctx.fillRect(27,18,2,2);
+        ctx.fillStyle = '#fff'; ctx.fillRect(18,18,1,1); ctx.fillRect(27,18,1,1);
+        // Nose
+        ctx.fillStyle = '#c4956a'; ctx.fillRect(22,20,4,5);
+        ctx.fillStyle = '#b8784a'; ctx.fillRect(23,24,2,1);
+        // SMUG BILLIONAIRE SMIRK
+        ctx.fillStyle = '#b45a3c'; ctx.fillRect(18,26,12,3);
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(20,27,8,1);
+        ctx.fillStyle = '#fff'; ctx.fillRect(21,27,6,1); // Perfect teeth
+        // One corner raised (smug)
+        ctx.fillStyle = '#b45a3c'; ctx.fillRect(28,25,3,1);
+        // Ears
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(10,16,3,8); ctx.fillRect(35,16,3,8);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(11,17,2,6); ctx.fillRect(35,17,2,6);
+        // Expensive suit jacket
+        ctx.fillStyle = '#1a2744'; ctx.fillRect(8,30,32,18);
+        ctx.fillStyle = '#223050'; ctx.fillRect(10,32,28,14);
+        // Lapels
+        ctx.fillStyle = '#0f1a2e'; ctx.fillRect(18,32,2,12); ctx.fillRect(28,32,2,12);
+        // White shirt & red tie
+        ctx.fillStyle = '#e8e8e8'; ctx.fillRect(19,32,10,10);
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(20,33,8,8);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(23,33,2,8);
+        ctx.fillStyle = '#b91c1c'; ctx.fillRect(23,41,2,3);
+    });
+
+    // JEFF BEZOS TALKING PORTRAIT
+    GFX.jeffFaceTalking = c(48,48, ctx => {
+        ctx.drawImage(GFX.jeffFace, 0, 0);
+        // Open mouth (arrogant speech)
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(18,26,12,4);
+        ctx.fillStyle = '#8b4513'; ctx.fillRect(20,27,8,3);
+        ctx.fillStyle = '#fff'; ctx.fillRect(22,27,4,1); // Teeth
+        // Slight beard adjustment
+        ctx.fillStyle = '#b45a3c'; ctx.fillRect(18,30,12,1);
+    });
+
     GFX.mechaBezos = c(48,48, ctx => {
         // Base plate
         ctx.fillStyle = '#0a0f18'; ctx.fillRect(0,0,48,48);
@@ -7196,14 +7258,24 @@ function startPortraitAnimation(basePortrait, talkingPortrait) {
     const port = document.getElementById('portrait');
     const pCtx = port.getContext('2d');
 
+    // Pre-draw the base portrait to avoid initial flash
+    pCtx.clearRect(0,0,48,48);
+    pCtx.imageSmoothingEnabled = false;
+    const pw = basePortrait.width || 48;
+    const ph = basePortrait.height || 48;
+    pCtx.drawImage(basePortrait, 0, 0, pw, ph, 0, 0, 48, 48);
+
     // Animate between normal and talking at 6 FPS (every ~166ms)
     GAME.portraitAnimInterval = setInterval(() => {
         GAME.portraitTalkPhase = !GAME.portraitTalkPhase;
-        pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,48,48);
+        pCtx.clearRect(0,0,48,48);
+        pCtx.imageSmoothingEnabled = false;
         if (GAME.portraitTalkPhase && talkingPortrait) {
-            pCtx.drawImage(talkingPortrait, 0, 0);
+            const tw = talkingPortrait.width || 48;
+            const th = talkingPortrait.height || 48;
+            pCtx.drawImage(talkingPortrait, 0, 0, tw, th, 0, 0, 48, 48);
         } else {
-            pCtx.drawImage(basePortrait, 0, 0);
+            pCtx.drawImage(basePortrait, 0, 0, pw, ph, 0, 0, 48, 48);
         }
     }, 166);
 }
@@ -7235,10 +7307,16 @@ function startIntroPortraitAnimation(speaker) {
     const port = document.getElementById('intro-portrait');
     const pCtx = port.getContext('2d');
 
+    // Pre-draw the base portrait to avoid initial flash
+    pCtx.clearRect(0,0,96,96);
+    pCtx.imageSmoothingEnabled = false;
+    pCtx.drawImage(basePortrait, 0, 0);
+
     // Animate between normal and talking at 6 FPS (every ~166ms)
     GAME.portraitAnimInterval = setInterval(() => {
         GAME.portraitTalkPhase = !GAME.portraitTalkPhase;
-        pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,96,96);
+        pCtx.clearRect(0,0,96,96);
+        pCtx.imageSmoothingEnabled = false;
         if (GAME.portraitTalkPhase && talkingPortrait) {
             pCtx.drawImage(talkingPortrait, 0, 0);
         } else {
@@ -7348,12 +7426,26 @@ function closeIntroDialog() {
         });
         return;
     }
+
+    // Handle Jeff Bezos dialogue sequence - advance to next dialogue in throne room
+    if (GAME.state === 'JEFF_DIALOGUE_CONTINUE') {
+        bezosDialogueStep++;
+        showNextBezosIntroDialogue();
+        return;
+    }
+
+    // Handle BEZOS_DIALOGUE_NEXT for backwards compatibility
+    if (GAME.state === 'BEZOS_DIALOGUE_NEXT') {
+        bezosDialogueStep++;
+        showNextBezosIntroDialogue();
+        return;
+    }
 }
 
 function showDialog(text, speaker, portrait, isAI = false) {
     // Store previous state for background rendering during dialog
     // Don't overwrite if we're in the Bezos dialogue sequence (keep THRONE_CONFRONTATION)
-    if (GAME.state !== 'DIALOG' && GAME.state !== 'BEZOS_DIALOGUE_NEXT') {
+    if (GAME.state !== 'DIALOG' && GAME.state !== 'BEZOS_DIALOGUE_NEXT' && GAME.state !== 'JEFF_DIALOGUE_CONTINUE') {
         GAME.dialogBackgroundState = GAME.state;
     }
     GAME.state = 'DIALOG'; GAME.dialogText = text; GAME.dialogVisible = "";
@@ -7392,7 +7484,7 @@ function showDialog(text, speaker, portrait, isAI = false) {
 function showThinking(speaker, portrait) {
     // Store previous state for background rendering during dialog
     // Don't overwrite if we're in the Bezos dialogue sequence (keep THRONE_CONFRONTATION)
-    if (GAME.state !== 'DIALOG' && GAME.state !== 'BEZOS_DIALOGUE_NEXT') {
+    if (GAME.state !== 'DIALOG' && GAME.state !== 'BEZOS_DIALOGUE_NEXT' && GAME.state !== 'JEFF_DIALOGUE_CONTINUE') {
         GAME.dialogBackgroundState = GAME.state;
     }
 
@@ -7426,15 +7518,15 @@ function showThinking(speaker, portrait) {
 }
 
 // === BEZOS CONFRONTATION DIALOGUE SYSTEM ===
-// Uses AI-powered showDialog for the throne room confrontation
+// Uses INTRO dialog window (like Simon) for epic throne room confrontation
 let bezosDialogueStep = 0;
 
 function startBezosConfrontationDialogue() {
     bezosDialogueStep = 0;
-    showNextBezosDialogue();
+    showNextBezosIntroDialogue();
 }
 
-function showNextBezosDialogue() {
+function showNextBezosIntroDialogue() {
     const currentGen = GAME.genId;
     const scene = GAME.throneScene;
 
@@ -7442,19 +7534,16 @@ function showNextBezosDialogue() {
     const dialoguePrompts = [
         {
             speaker: "Jeff Bezos",
-            portrait: GFX.jeffYard,
             prompt: `You are Jeff Bezos, megalomaniac CEO sitting on your golden Amazon throne. A ${GAME.selectedChar} warehouse worker just survived your gauntlet. Deliver an arrogant opening taunt about how pathetic their attempt is. Reference Prime delivery or ownership principles. Max 25 words.`,
             category: "bezos_confrontation"
         },
         {
             speaker: GAME.selectedChar,
-            portrait: GFX.chars[GAME.selectedChar],
             prompt: `You are ${GAME.selectedChar}, a brave warehouse worker confronting evil Jeff Bezos. Deliver a defiant one-liner about ending his reign of terror over workers. Be heroic and determined. Max 20 words.`,
             category: "player_response"
         },
         {
             speaker: "Jeff Bezos",
-            portrait: GFX.jeffYard,
             prompt: `You are Jeff Bezos, enraged that a worker dares challenge you. Announce your transformation into your TRUE FORM - Mecha Jeff. Be dramatic, megalomaniacal, and terrifying. Reference your ultimate power. Max 25 words.`,
             category: "bezos_transform"
         }
@@ -7462,21 +7551,32 @@ function showNextBezosDialogue() {
 
     if (bezosDialogueStep >= dialoguePrompts.length) {
         // All dialogues done, proceed to transformation
+        closeIntroDialog();
         GAME.state = 'MECHA_TRANSFORM';
         GAME.stateTimer = 0;
+        GAME.nextState = 'MECHA_TRANSFORM';
         return;
     }
 
     const step = dialoguePrompts[bezosDialogueStep];
-    showThinking(step.speaker, step.portrait);
+
+    // Show thinking state in intro window
+    showIntroThinking(step.speaker);
+    GAME.nextState = 'JEFF_DIALOGUE_CONTINUE';
 
     callGemini(step.prompt, step.category).then(text => {
         if (GAME.genId === currentGen) {
-            showDialog(text, step.speaker, step.portrait, true);
-            // Set up the next dialogue to trigger when this one closes
-            GAME.nextState = 'BEZOS_DIALOGUE_NEXT';
+            let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
+            // Remove speaker name prefix if AI included it
+            finalText = finalText.replace(/^JEFF BEZOS:?\s*/i, '').replace(/^Jeff Bezos:?\s*/i, '');
+            showIntroDialog(finalText, step.speaker, true);
         }
     });
+}
+
+// Legacy function for backwards compatibility with older dialog system
+function showNextBezosDialogue() {
+    showNextBezosIntroDialogue();
 }
 
 function closeDialog() {
@@ -7556,10 +7656,10 @@ function closeDialog() {
         return;
     }
 
-    // Handle Bezos dialogue sequence
-    if (GAME.state === 'BEZOS_DIALOGUE_NEXT') {
+    // Handle Bezos dialogue sequence - now uses intro dialog system
+    if (GAME.state === 'BEZOS_DIALOGUE_NEXT' || GAME.state === 'JEFF_DIALOGUE_CONTINUE') {
         bezosDialogueStep++;
-        showNextBezosDialogue();
+        showNextBezosIntroDialogue();
         return;
     }
 
