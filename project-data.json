@@ -1,0 +1,280 @@
+{
+  "project": {
+    "title": "AMZL WHS Coordinator Quest",
+    "tagline": "A Retro 16-Bit Warehouse Safety Adventure",
+    "year": "2024-2025",
+    "status": "Production Ready",
+    "category": [
+      "Interactive Experience",
+      "Educational Gaming",
+      "Progressive Web App",
+      "Innovation"
+    ],
+    "description": {
+      "short": "A retro 16-bit warehouse safety adventure that transforms OSHA training into an epic gaming experience.",
+      "medium": "AMZL WHS Coordinator Quest is a nostalgic 16-bit game that gamifies workplace safety training. Built with vanilla JavaScript and procedural generation, it features AI-driven dialogue, cross-platform support, and zero external dependencies. Choose from five unique characters to battle bosses and fix 100+ warehouse hazards.",
+      "long": "AMZL WHS Coordinator Quest transforms mundane warehouse safety training into an engaging retro gaming experience. Built entirely with vanilla JavaScript and procedural generation, this innovative educational game combines authentic 16-bit aesthetics with cutting-edge technologies including AI-driven dialogue powered by Google Gemini and serverless architecture. Players select from five unique warehouse coordinators, each with distinct abilities and backstories, to navigate procedurally generated warehouse environments while battling nine epic bosses and fixing over 100 real-world safety hazards."
+    },
+    "metrics": {
+      "hazards": 100,
+      "bosses": 9,
+      "characters": 5,
+      "musicTracks": 12,
+      "dependencies": 0,
+      "fps": 60,
+      "linesOfCode": 6000,
+      "modules": 27,
+      "codeReduction": "40%",
+      "loadTime": "< 3s",
+      "bundleSize": "~200KB",
+      "memoryUsage": "< 50MB"
+    },
+    "features": [
+      {
+        "title": "Authentic Retro Experience",
+        "icon": "🎮",
+        "details": [
+          "True 16-bit aesthetic (256×224 SNES resolution)",
+          "CRT scanline effects & screen shake",
+          "Procedurally generated pixel art",
+          "12 original chiptune tracks",
+          "Web Audio API sound effects"
+        ]
+      },
+      {
+        "title": "AI-Powered Content",
+        "icon": "🤖",
+        "details": [
+          "Google Gemini 2.5 Flash integration",
+          "Dynamic NPC dialogue",
+          "Context-aware conversations",
+          "Dual text-to-speech systems",
+          "Offline fallback dialogue"
+        ]
+      },
+      {
+        "title": "Real Safety Training",
+        "icon": "🏭",
+        "details": [
+          "100+ actual warehouse hazards",
+          "OSHA compliance scenarios",
+          "PIT safety protocols",
+          "Emergency exit compliance",
+          "Ergonomic workplace issues"
+        ]
+      },
+      {
+        "title": "Cross-Platform Ready",
+        "icon": "📱",
+        "details": [
+          "Progressive Web App (PWA)",
+          "Native Android via Cordova",
+          "Offline-first architecture",
+          "Desktop & mobile optimized",
+          "Installable on all devices"
+        ]
+      },
+      {
+        "title": "Zero Dependencies",
+        "icon": "⚡",
+        "details": [
+          "Pure vanilla JavaScript (ES6+)",
+          "No frameworks or libraries",
+          "100% procedural generation",
+          "Canvas 2D API graphics",
+          "No external image files"
+        ]
+      },
+      {
+        "title": "Performance Optimized",
+        "icon": "🎯",
+        "details": [
+          "Object pooling system",
+          "Fixed 60 FPS timestep",
+          "Frame-rate independent physics",
+          "Efficient rendering pipeline",
+          "< 50MB memory footprint"
+        ]
+      }
+    ],
+    "characters": [
+      {
+        "name": "Carrie",
+        "nickname": "The 5S Monk",
+        "quote": "Order from chaos. Precision over speed.",
+        "ability": "2x damage to bosses",
+        "description": "The precision organizer who turned 5S methodology into a martial art."
+      },
+      {
+        "name": "Nevena",
+        "nickname": "The Oracle",
+        "quote": "I've seen this violation before it happened.",
+        "ability": "Extended invincibility frames",
+        "description": "The safety veteran who can predict incidents before they occur."
+      },
+      {
+        "name": "Joao",
+        "nickname": "The Siren",
+        "quote": "If they can't hear me, they can't be safe.",
+        "ability": "Faster attack cooldown",
+        "description": "The loudest coordinator with rapid-fire warnings."
+      },
+      {
+        "name": "Roman",
+        "nickname": "The Ghost",
+        "quote": "They never see me coming during audits.",
+        "ability": "Smaller collision radius",
+        "description": "The audit phantom who appears when least expected."
+      },
+      {
+        "name": "Erwin",
+        "nickname": "The Manager",
+        "quote": "Fast decisions. High stakes. No regrets.",
+        "ability": "30% speed boost, permadeath",
+        "description": "The regional manager who treats safety like a Tesla."
+      }
+    ],
+    "bosses": [
+      "Labour Inspector",
+      "Compliance Auditor",
+      "Sebastian Sprigade",
+      "Regional OPS Manager",
+      "Avetta Platform",
+      "Jelena 'Jelly'",
+      "MEGA SIMON",
+      "MECHA MEGA SIMON",
+      "Mecha Jeff Bezos"
+    ],
+    "technologies": {
+      "frontend": [
+        "JavaScript (ES6+)",
+        "HTML5 Canvas",
+        "Web Audio API",
+        "CSS3"
+      ],
+      "apis": [
+        "Google Gemini 2.5 Flash",
+        "Google Gemini TTS",
+        "Web Speech API"
+      ],
+      "infrastructure": [
+        "Netlify (Hosting + Functions)",
+        "GitHub",
+        "Service Workers"
+      ],
+      "mobile": [
+        "Apache Cordova",
+        "Android SDK"
+      ]
+    },
+    "techStack": [
+      "JavaScript ES6+",
+      "HTML5 Canvas",
+      "Web Audio API",
+      "Google Gemini AI",
+      "Progressive Web App",
+      "Service Workers",
+      "Apache Cordova",
+      "Netlify Functions",
+      "Web Speech API",
+      "CSS3"
+    ],
+    "awards": {
+      "suitable": [
+        "Awwwards Site of the Day",
+        "Awwwards Developer Award",
+        "CSS Design Awards",
+        "Best Educational Game",
+        "Best Use of Web Technologies",
+        "Innovation in Web Development",
+        "Best Progressive Web App",
+        "Technical Achievement Award"
+      ],
+      "categories": [
+        "Innovation Award",
+        "Developer Award",
+        "Design Excellence",
+        "Best PWA",
+        "Educational Gaming",
+        "Technical Achievement",
+        "Best Use of AI",
+        "User Experience"
+      ]
+    },
+    "uniqueSellingPoints": [
+      "Educational entertainment fusion - First game to make OSHA compliance genuinely fun",
+      "Zero external assets - Everything generated algorithmically in code",
+      "AI-enhanced retro - Cutting-edge AI powering 16-bit aesthetics",
+      "True cross-platform - Same codebase for web, PWA, and native Android",
+      "Open architecture - Clean, documented, modular code as teaching resource"
+    ],
+    "technicalHighlights": [
+      {
+        "title": "Modular Architecture",
+        "description": "Refactored from 10,256 lines in one file to 27+ organized ES6 modules with 40% code reduction"
+      },
+      {
+        "title": "Procedural Generation",
+        "description": "All graphics, sprites, and maps generated algorithmically - no external image files"
+      },
+      {
+        "title": "AI Integration",
+        "description": "Dynamic dialogue powered by Google Gemini with dual TTS systems"
+      },
+      {
+        "title": "Performance Excellence",
+        "description": "Object pooling, fixed 60 FPS, frame-rate independent physics"
+      },
+      {
+        "title": "State Machine Design",
+        "description": "11 game states with Entity-Component-System inspired architecture"
+      },
+      {
+        "title": "Serverless Backend",
+        "description": "Netlify Functions for secure API management"
+      }
+    ],
+    "links": {
+      "demo": "https://yoursite.com",
+      "github": "https://github.com/eres2k/amzlwhsquest",
+      "documentation": "https://github.com/eres2k/amzlwhsquest/blob/main/PHASE2_ARCHITECTURE.md",
+      "download": "https://yoursite.com/download"
+    },
+    "media": {
+      "screenshots": [],
+      "videos": [],
+      "logo": ""
+    },
+    "tags": [
+      "RetroGaming",
+      "WebDevelopment",
+      "JavaScript",
+      "EducationalGames",
+      "PWA",
+      "ProceduralGeneration",
+      "AI",
+      "GameDevelopment",
+      "WorkplaceSafety",
+      "HTML5Canvas",
+      "VanillaJS",
+      "16Bit",
+      "ChipTune",
+      "CrossPlatform",
+      "Innovation"
+    ],
+    "developer": {
+      "name": "eres2k",
+      "type": "Solo Developer",
+      "availability": "Available for similar projects"
+    },
+    "credits": {
+      "development": "Solo developer project",
+      "inspiration": [
+        "Classic SNES-era action games",
+        "Real Amazon warehouse safety protocols",
+        "Retro gaming aesthetics",
+        "Modern web capabilities"
+      ]
+    }
+  }
+}

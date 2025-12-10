@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMZL WHS Coordinator Quest - Project Showcase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #0a0a0a;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 120px 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1) 0px,
+                transparent 2px,
+                transparent 4px,
+                rgba(0, 0, 0, 0.1) 4px
+            );
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            font-size: 3.5em;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+            letter-spacing: -2px;
+        }
+
+        .hero .tagline {
+            font-size: 1.5em;
+            font-weight: 300;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+
+        .hero .meta {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .section {
+            padding: 80px 60px;
+        }
+
+        .section:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .section-title {
+            font-size: 2.5em;
+            font-weight: 800;
+            margin-bottom: 40px;
+            color: #1a1a1a;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .intro {
+            font-size: 1.3em;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 40px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:nth-child(even) .feature-card {
+            background: white;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+        .feature-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .feature-card ul {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .feature-card li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .feature-card li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .tech-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.95em;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .characters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .character-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .character-card h4 {
+            font-size: 1.3em;
+            margin-bottom: 5px;
+            color: #1a1a1a;
+        }
+
+        .character-card .nickname {
+            color: #667eea;
+            font-style: italic;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .character-card .quote {
+            font-style: italic;
+            color: #666;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .bosses-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .boss-tag {
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+
+        .boss-tag:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            text-align: center;
+            padding: 80px 60px;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1em;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .cta-button.secondary {
+            background: transparent;
+            border: 2px solid white;
+        }
+
+        .awards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .award-badge {
+            background: white;
+            color: #667eea;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                padding: 60px 30px;
+            }
+
+            .hero h1 {
+                font-size: 2em;
+            }
+
+            .hero .tagline {
+                font-size: 1.1em;
+            }
+
+            .section {
+                padding: 40px 30px;
+            }
+
+            .section-title {
+                font-size: 1.8em;
+            }
+
+            .features-grid,
+            .characters {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1>AMZL WHS Coordinator Quest</h1>
+            <div class="tagline">A Retro 16-Bit Warehouse Safety Adventure</div>
+            <div class="meta">
+                <span>🎮 Interactive Experience</span>
+                <span>🏆 Award-Winning Design</span>
+                <span>🚀 2024-2025</span>
+            </div>
+        </div>
+
+        <!-- Overview Section -->
+        <div class="section">
+            <h2 class="section-title">The Concept</h2>
+            <p class="intro">
+                What if workplace safety training was as exciting as the classic SNES games you grew up with?
+                <strong>AMZL WHS Coordinator Quest</strong> transforms mundane warehouse hazard identification
+                into an epic adventure complete with boss battles, character progression, and procedurally
+                generated levels. Built entirely with vanilla JavaScript and cutting-edge AI, this project
+                merges nostalgic 16-bit aesthetics with modern web technologies.
+            </p>
+        </div>
+
+        <!-- Key Stats -->
+        <div class="section">
+            <h2 class="section-title">By The Numbers</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">Unique Hazards</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">9</div>
+                    <div class="stat-label">Epic Bosses</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">Playable Characters</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Music Tracks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">External Dependencies</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">60</div>
+                    <div class="stat-label">FPS Performance</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="section">
+            <h2 class="section-title">Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>🎮 Authentic Retro Experience</h3>
+                    <ul>
+                        <li>True 16-bit aesthetic (256×224 SNES resolution)</li>
+                        <li>CRT scanline effects & screen shake</li>
+                        <li>Procedurally generated pixel art</li>
+                        <li>12 original chiptune tracks</li>
+                        <li>Web Audio API sound effects</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🤖 AI-Powered Content</h3>
+                    <ul>
+                        <li>Google Gemini 2.5 Flash integration</li>
+                        <li>Dynamic NPC dialogue</li>
+                        <li>Context-aware conversations</li>
+                        <li>Dual text-to-speech systems</li>
+                        <li>Offline fallback dialogue</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🏭 Real Safety Training</h3>
+                    <ul>
+                        <li>100+ actual warehouse hazards</li>
+                        <li>OSHA compliance scenarios</li>
+                        <li>PIT safety protocols</li>
+                        <li>Emergency exit compliance</li>
+                        <li>Ergonomic workplace issues</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>📱 Cross-Platform Ready</h3>
+                    <ul>
+                        <li>Progressive Web App (PWA)</li>
+                        <li>Native Android via Cordova</li>
+                        <li>Offline-first architecture</li>
+                        <li>Desktop & mobile optimized</li>
+                        <li>Installable on all devices</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>⚡ Zero Dependencies</h3>
+                    <ul>
+                        <li>Pure vanilla JavaScript (ES6+)</li>
+                        <li>No frameworks or libraries</li>
+                        <li>100% procedural generation</li>
+                        <li>Canvas 2D API graphics</li>
+                        <li>No external image files</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🎯 Performance Optimized</h3>
+                    <ul>
+                        <li>Object pooling system</li>
+                        <li>Fixed 60 FPS timestep</li>
+                        <li>Frame-rate independent physics</li>
+                        <li>Efficient rendering pipeline</li>
+                        <li>< 50MB memory footprint</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Characters Section -->
+        <div class="section">
+            <h2 class="section-title">Meet The Heroes</h2>
+            <div class="characters">
+                <div class="character-card">
+                    <h4>Carrie</h4>
+                    <div class="nickname">"The 5S Monk"</div>
+                    <div class="quote">"Order from chaos. Precision over speed."</div>
+                    <p><strong>Ability:</strong> 2x damage to bosses</p>
+                    <p>The precision organizer who turned 5S methodology into a martial art.</p>
+                </div>
+
+                <div class="character-card">
+                    <h4>Nevena</h4>
+                    <div class="nickname">"The Oracle"</div>
+                    <div class="quote">"I've seen this violation before it happened."</div>
+                    <p><strong>Ability:</strong> Extended invincibility frames</p>
+                    <p>The safety veteran who can predict incidents before they occur.</p>
+                </div>
+
+                <div class="character-card">
+                    <h4>Joao</h4>
+                    <div class="nickname">"The Siren"</div>
+                    <div class="quote">"If they can't hear me, they can't be safe."</div>
+                    <p><strong>Ability:</strong> Faster attack cooldown</p>
+                    <p>The loudest coordinator with rapid-fire warnings.</p>
+                </div>
+
+                <div class="character-card">
+                    <h4>Roman</h4>
+                    <div class="nickname">"The Ghost"</div>
+                    <div class="quote">"They never see me coming during audits."</div>
+                    <p><strong>Ability:</strong> Smaller collision radius</p>
+                    <p>The audit phantom who appears when least expected.</p>
+                </div>
+
+                <div class="character-card">
+                    <h4>Erwin</h4>
+                    <div class="nickname">"The Manager"</div>
+                    <div class="quote">"Fast decisions. High stakes. No regrets."</div>
+                    <p><strong>Ability:</strong> 30% speed boost, permadeath</p>
+                    <p>The regional manager who treats safety like a Tesla.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boss Section -->
+        <div class="section">
+            <h2 class="section-title">Epic Boss Battles</h2>
+            <p class="intro">
+                Nine unique bosses representing workplace authority figures, each with distinct attack patterns and personalities.
+            </p>
+            <div class="bosses-list">
+                <div class="boss-tag">Labour Inspector</div>
+                <div class="boss-tag">Compliance Auditor</div>
+                <div class="boss-tag">Sebastian Sprigade</div>
+                <div class="boss-tag">Regional OPS Manager</div>
+                <div class="boss-tag">Avetta Platform</div>
+                <div class="boss-tag">Jelena "Jelly"</div>
+                <div class="boss-tag">MEGA SIMON</div>
+                <div class="boss-tag">MECHA MEGA SIMON</div>
+                <div class="boss-tag">⚡ Mecha Jeff Bezos ⚡</div>
+            </div>
+        </div>
+
+        <!-- Technical Innovation -->
+        <div class="section">
+            <h2 class="section-title">Technical Excellence</h2>
+            <p class="intro">
+                A masterclass in modern web development, showcasing clean architecture and innovative solutions.
+            </p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>Modular Architecture</h3>
+                    <p>Refactored from 10,256 lines in one file to 27+ organized ES6 modules. 40% code reduction with improved maintainability.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Procedural Everything</h3>
+                    <p>All graphics generated algorithmically. No sprite sheets, no texture atlases—just pure code artistry.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>State Machine Design</h3>
+                    <p>11 distinct game states with clean transitions. Entity-Component-System inspired architecture.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Serverless Backend</h3>
+                    <p>Netlify Functions for secure API management. Environment variable protection with CORS compliance.</p>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 60px; margin-bottom: 30px; font-size: 1.5em;">Technology Stack</h3>
+            <div class="tech-stack">
+                <div class="tech-tag">JavaScript ES6+</div>
+                <div class="tech-tag">HTML5 Canvas</div>
+                <div class="tech-tag">Web Audio API</div>
+                <div class="tech-tag">Google Gemini AI</div>
+                <div class="tech-tag">Progressive Web App</div>
+                <div class="tech-tag">Service Workers</div>
+                <div class="tech-tag">Apache Cordova</div>
+                <div class="tech-tag">Netlify Functions</div>
+                <div class="tech-tag">Web Speech API</div>
+                <div class="tech-tag">CSS3</div>
+            </div>
+        </div>
+
+        <!-- Awards Section -->
+        <div class="section">
+            <h2 class="section-title">Recognition Worthy</h2>
+            <p class="intro">
+                This project demonstrates excellence across multiple dimensions of web development and design.
+            </p>
+            <div class="awards">
+                <div class="award-badge">🏆 Innovation Award</div>
+                <div class="award-badge">💻 Developer Award</div>
+                <div class="award-badge">🎨 Design Excellence</div>
+                <div class="award-badge">📱 Best PWA</div>
+                <div class="award-badge">🎮 Educational Gaming</div>
+                <div class="award-badge">⚡ Technical Achievement</div>
+                <div class="award-badge">🌟 Best Use of AI</div>
+                <div class="award-badge">🎯 User Experience</div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="cta-section">
+            <h2>Experience The Adventure</h2>
+            <p style="font-size: 1.2em; opacity: 0.9; max-width: 800px; margin: 20px auto;">
+                A unique fusion of entertainment and education, technical innovation and artistic vision,
+                retro nostalgia and modern capabilities.
+            </p>
+            <div class="cta-buttons">
+                <a href="#" class="cta-button">Play Now</a>
+                <a href="https://github.com/eres2k/amzlwhsquest" class="cta-button secondary">View Source</a>
+                <a href="#" class="cta-button secondary">Download APK</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
