@@ -6630,9 +6630,8 @@ function showIntroDialog(text, speaker, isAI = false) {
     nameEl.innerText = speaker;
     textContent.innerText = "";
 
-    // Show speaker name in badge with special color
-    badge.style.display = 'block';
-    badge.innerHTML = speaker ? speaker.toUpperCase() : "";
+    // Hide badge for intro window (name already shown in dedicated element)
+    badge.style.display = 'none';
 
     // Store dialog text for typewriter effect
     GAME.state = 'DIALOG';
@@ -6672,8 +6671,8 @@ function showIntroThinking(speaker) {
     nameEl.innerText = speaker;
     textContent.innerHTML = "<span class='loading-dots'>PROCESSING</span>";
 
-    badge.style.display = 'block';
-    badge.innerText = speaker ? speaker.toUpperCase() : "";
+    // Hide badge for intro window (name already shown in dedicated element)
+    badge.style.display = 'none';
 
     GAME.state = 'DIALOG';
     GAME.dialogText = "";
