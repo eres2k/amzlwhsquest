@@ -462,7 +462,7 @@ const CHAR_DATA = {
         speed: 1.5,
         lives: 5,
         ability: "PRECISION FOCUS",
-        abilityDesc: "Attacks deal 2x damage to bosses"
+        abilityDesc: "2x damage, 30% slower reload"
     },
     "Nevena": {
         role: "The Oracle",
@@ -1775,6 +1775,100 @@ function generateAssets() {
         ctx.fillStyle = '#6b4423'; ctx.fillRect(16,32,16,2);
     });
 
+    // SIMON HAPPY FACE - For successful performance evaluation (48x48)
+    GFX.simonFaceHappy = c(48,48, ctx => {
+        // Background (warm professional gradient with extra glow)
+        const grad = ctx.createRadialGradient(24,24,8,24,24,26);
+        grad.addColorStop(0, '#fbbf24'); grad.addColorStop(1, '#92400e');
+        ctx.fillStyle = grad; ctx.fillRect(0,0,48,48);
+        // Extra happy sparkles
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(4,4,3,3); ctx.fillRect(41,5,3,3); ctx.fillRect(6,38,3,3); ctx.fillRect(39,40,3,3);
+        ctx.fillRect(24,2,2,2); // Top sparkle
+        // Short brown hair
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(12,6,24,8);
+        ctx.fillStyle = '#6b4423'; ctx.fillRect(14,7,20,6);
+        ctx.fillStyle = '#7a5030'; ctx.fillRect(18,7,6,3); // Hair highlight
+        // Face
+        ctx.fillStyle = '#c4956a'; ctx.fillRect(12,12,24,16);
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(14,14,20,12);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(16,15,16,9);
+        // HAPPY EYES - squinting from smiling, rosy cheeks
+        ctx.fillStyle = '#ff9999'; ctx.fillRect(12,19,5,3); ctx.fillRect(31,19,5,3); // Rosy cheeks
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(16,17,6,3); ctx.fillRect(26,17,6,3);
+        ctx.fillStyle = '#22c55e'; ctx.fillRect(17,18,4,1); ctx.fillRect(27,18,4,1); // Bright green glint
+        ctx.fillStyle = '#fff'; ctx.fillRect(17,17,2,1); ctx.fillRect(27,17,2,1);
+        // Happy eyebrows raised
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(16,14,6,2); ctx.fillRect(26,14,6,2);
+        // Glasses with golden tint
+        ctx.fillStyle = '#475569'; ctx.fillRect(22,19,4,1);
+        // BIG HAPPY SMILE
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(18,25,12,6);
+        ctx.fillStyle = '#8b4513'; ctx.fillRect(19,26,10,4);
+        ctx.fillStyle = '#fff'; ctx.fillRect(20,26,8,2); // Big teeth showing
+        ctx.fillStyle = '#f87171'; ctx.fillRect(21,28,6,1); // Tongue
+        // Brown beard (shorter to show smile)
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(14,29,6,4); ctx.fillRect(28,29,6,4);
+        ctx.fillStyle = '#6b4423'; ctx.fillRect(15,30,5,3); ctx.fillRect(28,30,5,3);
+        // Gold WHS uniform with extra polish
+        ctx.fillStyle = '#92400e'; ctx.fillRect(8,32,32,16);
+        ctx.fillStyle = '#b45309'; ctx.fillRect(10,32,28,12);
+        ctx.fillStyle = '#d97706'; ctx.fillRect(12,34,24,8);
+        ctx.fillStyle = '#f59e0b'; ctx.fillRect(14,35,20,5); // Extra shiny
+        // Badge with gold star
+        ctx.fillStyle = '#fff'; ctx.fillRect(18,36,12,4);
+        ctx.fillStyle = '#ffd700'; ctx.fillRect(22,37,4,2); // Gold star center
+    });
+
+    // SIMON DISAPPOINTED FACE - For failed performance evaluation (48x48)
+    GFX.simonFaceDisappointed = c(48,48, ctx => {
+        // Background (darker, disappointed gradient)
+        const grad = ctx.createRadialGradient(24,24,8,24,24,26);
+        grad.addColorStop(0, '#78716c'); grad.addColorStop(1, '#44403c');
+        ctx.fillStyle = grad; ctx.fillRect(0,0,48,48);
+        // Sad rain drops
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(6,6,2,4); ctx.fillRect(40,10,2,4); ctx.fillRect(12,38,2,4); ctx.fillRect(36,42,2,4);
+        // Short brown hair (less shine)
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(12,6,24,8);
+        ctx.fillStyle = '#4a2c1e'; ctx.fillRect(14,7,20,6);
+        // Face (slightly more grey)
+        ctx.fillStyle = '#b8a090'; ctx.fillRect(12,12,24,16);
+        ctx.fillStyle = '#c4a480'; ctx.fillRect(14,14,20,12);
+        ctx.fillStyle = '#d4b490'; ctx.fillRect(16,15,16,9);
+        // DISAPPOINTED EYES - sad look
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(16,17,6,5); ctx.fillRect(26,17,6,5);
+        ctx.fillStyle = '#64748b'; ctx.fillRect(17,19,4,2); ctx.fillRect(27,19,4,2); // Grey sad eyes
+        ctx.fillStyle = '#fff'; ctx.fillRect(18,18,1,1); ctx.fillRect(28,18,1,1);
+        // Sad eyebrows angled down
+        ctx.fillStyle = '#5c3d2e';
+        ctx.fillRect(15,15,2,1); ctx.fillRect(17,16,2,1); ctx.fillRect(19,17,2,1);
+        ctx.fillRect(27,17,2,1); ctx.fillRect(29,16,2,1); ctx.fillRect(31,15,2,1);
+        // Glasses
+        ctx.fillStyle = '#475569'; ctx.fillRect(22,19,4,1);
+        // DISAPPOINTED FROWN
+        ctx.fillStyle = '#b8a090'; ctx.fillRect(18,26,12,4);
+        ctx.fillStyle = '#8b6b5a'; ctx.fillRect(20,27,8,2); // Closed frown
+        // Frown curve
+        ctx.fillStyle = '#6b5545'; ctx.fillRect(19,26,2,1); ctx.fillRect(27,26,2,1);
+        ctx.fillStyle = '#8b6b5a'; ctx.fillRect(21,28,6,1);
+        // Brown beard (full, covering sad mouth)
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(14,27,20,6);
+        ctx.fillStyle = '#4a2c1e'; ctx.fillRect(16,28,16,4);
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(18,30,12,3);
+        // WHS uniform (less shiny, more muted)
+        ctx.fillStyle = '#78350f'; ctx.fillRect(8,32,32,16);
+        ctx.fillStyle = '#92400e'; ctx.fillRect(10,32,28,12);
+        ctx.fillStyle = '#a45419'; ctx.fillRect(12,34,24,8);
+        // Badge (less prominent)
+        ctx.fillStyle = '#d4d4d4'; ctx.fillRect(18,36,12,4);
+        ctx.fillStyle = '#a3a3a3'; ctx.fillRect(20,37,8,2);
+    });
+
+    // 96x96 versions for intro dialog
+    GFX.simonFaceHappyLarge = c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceHappy,0,0,48,48,0,0,96,96); });
+    GFX.simonFaceDisappointedLarge = c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceDisappointed,0,0,48,48,0,0,96,96); });
+
     // JEFF BEZOS PORTRAIT - 48x48 (for dialog boxes) - Must be before introPortraits
     GFX.jeffFace = c(48,48, ctx => {
         // Background (Amazon orange/gold gradient)
@@ -1842,6 +1936,8 @@ function generateAssets() {
         "Roman": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFaces["Roman"],0,0,48,48,0,0,96,96); }),
         "Erwin": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFaces["Erwin"],0,0,48,48,0,0,96,96); }),
         "Simon Unglaube": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceLarge,0,0,48,48,0,0,96,96); }),
+        "Simon Unglaube Happy": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceHappy,0,0,48,48,0,0,96,96); }),
+        "Simon Unglaube Disappointed": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceDisappointed,0,0,48,48,0,0,96,96); }),
         "Jeff Bezos": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.jeffFace,0,0,48,48,0,0,96,96); })
     };
 
@@ -4305,6 +4401,7 @@ const GAME = {
     // Game Over screen state
     gameOverPhase: 0, corporateMessage: "", characterDefeatLine: "", gameOverReason: "",
     creditsType: 'normal', // 'normal' for surprise visitor, 'mecha' for Mecha Jeff
+    creditsStarted: false, // Prevents credits from restarting every frame
     startTime: 0, booksFired: 0, opsPushed: 0,
     lastAIBanterTime: 0, // Throttle AI requests
     fireExitDoor: null, // Hidden level door position
@@ -4626,6 +4723,7 @@ function handleAction() {
     else if (GAME.state === 'CREDITS') {
         // Allow skip after credits have been rolling for a while
         if (GAME.stateTimer > 600) {
+            GAME.creditsStarted = false; // Reset for next time
             GAME.state = 'TITLE'; updateMusicForState();
         }
     }
@@ -5126,11 +5224,13 @@ function beginMechaEncounter() {
 function startCredits() {
     GAME.state = 'CREDITS';
     GAME.stateTimer = 0;
+    GAME.creditsStarted = true; // Prevent re-initialization
     GAME.boss = null;
     stopPortraitAnimation();
     document.getElementById('boss-hud').style.display = 'none';
     document.getElementById('hud-layer').style.display = 'none';
     document.getElementById('dialog-box').style.display = 'none';
+    document.getElementById('intro-portrait-window').style.display = 'none'; // Also hide intro window
     GAME.projectiles = [];
     GAME.particles = [];
     GAME.floatingTexts = [];
@@ -5621,20 +5721,16 @@ function update() {
         // No phase system needed anymore - go straight to dialog like WIN_SPLASH
 
         if (ready && waitedEnough) {
-            const speaker = "Simon Unglaube";
             let finalText = GAME.aiResultText.replace(/\[.*?\]/g, GAME.selectedChar);
-            let header, body;
+            let stats = `\n\nStats:\nTime: ${Math.floor((Date.now() - GAME.startTime)/1000)}s | Rules: ${GAME.booksFired} | OPS: ${GAME.opsPushed}`;
             if (isWin) {
-                header = `OUTSTANDING!\n"${finalText}"\n`;
-                let stats = `\nStats:\nTime Spent: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nSafety Rules used: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`;
-                showDialog(header + stats, speaker, GFX.simonFaceLarge, true);
-                GAME.state = 'DIALOG'; GAME.nextState = 'CREDITS';
+                // Use intro dialog with HAPPY Simon
+                showPerformanceEvalIntroDialog(`OUTSTANDING!\n${finalText}${stats}`, true);
+                GAME.nextState = 'CREDITS';
             } else {
-                // Simon's analysis only - no corporate message or character defeat line
-                header = `${finalText}`;
-                let stats = `\n\nStats:\nTime Spent: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nSafety Rules used: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`;
-                showDialog(header + stats, speaker, GFX.simonFaceLarge, true);
-                GAME.state = 'DIALOG'; GAME.nextState = 'GAMEOVER_SPLASH';
+                // Use intro dialog with DISAPPOINTED Simon
+                showPerformanceEvalIntroDialog(`${finalText}${stats}`, false);
+                GAME.nextState = 'GAMEOVER_SPLASH';
             }
         } else if (!ready && GAME.splashTimer <= fallbackTimer) {
             GAME.aiResultText = 'System could not load live review. Using cached performance log.';
@@ -6568,7 +6664,7 @@ function updateBoss() {
     // Exclude MEGA SIMON - he transforms into Mecha Mega Simon instead of enraging
     if (!b.lowHealthAttackTriggered && hpPct <= 0.1 && !b.isMecha && b.name !== "MEGA SIMON") {
         b.lowHealthAttackTriggered = true;
-        b.desperationMode = true; // 🔥 ENRAGED STATE - 30% faster, 30% dodge chance!
+        b.desperationMode = true; // 🔥 ENRAGED STATE - 30% faster, 10% blocked, 10% deflected!
 
         // 🔥 RESTORE BOSS HEALTH TO 50% with animated restoration
         {
@@ -6894,13 +6990,24 @@ function updateProjectiles() {
                         AudioSys.sfx.alert();
                         continue;
                     }
-                    // 🔥 DESPERATION MODE: 30% dodge chance!
-                    if (GAME.boss.desperationMode && Math.random() < 0.3) {
-                        GAME.projectiles.splice(i,1);
-                        spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, "DODGED!", "#ff9900");
-                        spawnParticleBurst(GAME.boss.x+16, GAME.boss.y+16, ['#ff9900', '#ffff00'], 8);
-                        AudioSys.sfx.alert();
-                        continue;
+                    // 🔥 DESPERATION MODE: 10% blocked, 10% deflected!
+                    if (GAME.boss.desperationMode) {
+                        const roll = Math.random();
+                        if (roll < 0.1) {
+                            // 10% BLOCKED - attack absorbed
+                            GAME.projectiles.splice(i,1);
+                            spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, "BLOCKED!", "#888888");
+                            spawnParticleBurst(GAME.boss.x+16, GAME.boss.y+16, ['#888888', '#666666'], 6);
+                            AudioSys.sfx.alert();
+                            continue;
+                        } else if (roll < 0.2) {
+                            // 10% DEFLECTED - attack bounces back
+                            GAME.projectiles.splice(i,1);
+                            spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, "DEFLECTED!", "#ff6600");
+                            spawnParticleBurst(GAME.boss.x+16, GAME.boss.y+16, ['#ff6600', '#ffcc00'], 8);
+                            AudioSys.sfx.alert();
+                            continue;
+                        }
                     }
                     // Character ability damage multipliers
                     let dmg = 1;
@@ -7090,8 +7197,11 @@ function spawnSparkles(x, y, color) {
 
 function throwBook() {
     const p = GAME.player; if (p.cooldown > 0) return; const attackMeta = getAttackData(GAME.selectedChar);
-    // Joao's CAFFEINE RUSH ability - faster cooldown
-    const cooldownMod = GAME.selectedChar === 'Joao' ? 0.65 : 1.0;
+    // Joao's CAFFEINE RUSH ability - faster cooldown (35% faster)
+    // Carrie's PRECISION FOCUS penalty - slower reload (30% slower) but 2x damage
+    let cooldownMod = 1.0;
+    if (GAME.selectedChar === 'Joao') cooldownMod = 0.65; // 35% faster
+    else if (GAME.selectedChar === 'Carrie') cooldownMod = 1.3; // 30% slower
     const finalCooldown = Math.floor((attackMeta.cooldown || 120) * cooldownMod);
     p.cooldown = finalCooldown; p.cooldownMax = finalCooldown; GAME.booksFired++;
     const speed = attackMeta.speed || 4;
@@ -7261,18 +7371,21 @@ function startPortraitAnimation(basePortrait, talkingPortrait) {
 
     const port = document.getElementById('portrait');
     const pCtx = port.getContext('2d');
-
-    // Pre-draw the base portrait to avoid initial flash
-    pCtx.clearRect(0,0,48,48);
-    pCtx.imageSmoothingEnabled = false;
     const pw = basePortrait.width || 48;
     const ph = basePortrait.height || 48;
+
+    // Pre-draw the base portrait with black background to avoid flash
+    pCtx.fillStyle = '#000';
+    pCtx.fillRect(0, 0, 48, 48);
+    pCtx.imageSmoothingEnabled = false;
     pCtx.drawImage(basePortrait, 0, 0, pw, ph, 0, 0, 48, 48);
 
     // Animate between normal and talking at 6 FPS (every ~166ms)
     GAME.portraitAnimInterval = setInterval(() => {
         GAME.portraitTalkPhase = !GAME.portraitTalkPhase;
-        pCtx.clearRect(0,0,48,48);
+        // Fill with black first, then draw portrait (prevents flash)
+        pCtx.fillStyle = '#000';
+        pCtx.fillRect(0, 0, 48, 48);
         pCtx.imageSmoothingEnabled = false;
         if (GAME.portraitTalkPhase && talkingPortrait) {
             const tw = talkingPortrait.width || 48;
@@ -7290,13 +7403,16 @@ function stopPortraitAnimation() {
         clearInterval(GAME.portraitAnimInterval);
         GAME.portraitAnimInterval = null;
     }
+    // Clear speaker tracking to prevent wrong portrait showing
+    GAME.currentIntroSpeaker = null;
 }
 
 // Helper function to start INTRO portrait talking animation (larger, centered)
 function startIntroPortraitAnimation(speaker) {
-    // Stop any existing animation
+    // Stop any existing animation FIRST
     if (GAME.portraitAnimInterval) {
         clearInterval(GAME.portraitAnimInterval);
+        GAME.portraitAnimInterval = null;
     }
 
     const basePortrait = GFX.introPortraits[speaker];
@@ -7304,33 +7420,56 @@ function startIntroPortraitAnimation(speaker) {
 
     if (!basePortrait || !talkingPortrait) return;
 
+    // Store in GAME so animation uses current values, not stale closure
     GAME.currentPortraitBase = basePortrait;
     GAME.currentPortraitTalking = talkingPortrait;
     GAME.portraitTalkPhase = false;
+    GAME.currentIntroSpeaker = speaker;
 
     const port = document.getElementById('intro-portrait');
     const pCtx = port.getContext('2d');
 
-    // Pre-draw the base portrait to avoid initial flash
-    pCtx.clearRect(0,0,96,96);
+    // Pre-draw the base portrait with black background
+    pCtx.fillStyle = '#000';
+    pCtx.fillRect(0, 0, 96, 96);
     pCtx.imageSmoothingEnabled = false;
     pCtx.drawImage(basePortrait, 0, 0);
 
     // Animate between normal and talking at 6 FPS (every ~166ms)
+    // Read from GAME.current* each frame to use latest portraits
     GAME.portraitAnimInterval = setInterval(() => {
+        // Safety check: don't draw if speaker changed or window hidden
+        if (GAME.currentIntroSpeaker !== speaker ||
+            document.getElementById('intro-portrait-window').style.display !== 'block') {
+            clearInterval(GAME.portraitAnimInterval);
+            GAME.portraitAnimInterval = null;
+            return;
+        }
+
         GAME.portraitTalkPhase = !GAME.portraitTalkPhase;
-        pCtx.clearRect(0,0,96,96);
+
+        // Use GAME.current* to always get the correct portraits
+        const base = GAME.currentPortraitBase;
+        const talking = GAME.currentPortraitTalking;
+
+        if (!base) return;
+
+        pCtx.fillStyle = '#000';
+        pCtx.fillRect(0, 0, 96, 96);
         pCtx.imageSmoothingEnabled = false;
-        if (GAME.portraitTalkPhase && talkingPortrait) {
-            pCtx.drawImage(talkingPortrait, 0, 0);
+        if (GAME.portraitTalkPhase && talking) {
+            pCtx.drawImage(talking, 0, 0);
         } else {
-            pCtx.drawImage(basePortrait, 0, 0);
+            pCtx.drawImage(base, 0, 0);
         }
     }, 166);
 }
 
 // Show intro portrait window (for intro conversation only)
 function showIntroDialog(text, speaker, isAI = false) {
+    // IMPORTANT: Stop any existing portrait animation FIRST to prevent flashing
+    stopPortraitAnimation();
+
     // Hide regular dialog box
     document.getElementById('dialog-box').style.display = 'none';
 
@@ -7354,12 +7493,15 @@ function showIntroDialog(text, speaker, isAI = false) {
     GAME.dialogText = text;
     GAME.dialogVisible = "";
 
-    // Draw portrait
-    pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,96,96);
+    // Draw portrait - clear canvas completely first to prevent old portrait showing
+    pCtx.clearRect(0, 0, 96, 96);
+    pCtx.fillStyle = '#000';
+    pCtx.fillRect(0, 0, 96, 96);
     const portrait = GFX.introPortraits[speaker];
     if (portrait) {
+        pCtx.imageSmoothingEnabled = false;
         pCtx.drawImage(portrait, 0, 0);
-        // Start animation
+        // Start animation after portrait is drawn
         startIntroPortraitAnimation(speaker);
     }
 
@@ -7444,6 +7586,43 @@ function closeIntroDialog() {
         showNextBezosIntroDialogue();
         return;
     }
+}
+
+// Show performance evaluation using intro dialog with happy/disappointed Simon
+function showPerformanceEvalIntroDialog(text, isWin) {
+    // Hide regular dialog box
+    document.getElementById('dialog-box').style.display = 'none';
+
+    // Show intro window
+    const window = document.getElementById('intro-portrait-window');
+    const nameEl = document.getElementById('intro-speaker-name');
+    const badge = document.getElementById('intro-gemini-badge');
+    const textContent = document.getElementById('intro-text-content');
+    const port = document.getElementById('intro-portrait');
+    const pCtx = port.getContext('2d');
+
+    window.style.display = 'block';
+    nameEl.innerText = isWin ? "SIMON UNGLAUBE - PERFORMANCE REVIEW" : "SIMON UNGLAUBE - EXIT INTERVIEW";
+    textContent.innerText = "";
+
+    // Hide badge for intro window (name already shown in dedicated element)
+    badge.style.display = 'none';
+
+    // Store dialog text for typewriter effect
+    GAME.state = 'DIALOG';
+    GAME.dialogText = text;
+    GAME.dialogVisible = "";
+
+    // Draw appropriate portrait (happy for win, disappointed for loss)
+    pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,96,96);
+    const portraitKey = isWin ? "Simon Unglaube Happy" : "Simon Unglaube Disappointed";
+    const portrait = GFX.introPortraits[portraitKey];
+    if (portrait) {
+        pCtx.drawImage(portrait, 0, 0);
+    }
+
+    AudioSys.sfx.text();
+    speakTTS(text.replace(/\n/g, ' '), "Simon Unglaube");
 }
 
 function showDialog(text, speaker, portrait, isAI = false) {
@@ -7720,7 +7899,7 @@ function closeDialog() {
     // Only start yard level if not already initialized (prevents infinite loop)
     if (GAME.state === 'YARD_LEVEL' && !GAME.yard) { startYardLevel(); return; }
     if (GAME.state === 'MECHA_BOSS_INTRO') { beginMechaEncounter(); return; }
-    if (GAME.state === 'CREDITS') { startCredits(); return; }
+    if (GAME.state === 'CREDITS' && !GAME.creditsStarted) { startCredits(); return; }
 
     if (GAME.state === 'PLAY' && GAME.pendingBossIntro && !GAME.boss) {
         showVisitorSplash();
@@ -10652,65 +10831,200 @@ function drawCredits() {
     const fadeIn = Math.min(1, t / 60);
     ctx.globalAlpha = fadeIn;
 
+    // Helper function to draw gold trophy
+    function drawTrophy(x, y, scale, glowAmount) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+
+        // Trophy glow effect
+        if (glowAmount > 0) {
+            ctx.shadowColor = '#ffd700';
+            ctx.shadowBlur = glowAmount;
+        }
+
+        // Trophy cup body (gold gradient)
+        const cupGrad = ctx.createLinearGradient(-15, -30, 15, 10);
+        cupGrad.addColorStop(0, '#ffd700');
+        cupGrad.addColorStop(0.3, '#ffec8b');
+        cupGrad.addColorStop(0.5, '#ffd700');
+        cupGrad.addColorStop(0.7, '#daa520');
+        cupGrad.addColorStop(1, '#b8860b');
+        ctx.fillStyle = cupGrad;
+
+        // Cup shape
+        ctx.beginPath();
+        ctx.moveTo(-18, -25);
+        ctx.quadraticCurveTo(-20, -5, -12, 5);
+        ctx.lineTo(-6, 10);
+        ctx.lineTo(6, 10);
+        ctx.lineTo(12, 5);
+        ctx.quadraticCurveTo(20, -5, 18, -25);
+        ctx.lineTo(-18, -25);
+        ctx.fill();
+
+        // Cup rim highlight
+        ctx.fillStyle = '#ffec8b';
+        ctx.fillRect(-16, -27, 32, 4);
+
+        // Cup handles
+        ctx.strokeStyle = '#daa520';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(-20, -12, 8, -Math.PI/2, Math.PI/2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(20, -12, 8, Math.PI/2, -Math.PI/2);
+        ctx.stroke();
+
+        // Trophy stem
+        ctx.fillStyle = '#daa520';
+        ctx.fillRect(-4, 10, 8, 12);
+
+        // Trophy base
+        ctx.fillStyle = '#b8860b';
+        ctx.fillRect(-14, 22, 28, 6);
+        ctx.fillStyle = '#8b7355';
+        ctx.fillRect(-16, 28, 32, 4);
+
+        // Star on trophy
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 14px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('★', 0, -8);
+
+        ctx.shadowBlur = 0;
+        ctx.restore();
+    }
+
     if (isMecha) {
-        // === FANCY MECHA CREDITS ===
-        // Epic gradient background
+        // === ULTRA FANCY MECHA CREDITS ===
+        // Epic gradient background with animated aurora
         const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
         grad.addColorStop(0, '#0a0020');
-        grad.addColorStop(0.3, '#1a0040');
-        grad.addColorStop(0.5, '#2a0060');
-        grad.addColorStop(0.7, '#1a0040');
-        grad.addColorStop(1, '#0a0020');
+        grad.addColorStop(0.2, '#1a0050');
+        grad.addColorStop(0.4, '#2a0070');
+        grad.addColorStop(0.6, '#1a0050');
+        grad.addColorStop(0.8, '#0a0030');
+        grad.addColorStop(1, '#050010');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Animated star field
-        for (let i = 0; i < 50; i++) {
+        // Aurora effect
+        for (let i = 0; i < 5; i++) {
+            const auroraY = Math.sin(t * 0.02 + i) * 30 + canvas.height * 0.3;
+            const auroraGrad = ctx.createLinearGradient(0, auroraY - 20, 0, auroraY + 20);
+            auroraGrad.addColorStop(0, 'rgba(255,0,255,0)');
+            auroraGrad.addColorStop(0.5, `rgba(${150 + i*20},0,255,${0.1 + Math.sin(t*0.05+i)*0.05})`);
+            auroraGrad.addColorStop(1, 'rgba(255,0,255,0)');
+            ctx.fillStyle = auroraGrad;
+            ctx.fillRect(0, auroraY - 20, canvas.width, 40);
+        }
+
+        // Animated star field (more stars, more colors)
+        for (let i = 0; i < 80; i++) {
             const x = (i * 47 + t * 0.5) % canvas.width;
             const y = (i * 73 + t * 0.2) % canvas.height;
             const twinkle = Math.sin(t * 0.08 + i * 0.7) * 0.5 + 0.5;
-            ctx.fillStyle = `rgba(255,215,0,${twinkle * 0.8})`;
+            const colors = ['#ffd700', '#ff6600', '#ff00ff', '#00ffff'];
+            ctx.fillStyle = colors[i % colors.length].replace(')', `,${twinkle * 0.8})`).replace('rgb', 'rgba').replace('#', 'rgba(');
+            // Simple color with alpha
+            ctx.globalAlpha = twinkle * 0.8 * fadeIn;
+            ctx.fillStyle = colors[i % colors.length];
             ctx.fillRect(x, y, 2, 2);
+            ctx.globalAlpha = fadeIn;
         }
 
-        // Golden border glow
-        ctx.strokeStyle = `rgba(255,215,0,${0.5 + Math.sin(t * 0.05) * 0.3})`;
-        ctx.lineWidth = 3;
+        // Animated golden border with pulsing glow
+        const borderGlow = 0.5 + Math.sin(t * 0.05) * 0.3;
+        ctx.strokeStyle = `rgba(255,215,0,${borderGlow})`;
+        ctx.lineWidth = 4;
         ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
-        ctx.strokeStyle = `rgba(255,140,0,${0.3 + Math.sin(t * 0.07) * 0.2})`;
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = `rgba(255,0,255,${borderGlow * 0.5})`;
+        ctx.lineWidth = 2;
         ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+        ctx.strokeStyle = `rgba(0,255,255,${borderGlow * 0.3})`;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(12, 12, canvas.width - 24, canvas.height - 24);
 
-        // Big congratulations header with glow
+        // GIANT TROPHY in center (appears first, then scrolls up with credits)
+        const trophyStartY = canvas.height / 2 - 20;
+        const trophyScrollY = trophyStartY - t * 0.3;
+        if (trophyScrollY > -60 && trophyScrollY < canvas.height + 60) {
+            const trophyGlow = 20 + Math.sin(t * 0.1) * 10;
+            drawTrophy(canvas.width / 2, trophyScrollY, 2.0, trophyGlow);
+
+            // "ULTIMATE SAFETY CHAMPION" text below trophy
+            const textY = trophyScrollY + 75;
+            if (textY > 0 && textY < canvas.height) {
+                ctx.textAlign = 'center';
+                ctx.font = 'bold 11px monospace';
+                ctx.shadowColor = '#ff00ff';
+                ctx.shadowBlur = 10 + Math.sin(t * 0.15) * 5;
+                ctx.fillStyle = '#ffd700';
+                ctx.fillText('ULTIMATE', canvas.width / 2, textY);
+                ctx.fillStyle = '#ff6600';
+                ctx.fillText('SAFETY CHAMPION', canvas.width / 2, textY + 14);
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        // Big congratulations header with intense glow
         ctx.textAlign = 'center';
         ctx.font = 'bold 16px monospace';
         const glowIntensity = 0.5 + Math.sin(t * 0.1) * 0.3;
         ctx.shadowColor = '#ffd700';
-        ctx.shadowBlur = 15 * glowIntensity;
+        ctx.shadowBlur = 20 * glowIntensity;
         ctx.fillStyle = '#ffd700';
         ctx.fillText('CONGRATULATIONS!', canvas.width / 2, 30);
         ctx.font = 'bold 12px monospace';
+        ctx.shadowColor = '#ff00ff';
+        ctx.shadowBlur = 15 * glowIntensity;
         ctx.fillStyle = '#ff6600';
         ctx.fillText('MECHA JEFF DEFEATED!', canvas.width / 2, 48);
         ctx.shadowBlur = 0;
 
-        // Subtitle
+        // Subtitle with glow
         ctx.font = '9px monospace';
         ctx.fillStyle = '#aaa';
         ctx.fillText('The Warehouse is Finally Safe', canvas.width / 2, 64);
 
     } else {
         // === NORMAL CREDITS ===
-        // Dark blue background
-        ctx.fillStyle = '#0f172a';
+        // Dark blue background with subtle gradient
+        const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        bgGrad.addColorStop(0, '#0f172a');
+        bgGrad.addColorStop(0.5, '#1e293b');
+        bgGrad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#1f2937';
         ctx.fillRect(6, 6, canvas.width - 12, canvas.height - 12);
 
-        // Simple border
-        ctx.strokeStyle = '#4a5568';
+        // Golden border for victory
+        ctx.strokeStyle = '#ffd700';
         ctx.lineWidth = 2;
         ctx.strokeRect(6, 6, canvas.width - 12, canvas.height - 12);
+
+        // GOLD TROPHY in center (scrolls with credits)
+        const trophyStartY = canvas.height / 2 - 10;
+        const trophyScrollY = trophyStartY - t * 0.25;
+        if (trophyScrollY > -50 && trophyScrollY < canvas.height + 50) {
+            const trophyGlow = 10 + Math.sin(t * 0.1) * 5;
+            drawTrophy(canvas.width / 2, trophyScrollY, 1.5, trophyGlow);
+
+            // "SAFETY CHAMPION" text below trophy
+            const textY = trophyScrollY + 60;
+            if (textY > 0 && textY < canvas.height) {
+                ctx.textAlign = 'center';
+                ctx.font = 'bold 10px monospace';
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 8;
+                ctx.fillStyle = '#ffd700';
+                ctx.fillText('SAFETY CHAMPION', canvas.width / 2, textY);
+                ctx.shadowBlur = 0;
+            }
+        }
 
         // Congratulations header
         ctx.textAlign = 'center';
@@ -10766,9 +11080,10 @@ function drawCredits() {
         'Everything Else'
     ];
 
-    // Scrolling credits
+    // Scrolling credits (offset to appear after trophy)
     const scrollSpeed = isMecha ? 0.3 : 0.25;
-    const startY = canvas.height + 80 - t * scrollSpeed;
+    const creditsOffset = isMecha ? 200 : 150; // Start credits lower to show trophy first
+    const startY = canvas.height + creditsOffset - t * scrollSpeed;
     const lineHeight = isMecha ? 20 : 18;
 
     ctx.font = isMecha ? '9px monospace' : '8px monospace';
@@ -10777,8 +11092,9 @@ function drawCredits() {
         const y = startY + i * lineHeight;
         if (y > 70 && y < canvas.height - 20) {
             if (isMecha) {
-                // Fancy golden text with role
-                ctx.fillStyle = '#ffd700';
+                // Fancy golden text with role and rainbow shimmer
+                const shimmer = Math.sin(t * 0.1 + i * 0.3) * 0.2;
+                ctx.fillStyle = `rgb(${255}, ${215 + shimmer * 40}, ${shimmer * 100})`;
                 ctx.fillText(role + ':', canvas.width / 2, y);
                 ctx.fillStyle = '#fff';
                 ctx.fillText('Erwin Esener', canvas.width / 2, y + 10);
@@ -10791,15 +11107,21 @@ function drawCredits() {
     });
 
     // Final thank you message (appears after credits scroll)
-    const thankYouY = startY + credits.length * lineHeight + 40;
+    const thankYouY = startY + credits.length * lineHeight + 60;
     if (thankYouY > 70 && thankYouY < canvas.height - 20) {
-        ctx.font = isMecha ? 'bold 12px monospace' : 'bold 10px monospace';
+        ctx.font = isMecha ? 'bold 14px monospace' : 'bold 12px monospace';
+        ctx.shadowColor = isMecha ? '#ff00ff' : '#ffd700';
+        ctx.shadowBlur = isMecha ? 15 : 8;
         ctx.fillStyle = isMecha ? '#ffd700' : '#eab308';
-        ctx.fillText('THANK YOU FOR PLAYING!', canvas.width / 2, thankYouY);
+        ctx.fillText('THANKS FOR PLAYING!', canvas.width / 2, thankYouY);
+        ctx.shadowBlur = 0;
         if (isMecha) {
-            ctx.font = '8px monospace';
+            ctx.font = '10px monospace';
             ctx.fillStyle = '#ff6600';
-            ctx.fillText('You are the Ultimate Safety Champion!', canvas.width / 2, thankYouY + 16);
+            ctx.fillText('You are the Ultimate Safety Champion!', canvas.width / 2, thankYouY + 18);
+            ctx.font = '8px monospace';
+            ctx.fillStyle = '#00ffff';
+            ctx.fillText('Amazon Warehouses are Finally Safe!', canvas.width / 2, thankYouY + 32);
         }
     }
 

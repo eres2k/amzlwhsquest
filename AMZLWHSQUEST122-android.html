@@ -468,7 +468,7 @@ const CHAR_DATA = {
         speed: 1.5,
         lives: 5,
         ability: "PRECISION FOCUS",
-        abilityDesc: "Attacks deal 2x damage to bosses"
+        abilityDesc: "2x damage, 30% slower reload"
     },
     "Nevena": {
         role: "The Oracle",
@@ -5806,8 +5806,11 @@ function spawnSparkles(x, y, color) {
 
 function throwBook() {
     const p = GAME.player; if (p.cooldown > 0) return; const attackMeta = getAttackData(GAME.selectedChar);
-    // Joao's CAFFEINE RUSH ability - faster cooldown
-    const cooldownMod = GAME.selectedChar === 'Joao' ? 0.65 : 1.0;
+    // Joao's CAFFEINE RUSH ability - faster cooldown (35% faster)
+    // Carrie's PRECISION FOCUS penalty - slower reload (30% slower) but 2x damage
+    let cooldownMod = 1.0;
+    if (GAME.selectedChar === 'Joao') cooldownMod = 0.65; // 35% faster
+    else if (GAME.selectedChar === 'Carrie') cooldownMod = 1.3; // 30% slower
     const finalCooldown = Math.floor((attackMeta.cooldown || 120) * cooldownMod);
     p.cooldown = finalCooldown; p.cooldownMax = finalCooldown; GAME.booksFired++;
     const speed = attackMeta.speed || 4;
