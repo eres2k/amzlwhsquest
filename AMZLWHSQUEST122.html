@@ -6665,8 +6665,31 @@ function showIntroThinking(speaker) {
 // Close intro window
 function closeIntroDialog() {
     stopPortraitAnimation();
+    cancelTTS();
+    AudioSys.sfx.step();
     document.getElementById('intro-portrait-window').style.display = 'none';
     GAME.state = GAME.nextState;
+
+    // Handle intro dialogue sequence - player responds to Simon in INTRO WINDOW
+    if (GAME.state === 'INTRO_DIALOGUE_CONTINUE') {
+        const currentGen = GAME.genId;
+
+        showIntroThinking(GAME.selectedChar);
+        GAME.nextState = 'PLAY'; // After player response, start the game
+
+        // Get character personality for response
+        const charData = CHAR_DATA[GAME.selectedChar] || {};
+        const personality = charData.backstory || "a dedicated WHS coordinator";
+
+        // Generate player's enthusiastic response
+        callGemini(`You are ${GAME.selectedChar}, ${personality}. Simon just explained your mission: find 5 safety hazards and dodge ops interruptions. Respond enthusiastically that you'll do your best not to disappoint him. Keep it short, in-character, and determined. Max 25 words.`, "player_response").then(text => {
+            if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
+                let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
+                showIntroDialog(finalText, GAME.selectedChar, true);
+            }
+        });
+        return;
+    }
 }
 
 function showDialog(text, speaker, portrait, isAI = false) {
