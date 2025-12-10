@@ -320,61 +320,52 @@ export class AssetGenerator {
             ctx.fillRect(9, 15, 4, 1);
         });
 
-        // Erwin - The Manager (Tesla)
+        // Erwin - The Manager (standing proud with mini Tesla behind)
         this.assets.chars.Erwin = this.createCanvas(16, 16, ctx => {
-            // Shadow under Tesla
+            // Shadow (ground effect)
             ctx.fillStyle = 'rgba(0,0,0,0.4)';
-            ctx.fillRect(1, 14, 14, 2);
+            ctx.beginPath(); ctx.ellipse(8, 15, 6, 2, 0, 0, Math.PI*2); ctx.fill();
 
-            // Tesla body
-            ctx.fillStyle = this.palettes.erwin.primary;
-            ctx.fillRect(1, 8, 14, 6);
-            ctx.fillStyle = this.palettes.erwin.secondary;
-            ctx.fillRect(2, 9, 12, 4);
-            ctx.fillStyle = this.palettes.erwin.highlight;
-            ctx.fillRect(3, 9, 10, 2);
+            // Mini Tesla in background (smaller, behind Erwin)
+            ctx.fillStyle = '#27272a'; ctx.fillRect(0,12,16,3);
+            ctx.fillStyle = '#3f3f46'; ctx.fillRect(1,12,14,2);
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(2,12,4,1); ctx.fillRect(10,12,4,1); // Windows
+            ctx.fillStyle = '#000'; ctx.fillRect(0,14,3,2); ctx.fillRect(13,14,3,2); // Wheels
 
-            // Hood
-            ctx.fillStyle = '#4b5563';
-            ctx.fillRect(2, 7, 12, 3);
-            ctx.fillStyle = '#6b7280';
-            ctx.fillRect(4, 7, 8, 2);
-            ctx.fillStyle = '#9ca3af';
-            ctx.fillRect(5, 7, 3, 1);
+            // Erwin's slicked dark hair
+            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(4,0,8,5);
+            ctx.fillStyle = '#1a2744'; ctx.fillRect(5,1,6,3);
+            ctx.fillStyle = '#2a3755'; ctx.fillRect(6,1,4,2); // Hair shine
 
-            // Windshield glow
-            ctx.fillStyle = this.palettes.erwin.accent;
-            ctx.fillRect(3, 9, 10, 2);
-            ctx.fillStyle = this.palettes.erwin.attack;
-            ctx.fillRect(4, 9, 8, 1);
-            ctx.fillStyle = '#67e8f9';
-            ctx.fillRect(6, 9, 4, 1);
+            // Face
+            ctx.fillStyle = '#c4956a'; ctx.fillRect(4,4,8,6);
+            ctx.fillStyle = '#d4a574'; ctx.fillRect(5,5,6,4);
+            ctx.fillStyle = '#e8c49a'; ctx.fillRect(6,5,4,3);
 
-            // Wheels
-            ctx.fillStyle = '#000';
-            ctx.fillRect(1, 12, 4, 3);
-            ctx.fillRect(11, 12, 4, 3);
-            ctx.fillStyle = '#27272a';
-            ctx.fillRect(2, 12, 2, 2);
-            ctx.fillRect(12, 12, 2, 2);
+            // Confident eyes with tech glint
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,5,2,2); ctx.fillRect(9,5,2,2);
+            ctx.fillStyle = '#0891b2'; ctx.fillRect(5,5,1,1); ctx.fillRect(9,5,1,1); // Cyan glint
 
-            // Headlights
-            ctx.fillStyle = '#fef08a';
-            ctx.fillRect(1, 10, 1, 2);
-            ctx.fillRect(14, 10, 1, 2);
+            // Well-groomed beard
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,7,6,3);
+            ctx.fillStyle = '#2d2d2d'; ctx.fillRect(6,8,4,2);
+            // Smug smile through beard
+            ctx.fillStyle = '#f59e0b'; ctx.fillRect(6,8,4,1);
 
-            // Erwin face above
-            this.drawFace(ctx, 5, 3, 'smirk');
+            // Tesla-gray suit jacket
+            ctx.fillStyle = '#27272a'; ctx.fillRect(2,10,12,5);
+            ctx.fillStyle = '#3f3f46'; ctx.fillRect(3,10,10,4);
+            ctx.fillStyle = '#52525b'; ctx.fillRect(4,11,8,2); // Suit highlight
 
-            // Hair
-            ctx.fillStyle = '#1a1a1a';
-            ctx.fillRect(5, 2, 6, 3);
-            ctx.fillStyle = '#2d2d2d';
-            ctx.fillRect(6, 2, 4, 2);
+            // Cyan Tesla logo/tie
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(7,10,2,3);
 
-            // Beard
-            ctx.fillStyle = '#1a1a1a';
-            ctx.fillRect(6, 6, 4, 2);
+            // Arms (confident pose)
+            ctx.fillStyle = '#27272a'; ctx.fillRect(1,10,2,4); ctx.fillRect(13,10,2,4);
+            ctx.fillStyle = '#d4a574'; ctx.fillRect(1,13,2,1); ctx.fillRect(13,13,2,1); // Hands
+
+            // Shoes
+            ctx.fillStyle = '#000'; ctx.fillRect(3,14,4,2); ctx.fillRect(9,14,4,2);
         });
     }
 
