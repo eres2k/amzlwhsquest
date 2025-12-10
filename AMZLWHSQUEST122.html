@@ -3442,11 +3442,20 @@ window.addEventListener('keyup', e => {
 });
 
 function handleAction() {
-    AudioSys.init(); AudioSys.resume(); MusicSys.init(); MusicSys.resume();
+    // Initialize audio systems (safely handle any errors)
+    try {
+        AudioSys.init();
+        AudioSys.resume();
+        MusicSys.init();
+        MusicSys.resume();
+    } catch(e) {
+        console.error("Audio init error:", e);
+    }
+
     // Force intro music to start on first user interaction (bypass autoplay restrictions)
     if (GAME.state === 'PRESS_START') {
         // First interaction - allows audio to play
-        advanceState(); // Move to LOGO state
+        advanceState(); // Move to LOGO state and start intro music
         return;
     }
     // Let intro music play - ignore input and auto-advance after timer
