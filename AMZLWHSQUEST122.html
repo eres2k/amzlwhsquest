@@ -753,33 +753,35 @@ const MAP_H = 40;
 const TTSSys = {
     synth: window.speechSynthesis,
     voice: null,
+    maleVoice: null,
+    femaleVoice: null,
     voices: [],
-    // Character voice configurations: pitch (0.1-2), rate (0.1-10), volume (0-1)
+    // Character voice configurations: pitch (0.1-2), rate (0.1-10), volume (0-1), gender preference
     characterVoices: {
         // Main characters - varied voices
-        "Simon": { pitch: 0.8, rate: 0.88, volume: 1.0, desc: "Authoritative manager" },
-        "Simon Unglaube": { pitch: 0.8, rate: 0.88, volume: 1.0, desc: "Authoritative manager" },
-        "Carrie": { pitch: 1.3, rate: 1.05, volume: 0.95, desc: "Energetic, precise" },
-        "Nevena": { pitch: 1.15, rate: 0.95, volume: 0.9, desc: "Calm, oracle-like" },
-        "Joao": { pitch: 0.85, rate: 1.2, volume: 1.0, desc: "Loud, siren-like" },
-        "Roman": { pitch: 0.7, rate: 0.9, volume: 0.75, desc: "Ghost-like, quiet" },
-        "Erwin": { pitch: 0.95, rate: 1.1, volume: 1.0, desc: "Manager, confident" },
+        "Simon": { pitch: 0.8, rate: 0.88, volume: 1.0, gender: "male", desc: "Authoritative manager" },
+        "Simon Unglaube": { pitch: 0.8, rate: 0.88, volume: 1.0, gender: "male", desc: "Authoritative manager" },
+        "Carrie": { pitch: 1.3, rate: 1.05, volume: 0.95, gender: "female", desc: "Energetic, precise" },
+        "Nevena": { pitch: 1.15, rate: 0.95, volume: 0.9, gender: "female", desc: "Calm, oracle-like" },
+        "Joao": { pitch: 0.85, rate: 1.2, volume: 1.0, gender: "male", desc: "Loud, siren-like" },
+        "Roman": { pitch: 0.7, rate: 0.9, volume: 0.75, gender: "male", desc: "Ghost-like, quiet" },
+        "Erwin": { pitch: 0.95, rate: 1.1, volume: 1.0, gender: "male", desc: "Manager, confident" },
         // Bosses & antagonists - gender-appropriate voices
-        "Jeff Bezos": { pitch: 0.6, rate: 0.8, volume: 1.0, desc: "Megalomaniac" },
-        "Mecha Jeff": { pitch: 0.3, rate: 0.6, volume: 1.0, desc: "Robotic, terrifying" },
-        "MECHA MEGA SIMON": { pitch: 0.25, rate: 1.1, volume: 1.0, desc: "Mechanical overlord" },
-        "MEGA SIMON": { pitch: 0.7, rate: 0.82, volume: 1.0, desc: "Final boss authority" },
-        "Labour Inspector": { pitch: 1.1, rate: 1.0, volume: 1.0, desc: "Stern female enforcer" },
-        "Compliance Auditor": { pitch: 1.05, rate: 0.85, volume: 0.9, desc: "Meticulous female watcher" },
-        "Sebastian Sprigade": { pitch: 0.75, rate: 1.15, volume: 1.0, desc: "Fast, TPH obsessed male" },
-        "Regional OPS MGR": { pitch: 0.85, rate: 0.9, volume: 1.0, desc: "Male executive" },
-        "Avetta Platform": { pitch: 0.3, rate: 0.7, volume: 0.85, desc: "AI, robotic" },
-        "Jelena": { pitch: 1.15, rate: 0.95, volume: 0.95, desc: "HR guardian female" },
-        "Jelly": { pitch: 1.15, rate: 0.95, volume: 0.95, desc: "HR guardian female" },
+        "Jeff Bezos": { pitch: 0.6, rate: 0.8, volume: 1.0, gender: "male", desc: "Megalomaniac" },
+        "Mecha Jeff": { pitch: 0.3, rate: 0.6, volume: 1.0, gender: "male", desc: "Robotic, terrifying" },
+        "MECHA MEGA SIMON": { pitch: 0.25, rate: 1.1, volume: 1.0, gender: "male", desc: "Mechanical overlord" },
+        "MEGA SIMON": { pitch: 0.7, rate: 0.82, volume: 1.0, gender: "male", desc: "Final boss authority" },
+        "Labour Inspector": { pitch: 1.1, rate: 1.0, volume: 1.0, gender: "female", desc: "Stern female enforcer" },
+        "Compliance Auditor": { pitch: 1.05, rate: 0.85, volume: 0.9, gender: "female", desc: "Meticulous female watcher" },
+        "Sebastian Sprigade": { pitch: 0.75, rate: 1.15, volume: 1.0, gender: "male", desc: "Fast, TPH obsessed male" },
+        "Regional OPS MGR": { pitch: 0.85, rate: 0.9, volume: 1.0, gender: "male", desc: "Male executive" },
+        "Avetta Platform": { pitch: 0.3, rate: 0.7, volume: 0.85, gender: "neutral", desc: "AI, robotic" },
+        "Jelena": { pitch: 1.15, rate: 0.95, volume: 0.95, gender: "female", desc: "HR guardian female" },
+        "Jelly": { pitch: 1.15, rate: 0.95, volume: 0.95, gender: "female", desc: "HR guardian female" },
         // System voices
-        "System": { pitch: 1.2, rate: 1.0, volume: 0.9, desc: "Female announcer" },
-        "Corporate": { pitch: 0.55, rate: 0.9, volume: 1.0, desc: "Snarky corporate" },
-        "Narrator": { pitch: 0.7, rate: 0.85, volume: 1.0, desc: "Dramatic narrator" }
+        "System": { pitch: 1.2, rate: 1.0, volume: 0.9, gender: "female", desc: "Female announcer" },
+        "Corporate": { pitch: 0.55, rate: 0.9, volume: 1.0, gender: "male", desc: "Snarky corporate" },
+        "Narrator": { pitch: 0.7, rate: 0.85, volume: 1.0, gender: "male", desc: "Dramatic narrator" }
     },
     init: function() {
         const loadVoices = () => {
@@ -788,11 +790,28 @@ const TTSSys = {
             const englishVoices = this.voices.filter(v =>
                 v.lang.startsWith('en') || v.name.includes('English')
             );
-            // Prefer Google US English, then any US English, then any English
+            // Default voice - prefer Google US English, then any US English, then any English
             this.voice = englishVoices.find(v => v.name.includes("Google US English"))
                 || englishVoices.find(v => v.lang === 'en-US')
                 || englishVoices.find(v => v.lang.startsWith('en'))
                 || this.voices[0];
+
+            // Try to find distinct male and female voices
+            // Male voice: look for male, David, or lower-numbered voices
+            this.maleVoice = englishVoices.find(v => v.name.toLowerCase().includes('male') && !v.name.toLowerCase().includes('female'))
+                || englishVoices.find(v => v.name.includes('David'))
+                || englishVoices.find(v => v.name.includes('Daniel'))
+                || englishVoices.find(v => v.name.includes('Fred'))
+                || englishVoices.find(v => v.name.includes('Alex'))
+                || this.voice;
+
+            // Female voice: look for female, Samantha, or higher-pitched voices
+            this.femaleVoice = englishVoices.find(v => v.name.toLowerCase().includes('female'))
+                || englishVoices.find(v => v.name.includes('Samantha'))
+                || englishVoices.find(v => v.name.includes('Victoria'))
+                || englishVoices.find(v => v.name.includes('Karen'))
+                || englishVoices.find(v => v.name.includes('Moira'))
+                || this.voice;
         };
         if (this.synth.onvoiceschanged !== undefined) this.synth.onvoiceschanged = loadVoices;
         loadVoices();
@@ -802,7 +821,7 @@ const TTSSys = {
         for (const [name, config] of Object.entries(this.characterVoices)) {
             if (speakerName && speakerName.includes(name)) return config;
         }
-        return { pitch: 0.9, rate: 1.0, volume: 0.9 }; // Default
+        return { pitch: 0.9, rate: 1.0, volume: 0.9, gender: "neutral" }; // Default
     },
     speak: function(text, speakerName = "System", callback = null) {
         if (!this.synth || !text) {
@@ -814,10 +833,19 @@ const TTSSys = {
 
         // Force English language
         utterance.lang = 'en-US';
-        if (this.voice) utterance.voice = this.voice;
 
         // Apply character-specific voice settings
         const config = this.getVoiceConfig(speakerName);
+
+        // Select appropriate voice based on gender
+        if (config.gender === "male" && this.maleVoice) {
+            utterance.voice = this.maleVoice;
+        } else if (config.gender === "female" && this.femaleVoice) {
+            utterance.voice = this.femaleVoice;
+        } else if (this.voice) {
+            utterance.voice = this.voice;
+        }
+
         utterance.pitch = config.pitch;
         utterance.rate = config.rate;
         utterance.volume = config.volume;
@@ -835,8 +863,19 @@ const TTSSys = {
         if (!this.synth || !text) return;
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-US';
-        if (this.voice) utterance.voice = this.voice;
+
+        // Apply character-specific voice settings
         const config = this.getVoiceConfig(speakerName);
+
+        // Select appropriate voice based on gender
+        if (config.gender === "male" && this.maleVoice) {
+            utterance.voice = this.maleVoice;
+        } else if (config.gender === "female" && this.femaleVoice) {
+            utterance.voice = this.femaleVoice;
+        } else if (this.voice) {
+            utterance.voice = this.voice;
+        }
+
         utterance.pitch = config.pitch;
         utterance.rate = config.rate;
         utterance.volume = config.volume;
@@ -923,6 +962,7 @@ const MusicSys = {
         intro: new Audio('music/title-eeproductions.mp3'),
         menu: new Audio('music/game-over.mp3'),
         ingame: new Audio('music/level-gameplay.mp3'),
+        yard: new Audio('music/level-yard.mp3'),
         boss: new Audio('music/boss-battle.mp3'),
         victory: new Audio('music/victory.mp3'),
         mechaJeff: new Audio('music/boss-mecha-jeff.mp3'),
@@ -1288,6 +1328,16 @@ function generateAssets() {
         ctx.fillStyle = '#1f2937'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1);
     });
     GFX.simonFace = c(32,32, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simon,0,0,16,16,0,0,32,32); });
+
+    // Create character portraits for SNES-style dialogues
+    GFX.charFaces = {
+        "Carrie": c(48,48, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.chars["Carrie"],0,0,16,16,0,0,48,48); }),
+        "Nevena": c(48,48, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.chars["Nevena"],0,0,16,16,0,0,48,48); }),
+        "Joao": c(48,48, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.chars["Joao"],0,0,16,16,0,0,48,48); }),
+        "Roman": c(48,48, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.chars["Roman"],0,0,16,16,0,0,48,48); }),
+        "Erwin": c(48,48, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.chars["Erwin"],0,0,16,16,0,0,48,48); })
+    };
+    GFX.simonFaceLarge = c(48,48, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simon,0,0,16,16,0,0,48,48); });
 
     // ENHANCED SIMON BOSS - 32x32 detailed sprite - Short brown hair, glasses, brown beard
     GFX.simonBoss = c(32,32, ctx => {
@@ -3155,7 +3205,7 @@ function generateAssets() {
 }
 // --- GAME STATE ---
 const GAME = {
-    state: 'LOGO',
+    state: 'PRESS_START',
     stateTimer: 0,
     nextState: 'PLAY',
     ticks: 0,
@@ -3169,6 +3219,7 @@ const GAME = {
     issuesFixed: 0, lives: 5, genId: 0, gameOverTriggered: false, simonHits: 0, boss: null, pendingBossIntro: false,
     shake: 0, flash: 0,
     dialogText: "", dialogVisible: "", dialogTimer: 0,
+    introDialogueStep: 0, // Track intro conversation sequence
     splashTimer: 0, aiResultText: null,
     // Game Over screen state
     gameOverPhase: 0, corporateMessage: "", characterDefeatLine: "", gameOverReason: "",
@@ -3386,16 +3437,29 @@ window.addEventListener('keyup', e => {
 });
 
 function handleAction() {
-    AudioSys.init(); AudioSys.resume(); MusicSys.init(); MusicSys.resume();
-    // Force intro music to start on first user interaction (bypass autoplay restrictions)
-    if (GAME.state === 'LOGO') {
-        MusicSys.stop(); // Clear any failed attempts
-        MusicSys.currentName = null; // Force fresh start
+    // Initialize audio systems (safely handle any errors)
+    try {
+        AudioSys.init();
+        AudioSys.resume();
+        MusicSys.init();
+        MusicSys.resume();
+    } catch(e) {
+        console.error("Audio init error:", e);
     }
-    updateMusicForState();
+
+    // Force intro music to start on first user interaction (bypass autoplay restrictions)
+    if (GAME.state === 'PRESS_START') {
+        // First interaction - allows audio to play
+        advanceState(); // Move to LOGO state and start intro music
+        return;
+    }
+    // Let intro music play - ignore input and auto-advance after timer
+    if (GAME.state === 'LOGO') { return; }
+    // Handle other states that should not process input
     if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'WIN_SPLASH') return;
-    if (GAME.state === 'LOGO') { return; } // Let intro music play, will auto-advance after timer
-    else if (['INTRO', 'STORY'].includes(GAME.state)) { AudioSys.sfx.start(); advanceState(); }
+
+    updateMusicForState();
+    if (['INTRO', 'STORY'].includes(GAME.state)) { AudioSys.sfx.start(); advanceState(); }
     else if (['TITLE', 'HOWTO'].includes(GAME.state)) {
         GAME.state = (GAME.state==='TITLE')?'HOWTO':'SELECT'; AudioSys.sfx.select(); updateMusicForState();
     }
@@ -3480,7 +3544,7 @@ function init() {
     CachedValues.init(canvas);
 
     generateAssets();
-    GAME.state = 'LOGO';
+    GAME.state = 'PRESS_START';
     // DON'T call updateMusicForState() here - it will fail due to autoplay policy
     // Music will start on first user interaction in handleAction()
     requestAnimationFrame(loop);
@@ -3488,10 +3552,11 @@ function init() {
 
 function advanceState() {
     GAME.stateTimer = 0;
-    if (GAME.state === 'LOGO') GAME.state = 'INTRO';
+    if (GAME.state === 'PRESS_START') GAME.state = 'LOGO';
+    else if (GAME.state === 'LOGO') GAME.state = 'INTRO';
     else if (GAME.state === 'INTRO') GAME.state = 'STORY';
     else if (GAME.state === 'STORY') GAME.state = 'TITLE';
-    else if (GAME.state === 'TITLE') GAME.state = 'HOWTO'; 
+    else if (GAME.state === 'TITLE') GAME.state = 'HOWTO';
     updateMusicForState();
 }
 
@@ -3516,11 +3581,16 @@ function resetGame() {
     document.getElementById('hud-layer').style.display = 'block'; updateHud();
     document.getElementById('boss-hud').style.display = 'none';
     
-    // --- CHANGED: SHOW LOADING STATE INSTEAD OF HARDCODED TEXT ---
+    // --- INTRO DIALOGUE SEQUENCE ---
+    GAME.introDialogueStep = 0;
     const currentGen = GAME.genId;
-    showThinking("Simon Unglaube", GFX.simonFace); // Shows "..." dialog
 
-    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Greet ${GAME.selectedChar} with dry humor and one quick, relevant safety reminder for starting the shift. Keep it witty. Max 18 words.`, "intro").then(text => {
+    // Show Simon's thinking state while AI generates greeting
+    showThinking("Simon Unglaube", GFX.simonFace);
+    GAME.nextState = 'INTRO_DIALOGUE_CONTINUE'; // Custom state for dialogue sequence
+
+    // Generate Simon's greeting with objective overview
+    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Give ${GAME.selectedChar} a brief welcome with your signature dry wit, then explain their shift objective: find and fix 5 safety hazards while dodging ops manager interruptions. Keep it concise and witty. Max 45 words.`, "intro").then(text => {
         if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
              let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
              showDialog(finalText, "Simon Unglaube", GFX.simonFace, true);
@@ -6032,16 +6102,16 @@ function showThinking(speaker, portrait) {
     const badge = document.getElementById('gemini-badge');
     const port = document.getElementById('portrait');
     const pCtx = port.getContext('2d');
-    
+
     box.style.display = 'flex';
     document.getElementById('text-content').innerHTML = "<span class='loading-dots'>PROCESSING</span>"; // Loading animation
-    
+
     badge.style.display = 'block';
     badge.innerText = "✨ UPLINK ESTABLISHED...";
-    
+
     pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,32,32);
     if (portrait) pCtx.drawImage(portrait, 0, 0);
-    
+
     AudioSys.sfx.text();
 }
 
@@ -6101,7 +6171,30 @@ function showNextBezosDialogue() {
 
 function closeDialog() {
     cancelTTS(); AudioSys.sfx.step(); document.getElementById('dialog-box').style.display = 'none';
+
     GAME.state = GAME.nextState;
+
+    // Handle intro dialogue sequence - player responds to Simon
+    if (GAME.state === 'INTRO_DIALOGUE_CONTINUE') {
+        const currentGen = GAME.genId;
+        const playerPortrait = GFX.charFaces[GAME.selectedChar] || GFX.chars[GAME.selectedChar];
+
+        showThinking(GAME.selectedChar, playerPortrait);
+        GAME.nextState = 'PLAY'; // After player response, start the game
+
+        // Get character personality for response
+        const charData = CHAR_DATA[GAME.selectedChar] || {};
+        const personality = charData.backstory || "a dedicated WHS coordinator";
+
+        // Generate player's enthusiastic response
+        callGemini(`You are ${GAME.selectedChar}, ${personality}. Simon just explained your mission: find 5 safety hazards and dodge ops interruptions. Respond enthusiastically that you'll do your best not to disappoint him. Keep it short, in-character, and determined. Max 25 words.`, "player_response").then(text => {
+            if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
+                let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
+                showDialog(finalText, GAME.selectedChar, playerPortrait, true);
+            }
+        });
+        return;
+    }
 
     // Handle Simon fake victory dialogue sequence
     if (GAME.state === 'SIMON_FAKE_VICTORY_CONTINUE' || GAME.state === 'SIMON_FAKE_VICTORY_TRANSFORM') {
@@ -6193,7 +6286,9 @@ function updateMusicForState() {
     // Game Over But Not Really - for character select screen
     else if (GAME.state === 'SELECT') track = 'menu';
     // Pixel Warehouse Crawl - for warehouse gameplay
-    else if (['PLAY', 'YARD_INTRO', 'YARD_LEVEL'].includes(GAME.state)) track = 'ingame';
+    else if (GAME.state === 'PLAY') track = 'ingame';
+    // Level-Yard - for yard/outdoor level
+    else if (['YARD_INTRO', 'YARD_LEVEL'].includes(GAME.state)) track = 'yard';
     // Pixel Panic - for boss reveals (regular bosses only)
     else if (GAME.state === 'VISITOR_SPLASH') track = 'boss';
     // MEGA SIMON's theme - for Simon boss intro, fight, and transformation
@@ -6217,13 +6312,15 @@ function updateMusicForState() {
     // Game Over Symphony - for both Credits Scenes
     else if (GAME.state === 'CREDITS') track = 'credits';
     // WIN_SPLASH - don't change music (handled in winGame function)
-    else if (GAME.state === 'WIN_SPLASH' || GAME.state === 'GAMEOVER_SPLASH') return;
-    // LOSE_SPLASH - play game over music (Game Over But Not Really track)
-    else if (GAME.state === 'LOSE_SPLASH') {
+    else if (GAME.state === 'WIN_SPLASH') return;
+    // LOSE_SPLASH and GAMEOVER_SPLASH - play game over music (Game Over But Not Really track)
+    else if (GAME.state === 'LOSE_SPLASH' || GAME.state === 'GAMEOVER_SPLASH') {
         track = 'menu';
         // Force music change even if currently playing
-        MusicSys.stop();
-        MusicSys.currentName = null;
+        if (MusicSys.currentName !== 'menu') {
+            MusicSys.stop();
+            MusicSys.currentName = null;
+        }
     }
 
     MusicSys.play(track, rate);
@@ -9110,6 +9207,36 @@ function draw() {
     if (GAME.shake > 0) { dxShake = (Math.random() - 0.5) * GAME.shake; dyShake = (Math.random() - 0.5) * GAME.shake; }
     ctx.save(); ctx.translate(dxShake, dyShake);
 
+    if (GAME.state === 'PRESS_START') {
+        // Black screen with pulsing "PRESS SPACEBAR" prompt
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Starfield background (subtle)
+        for(let i = 0; i < 20; i++) {
+            let seed = i * 123.456;
+            let x = ((seed * 9301 + 49297) % 233280) / 910;
+            let y = ((seed * 1234 + 8765) % 233280) / 1040;
+            let brightness = Math.sin(GAME.stateTimer * 0.05 + i) * 0.2 + 0.3;
+            ctx.fillStyle = `rgba(255,255,255,${brightness})`;
+            ctx.fillRect(x, y, 1, 1);
+        }
+
+        // Pulsing text
+        const pulse = 0.4 + Math.abs(Math.sin(GAME.stateTimer * 0.05)) * 0.6;
+        ctx.textAlign = 'center';
+        ctx.font = '12px monospace';
+        ctx.fillStyle = `rgba(255, 215, 0, ${pulse})`;
+        ctx.fillText('PRESS SPACEBAR', canvas.width/2, canvas.height/2);
+
+        ctx.font = '8px monospace';
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.fillText('(Audio will be enabled)', canvas.width/2, canvas.height/2 + 20);
+
+        ctx.textAlign = 'start';
+        ctx.restore();
+        return;
+    }
     if (GAME.state === 'LOGO') {
         // Extended to 420 frames (7 seconds) for title-eeproductions.mp3
         let alpha = 1.0;
