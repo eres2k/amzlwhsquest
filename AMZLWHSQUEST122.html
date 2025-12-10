@@ -4578,13 +4578,14 @@ function handleAction() {
     else if (GAME.state === 'MECHA_BOSS_INTRO') { GAME.state = 'MECHA_BOSS'; GAME.nextState = 'MECHA_BOSS'; updateMusicForState(); }
     else if (GAME.state === 'MECHA_SIMON_SPLASH') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
     else if (GAME.state === 'THRONE_CONFRONTATION') {
-        // Throne confrontation cutscene using AI-powered showDialog system
+        // Throne confrontation cutscene - wait for space to start dialogue
         const scene = GAME.throneScene;
         if (!scene) return;
 
-        // Phase 0: Quick zoom in animation (frames 0-20)
-        if (scene.phase === 0 && GAME.stateTimer >= 20) {
+        // Phase 0: Show VS screen and wait for space press (after 40 frames minimum)
+        if (scene.phase === 0 && GAME.stateTimer >= 40) {
             scene.phase = 1;
+            AudioSys.sfx.select();
             // Start the AI dialogue sequence
             startBezosConfrontationDialogue();
         }
@@ -7551,14 +7552,19 @@ function showNextBezosIntroDialogue() {
 
     if (bezosDialogueStep >= dialoguePrompts.length) {
         // All dialogues done, proceed to transformation
-        closeIntroDialog();
+        stopPortraitAnimation();
+        document.getElementById('intro-portrait-window').style.display = 'none';
         GAME.state = 'MECHA_TRANSFORM';
         GAME.stateTimer = 0;
         GAME.nextState = 'MECHA_TRANSFORM';
+        GAME.dialogBackgroundState = null;
         return;
     }
 
     const step = dialoguePrompts[bezosDialogueStep];
+
+    // IMPORTANT: Set background state to throne confrontation so it renders behind dialog
+    GAME.dialogBackgroundState = 'THRONE_CONFRONTATION';
 
     // Show thinking state in intro window
     showIntroThinking(step.speaker);
@@ -9009,6 +9015,14 @@ function drawThroneConfrontation() {
         const vsFlash = Math.sin(t * 0.1) > 0 ? '#ff4444' : '#dc2626';
         ctx.fillStyle = vsFlash;
         ctx.fillText('VS', canvas.width / 2, canvas.height / 2 - 10);
+
+        // Show "Press Space to Continue" after initial animation
+        if (GAME.stateTimer >= 40) {
+            ctx.font = '8px "Press Start 2P"';
+            const spaceFlash = Math.sin(t * 0.15) > 0 ? '#fbbf24' : '#ff9900';
+            ctx.fillStyle = spaceFlash;
+            ctx.fillText('▼ PRESS SPACE TO CONFRONT ▼', canvas.width / 2, canvas.height - 30);
+        }
     }
 
     // Note: Dialogue is now handled by showDialog system (no slow typewriter)
