@@ -6565,12 +6565,13 @@ function updateBoss() {
     }
 
     // ⚠️ DESPERATION PHASE - SPECIAL LOW-HEALTH ATTACK (triggers once at 10% HP) ⚠️
-    if (!b.lowHealthAttackTriggered && hpPct <= 0.1 && !b.isMecha) {
+    // Exclude MEGA SIMON - he transforms into Mecha Mega Simon instead of enraging
+    if (!b.lowHealthAttackTriggered && hpPct <= 0.1 && !b.isMecha && b.name !== "MEGA SIMON") {
         b.lowHealthAttackTriggered = true;
         b.desperationMode = true; // 🔥 ENRAGED STATE - 30% faster, 30% dodge chance!
 
-        // 🔥 RESTORE BOSS HEALTH TO 50% (excluding Simon) with animated restoration
-        if (b.name !== "MEGA SIMON") {
+        // 🔥 RESTORE BOSS HEALTH TO 50% with animated restoration
+        {
             const targetHp = Math.floor(b.maxHp * 0.5);
             const startHp = b.hp;
 
@@ -7219,7 +7220,7 @@ function triggerGameOver(reason) {
     }
     else {
         const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
-        callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator failed after ${time}s with ${GAME.issuesFixed}/5 hazards fixed, ${GAME.booksFired} rule books thrown, ${GAME.opsPushed} ops pushed. Deliver a scathing yet funny performance review that weaves those stats into a safety lesson. Threaten that their failure will be documented and sent to MEGA SIMON or worse - MECHA MEGA SIMON for ultimate judgment. Max 55 words.`, "reviews_loss", { stats }).then(review => {
+        callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator failed after ${time}s with ${GAME.issuesFixed}/5 hazards fixed, ${GAME.booksFired} rule books thrown, ${GAME.opsPushed} ops pushed. Deliver a scathing yet funny performance review that weaves those stats into a safety lesson. Threaten that their failure will be permanently documented and sent to upper management for review. Max 55 words.`, "reviews_loss", { stats }).then(review => {
              if (GAME.genId === currentGen) { GAME.aiResultText = review; }
         });
     }
