@@ -1152,31 +1152,41 @@ function generateAssets() {
             // Shadow base
             ctx.fillStyle = 'rgba(0,0,0,0.3)';
             ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
-            // Hair with highlight
+            // Dark hair with enhanced detail
             ctx.fillStyle = '#0a0f1f'; ctx.fillRect(2,0,12,6);
-            ctx.fillStyle = '#1a2744'; ctx.fillRect(3,1,10,3);
-            ctx.fillStyle = '#2a3755'; ctx.fillRect(4,1,3,2); // Hair shine
-            // Face with contour
-            ctx.fillStyle = '#d4a574'; ctx.fillRect(4,5,8,6);
-            ctx.fillStyle = '#e8c49a'; ctx.fillRect(5,6,6,4);
-            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(6,6,4,3); // Highlight
-            // Eyes with detail
-            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,7,2,2); ctx.fillRect(9,7,2,2);
-            ctx.fillStyle = '#fff'; ctx.fillRect(5,7,1,1); ctx.fillRect(9,7,1,1);
+            ctx.fillStyle = '#1a2744'; ctx.fillRect(3,1,10,4);
+            ctx.fillStyle = '#2a3755'; ctx.fillRect(4,2,8,2);
+            ctx.fillStyle = '#3b4766'; ctx.fillRect(5,2,6,1);
+            // Meditation headband
+            ctx.fillStyle = '#16a34a'; ctx.fillRect(3,5,10,1);
+            ctx.fillStyle = '#22c55e'; ctx.fillRect(4,5,8,1);
+            // Face with enhanced shading
+            ctx.fillStyle = '#c4956a'; ctx.fillRect(4,5,8,6);
+            ctx.fillStyle = '#d4a574'; ctx.fillRect(5,6,6,4);
+            ctx.fillStyle = '#e8c49a'; ctx.fillRect(6,7,4,2);
+            ctx.fillStyle = '#f5d0a0'; ctx.fillRect(7,7,2,1);
             // Eyebrows
             ctx.fillStyle = '#0a0f1f'; ctx.fillRect(5,6,2,1); ctx.fillRect(9,6,2,1);
-            // Mouth
+            // Purple zen eyes (enhanced)
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,7,2,2); ctx.fillRect(9,7,2,2);
+            ctx.fillStyle = '#a855f7'; ctx.fillRect(5,7,1,1); ctx.fillRect(9,7,1,1);
+            ctx.fillStyle = '#fff'; ctx.fillRect(6,7,1,1); ctx.fillRect(10,7,1,1);
+            // Serene mouth
             ctx.fillStyle = '#c17b5f'; ctx.fillRect(7,9,2,1);
-            // Headset
-            ctx.fillStyle = '#22c55e'; ctx.fillRect(4,10,8,1);
-            ctx.fillStyle = '#16a34a'; ctx.fillRect(3,8,1,3); ctx.fillRect(12,8,1,3);
-            // Purple robe with shading
-            ctx.fillStyle = '#7c3aed'; ctx.fillRect(2,11,12,5);
-            ctx.fillStyle = '#8b5cf6'; ctx.fillRect(3,11,10,3);
-            ctx.fillStyle = '#a78bfa'; ctx.fillRect(5,12,6,2); // Highlight
-            // Sash
+            // Purple zen robe with enhanced detail
+            ctx.fillStyle = '#6d28d9'; ctx.fillRect(2,11,12,5);
+            ctx.fillStyle = '#7c3aed'; ctx.fillRect(3,11,10,4);
+            ctx.fillStyle = '#8b5cf6'; ctx.fillRect(4,12,8,2);
+            ctx.fillStyle = '#a78bfa'; ctx.fillRect(5,13,6,1);
+            // Meditation sash
             ctx.fillStyle = '#c4b5fd'; ctx.fillRect(7,11,2,4);
-            // Boots
+            ctx.fillStyle = '#ddd6fe'; ctx.fillRect(7,12,2,2);
+            // 5S symbol
+            ctx.fillStyle = '#22c55e'; ctx.fillRect(6,13,4,1);
+            // Label maker prop (small)
+            ctx.fillStyle = '#c4b5fd'; ctx.fillRect(12,12,2,3);
+            ctx.fillStyle = '#8b5cf6'; ctx.fillRect(12,13,2,1);
+            // Sandals
             ctx.fillStyle = '#1e3a8a'; ctx.fillRect(3,15,4,1); ctx.fillRect(9,15,4,1);
             ctx.fillStyle = '#3b82f6'; ctx.fillRect(4,15,2,1); ctx.fillRect(10,15,2,1);
         }),
@@ -1184,35 +1194,46 @@ function generateAssets() {
             // Shadow
             ctx.fillStyle = 'rgba(0,0,0,0.3)';
             ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
-            // Brown hair with wave
+            // Brown wavy hair with enhanced detail
             ctx.fillStyle = '#5c2d12'; ctx.fillRect(2,1,12,5);
             ctx.fillStyle = '#7c3d1a'; ctx.fillRect(3,2,10,3);
-            ctx.fillStyle = '#9a5a32'; ctx.fillRect(2,2,3,4); // Side wave
-            ctx.fillStyle = '#b8784a'; ctx.fillRect(3,2,2,2); // Highlight
-            // Headband
-            ctx.fillStyle = '#0284c7'; ctx.fillRect(3,2,10,2);
-            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(4,2,8,1);
-            // Face
-            ctx.fillStyle = '#d4a574'; ctx.fillRect(4,5,8,6);
-            ctx.fillStyle = '#e8c49a'; ctx.fillRect(5,6,6,4);
-            ctx.fillStyle = '#f5c89a'; ctx.fillRect(6,6,4,3);
-            // Eyes
+            ctx.fillStyle = '#9a5a32'; ctx.fillRect(4,2,8,2); // Mid-tone
+            ctx.fillStyle = '#b8784a'; ctx.fillRect(5,2,6,1); // Highlight
+            // Side waves (enhanced)
+            ctx.fillStyle = '#9a5a32'; ctx.fillRect(2,3,2,3); ctx.fillRect(12,3,2,3);
+            // Professional headband
+            ctx.fillStyle = '#0369a1'; ctx.fillRect(3,3,10,2);
+            ctx.fillStyle = '#0284c7'; ctx.fillRect(4,3,8,1);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,3,6,1);
+            // Face with enhanced shading
+            ctx.fillStyle = '#c4956a'; ctx.fillRect(4,5,8,6);
+            ctx.fillStyle = '#d4a574'; ctx.fillRect(5,6,6,4);
+            ctx.fillStyle = '#e8c49a'; ctx.fillRect(6,7,4,2);
+            ctx.fillStyle = '#f5c89a'; ctx.fillRect(7,7,2,1);
+            // Eyebrows (skeptical)
+            ctx.fillStyle = '#5c2d12'; ctx.fillRect(5,6,2,1); ctx.fillRect(9,6,2,1);
+            // Eyes with glasses (enhanced)
             ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,7,2,2); ctx.fillRect(9,7,2,2);
-            ctx.fillStyle = '#fff'; ctx.fillRect(5,7,1,1); ctx.fillRect(9,7,1,1);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,7,1,1); ctx.fillRect(9,7,1,1);
+            ctx.fillStyle = '#fff'; ctx.fillRect(6,7,1,1); ctx.fillRect(10,7,1,1);
             // Glasses frame
             ctx.strokeStyle = '#475569'; ctx.lineWidth = 0.5;
             ctx.strokeRect(5,7,2,2); ctx.strokeRect(9,7,2,2);
-            ctx.fillStyle = '#475569'; ctx.fillRect(7,8,2,0.5);
+            ctx.fillStyle = '#64748b'; ctx.fillRect(7,8,2,1); // Bridge
             // Mouth
             ctx.fillStyle = '#c17b5f'; ctx.fillRect(7,9,2,1);
-            // Red jacket with detail
-            ctx.fillStyle = '#991b1b'; ctx.fillRect(2,11,12,5);
-            ctx.fillStyle = '#b91c1c'; ctx.fillRect(3,11,10,3);
-            ctx.fillStyle = '#dc2626'; ctx.fillRect(4,12,8,2);
-            // Clipboard
-            ctx.fillStyle = '#fbbf24'; ctx.fillRect(12,12,3,3);
-            ctx.fillStyle = '#fcd34d'; ctx.fillRect(12,12,2,2);
-            ctx.fillStyle = '#92400e'; ctx.fillRect(13,13,1,1);
+            // Red warning jacket with enhanced detail
+            ctx.fillStyle = '#7f1d1d'; ctx.fillRect(2,11,12,5);
+            ctx.fillStyle = '#991b1b'; ctx.fillRect(3,11,10,4);
+            ctx.fillStyle = '#b91c1c'; ctx.fillRect(4,12,8,2);
+            ctx.fillStyle = '#dc2626'; ctx.fillRect(5,13,6,1); // Bright center
+            // Clipboard mini prop
+            ctx.fillStyle = '#78350f'; ctx.fillRect(12,12,3,3);
+            ctx.fillStyle = '#fbbf24'; ctx.fillRect(12,12,2,2);
+            ctx.fillStyle = '#92400e'; ctx.fillRect(12,13,2,1);
+            // Documentation badge
+            ctx.fillStyle = '#fff'; ctx.fillRect(6,13,4,1);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(6,13,3,1);
             // Boots
             ctx.fillStyle = '#1f2937'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1);
             ctx.fillStyle = '#374151'; ctx.fillRect(5,15,1,1); ctx.fillRect(10,15,1,1);
@@ -1221,97 +1242,111 @@ function generateAssets() {
             // Shadow
             ctx.fillStyle = 'rgba(0,0,0,0.3)';
             ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
-            // Spiky black hair
-            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(4,0,8,4);
-            ctx.fillStyle = '#1a2744'; ctx.fillRect(5,1,6,2);
-            ctx.fillRect(5,-1,2,2); ctx.fillRect(9,-1,2,2); // Spikes
-            // Face
-            ctx.fillStyle = '#c4956a'; ctx.fillRect(4,4,8,6);
-            ctx.fillStyle = '#d4a574'; ctx.fillRect(5,5,6,4);
-            ctx.fillStyle = '#e8b888'; ctx.fillRect(6,5,4,3);
-            // Eyes with energy
-            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,6,2,2); ctx.fillRect(9,6,2,2);
-            ctx.fillStyle = '#fff'; ctx.fillRect(5,6,1,1); ctx.fillRect(9,6,1,1);
-            // Eyebrows (expressive)
-            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(5,5,2,1); ctx.fillRect(9,5,2,1);
+            // Spiky energetic dark hair with enhanced detail
+            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(2,0,12,5);
+            ctx.fillStyle = '#1a2744'; ctx.fillRect(3,1,10,4);
+            ctx.fillStyle = '#2a3755'; ctx.fillRect(4,1,8,3);
+            ctx.fillStyle = '#3b4766'; ctx.fillRect(5,1,6,2);
+            // Hair spikes (energetic)
+            ctx.fillStyle = '#1a2744'; ctx.fillRect(3,0,2,2); ctx.fillRect(7,0,2,2); ctx.fillRect(11,0,2,2);
+            ctx.fillStyle = '#2a3755'; ctx.fillRect(4,0,1,1); ctx.fillRect(8,0,1,1); ctx.fillRect(12,0,1,1);
+            // Face with warm skin tone
+            ctx.fillStyle = '#c4956a'; ctx.fillRect(4,5,8,7);
+            ctx.fillStyle = '#d4a574'; ctx.fillRect(5,6,6,5);
+            ctx.fillStyle = '#e8c49a'; ctx.fillRect(6,6,4,4);
+            // Expressive thick eyebrows
+            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(5,6,2,1); ctx.fillRect(9,6,2,1);
+            // Wide energetic eyes
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,7,2,2); ctx.fillRect(9,7,2,2);
+            ctx.fillStyle = '#f97316'; ctx.fillRect(6,8,1,1); ctx.fillRect(10,8,1,1); // Orange fire
+            ctx.fillStyle = '#fff'; ctx.fillRect(6,8,1,1); ctx.fillRect(10,8,1,1); // Bright glint
             // Open mouth (shouting)
-            ctx.fillStyle = '#8b4513'; ctx.fillRect(6,8,4,2);
-            ctx.fillStyle = '#fff'; ctx.fillRect(7,8,2,1);
-            // Mic headset
-            ctx.fillStyle = '#22d3ee'; ctx.fillRect(3,8,1,3);
-            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(2,10,2,2);
-            // Orange hi-vis vest
-            ctx.fillStyle = '#c2410c'; ctx.fillRect(2,10,12,6);
-            ctx.fillStyle = '#ea580c'; ctx.fillRect(3,10,10,4);
-            ctx.fillStyle = '#f97316'; ctx.fillRect(4,11,8,2);
-            // Reflective strips
-            ctx.fillStyle = '#fef08a'; ctx.fillRect(3,11,10,1);
-            ctx.fillStyle = '#fef08a'; ctx.fillRect(3,13,10,1);
-            // Shoes
-            ctx.fillStyle = '#0369a1'; ctx.fillRect(4,15,3,1); ctx.fillRect(9,15,3,1);
-            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(5,15,1,1); ctx.fillRect(10,15,1,1);
+            ctx.fillStyle = '#8b4513'; ctx.fillRect(6,10,4,2);
+            ctx.fillStyle = '#fff'; ctx.fillRect(7,10,2,1); // Teeth
+            // Mic headset (communication device)
+            ctx.fillStyle = '#0891b2'; ctx.fillRect(2,8,1,3);
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(2,9,1,2);
+            ctx.fillStyle = '#0ea5e9'; ctx.fillRect(1,10,2,2); // Mic boom
+            // Orange hi-vis vest with enhanced detail
+            ctx.fillStyle = '#9a3412'; ctx.fillRect(3,12,10,3);
+            ctx.fillStyle = '#c2410c'; ctx.fillRect(4,12,8,3);
+            ctx.fillStyle = '#ea580c'; ctx.fillRect(5,13,6,2);
+            ctx.fillStyle = '#f97316'; ctx.fillRect(6,13,4,1); // Bright orange
+            // Reflective safety strips
+            ctx.fillStyle = '#fef08a'; ctx.fillRect(4,12,8,1); ctx.fillRect(4,14,8,1);
+            ctx.fillStyle = '#fde047'; ctx.fillRect(5,12,6,1); ctx.fillRect(5,14,6,1);
         }),
         "Roman": c(16,16, ctx => {
             // Shadow
             ctx.fillStyle = 'rgba(0,0,0,0.3)';
             ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
-            // Bald head with shine
-            ctx.fillStyle = '#c4956a'; ctx.fillRect(4,2,8,8);
-            ctx.fillStyle = '#d4a574'; ctx.fillRect(5,3,6,6);
-            ctx.fillStyle = '#e8c49a'; ctx.fillRect(6,3,4,4);
-            ctx.fillStyle = '#f5deb3'; ctx.fillRect(6,2,3,2); // Shine
-            // Eyes (narrow, mysterious)
-            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,5,2,1); ctx.fillRect(9,5,2,1);
-            ctx.fillStyle = '#64748b'; ctx.fillRect(5,5,1,1); ctx.fillRect(9,5,1,1);
-            // Stern mouth
-            ctx.fillStyle = '#8b6b5a'; ctx.fillRect(6,7,4,1);
-            // Dark stealth coat
-            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(2,10,12,6);
-            ctx.fillStyle = '#1a2744'; ctx.fillRect(3,10,10,4);
-            ctx.fillStyle = '#2a3755'; ctx.fillRect(4,11,8,2);
-            // Collar
-            ctx.fillStyle = '#374151'; ctx.fillRect(5,10,6,1);
-            // Silver cuffs
-            ctx.fillStyle = '#6b7280'; ctx.fillRect(2,13,3,2); ctx.fillRect(11,13,3,2);
-            ctx.fillStyle = '#9ca3af'; ctx.fillRect(3,13,1,1); ctx.fillRect(12,13,1,1);
-            // Dark boots
-            ctx.fillStyle = '#0b1224'; ctx.fillRect(3,15,4,1); ctx.fillRect(9,15,4,1);
+            // EPIC BALD HEAD with maximum shine (16x16 version)
+            ctx.fillStyle = '#c4956a'; ctx.fillRect(3,1,10,7);
+            ctx.fillStyle = '#d4a574'; ctx.fillRect(4,2,8,6);
+            ctx.fillStyle = '#e8c49a'; ctx.fillRect(5,2,6,5);
+            ctx.fillStyle = '#f5deb3'; ctx.fillRect(6,1,4,4); // Major shine
+            ctx.fillStyle = '#faebd7'; ctx.fillRect(7,1,2,3); // Bright shine
+            ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillRect(7,1,2,2); // Epic highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(8,1,1,1); // Gleam point
+            // Mysterious narrow eyes (phantom gaze)
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,6,2,1); ctx.fillRect(9,6,2,1);
+            ctx.fillStyle = '#64748b'; ctx.fillRect(5,6,1,1); ctx.fillRect(9,6,1,1); // Grey stealth eyes
+            ctx.fillStyle = '#94a3b8'; ctx.fillRect(5,6,1,1); ctx.fillRect(9,6,1,1); // Mysterious glint
+            // Stern neutral mouth (silent)
+            ctx.fillStyle = '#8b6b5a'; ctx.fillRect(7,8,2,1);
+            // Mini audit document prop (clipboard)
+            ctx.fillStyle = '#334155'; ctx.fillRect(12,7,3,5);
+            ctx.fillStyle = '#e2e8f0'; ctx.fillRect(12,8,2,3);
+            ctx.fillStyle = '#64748b'; ctx.fillRect(12,8,2,1); ctx.fillRect(12,10,2,1); // Lines
+            // Dark stealth coat with enhanced detail
+            ctx.fillStyle = '#020617'; ctx.fillRect(3,9,10,6);
+            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(4,10,8,5);
+            ctx.fillStyle = '#1a2744'; ctx.fillRect(5,11,6,3);
+            ctx.fillStyle = '#2a3755'; ctx.fillRect(6,11,4,2); // Subtle highlight
+            // Mysterious collar
+            ctx.fillStyle = '#334155'; ctx.fillRect(5,9,6,1);
+            ctx.fillStyle = '#475569'; ctx.fillRect(6,9,4,1);
+            // Shadow step boots (silent, barely visible)
+            ctx.fillStyle = '#020617'; ctx.fillRect(4,14,3,1); ctx.fillRect(9,14,3,1);
+            ctx.fillStyle = '#0b1224'; ctx.fillRect(5,14,2,1); ctx.fillRect(10,14,2,1);
         }),
         "Erwin": c(16,16, ctx => {
-            // Shadow under Tesla
+            // Shadow (ground effect)
             ctx.fillStyle = 'rgba(0,0,0,0.4)';
-            ctx.fillRect(1,14,14,2);
-            // Tesla body - sleek design
-            ctx.fillStyle = '#3f3f46'; ctx.fillRect(1,8,14,6);
-            ctx.fillStyle = '#52525b'; ctx.fillRect(2,9,12,4);
-            ctx.fillStyle = '#71717a'; ctx.fillRect(3,9,10,2);
-            // Hood with reflection
-            ctx.fillStyle = '#4b5563'; ctx.fillRect(2,7,12,3);
-            ctx.fillStyle = '#6b7280'; ctx.fillRect(4,7,8,2);
-            ctx.fillStyle = '#9ca3af'; ctx.fillRect(5,7,3,1);
-            // Windshield glow
-            ctx.fillStyle = '#0891b2'; ctx.fillRect(3,9,10,2);
-            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,9,8,1);
-            ctx.fillStyle = '#67e8f9'; ctx.fillRect(6,9,4,1);
-            // Wheels with detail
+            ctx.beginPath(); ctx.ellipse(8, 15, 6, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Kid-sized Tesla body - premium metallic design
+            ctx.fillStyle = '#27272a'; ctx.fillRect(1,8,14,6);
+            ctx.fillStyle = '#3f3f46'; ctx.fillRect(2,9,12,5);
+            ctx.fillStyle = '#52525b'; ctx.fillRect(3,10,10,3);
+            ctx.fillStyle = '#71717a'; ctx.fillRect(4,10,8,2); // Metallic shine
+            ctx.fillStyle = '#a1a1aa'; ctx.fillRect(5,10,6,1); // Bright metallic
+            // Hood with premium reflection
+            ctx.fillStyle = '#3f3f46'; ctx.fillRect(2,7,12,3);
+            ctx.fillStyle = '#4b5563'; ctx.fillRect(3,8,10,2);
+            ctx.fillStyle = '#6b7280'; ctx.fillRect(4,8,8,2);
+            ctx.fillStyle = '#9ca3af'; ctx.fillRect(5,8,6,1); // Premium reflection
+            ctx.fillStyle = '#d4d4d8'; ctx.fillRect(6,8,4,1); // Bright shine line
+            // Epic windshield glow (high-tech)
+            ctx.fillStyle = '#0369a1'; ctx.fillRect(3,9,10,3);
+            ctx.fillStyle = '#0891b2'; ctx.fillRect(4,9,8,2);
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(5,10,6,2);
+            ctx.fillStyle = '#67e8f9'; ctx.fillRect(6,10,4,1); // Bright glow
+            ctx.fillStyle = '#a5f3fc'; ctx.fillRect(7,10,2,1); // Ultra bright center
+            // Erwin's smug face visible through windshield (tiny)
+            ctx.fillStyle = '#d4a574'; ctx.fillRect(6,9,4,3);
+            ctx.fillStyle = '#e8c49a'; ctx.fillRect(7,10,2,2);
+            ctx.fillStyle = '#0a0f1f'; ctx.fillRect(6,9,4,1); // Hair
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(7,10,1,1); ctx.fillRect(9,10,1,1); // Eyes
+            ctx.fillStyle = '#f59e0b'; ctx.fillRect(7,11,2,1); // Smug grin
+            // Premium wheels with detail
             ctx.fillStyle = '#000'; ctx.fillRect(1,12,4,3); ctx.fillRect(11,12,4,3);
-            ctx.fillStyle = '#27272a'; ctx.fillRect(2,12,2,2); ctx.fillRect(12,12,2,2);
-            ctx.fillStyle = '#71717a'; ctx.fillRect(2,13,1,1); ctx.fillRect(13,13,1,1);
+            ctx.fillStyle = '#18181b'; ctx.fillRect(2,13,2,2); ctx.fillRect(12,13,2,2);
+            ctx.fillStyle = '#71717a'; ctx.fillRect(2,13,1,1); ctx.fillRect(12,13,1,1); // Metallic rims
+            // Underglow (RGB lighting)
+            ctx.fillStyle = 'rgba(34, 211, 238, 0.3)'; ctx.fillRect(3,14,10,1);
+            ctx.fillStyle = '#22d3ee'; ctx.fillRect(4,14,8,1);
             // Headlights
-            ctx.fillStyle = '#fef08a'; ctx.fillRect(1,10,1,2); ctx.fillRect(14,10,1,2);
-            // Erwin face above
-            ctx.fillStyle = '#d4a574'; ctx.fillRect(5,3,6,5);
-            ctx.fillStyle = '#e8c49a'; ctx.fillRect(6,4,4,3);
-            // Hair
-            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(5,2,6,3);
-            ctx.fillStyle = '#2d2d2d'; ctx.fillRect(6,2,4,2);
-            // Beard
-            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(6,6,4,2);
-            // Eyes with smirk
-            ctx.fillStyle = '#000'; ctx.fillRect(6,4,1,1); ctx.fillRect(9,4,1,1);
-            ctx.fillStyle = '#fff'; ctx.fillRect(6,4,1,1);
-            // Smirk
-            ctx.fillStyle = '#f59e0b'; ctx.fillRect(7,5,2,1);
+            ctx.fillStyle = '#fef08a'; ctx.fillRect(1,9,1,1); ctx.fillRect(14,9,1,1);
         })
     };
 
@@ -1898,10 +1933,6 @@ function generateAssets() {
     });
 
     GFX.boss_inspector = c(32,32, ctx => {
-        // Background gradient (authoritative yellow)
-        const grad = ctx.createRadialGradient(16,16,8,16,16,16);
-        grad.addColorStop(0, '#fbbf24'); grad.addColorStop(1, '#ca8a04');
-        ctx.fillStyle = grad; ctx.fillRect(0,0,32,32);
         // Clipboard in background (menacing)
         ctx.fillStyle = '#78350f'; ctx.fillRect(2,12,8,14);
         ctx.fillStyle = '#fcd34d'; ctx.fillRect(3,13,6,12);
@@ -1943,10 +1974,6 @@ function generateAssets() {
     });
 
     GFX.boss_compliance = c(32,32, ctx => {
-        // Background gradient (cold calculating cyan)
-        const grad = ctx.createRadialGradient(16,16,8,16,16,16);
-        grad.addColorStop(0, '#22d3ee'); grad.addColorStop(1, '#0891b2');
-        ctx.fillStyle = grad; ctx.fillRect(0,0,32,32);
         // Document stack in background (audit papers)
         ctx.fillStyle = '#475569'; ctx.fillRect(22,14,8,16);
         ctx.fillStyle = '#e2e8f0'; ctx.fillRect(23,15,6,14);
@@ -1990,10 +2017,6 @@ function generateAssets() {
     });
 
     GFX.boss_regional = c(32,32, ctx => {
-        // Background gradient (executive purple)
-        const grad = ctx.createRadialGradient(16,16,8,16,16,16);
-        grad.addColorStop(0, '#8b5cf6'); grad.addColorStop(1, '#4c1d95');
-        ctx.fillStyle = grad; ctx.fillRect(0,0,32,32);
         // Trophy/KPI chart in background
         ctx.fillStyle = '#422006'; ctx.fillRect(2,16,7,14);
         ctx.fillStyle = '#fbbf24'; ctx.fillRect(3,17,5,12);
@@ -2042,10 +2065,6 @@ function generateAssets() {
     });
 
     GFX.boss_sebastian = c(32,32, ctx => {
-        // Background gradient (intense Amazon blue)
-        const grad = ctx.createRadialGradient(16,16,8,16,16,16);
-        grad.addColorStop(0, '#3b82f6'); grad.addColorStop(1, '#1d4ed8');
-        ctx.fillStyle = grad; ctx.fillRect(0,0,32,32);
         // TPH monitor in background
         ctx.fillStyle = '#1e293b'; ctx.fillRect(22,10,8,12);
         ctx.fillStyle = '#14532d'; ctx.fillRect(23,11,6,10);
@@ -2098,10 +2117,6 @@ function generateAssets() {
     });
 
     GFX.boss_jelly = c(32,32, ctx => {
-        // Background gradient (HR professional green)
-        const grad = ctx.createRadialGradient(16,16,8,16,16,16);
-        grad.addColorStop(0, '#4ade80'); grad.addColorStop(1, '#166534');
-        ctx.fillStyle = grad; ctx.fillRect(0,0,32,32);
         // Policy binder in background
         ctx.fillStyle = '#14532d'; ctx.fillRect(2,14,8,16);
         ctx.fillStyle = '#f0fdf4'; ctx.fillRect(3,15,6,14);
@@ -2151,10 +2166,6 @@ function generateAssets() {
     });
 
     GFX.boss_avetta = c(32,32, ctx => {
-        // Background gradient (AI cyber glow)
-        const bgGrad = ctx.createRadialGradient(16,16,8,16,16,16);
-        bgGrad.addColorStop(0, '#22d3ee'); bgGrad.addColorStop(1, '#0369a1');
-        ctx.fillStyle = bgGrad; ctx.fillRect(0,0,32,32);
         // Floating data nodes in background
         ctx.fillStyle = 'rgba(34, 211, 238, 0.4)';
         ctx.fillRect(2,8,4,4); ctx.fillRect(26,12,4,4); ctx.fillRect(4,24,3,3);
@@ -11001,15 +11012,32 @@ function draw() {
 
             ctx.drawImage(img, dx - (bossSize - 32)/2, dy - (bossSize - 32)/2, bossSize, bossSize);
         } else {
-            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(dx+8, dy+14, 6, 3, 0, 0, Math.PI*2); ctx.fill();
-            if (e.type === 'simon') ctx.drawImage(GFX.simon, dx, dy);
-            else if (e.type === 'ops') ctx.drawImage(GFX.ops, dx, dy);
-            else if (e.type === 'assoc') ctx.drawImage(GFX.assoc, dx, dy);
-            else if (e.type === 'runner') ctx.drawImage(GFX.runner, dx, dy);
+            if (e.type === 'simon') {
+                ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(dx+8, dy+14, 6, 3, 0, 0, Math.PI*2); ctx.fill();
+                ctx.drawImage(GFX.simon, dx, dy);
+            }
+            else if (e.type === 'ops') {
+                ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(dx+8, dy+14, 6, 3, 0, 0, Math.PI*2); ctx.fill();
+                ctx.drawImage(GFX.ops, dx, dy);
+            }
+            else if (e.type === 'assoc') {
+                ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(dx+8, dy+14, 6, 3, 0, 0, Math.PI*2); ctx.fill();
+                ctx.drawImage(GFX.assoc, dx, dy);
+            }
+            else if (e.type === 'runner') {
+                ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(dx+8, dy+14, 6, 3, 0, 0, Math.PI*2); ctx.fill();
+                ctx.drawImage(GFX.runner, dx, dy);
+            }
             else if (e === GAME.player) {
+                // Player sprite (16x16 with built-in shadow)
                 if (e.iframe%4 < 2) ctx.drawImage(GFX.chars[GAME.selectedChar], dx, dy);
-                if (e.cooldown > 0) { ctx.fillStyle = '#555'; ctx.fillRect(dx, dy-4, 16, 2); ctx.fillStyle = '#00ffff'; ctx.fillRect(dx, dy-4, 16 * (1 - e.cooldown/Math.max(1, e.cooldownMax || 120)), 2); }
-                else { ctx.fillStyle = '#00ff00'; ctx.fillRect(dx+6, dy-6, 4, 4); }
+                // Cooldown bar for 16x16 sprite
+                if (e.cooldown > 0) {
+                    ctx.fillStyle = '#555'; ctx.fillRect(dx, dy-6, 16, 3);
+                    ctx.fillStyle = '#00ffff'; ctx.fillRect(dx, dy-6, 16 * (1 - e.cooldown/Math.max(1, e.cooldownMax || 120)), 3);
+                }
+                // Ready indicator for 16x16 sprite
+                else { ctx.fillStyle = '#00ff00'; ctx.fillRect(dx+6, dy-8, 4, 4); }
             }
             else if (e.type === 'attack') {
                 const sprite = (GFX.attacks && GFX.attacks[e.owner]) ? GFX.attacks[e.owner] : GFX.book;
