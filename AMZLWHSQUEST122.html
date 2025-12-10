@@ -3219,12 +3219,7 @@ const GAME = {
     issuesFixed: 0, lives: 5, genId: 0, gameOverTriggered: false, simonHits: 0, boss: null, pendingBossIntro: false,
     shake: 0, flash: 0,
     dialogText: "", dialogVisible: "", dialogTimer: 0,
-    portraitMode: false, // SNES-style portrait dialogue
-    portraitLeft: null, // Left portrait (usually player)
-    portraitRight: null, // Right portrait (usually NPC)
-    portraitSpeaker: "right", // Who's currently speaking ("left" or "right")
-    portraitLeftName: "",
-    portraitRightName: "",
+    introDialogueStep: 0, // Track intro conversation sequence
     splashTimer: 0, aiResultText: null,
     // Game Over screen state
     gameOverPhase: 0, corporateMessage: "", characterDefeatLine: "", gameOverReason: "",
@@ -3586,37 +3581,19 @@ function resetGame() {
     document.getElementById('hud-layer').style.display = 'block'; updateHud();
     document.getElementById('boss-hud').style.display = 'none';
     
-    // --- SHOW PORTRAIT DIALOGUE WITH OBJECTIVE OVERVIEW ---
+    // --- INTRO DIALOGUE SEQUENCE ---
+    GAME.introDialogueStep = 0;
     const currentGen = GAME.genId;
 
-    // Use portrait dialogue system for first encounter
-    const playerPortrait = GFX.charFaces[GAME.selectedChar];
-    const simonPortrait = GFX.simonFaceLarge;
+    // Show Simon's thinking state while AI generates greeting
+    showThinking("Simon Unglaube", GFX.simonFace);
+    GAME.nextState = 'INTRO_DIALOGUE_CONTINUE'; // Custom state for dialogue sequence
 
-    // Set up initial portrait dialogue in "thinking" state
-    GAME.state = 'DIALOG';
-    GAME.nextState = 'PLAY';
-    GAME.portraitMode = true;
-    GAME.portraitLeft = playerPortrait;
-    GAME.portraitRight = simonPortrait;
-    GAME.portraitLeftName = GAME.selectedChar;
-    GAME.portraitRightName = "Simon";
-    GAME.portraitSpeaker = "right";
-    GAME.dialogText = "...";
-    GAME.dialogVisible = "...";
-
-    // Hide HTML dialog box - we're using canvas rendering
-    document.getElementById('dialog-box').style.display = 'none';
-
-    // Show AI-powered greeting with objective overview
+    // Generate Simon's greeting with objective overview
     callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Give ${GAME.selectedChar} a brief welcome with your signature dry wit, then explain their shift objective: find and fix 5 safety hazards while dodging ops manager interruptions. Keep it concise and witty. Max 45 words.`, "intro").then(text => {
         if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
              let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
-             // Update the dialogue text with AI response
-             GAME.dialogText = finalText;
-             GAME.dialogVisible = "";
-             // Speak with Simon's voice
-             speakTTS(finalText, "Simon");
+             showDialog(finalText, "Simon Unglaube", GFX.simonFace, true);
         }
     });
     updateMusicForState();
@@ -6138,48 +6115,6 @@ function showThinking(speaker, portrait) {
     AudioSys.sfx.text();
 }
 
-// --- SNES-STYLE PORTRAIT DIALOGUE ---
-// Shows two character portraits side-by-side like classic SNES RPGs
-function showPortraitDialogue(text, leftPortrait, leftName, rightPortrait, rightName, speaker = "right", isAI = false) {
-    // Store previous state for background rendering
-    if (GAME.state !== 'DIALOG') {
-        GAME.dialogBackgroundState = GAME.state;
-    }
-
-    // Set up portrait dialogue mode
-    GAME.portraitMode = true;
-    GAME.portraitLeft = leftPortrait;
-    GAME.portraitRight = rightPortrait;
-    GAME.portraitLeftName = leftName;
-    GAME.portraitRightName = rightName;
-    GAME.portraitSpeaker = speaker;
-
-    // Set up dialogue text
-    GAME.state = 'DIALOG';
-    GAME.dialogText = text;
-    GAME.dialogVisible = "";
-
-    // Hide the HTML dialog box - we'll render this in canvas
-    const box = document.getElementById('dialog-box');
-    const badge = document.getElementById('gemini-badge');
-    box.style.display = 'none';
-    badge.style.display = 'none';
-
-    AudioSys.sfx.text();
-
-    // Speak the text with appropriate character voice
-    const speakerName = speaker === "left" ? leftName : rightName;
-    if (speakerName) speakTTS(text, speakerName);
-}
-
-function closePortraitDialogue() {
-    GAME.portraitMode = false;
-    GAME.portraitLeft = null;
-    GAME.portraitRight = null;
-    GAME.portraitLeftName = "";
-    GAME.portraitRightName = "";
-}
-
 // === BEZOS CONFRONTATION DIALOGUE SYSTEM ===
 // Uses AI-powered showDialog for the throne room confrontation
 let bezosDialogueStep = 0;
@@ -6237,12 +6172,29 @@ function showNextBezosDialogue() {
 function closeDialog() {
     cancelTTS(); AudioSys.sfx.step(); document.getElementById('dialog-box').style.display = 'none';
 
-    // Clean up portrait mode if active
-    if (GAME.portraitMode) {
-        closePortraitDialogue();
-    }
-
     GAME.state = GAME.nextState;
+
+    // Handle intro dialogue sequence - player responds to Simon
+    if (GAME.state === 'INTRO_DIALOGUE_CONTINUE') {
+        const currentGen = GAME.genId;
+        const playerPortrait = GFX.charFaces[GAME.selectedChar] || GFX.chars[GAME.selectedChar];
+
+        showThinking(GAME.selectedChar, playerPortrait);
+        GAME.nextState = 'PLAY'; // After player response, start the game
+
+        // Get character personality for response
+        const charData = CHAR_DATA[GAME.selectedChar] || {};
+        const personality = charData.backstory || "a dedicated WHS coordinator";
+
+        // Generate player's enthusiastic response
+        callGemini(`You are ${GAME.selectedChar}, ${personality}. Simon just explained your mission: find 5 safety hazards and dodge ops interruptions. Respond enthusiastically that you'll do your best not to disappoint him. Keep it short, in-character, and determined. Max 25 words.`, "player_response").then(text => {
+            if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
+                let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
+                showDialog(finalText, GAME.selectedChar, playerPortrait, true);
+            }
+        });
+        return;
+    }
 
     // Handle Simon fake victory dialogue sequence
     if (GAME.state === 'SIMON_FAKE_VICTORY_CONTINUE' || GAME.state === 'SIMON_FAKE_VICTORY_TRANSFORM') {
@@ -10266,121 +10218,6 @@ function draw() {
         ctx.fillText("* DESPERATION MODE! *", canvas.width / 2, 60);
         ctx.globalAlpha = 1.0;
         ctx.textAlign = 'left';
-    }
-
-    // === SNES-STYLE PORTRAIT DIALOGUE RENDERING ===
-    if (GAME.portraitMode && GAME.state === 'DIALOG') {
-        // Semi-transparent black overlay
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const portraitSize = 48;
-        const leftX = 16;
-        const rightX = canvas.width - portraitSize - 16;
-        const portraitY = 16;
-
-        // Draw portraits with borders
-        const drawPortrait = (portrait, x, y, active) => {
-            // Border (thicker if active speaker)
-            const borderWidth = active ? 3 : 2;
-            const borderColor = active ? '#ffd700' : '#666';
-            ctx.fillStyle = '#000';
-            ctx.fillRect(x - borderWidth, y - borderWidth, portraitSize + borderWidth * 2, portraitSize + borderWidth * 2);
-            ctx.strokeStyle = borderColor;
-            ctx.lineWidth = borderWidth;
-            ctx.strokeRect(x - borderWidth, y - borderWidth, portraitSize + borderWidth * 2, portraitSize + borderWidth * 2);
-
-            // Portrait image
-            if (portrait) {
-                ctx.drawImage(portrait, x, y);
-            }
-
-            // Glow effect for active speaker
-            if (active) {
-                ctx.globalAlpha = 0.3 + Math.sin(GAME.stateTimer * 0.1) * 0.2;
-                ctx.fillStyle = '#ffd700';
-                ctx.fillRect(x - borderWidth - 2, y - borderWidth - 2, portraitSize + borderWidth * 2 + 4, portraitSize + borderWidth * 2 + 4);
-                ctx.globalAlpha = 1.0;
-            }
-        };
-
-        // Draw left portrait (player)
-        if (GAME.portraitLeft) {
-            drawPortrait(GAME.portraitLeft, leftX, portraitY, GAME.portraitSpeaker === "left");
-            // Name label
-            ctx.fillStyle = '#000';
-            ctx.fillRect(leftX, portraitY + portraitSize + 2, portraitSize, 12);
-            ctx.fillStyle = '#ffd700';
-            ctx.font = '8px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText(GAME.portraitLeftName, leftX + portraitSize / 2, portraitY + portraitSize + 11);
-        }
-
-        // Draw right portrait (NPC)
-        if (GAME.portraitRight) {
-            drawPortrait(GAME.portraitRight, rightX, portraitY, GAME.portraitSpeaker === "right");
-            // Name label
-            ctx.fillStyle = '#000';
-            ctx.fillRect(rightX, portraitY + portraitSize + 2, portraitSize, 12);
-            ctx.fillStyle = '#ffd700';
-            ctx.font = '8px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText(GAME.portraitRightName, rightX + portraitSize / 2, portraitY + portraitSize + 11);
-        }
-
-        // Dialogue box at bottom
-        const boxHeight = 70;
-        const boxY = canvas.height - boxHeight - 8;
-        const boxX = 8;
-        const boxWidth = canvas.width - 16;
-
-        // Box background
-        ctx.fillStyle = '#000';
-        ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
-        ctx.strokeStyle = '#ffd700';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
-
-        // Dialogue text
-        ctx.fillStyle = '#fff';
-        ctx.font = '9px monospace';
-        ctx.textAlign = 'left';
-        const textX = boxX + 12;
-        const textY = boxY + 20;
-        const maxWidth = boxWidth - 24;
-
-        // Word wrap the dialogue text
-        const words = GAME.dialogVisible.split(' ');
-        let lines = [];
-        let currentLine = '';
-
-        words.forEach(word => {
-            const testLine = currentLine + (currentLine ? ' ' : '') + word;
-            const metrics = ctx.measureText(testLine);
-            if (metrics.width > maxWidth && currentLine) {
-                lines.push(currentLine);
-                currentLine = word;
-            } else {
-                currentLine = testLine;
-            }
-        });
-        if (currentLine) lines.push(currentLine);
-
-        // Draw lines (max 3 lines)
-        lines.slice(0, 3).forEach((line, i) => {
-            ctx.fillText(line, textX, textY + i * 14);
-        });
-
-        // Press space prompt (if dialogue is fully shown)
-        if (GAME.dialogVisible === GAME.dialogText) {
-            const blink = Math.floor(GAME.stateTimer / 20) % 2 === 0;
-            if (blink) {
-                ctx.fillStyle = '#ffd700';
-                ctx.font = '8px monospace';
-                ctx.textAlign = 'right';
-                ctx.fillText('▼ SPACE', boxX + boxWidth - 12, boxY + boxHeight - 8);
-            }
-        }
     }
 
     ctx.restore();
