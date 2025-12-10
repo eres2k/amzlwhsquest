@@ -9263,8 +9263,10 @@ function draw() {
         ctx.fillText('(Audio will be enabled)', canvas.width/2, canvas.height/2 + 20);
 
         ctx.textAlign = 'start';
+        ctx.restore();
+        return;
     }
-    else if (GAME.state === 'LOGO') {
+    if (GAME.state === 'LOGO') {
         // Extended to 420 frames (7 seconds) for title-eeproductions.mp3
         let alpha = 1.0;
         if(GAME.stateTimer < 30) alpha = GAME.stateTimer / 30;
