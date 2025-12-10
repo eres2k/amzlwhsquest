@@ -3578,14 +3578,18 @@ function resetGame() {
     document.getElementById('hud-layer').style.display = 'block'; updateHud();
     document.getElementById('boss-hud').style.display = 'none';
     
-    // --- CHANGED: SHOW LOADING STATE INSTEAD OF HARDCODED TEXT ---
+    // --- SHOW PORTRAIT DIALOGUE WITH OBJECTIVE OVERVIEW ---
     const currentGen = GAME.genId;
-    showThinking("Simon Unglaube", GFX.simonFace); // Shows "..." dialog
 
-    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Greet ${GAME.selectedChar} with dry humor and one quick, relevant safety reminder for starting the shift. Keep it witty. Max 18 words.`, "intro").then(text => {
+    // Use portrait dialogue system for first encounter
+    const playerPortrait = GFX.charFaces[GAME.selectedChar];
+    const simonPortrait = GFX.simonFaceLarge;
+
+    // Show AI-powered greeting with objective overview
+    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Give ${GAME.selectedChar} a brief welcome with your signature dry wit, then explain their shift objective: find and fix 5 safety hazards while dodging ops manager interruptions. Keep it concise and witty. Max 45 words.`, "intro").then(text => {
         if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
              let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
-             showDialog(finalText, "Simon Unglaube", GFX.simonFace, true);
+             showPortraitDialogue(finalText, playerPortrait, GAME.selectedChar, simonPortrait, "Simon", "right", true);
         }
     });
     updateMusicForState();
@@ -10233,6 +10237,121 @@ function draw() {
         ctx.fillText("* DESPERATION MODE! *", canvas.width / 2, 60);
         ctx.globalAlpha = 1.0;
         ctx.textAlign = 'left';
+    }
+
+    // === SNES-STYLE PORTRAIT DIALOGUE RENDERING ===
+    if (GAME.portraitMode && GAME.state === 'DIALOG') {
+        // Semi-transparent black overlay
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const portraitSize = 48;
+        const leftX = 16;
+        const rightX = canvas.width - portraitSize - 16;
+        const portraitY = 16;
+
+        // Draw portraits with borders
+        const drawPortrait = (portrait, x, y, active) => {
+            // Border (thicker if active speaker)
+            const borderWidth = active ? 3 : 2;
+            const borderColor = active ? '#ffd700' : '#666';
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x - borderWidth, y - borderWidth, portraitSize + borderWidth * 2, portraitSize + borderWidth * 2);
+            ctx.strokeStyle = borderColor;
+            ctx.lineWidth = borderWidth;
+            ctx.strokeRect(x - borderWidth, y - borderWidth, portraitSize + borderWidth * 2, portraitSize + borderWidth * 2);
+
+            // Portrait image
+            if (portrait) {
+                ctx.drawImage(portrait, x, y);
+            }
+
+            // Glow effect for active speaker
+            if (active) {
+                ctx.globalAlpha = 0.3 + Math.sin(GAME.stateTimer * 0.1) * 0.2;
+                ctx.fillStyle = '#ffd700';
+                ctx.fillRect(x - borderWidth - 2, y - borderWidth - 2, portraitSize + borderWidth * 2 + 4, portraitSize + borderWidth * 2 + 4);
+                ctx.globalAlpha = 1.0;
+            }
+        };
+
+        // Draw left portrait (player)
+        if (GAME.portraitLeft) {
+            drawPortrait(GAME.portraitLeft, leftX, portraitY, GAME.portraitSpeaker === "left");
+            // Name label
+            ctx.fillStyle = '#000';
+            ctx.fillRect(leftX, portraitY + portraitSize + 2, portraitSize, 12);
+            ctx.fillStyle = '#ffd700';
+            ctx.font = '8px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(GAME.portraitLeftName, leftX + portraitSize / 2, portraitY + portraitSize + 11);
+        }
+
+        // Draw right portrait (NPC)
+        if (GAME.portraitRight) {
+            drawPortrait(GAME.portraitRight, rightX, portraitY, GAME.portraitSpeaker === "right");
+            // Name label
+            ctx.fillStyle = '#000';
+            ctx.fillRect(rightX, portraitY + portraitSize + 2, portraitSize, 12);
+            ctx.fillStyle = '#ffd700';
+            ctx.font = '8px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(GAME.portraitRightName, rightX + portraitSize / 2, portraitY + portraitSize + 11);
+        }
+
+        // Dialogue box at bottom
+        const boxHeight = 70;
+        const boxY = canvas.height - boxHeight - 8;
+        const boxX = 8;
+        const boxWidth = canvas.width - 16;
+
+        // Box background
+        ctx.fillStyle = '#000';
+        ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+
+        // Dialogue text
+        ctx.fillStyle = '#fff';
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'left';
+        const textX = boxX + 12;
+        const textY = boxY + 20;
+        const maxWidth = boxWidth - 24;
+
+        // Word wrap the dialogue text
+        const words = GAME.dialogVisible.split(' ');
+        let lines = [];
+        let currentLine = '';
+
+        words.forEach(word => {
+            const testLine = currentLine + (currentLine ? ' ' : '') + word;
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && currentLine) {
+                lines.push(currentLine);
+                currentLine = word;
+            } else {
+                currentLine = testLine;
+            }
+        });
+        if (currentLine) lines.push(currentLine);
+
+        // Draw lines (max 3 lines)
+        lines.slice(0, 3).forEach((line, i) => {
+            ctx.fillText(line, textX, textY + i * 14);
+        });
+
+        // Press space prompt (if dialogue is fully shown)
+        if (GAME.dialogVisible === GAME.dialogText) {
+            const blink = Math.floor(GAME.stateTimer / 20) % 2 === 0;
+            if (blink) {
+                ctx.fillStyle = '#ffd700';
+                ctx.font = '8px monospace';
+                ctx.textAlign = 'right';
+                ctx.fillText('▼ SPACE', boxX + boxWidth - 12, boxY + boxHeight - 8);
+            }
+        }
     }
 
     ctx.restore();
