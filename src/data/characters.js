@@ -51,7 +51,7 @@ export const CHAR_DATA = {
 };
 
 export const ATTACKS = {
-    "Carrie": { name: "Label Maker Burst", sprite: "attack_carrie", speed: 4.2, cooldown: 110, color: "#a855f7", text: "Aligned!" },
+    "Carrie": { name: "Label Maker Burst", sprite: "attack_carrie", speed: 4.2, cooldown: 132, color: "#a855f7", text: "Aligned!" },  // 20% slower reload (was 110)
     "Nevena": { name: "Clipboard Shockwave", sprite: "attack_nevena", speed: 4.0, cooldown: 120, color: "#0ea5e9", text: "Documented!" },
     "Joao": { name: "Sonic Shout", sprite: "attack_joao", speed: 4.6, cooldown: 105, color: "#f97316", text: "Heard!" },
     "Roman": { name: "Stealth Audit Pulse", sprite: "attack_roman", speed: 4.0, cooldown: 115, color: "#94a3b8", text: "Noted." },
