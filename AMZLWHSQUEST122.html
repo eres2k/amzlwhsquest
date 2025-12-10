@@ -119,9 +119,9 @@
         }
 
         .gemini-badge {
-            font-size: 9px; color: #00ffff; margin-bottom: 8px; display: none;
-            text-transform: uppercase; text-shadow: 0 0 8px #00ffff;
-            letter-spacing: 1px;
+            font-size: 11px; color: #ffd700; margin-bottom: 8px; display: none;
+            text-transform: uppercase; text-shadow: 0 0 10px #ffd700, 0 0 20px rgba(255, 215, 0, 0.5);
+            letter-spacing: 2px; font-weight: bold;
         }
 
         .loading-dots::after {
@@ -225,8 +225,8 @@
         }
 
         #intro-gemini-badge {
-            font-size: 10px;
-            color: #00ffff;
+            font-size: 12px;
+            color: #ffd700;
             margin-bottom: 12px;
             text-transform: uppercase;
             text-shadow: 0 0 10px #00ffff;
@@ -312,7 +312,7 @@
             <div id="dialog-box">
                 <canvas id="portrait" width="48" height="48"></canvas>
                 <div style="display:flex; flex-direction:column; width:100%;">
-                    <div id="gemini-badge" class="gemini-badge">✨ SIMON IS ANALYZING...</div>
+                    <div id="gemini-badge" class="gemini-badge"></div>
                     <div id="text-content"></div>
                     <div id="press-space-hint">▼ PRESS SPACE</div>
                 </div>
@@ -5856,6 +5856,7 @@ function updateBoss() {
 
          // --- CHANGED: IMMEDIATE PAUSE WITH LOADING DIALOG ---
          showThinking(b.name, portrait);
+         GAME.nextState = 'BOSS_TAUNT_PLAYER_REPLY'; // Player will respond with snark
 
          callGemini(prompt, "taunt").then(text => {
             if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
@@ -5864,16 +5865,39 @@ function updateBoss() {
         });
     }
 
-    // ⚠️ DESPERATION PHASE - SPECIAL LOW-HEALTH ATTACK (triggers once at 40% HP) ⚠️
-    if (!b.lowHealthAttackTriggered && hpPct <= 0.4 && !b.isMecha) {
+    // ⚠️ DESPERATION PHASE - SPECIAL LOW-HEALTH ATTACK (triggers once at 10% HP) ⚠️
+    if (!b.lowHealthAttackTriggered && hpPct <= 0.1 && !b.isMecha) {
         b.lowHealthAttackTriggered = true;
         b.desperationMode = true; // 🔥 ENRAGED STATE - 30% faster, 30% dodge chance!
 
-        // 🔥 RESTORE BOSS HEALTH TO 70% (excluding Simon)
+        // 🔥 RESTORE BOSS HEALTH TO 50% (excluding Simon) with animated restoration
         if (b.name !== "MEGA SIMON") {
-            b.hp = Math.floor(b.maxHp * 0.7);
-            updateBossHud();
-            spawnFloatingText(b.x + 16, b.y - 40, "HEALTH RESTORED!", "#ffff00");
+            const targetHp = Math.floor(b.maxHp * 0.5);
+            const startHp = b.hp;
+
+            // Animate health bar restoration over 2 seconds
+            let animFrame = 0;
+            const animDuration = 120; // 2 seconds at 60fps
+            const healthRestoreAnim = setInterval(() => {
+                animFrame++;
+                const progress = animFrame / animDuration;
+                b.hp = Math.floor(startHp + (targetHp - startHp) * Math.min(progress, 1));
+                updateBossHud();
+
+                // Spawn particles during restoration
+                if (animFrame % 3 === 0) {
+                    spawnParticle(b.x + Math.random() * 32, b.y + Math.random() * 32, '#00ff00', -3);
+                }
+
+                if (animFrame >= animDuration) {
+                    clearInterval(healthRestoreAnim);
+                    b.hp = targetHp;
+                    updateBossHud();
+                }
+            }, 16); // ~60fps
+
+            spawnFloatingText(b.x + 16, b.y - 40, "⚡ HEALTH RESTORED! ⚡", "#00ff00");
+            spawnFloatingText(b.x + 16, b.y - 55, "ENRAGED MODE!", "#ff0000");
         }
 
         // 🔥 PLAY ENRAGED MUSIC
@@ -6606,8 +6630,9 @@ function showIntroDialog(text, speaker, isAI = false) {
     nameEl.innerText = speaker;
     textContent.innerText = "";
 
-    badge.style.display = isAI ? 'block' : 'none';
-    badge.innerHTML = isAI ? "✨ SIMON IS ANALYZING..." : "";
+    // Show speaker name in badge with special color
+    badge.style.display = 'block';
+    badge.innerHTML = speaker ? speaker.toUpperCase() : "";
 
     // Store dialog text for typewriter effect
     GAME.state = 'DIALOG';
@@ -6648,7 +6673,7 @@ function showIntroThinking(speaker) {
     textContent.innerHTML = "<span class='loading-dots'>PROCESSING</span>";
 
     badge.style.display = 'block';
-    badge.innerText = "✨ UPLINK ESTABLISHED...";
+    badge.innerText = speaker ? speaker.toUpperCase() : "";
 
     GAME.state = 'DIALOG';
     GAME.dialogText = "";
@@ -6698,11 +6723,12 @@ function showDialog(text, speaker, portrait, isAI = false) {
     if (GAME.state !== 'DIALOG' && GAME.state !== 'BEZOS_DIALOGUE_NEXT') {
         GAME.dialogBackgroundState = GAME.state;
     }
-    GAME.state = 'DIALOG'; GAME.dialogText = (speaker ? speaker + ":\n" : "") + text; GAME.dialogVisible = "";
+    GAME.state = 'DIALOG'; GAME.dialogText = text; GAME.dialogVisible = "";
     const box = document.getElementById('dialog-box'); const badge = document.getElementById('gemini-badge'); const port = document.getElementById('portrait'); const pCtx = port.getContext('2d');
     box.style.display = 'flex'; document.getElementById('text-content').innerText = "";
-    badge.style.display = isAI ? 'block' : 'none';
-    badge.innerHTML = isAI ? "✨ SIMON IS ANALYZING..." : ""; // Reset badge text
+    // Show speaker name in badge with special color
+    badge.style.display = speaker ? 'block' : 'none';
+    badge.innerHTML = speaker ? speaker.toUpperCase() : "";
     pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,48,48);
     if (portrait) {
         pCtx.drawImage(portrait, 0, 0);
@@ -6722,7 +6748,7 @@ function showDialog(text, speaker, portrait, isAI = false) {
         pCtx.fillStyle='#fff'; pCtx.fillText("!", 10, 20);
     }
     AudioSys.sfx.text();
-    if (speaker) speakTTS(text.replace(speaker + ":\n", "").replace(/\n/g, ' '), speaker);
+    if (speaker) speakTTS(text.replace(/\n/g, ' '), speaker);
 }
 
 // --- NEW FUNCTION: Show "Thinking" state ---
@@ -6748,7 +6774,7 @@ function showThinking(speaker, portrait) {
     document.getElementById('text-content').innerHTML = "<span class='loading-dots'>PROCESSING</span>"; // Loading animation
 
     badge.style.display = 'block';
-    badge.innerText = "✨ UPLINK ESTABLISHED...";
+    badge.innerText = speaker ? speaker.toUpperCase() : "";
 
     pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,48,48);
     if (portrait) pCtx.drawImage(portrait, 0, 0);
@@ -6815,6 +6841,50 @@ function closeDialog() {
     cancelTTS(); AudioSys.sfx.step(); document.getElementById('dialog-box').style.display = 'none';
 
     GAME.state = GAME.nextState;
+
+    // Handle boss taunt player reply
+    if (GAME.state === 'BOSS_TAUNT_PLAYER_REPLY' && GAME.boss) {
+        const currentGen = GAME.genId;
+        const playerPortrait = GFX.chars[GAME.selectedChar];
+        const charData = CHAR_DATA[GAME.selectedChar] || {};
+        const personality = charData.backstory || "a dedicated WHS coordinator";
+
+        // Snarky hardcoded responses (randomly picked)
+        const snarkyReplies = [
+            "Is that supposed to scare me? I've dealt with worse during peak season.",
+            "Bold words for someone losing a fight to a warehouse worker.",
+            "Keep talking. It's not helping your case.",
+            "Oh no, a threat. How original.",
+            "You done? I've got work to do.",
+            "Wow, someone's desperate.",
+            "That the best you've got? Disappointing.",
+            "Save the speech. Let's just get this over with.",
+            "Really? THAT'S your intimidation tactic?",
+            "I've heard better trash talk from a forklift."
+        ];
+
+        showThinking(GAME.selectedChar, playerPortrait);
+        GAME.nextState = 'BOSS'; // After player response, return to boss fight
+
+        // 70% chance AI-generated, 30% chance hardcoded snarky reply
+        if (Math.random() < 0.7) {
+            // AI-generated snarky response
+            callGemini(`You are ${GAME.selectedChar}, ${personality}. The boss ${GAME.boss.name} just taunted you. Respond with a snarky, defiant one-liner that shows you're not intimidated. Be witty and confident. Max 20 words.`, "player_snark").then(text => {
+                if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
+                    showDialog(text, GAME.selectedChar, playerPortrait, true);
+                }
+            });
+        } else {
+            // Hardcoded snarky reply
+            const reply = snarkyReplies[Math.floor(Math.random() * snarkyReplies.length)];
+            setTimeout(() => {
+                if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
+                    showDialog(reply, GAME.selectedChar, playerPortrait, false);
+                }
+            }, 500);
+        }
+        return;
+    }
 
     // Handle intro dialogue sequence - player responds to Simon in INTRO WINDOW
     if (GAME.state === 'INTRO_DIALOGUE_CONTINUE') {
