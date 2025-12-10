@@ -1075,7 +1075,7 @@ const MusicSys = {
         megaSimon: new Audio('music/boss-mega-simon.mp3'),
         credits: new Audio('music/credits.mp3'),
         snesBoss: new Audio('music/boss-snes-theme.mp3'),
-        enraged: new Audio('music/boss-snes-theme.mp3') // Using boss-snes-theme as fallback for enraged
+        enraged: new Audio('music/boss-enraged.mp3')
     },
     currentName: null,
     currentRate: 1,
@@ -5212,6 +5212,7 @@ function updateMechaBezos() {
         GAME.shake = 20;
         spawnFloatingText(b.x + 24, b.y - 10, "ENRAGED!", "#ff0000");
         AudioSys.sfx.bossIntro();
+        MusicSys.play('enraged', 1.0);
     }
 
     // === FALLING PACKAGE HAZARDS ===
@@ -6121,6 +6122,7 @@ function updateMechaBattle() {
         GAME.shake = 20;
         spawnFloatingText(m.x + 32, m.y, "ENRAGED!", "#ff0000");
         AudioSys.sfx.bossIntro();
+        MusicSys.play('enraged', 1.0);
     }
     if (m.enraged) m.enrageFlash = (m.enrageFlash + 1) % 20;
 
@@ -7743,12 +7745,14 @@ function updateMusicForState() {
     if (GAME.state === 'LOGO') track = 'intro';
     // Pixel Reverie - for Menus (intro, story, title, how to play)
     else if (['INTRO', 'STORY', 'TITLE', 'HOWTO'].includes(GAME.state)) track = 'title';
-    // Game Over But Not Really - for character select screen
-    else if (GAME.state === 'SELECT') track = 'menu';
+    // Pixel Reverie - for character select screen (same as title/menus)
+    else if (GAME.state === 'SELECT') track = 'title';
     // Pixel Warehouse Crawl - for warehouse gameplay
     else if (GAME.state === 'PLAY') track = 'ingame';
-    // Level-Yard - for yard/outdoor level
-    else if (['YARD_INTRO', 'YARD_LEVEL'].includes(GAME.state)) track = 'yard';
+    // Level-Yard - for yard/outdoor level (only when actually in yard, not during Simon's safety tip)
+    else if (GAME.state === 'YARD_LEVEL') track = 'yard';
+    // YARD_INTRO - keep title music playing during Simon's safety tip dialog
+    else if (GAME.state === 'YARD_INTRO') track = 'title';
     // Pixel Panic - for boss reveals (regular bosses only)
     else if (GAME.state === 'VISITOR_SPLASH') track = 'boss';
     // MEGA SIMON's theme - for Simon boss intro, fight, and transformation
@@ -7765,8 +7769,10 @@ function updateMusicForState() {
     }
     // SNES BOSS FIGHT MUSIC - for regular boss fights (5 random bosses)
     else if (GAME.state === 'BOSS') track = 'snesBoss';
-    // SNES BOSS FIGHT MUSIC - for Mecha Jeff fight
-    else if (['MECHA_BOSS', 'MECHA_BOSS_INTRO', 'MECHA_TRANSFORM', 'THRONE_CONFRONTATION'].includes(GAME.state)) track = 'snesBoss';
+    // MECHA JEFF THEME - for Mecha Jeff fight (after transformation)
+    else if (['MECHA_BOSS', 'MECHA_BOSS_INTRO', 'MECHA_TRANSFORM'].includes(GAME.state)) track = 'mechaJeff';
+    // SNES BOSS FIGHT MUSIC - for throne confrontation (before transformation)
+    else if (GAME.state === 'THRONE_CONFRONTATION') track = 'snesBoss';
     // Pixel Victory - for beating the game
     else if (GAME.state === 'BEZOS_ESCAPE') track = 'victory';
     // Game Over Symphony - for both Credits Scenes
