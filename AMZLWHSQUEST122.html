@@ -135,6 +135,105 @@
             80%, 100% { content: ''; }
         }
 
+        /* INTRO CONVERSATION CENTERED PORTRAIT WINDOW */
+        #intro-portrait-window {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(180deg, #0a1628 0%, #061020 100%);
+            border: 4px solid #ffd700;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow:
+                0 0 30px rgba(255, 215, 0, 0.6),
+                8px 8px 0px rgba(0,0,0,0.8),
+                inset 0 0 40px rgba(255, 215, 0, 0.15);
+            z-index: 1000;
+            max-width: 600px;
+            pointer-events: auto;
+            animation: intro-window-appear 0.3s ease-out;
+        }
+
+        @keyframes intro-window-appear {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        #intro-portrait-frame {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #intro-portrait {
+            width: 128px;
+            height: 128px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a14 100%);
+            border: 4px solid #ffd700;
+            border-radius: 12px;
+            image-rendering: pixelated;
+            box-shadow:
+                0 0 20px rgba(255, 215, 0, 0.4),
+                inset 0 0 20px rgba(255, 215, 0, 0.1);
+            margin-bottom: 12px;
+        }
+
+        #intro-speaker-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow:
+                2px 2px 4px #000,
+                0 0 15px rgba(255, 215, 0, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #intro-dialog-content {
+            display: flex;
+            flex-direction: column;
+            min-height: 120px;
+        }
+
+        #intro-text-content {
+            flex-grow: 1;
+            font-size: 15px;
+            line-height: 1.8;
+            color: #f0f0ff;
+            text-shadow: 2px 2px 4px #000, 0 0 10px rgba(255, 255, 255, 0.1);
+            white-space: pre-wrap;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        #intro-press-space-hint {
+            font-size: 12px;
+            color: #ffd700;
+            margin-top: 16px;
+            animation: blink 0.8s ease-in-out infinite;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+        }
+
+        #intro-gemini-badge {
+            font-size: 10px;
+            color: #00ffff;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px #00ffff;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
         /* Banner hidden as requested */
         #slogan-display {
             display: none; 
@@ -216,6 +315,19 @@
                     <div id="gemini-badge" class="gemini-badge">✨ SIMON IS ANALYZING...</div>
                     <div id="text-content"></div>
                     <div id="press-space-hint">▼ PRESS SPACE</div>
+                </div>
+            </div>
+
+            <!-- INTRO CONVERSATION CENTERED PORTRAIT WINDOW -->
+            <div id="intro-portrait-window">
+                <div id="intro-portrait-frame">
+                    <canvas id="intro-portrait" width="96" height="96"></canvas>
+                    <div id="intro-speaker-name"></div>
+                </div>
+                <div id="intro-dialog-content">
+                    <div id="intro-gemini-badge" class="gemini-badge">✨ UPLINK ESTABLISHED...</div>
+                    <div id="intro-text-content"></div>
+                    <div id="intro-press-space-hint">▼ PRESS SPACE</div>
                 </div>
             </div>
         </div>
@@ -1535,44 +1647,48 @@ function generateAssets() {
         })
     };
     GFX.simonFaceLarge = c(48,48, ctx => {
-        // SIMON - Angry WHS Manager Portrait
-        // Background (warning yellow/orange aura)
+        // SIMON - Friendly WHS Manager Portrait (Professional but Approachable)
+        // Background (warm professional gradient)
         const grad = ctx.createRadialGradient(24,24,10,24,24,24);
         grad.addColorStop(0, '#fbbf24'); grad.addColorStop(1, '#d97706');
         ctx.fillStyle = grad; ctx.fillRect(0,0,48,48);
-        // Clipboard in background (always auditing)
+        // Clipboard in background (professional but not threatening)
         ctx.fillStyle = '#78350f'; ctx.fillRect(4,20,12,20);
         ctx.fillStyle = '#fcd34d'; ctx.fillRect(5,21,10,18);
-        ctx.fillStyle = '#dc2626'; ctx.fillRect(7,24,6,2); ctx.fillRect(7,28,6,2);
+        ctx.fillStyle = '#22c55e'; ctx.fillRect(7,24,6,2); ctx.fillRect(7,28,6,2); // Green checkmarks
         // Short brown hair
         ctx.fillStyle = '#5c3d2e'; ctx.fillRect(12,6,24,10);
         ctx.fillStyle = '#6b4423'; ctx.fillRect(14,8,20,6);
         ctx.fillStyle = '#7a5030'; ctx.fillRect(16,8,8,3); // Highlight
-        // Face (stern, angry)
+        // Face (professional, friendly)
         ctx.fillStyle = '#c4956a'; ctx.fillRect(12,14,24,18);
         ctx.fillStyle = '#d4a574'; ctx.fillRect(14,16,20,14);
-        // ANGRY EYEBROWS
-        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(16,18,6,3); ctx.fillRect(26,18,6,3);
-        // Glasses with GLOWING RED EYES (angry mode)
+        // Friendly eyebrows (slightly raised, welcoming)
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(16,19,6,2); ctx.fillRect(26,19,6,2);
+        // Glasses with normal eyes (professional but kind)
         ctx.fillStyle = '#1e293b'; ctx.fillRect(16,22,7,6); ctx.fillRect(25,22,7,6);
-        ctx.fillStyle = '#7f1d1d'; ctx.fillRect(17,23,5,4); ctx.fillRect(26,23,5,4);
-        ctx.fillStyle = '#ef4444'; ctx.fillRect(18,24,3,2); ctx.fillRect(27,24,3,2);
-        ctx.fillStyle = '#fff'; ctx.fillRect(18,24,1,1); ctx.fillRect(27,24,1,1); // Glint
+        ctx.fillStyle = '#3b82f6'; ctx.fillRect(17,23,5,4); ctx.fillRect(26,23,5,4); // Blue calm eyes
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(18,24,3,2); ctx.fillRect(27,24,3,2); // Pupils
+        ctx.fillStyle = '#fff'; ctx.fillRect(19,24,1,1); ctx.fillRect(28,24,1,1); // Eye glint
         // Bridge
         ctx.fillStyle = '#475569'; ctx.fillRect(23,24,2,1);
+        // Slight SMILE (friendly professional)
+        ctx.fillStyle = '#c17b5f'; ctx.fillRect(21,29,6,1);
+        ctx.fillRect(20,30,2,1); ctx.fillRect(26,30,2,1); // Smile curves up
         // Brown beard (well-groomed)
-        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(14,28,20,6);
-        ctx.fillStyle = '#6b4423'; ctx.fillRect(16,28,16,4);
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(14,30,20,4);
+        ctx.fillStyle = '#6b4423'; ctx.fillRect(16,30,16,3);
         // Gold WHS uniform
         ctx.fillStyle = '#92400e'; ctx.fillRect(10,34,28,14);
         ctx.fillStyle = '#b45309'; ctx.fillRect(12,36,24,10);
         ctx.fillStyle = '#d97706'; ctx.fillRect(14,38,20,6);
         // Large WHS badge
         ctx.fillStyle = '#fff'; ctx.fillRect(18,40,12,4);
-        ctx.fillStyle = '#dc2626'; ctx.fillRect(20,41,8,2);
-        // Pointing finger (ACCUSATORY)
-        ctx.fillStyle = '#d4a574'; ctx.fillRect(34,32,10,4);
-        ctx.fillStyle = '#e8c49a'; ctx.fillRect(35,33,8,2);
+        ctx.fillStyle = '#22c55e'; ctx.fillRect(20,41,8,2); // Green badge (friendly)
+        // Thumbs up gesture (encouraging)
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(34,30,6,10);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(35,31,4,8);
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(35,28,4,4); // Thumb up
     });
 
     // TALKING ANIMATION VARIANTS - Open mouths for dialogue
@@ -1623,13 +1739,32 @@ function generateAssets() {
 
     GFX.simonFaceTalking = c(48,48, ctx => {
         ctx.drawImage(GFX.simonFaceLarge, 0, 0);
-        // Open mouth (YELLING REGULATIONS)
-        ctx.fillStyle = '#d4a574'; ctx.fillRect(18,28,12,6);
-        ctx.fillStyle = '#8b4513'; ctx.fillRect(19,29,10,4);
-        ctx.fillStyle = '#fff'; ctx.fillRect(21,29,6,2); // Angry teeth
-        // Beard moves with mouth
+        // Open mouth (friendly talking, not yelling)
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(20,29,8,4);
+        ctx.fillStyle = '#8b4513'; ctx.fillRect(21,30,6,2);
+        ctx.fillStyle = '#fff'; ctx.fillRect(23,30,2,1); // Friendly teeth
+        // Beard moves with mouth (slightly)
         ctx.fillStyle = '#6b4423'; ctx.fillRect(16,32,16,2);
     });
+
+    // INTRO CONVERSATION PORTRAITS - 96x96 (2x size for centered window)
+    GFX.introPortraits = {
+        "Carrie": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFaces["Carrie"],0,0,48,48,0,0,96,96); }),
+        "Nevena": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFaces["Nevena"],0,0,48,48,0,0,96,96); }),
+        "Joao": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFaces["Joao"],0,0,48,48,0,0,96,96); }),
+        "Roman": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFaces["Roman"],0,0,48,48,0,0,96,96); }),
+        "Erwin": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFaces["Erwin"],0,0,48,48,0,0,96,96); }),
+        "Simon Unglaube": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceLarge,0,0,48,48,0,0,96,96); })
+    };
+
+    GFX.introPortraitsTalking = {
+        "Carrie": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFacesTalking["Carrie"],0,0,48,48,0,0,96,96); }),
+        "Nevena": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFacesTalking["Nevena"],0,0,48,48,0,0,96,96); }),
+        "Joao": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFacesTalking["Joao"],0,0,48,48,0,0,96,96); }),
+        "Roman": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFacesTalking["Roman"],0,0,48,48,0,0,96,96); }),
+        "Erwin": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFacesTalking["Erwin"],0,0,48,48,0,0,96,96); }),
+        "Simon Unglaube": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceTalking,0,0,48,48,0,0,96,96); })
+    };
 
     // ENHANCED SIMON BOSS - 32x32 detailed sprite - Short brown hair, glasses, brown beard
     GFX.simonBoss = c(32,32, ctx => {
@@ -3763,9 +3898,20 @@ function handleAction() {
     else if (GAME.state === 'SELECT') { AudioSys.sfx.select(); GAME.selectedChar = GAME.charList[GAME.charIndex]; resetGame(); }
     else if (GAME.state === 'DIALOG') {
         if (GAME.dialogVisible.length < GAME.dialogText.length) {
-            GAME.dialogVisible = GAME.dialogText; document.getElementById('text-content').innerText = GAME.dialogVisible;
+            GAME.dialogVisible = GAME.dialogText;
+            // Update whichever window is visible
+            if (document.getElementById('intro-portrait-window').style.display === 'block') {
+                document.getElementById('intro-text-content').innerText = GAME.dialogVisible;
+            } else {
+                document.getElementById('text-content').innerText = GAME.dialogVisible;
+            }
         } else {
-            closeDialog();
+            // Close whichever window is visible
+            if (document.getElementById('intro-portrait-window').style.display === 'block') {
+                closeIntroDialog();
+            } else {
+                closeDialog();
+            }
             // Check if transitioning to yard level
             if (GAME.nextState === 'YARD_INTRO') {
                 GAME.state = 'YARD_INTRO';
@@ -3882,15 +4028,15 @@ function resetGame() {
     GAME.introDialogueStep = 0;
     const currentGen = GAME.genId;
 
-    // Show Simon's thinking state while AI generates greeting
-    showThinking("Simon Unglaube", GFX.simonFaceLarge);
+    // Show Simon's thinking state in INTRO WINDOW while AI generates greeting
+    showIntroThinking("Simon Unglaube");
     GAME.nextState = 'INTRO_DIALOGUE_CONTINUE'; // Custom state for dialogue sequence
 
     // Generate Simon's greeting with objective overview
     callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Give ${GAME.selectedChar} a brief welcome with your signature dry wit, then explain their shift objective: find and fix 5 safety hazards while dodging ops manager interruptions. Keep it concise and witty. Max 45 words.`, "intro").then(text => {
         if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
              let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
-             showDialog(finalText, "Simon Unglaube", GFX.simonFaceLarge, true);
+             showIntroDialog(finalText, "Simon Unglaube", true);
         }
     });
     updateMusicForState();
@@ -4825,13 +4971,13 @@ function update() {
             if (isWin) {
                 header = `OUTSTANDING!\n"${finalText}"\n`;
                 let stats = `\nStats:\nTime Spent: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nSafety Rules used: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`;
-                showDialog(header + stats, speaker, GFX.simonFace, true);
+                showDialog(header + stats, speaker, GFX.simonFaceLarge, true);
                 GAME.state = 'DIALOG'; GAME.nextState = 'CREDITS';
             } else {
                 // Simon's analysis only - no corporate message or character defeat line
                 header = `${finalText}`;
                 let stats = `\n\nStats:\nTime Spent: ${Math.floor((Date.now() - GAME.startTime)/1000)}s\nSafety Rules used: ${GAME.booksFired}\nOPS pushed back: ${GAME.opsPushed}\n(Press Space)`;
-                showDialog(header + stats, speaker, GFX.simonFace, true);
+                showDialog(header + stats, speaker, GFX.simonFaceLarge, true);
                 GAME.state = 'DIALOG'; GAME.nextState = 'GAMEOVER_SPLASH';
             }
         } else if (!ready && GAME.splashTimer <= fallbackTimer) {
@@ -4872,7 +5018,14 @@ function update() {
         if (GAME.dialogVisible.length < GAME.dialogText.length) {
             if (GAME.ticks % 2 === 0) {
                 GAME.dialogVisible += GAME.dialogText[GAME.dialogVisible.length];
-                document.getElementById('text-content').innerText = GAME.dialogVisible;
+                // Update whichever window is visible
+                const regularContent = document.getElementById('text-content');
+                const introContent = document.getElementById('intro-text-content');
+                if (document.getElementById('intro-portrait-window').style.display === 'block') {
+                    introContent.innerText = GAME.dialogVisible;
+                } else {
+                    regularContent.innerText = GAME.dialogVisible;
+                }
                 AudioSys.sfx.text();
             }
         }
@@ -6405,6 +6558,117 @@ function stopPortraitAnimation() {
     }
 }
 
+// Helper function to start INTRO portrait talking animation (larger, centered)
+function startIntroPortraitAnimation(speaker) {
+    // Stop any existing animation
+    if (GAME.portraitAnimInterval) {
+        clearInterval(GAME.portraitAnimInterval);
+    }
+
+    const basePortrait = GFX.introPortraits[speaker];
+    const talkingPortrait = GFX.introPortraitsTalking[speaker];
+
+    if (!basePortrait || !talkingPortrait) return;
+
+    GAME.currentPortraitBase = basePortrait;
+    GAME.currentPortraitTalking = talkingPortrait;
+    GAME.portraitTalkPhase = false;
+
+    const port = document.getElementById('intro-portrait');
+    const pCtx = port.getContext('2d');
+
+    // Animate between normal and talking at 6 FPS (every ~166ms)
+    GAME.portraitAnimInterval = setInterval(() => {
+        GAME.portraitTalkPhase = !GAME.portraitTalkPhase;
+        pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,96,96);
+        if (GAME.portraitTalkPhase && talkingPortrait) {
+            pCtx.drawImage(talkingPortrait, 0, 0);
+        } else {
+            pCtx.drawImage(basePortrait, 0, 0);
+        }
+    }, 166);
+}
+
+// Show intro portrait window (for intro conversation only)
+function showIntroDialog(text, speaker, isAI = false) {
+    // Hide regular dialog box
+    document.getElementById('dialog-box').style.display = 'none';
+
+    // Show intro window
+    const window = document.getElementById('intro-portrait-window');
+    const nameEl = document.getElementById('intro-speaker-name');
+    const badge = document.getElementById('intro-gemini-badge');
+    const textContent = document.getElementById('intro-text-content');
+    const port = document.getElementById('intro-portrait');
+    const pCtx = port.getContext('2d');
+
+    window.style.display = 'block';
+    nameEl.innerText = speaker;
+    textContent.innerText = "";
+
+    badge.style.display = isAI ? 'block' : 'none';
+    badge.innerHTML = isAI ? "✨ SIMON IS ANALYZING..." : "";
+
+    // Store dialog text for typewriter effect
+    GAME.state = 'DIALOG';
+    GAME.dialogText = text;
+    GAME.dialogVisible = "";
+
+    // Draw portrait
+    pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,96,96);
+    const portrait = GFX.introPortraits[speaker];
+    if (portrait) {
+        pCtx.drawImage(portrait, 0, 0);
+        // Start animation
+        startIntroPortraitAnimation(speaker);
+    }
+
+    AudioSys.sfx.text();
+    if (speaker) speakTTS(text, speaker);
+}
+
+// Show thinking state in intro window
+function showIntroThinking(speaker) {
+    // Stop any talking animation while thinking
+    stopPortraitAnimation();
+
+    // Hide regular dialog box
+    document.getElementById('dialog-box').style.display = 'none';
+
+    // Show intro window
+    const window = document.getElementById('intro-portrait-window');
+    const nameEl = document.getElementById('intro-speaker-name');
+    const badge = document.getElementById('intro-gemini-badge');
+    const textContent = document.getElementById('intro-text-content');
+    const port = document.getElementById('intro-portrait');
+    const pCtx = port.getContext('2d');
+
+    window.style.display = 'block';
+    nameEl.innerText = speaker;
+    textContent.innerHTML = "<span class='loading-dots'>PROCESSING</span>";
+
+    badge.style.display = 'block';
+    badge.innerText = "✨ UPLINK ESTABLISHED...";
+
+    GAME.state = 'DIALOG';
+    GAME.dialogText = "";
+    GAME.dialogVisible = "";
+
+    // Draw portrait
+    pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,96,96);
+    const portrait = GFX.introPortraits[speaker];
+    if (portrait) pCtx.drawImage(portrait, 0, 0);
+
+    AudioSys.sfx.text();
+}
+
+// Close intro window
+function closeIntroDialog() {
+    stopPortraitAnimation();
+    document.getElementById('intro-portrait-window').style.display = 'none';
+    GAME.state = GAME.nextState;
+}
+
 function showDialog(text, speaker, portrait, isAI = false) {
     // Store previous state for background rendering during dialog
     // Don't overwrite if we're in the Bezos dialogue sequence (keep THRONE_CONFRONTATION)
@@ -6529,12 +6793,11 @@ function closeDialog() {
 
     GAME.state = GAME.nextState;
 
-    // Handle intro dialogue sequence - player responds to Simon
+    // Handle intro dialogue sequence - player responds to Simon in INTRO WINDOW
     if (GAME.state === 'INTRO_DIALOGUE_CONTINUE') {
         const currentGen = GAME.genId;
-        const playerPortrait = GFX.charFaces[GAME.selectedChar] || GFX.chars[GAME.selectedChar];
 
-        showThinking(GAME.selectedChar, playerPortrait);
+        showIntroThinking(GAME.selectedChar);
         GAME.nextState = 'PLAY'; // After player response, start the game
 
         // Get character personality for response
@@ -6545,7 +6808,7 @@ function closeDialog() {
         callGemini(`You are ${GAME.selectedChar}, ${personality}. Simon just explained your mission: find 5 safety hazards and dodge ops interruptions. Respond enthusiastically that you'll do your best not to disappoint him. Keep it short, in-character, and determined. Max 25 words.`, "player_response").then(text => {
             if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
                 let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
-                showDialog(finalText, GAME.selectedChar, playerPortrait, true);
+                showIntroDialog(finalText, GAME.selectedChar, true);
             }
         });
         return;
@@ -8430,7 +8693,7 @@ function showBezosEscapeDialogue(index) {
             'This calls for a celebration... and possibly a promotion. ' +
             'The warehouse is finally safe from maniacal billionaire tyranny!',
             'Simon Unglaube',
-            GFX.simonFace,
+            GFX.simonFaceLarge,
             false
         );
         GAME.nextState = 'BEZOS_ESCAPE'; // Stay in escape to continue animation
