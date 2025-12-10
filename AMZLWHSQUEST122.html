@@ -3593,11 +3593,30 @@ function resetGame() {
     const playerPortrait = GFX.charFaces[GAME.selectedChar];
     const simonPortrait = GFX.simonFaceLarge;
 
+    // Set up initial portrait dialogue in "thinking" state
+    GAME.state = 'DIALOG';
+    GAME.nextState = 'PLAY';
+    GAME.portraitMode = true;
+    GAME.portraitLeft = playerPortrait;
+    GAME.portraitRight = simonPortrait;
+    GAME.portraitLeftName = GAME.selectedChar;
+    GAME.portraitRightName = "Simon";
+    GAME.portraitSpeaker = "right";
+    GAME.dialogText = "...";
+    GAME.dialogVisible = "...";
+
+    // Hide HTML dialog box - we're using canvas rendering
+    document.getElementById('dialog-box').style.display = 'none';
+
     // Show AI-powered greeting with objective overview
     callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Give ${GAME.selectedChar} a brief welcome with your signature dry wit, then explain their shift objective: find and fix 5 safety hazards while dodging ops manager interruptions. Keep it concise and witty. Max 45 words.`, "intro").then(text => {
         if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
              let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
-             showPortraitDialogue(finalText, playerPortrait, GAME.selectedChar, simonPortrait, "Simon", "right", true);
+             // Update the dialogue text with AI response
+             GAME.dialogText = finalText;
+             GAME.dialogVisible = "";
+             // Speak with Simon's voice
+             speakTTS(finalText, "Simon");
         }
     });
     updateMusicForState();
