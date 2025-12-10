@@ -462,7 +462,7 @@ const CHAR_DATA = {
         speed: 1.5,
         lives: 5,
         ability: "PRECISION FOCUS",
-        abilityDesc: "Attacks deal 2x damage to bosses"
+        abilityDesc: "2x damage, 30% slower reload"
     },
     "Nevena": {
         role: "The Oracle",
@@ -4401,6 +4401,7 @@ const GAME = {
     // Game Over screen state
     gameOverPhase: 0, corporateMessage: "", characterDefeatLine: "", gameOverReason: "",
     creditsType: 'normal', // 'normal' for surprise visitor, 'mecha' for Mecha Jeff
+    creditsStarted: false, // Prevents credits from restarting every frame
     startTime: 0, booksFired: 0, opsPushed: 0,
     lastAIBanterTime: 0, // Throttle AI requests
     fireExitDoor: null, // Hidden level door position
@@ -4722,6 +4723,7 @@ function handleAction() {
     else if (GAME.state === 'CREDITS') {
         // Allow skip after credits have been rolling for a while
         if (GAME.stateTimer > 600) {
+            GAME.creditsStarted = false; // Reset for next time
             GAME.state = 'TITLE'; updateMusicForState();
         }
     }
@@ -5222,11 +5224,13 @@ function beginMechaEncounter() {
 function startCredits() {
     GAME.state = 'CREDITS';
     GAME.stateTimer = 0;
+    GAME.creditsStarted = true; // Prevent re-initialization
     GAME.boss = null;
     stopPortraitAnimation();
     document.getElementById('boss-hud').style.display = 'none';
     document.getElementById('hud-layer').style.display = 'none';
     document.getElementById('dialog-box').style.display = 'none';
+    document.getElementById('intro-portrait-window').style.display = 'none'; // Also hide intro window
     GAME.projectiles = [];
     GAME.particles = [];
     GAME.floatingTexts = [];
@@ -6660,7 +6664,7 @@ function updateBoss() {
     // Exclude MEGA SIMON - he transforms into Mecha Mega Simon instead of enraging
     if (!b.lowHealthAttackTriggered && hpPct <= 0.1 && !b.isMecha && b.name !== "MEGA SIMON") {
         b.lowHealthAttackTriggered = true;
-        b.desperationMode = true; // 🔥 ENRAGED STATE - 30% faster, 30% dodge chance!
+        b.desperationMode = true; // 🔥 ENRAGED STATE - 30% faster, 10% blocked, 10% deflected!
 
         // 🔥 RESTORE BOSS HEALTH TO 50% with animated restoration
         {
@@ -6986,13 +6990,24 @@ function updateProjectiles() {
                         AudioSys.sfx.alert();
                         continue;
                     }
-                    // 🔥 DESPERATION MODE: 30% dodge chance!
-                    if (GAME.boss.desperationMode && Math.random() < 0.3) {
-                        GAME.projectiles.splice(i,1);
-                        spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, "DODGED!", "#ff9900");
-                        spawnParticleBurst(GAME.boss.x+16, GAME.boss.y+16, ['#ff9900', '#ffff00'], 8);
-                        AudioSys.sfx.alert();
-                        continue;
+                    // 🔥 DESPERATION MODE: 10% blocked, 10% deflected!
+                    if (GAME.boss.desperationMode) {
+                        const roll = Math.random();
+                        if (roll < 0.1) {
+                            // 10% BLOCKED - attack absorbed
+                            GAME.projectiles.splice(i,1);
+                            spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, "BLOCKED!", "#888888");
+                            spawnParticleBurst(GAME.boss.x+16, GAME.boss.y+16, ['#888888', '#666666'], 6);
+                            AudioSys.sfx.alert();
+                            continue;
+                        } else if (roll < 0.2) {
+                            // 10% DEFLECTED - attack bounces back
+                            GAME.projectiles.splice(i,1);
+                            spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, "DEFLECTED!", "#ff6600");
+                            spawnParticleBurst(GAME.boss.x+16, GAME.boss.y+16, ['#ff6600', '#ffcc00'], 8);
+                            AudioSys.sfx.alert();
+                            continue;
+                        }
                     }
                     // Character ability damage multipliers
                     let dmg = 1;
@@ -7182,8 +7197,11 @@ function spawnSparkles(x, y, color) {
 
 function throwBook() {
     const p = GAME.player; if (p.cooldown > 0) return; const attackMeta = getAttackData(GAME.selectedChar);
-    // Joao's CAFFEINE RUSH ability - faster cooldown
-    const cooldownMod = GAME.selectedChar === 'Joao' ? 0.65 : 1.0;
+    // Joao's CAFFEINE RUSH ability - faster cooldown (35% faster)
+    // Carrie's PRECISION FOCUS penalty - slower reload (30% slower) but 2x damage
+    let cooldownMod = 1.0;
+    if (GAME.selectedChar === 'Joao') cooldownMod = 0.65; // 35% faster
+    else if (GAME.selectedChar === 'Carrie') cooldownMod = 1.3; // 30% slower
     const finalCooldown = Math.floor((attackMeta.cooldown || 120) * cooldownMod);
     p.cooldown = finalCooldown; p.cooldownMax = finalCooldown; GAME.booksFired++;
     const speed = attackMeta.speed || 4;
@@ -7391,9 +7409,10 @@ function stopPortraitAnimation() {
 
 // Helper function to start INTRO portrait talking animation (larger, centered)
 function startIntroPortraitAnimation(speaker) {
-    // Stop any existing animation
+    // Stop any existing animation FIRST
     if (GAME.portraitAnimInterval) {
         clearInterval(GAME.portraitAnimInterval);
+        GAME.portraitAnimInterval = null;
     }
 
     const basePortrait = GFX.introPortraits[speaker];
@@ -7401,37 +7420,47 @@ function startIntroPortraitAnimation(speaker) {
 
     if (!basePortrait || !talkingPortrait) return;
 
+    // Store in GAME so animation uses current values, not stale closure
     GAME.currentPortraitBase = basePortrait;
     GAME.currentPortraitTalking = talkingPortrait;
     GAME.portraitTalkPhase = false;
-    GAME.currentIntroSpeaker = speaker; // Track current speaker to prevent wrong portrait
+    GAME.currentIntroSpeaker = speaker;
 
     const port = document.getElementById('intro-portrait');
     const pCtx = port.getContext('2d');
 
-    // Pre-draw the base portrait with black background to avoid flash
+    // Pre-draw the base portrait with black background
     pCtx.fillStyle = '#000';
     pCtx.fillRect(0, 0, 96, 96);
     pCtx.imageSmoothingEnabled = false;
     pCtx.drawImage(basePortrait, 0, 0);
 
     // Animate between normal and talking at 6 FPS (every ~166ms)
-    // Use the stored portraits to prevent showing wrong portrait if speaker changes
+    // Read from GAME.current* each frame to use latest portraits
     GAME.portraitAnimInterval = setInterval(() => {
-        // Safety check: don't draw if speaker changed
-        if (GAME.currentIntroSpeaker !== speaker) {
+        // Safety check: don't draw if speaker changed or window hidden
+        if (GAME.currentIntroSpeaker !== speaker ||
+            document.getElementById('intro-portrait-window').style.display !== 'block') {
             clearInterval(GAME.portraitAnimInterval);
+            GAME.portraitAnimInterval = null;
             return;
         }
+
         GAME.portraitTalkPhase = !GAME.portraitTalkPhase;
-        // Fill with black first, then draw portrait (prevents flash)
+
+        // Use GAME.current* to always get the correct portraits
+        const base = GAME.currentPortraitBase;
+        const talking = GAME.currentPortraitTalking;
+
+        if (!base) return;
+
         pCtx.fillStyle = '#000';
         pCtx.fillRect(0, 0, 96, 96);
         pCtx.imageSmoothingEnabled = false;
-        if (GAME.portraitTalkPhase && talkingPortrait) {
-            pCtx.drawImage(talkingPortrait, 0, 0);
+        if (GAME.portraitTalkPhase && talking) {
+            pCtx.drawImage(talking, 0, 0);
         } else {
-            pCtx.drawImage(basePortrait, 0, 0);
+            pCtx.drawImage(base, 0, 0);
         }
     }, 166);
 }
@@ -7870,7 +7899,7 @@ function closeDialog() {
     // Only start yard level if not already initialized (prevents infinite loop)
     if (GAME.state === 'YARD_LEVEL' && !GAME.yard) { startYardLevel(); return; }
     if (GAME.state === 'MECHA_BOSS_INTRO') { beginMechaEncounter(); return; }
-    if (GAME.state === 'CREDITS') { startCredits(); return; }
+    if (GAME.state === 'CREDITS' && !GAME.creditsStarted) { startCredits(); return; }
 
     if (GAME.state === 'PLAY' && GAME.pendingBossIntro && !GAME.boss) {
         showVisitorSplash();
