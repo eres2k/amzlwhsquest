@@ -425,6 +425,123 @@
                 inset 0 0 20px rgba(255, 255, 255, 0.2);
         }
 
+        /* CONTROL MODE TOGGLE BUTTON */
+        #control-mode-toggle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(145deg, rgba(0, 200, 200, 0.9) 0%, rgba(0, 150, 150, 0.95) 100%);
+            border: 3px solid #00ffff;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            color: #fff;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+            box-shadow:
+                0 0 15px rgba(0, 255, 255, 0.5),
+                inset 0 0 10px rgba(0, 0, 0, 0.3),
+                0 4px 8px rgba(0, 0, 0, 0.5);
+            transition: all 0.15s ease;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            z-index: 10;
+        }
+
+        #control-mode-toggle .mode-icon {
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+
+        #control-mode-toggle .mode-label {
+            font-size: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        #control-mode-toggle:active, #control-mode-toggle.pressed {
+            background: linear-gradient(145deg, rgba(0, 255, 255, 0.95) 0%, rgba(0, 200, 200, 0.98) 100%);
+            transform: translate(-50%, -50%) scale(0.92);
+            box-shadow:
+                0 0 25px rgba(0, 255, 255, 0.8),
+                inset 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        #control-mode-toggle.gyro-active {
+            background: linear-gradient(145deg, rgba(200, 100, 255, 0.9) 0%, rgba(150, 50, 200, 0.95) 100%);
+            border-color: #cc66ff;
+            box-shadow:
+                0 0 15px rgba(200, 100, 255, 0.5),
+                inset 0 0 10px rgba(0, 0, 0, 0.3),
+                0 4px 8px rgba(0, 0, 0, 0.5);
+            animation: gyro-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes gyro-pulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(200, 100, 255, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(200, 100, 255, 0.8), inset 0 0 10px rgba(0, 0, 0, 0.3); }
+        }
+
+        /* GYRO INDICATOR - shows tilt direction */
+        #gyro-indicator {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90px;
+            height: 90px;
+            border: 2px dashed rgba(200, 100, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        #gyro-indicator .gyro-dot {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle, #cc66ff 0%, #9933cc 100%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            left: 50%;
+            top: 50%;
+            box-shadow: 0 0 10px rgba(200, 100, 255, 0.8);
+            transition: left 0.05s ease-out, top 0.05s ease-out;
+        }
+
+        .gyro-mode #gyro-indicator {
+            display: block;
+        }
+
+        .gyro-mode .dpad-btn {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* AUTO-SHOOT INDICATOR */
+        #auto-shoot-indicator {
+            display: none;
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 7px;
+            color: #ff4444;
+            text-shadow: 0 0 5px rgba(255, 68, 68, 0.8);
+            animation: blink 0.5s ease-in-out infinite;
+            white-space: nowrap;
+        }
+
+        .gyro-mode #auto-shoot-indicator {
+            display: block;
+        }
+
         /* Responsive adjustments for mobile */
         @media (max-width: 900px) {
             body {
@@ -535,154 +652,254 @@
 
         /* Extra small screens (Galaxy Fold folded, narrow phones) */
         @media (max-width: 380px) {
-            /* Intro portrait window */
+            /* Intro portrait window - optimized for Fold5 */
             #intro-portrait-window {
-                max-width: 95vw;
+                max-width: 98vw;
+                width: calc(100vw - 16px);
                 max-height: calc(100vh - 140px);
-                padding: 12px;
-                border-width: 3px;
-                border-radius: 10px;
+                padding: 10px;
+                border-width: 2px;
+                border-radius: 8px;
+                left: 50%;
+                transform: translateX(-50%);
             }
 
             #intro-portrait {
-                width: 80px;
-                height: 80px;
-                border-width: 3px;
-                margin-bottom: 8px;
+                width: 64px;
+                height: 64px;
+                border-width: 2px;
+                margin-bottom: 6px;
             }
 
             #intro-speaker-name {
-                font-size: 12px;
-                letter-spacing: 1px;
+                font-size: 10px;
+                letter-spacing: 0.5px;
             }
 
             #intro-portrait-frame {
-                margin-bottom: 12px;
+                margin-bottom: 10px;
             }
 
             #intro-text-content {
-                font-size: 10px;
-                line-height: 1.5;
-                padding: 0 5px;
+                font-size: 9px;
+                line-height: 1.4;
+                padding: 0 4px;
+                word-break: break-word;
+                hyphens: auto;
             }
 
             #intro-dialog-content {
-                min-height: 80px;
-                max-height: calc(100vh - 320px);
+                min-height: 70px;
+                max-height: calc(100vh - 300px);
                 overflow-y: auto;
             }
 
             #intro-press-space-hint {
-                font-size: 9px;
-                margin-top: 10px;
+                font-size: 8px;
+                margin-top: 8px;
             }
 
-            /* Bottom dialog box */
+            /* Bottom dialog box - Fold5 optimized */
             #dialog-box {
-                min-height: 100px;
-                padding: 10px;
+                min-height: 90px;
+                padding: 8px;
                 border-width: 2px;
+                flex-direction: column;
+                align-items: center;
             }
 
             #portrait {
-                width: 48px;
-                height: 48px;
-                margin-right: 10px;
+                width: 40px;
+                height: 40px;
+                margin-right: 0;
+                margin-bottom: 6px;
                 border-width: 2px;
             }
 
             #text-content {
-                font-size: 9px;
-                line-height: 1.5;
+                font-size: 8px;
+                line-height: 1.4;
+                text-align: center;
             }
 
             #press-space-hint {
-                font-size: 8px;
-                margin-top: 6px;
+                font-size: 7px;
+                margin-top: 5px;
             }
 
             /* HUD elements */
             .hud-text {
-                font-size: 8px;
-                padding: 6px 8px;
+                font-size: 7px;
+                padding: 5px 6px;
             }
 
             .boss-name {
-                font-size: 8px;
+                font-size: 7px;
+            }
+
+            #boss-hud {
+                width: 75%;
+                padding: 6px 10px;
             }
 
             /* Mobile controls for narrow screens */
             .dpad-container {
-                width: 85px;
-                height: 85px;
+                width: 80px;
+                height: 80px;
             }
 
             .dpad-btn {
-                width: 32px;
-                height: 32px;
-                font-size: 12px;
+                width: 30px;
+                height: 30px;
+                font-size: 11px;
+                border-width: 2px;
             }
 
             .dpad-center {
-                width: 22px;
-                height: 22px;
+                width: 20px;
+                height: 20px;
             }
 
             #action-btn {
-                width: 52px;
-                height: 52px;
-                font-size: 9px;
+                width: 48px;
+                height: 48px;
+                font-size: 8px;
+                border-width: 2px;
+            }
+
+            #control-mode-toggle {
+                width: 42px;
+                height: 42px;
+                border-width: 2px;
+            }
+
+            #control-mode-toggle .mode-icon {
+                font-size: 12px;
+            }
+
+            #control-mode-toggle .mode-label {
+                font-size: 5px;
+            }
+
+            #gyro-indicator {
+                width: 70px;
+                height: 70px;
+            }
+
+            #auto-shoot-indicator {
+                font-size: 6px;
+                bottom: -20px;
             }
 
             #mobile-controls {
-                padding: 8px 10px;
+                padding: 6px 8px;
             }
         }
 
-        /* Very narrow screens (Galaxy Fold inner edge case) */
+        /* Very narrow screens (Galaxy Fold5 folded ~280px) */
         @media (max-width: 300px) {
             #intro-portrait-window {
-                padding: 8px;
-                max-height: calc(100vh - 120px);
+                padding: 6px;
+                max-height: calc(100vh - 110px);
+                border-width: 2px;
             }
 
             #intro-portrait {
+                width: 48px;
+                height: 48px;
+            }
+
+            #intro-speaker-name {
+                font-size: 8px;
+            }
+
+            #intro-text-content {
+                font-size: 7px;
+                line-height: 1.3;
+            }
+
+            #intro-dialog-content {
+                max-height: calc(100vh - 260px);
+            }
+
+            #intro-press-space-hint {
+                font-size: 6px;
+            }
+
+            #dialog-box {
+                min-height: 80px;
+                padding: 6px;
+            }
+
+            #portrait {
+                width: 32px;
+                height: 32px;
+            }
+
+            #text-content {
+                font-size: 7px;
+            }
+
+            #press-space-hint {
+                font-size: 6px;
+            }
+
+            .hud-text {
+                font-size: 6px;
+                padding: 4px 5px;
+            }
+
+            .boss-name {
+                font-size: 6px;
+            }
+
+            .dpad-container {
+                width: 70px;
+                height: 70px;
+            }
+
+            .dpad-btn {
+                width: 26px;
+                height: 26px;
+                font-size: 9px;
+            }
+
+            .dpad-center {
+                width: 18px;
+                height: 18px;
+            }
+
+            #action-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 7px;
+            }
+
+            #control-mode-toggle {
+                width: 36px;
+                height: 36px;
+            }
+
+            #control-mode-toggle .mode-icon {
+                font-size: 10px;
+            }
+
+            #control-mode-toggle .mode-label {
+                display: none;
+            }
+
+            #gyro-indicator {
                 width: 60px;
                 height: 60px;
             }
 
-            #intro-speaker-name {
-                font-size: 10px;
+            #auto-shoot-indicator {
+                font-size: 5px;
+                bottom: -18px;
             }
 
-            #intro-text-content {
-                font-size: 8px;
-                line-height: 1.4;
-            }
-
-            #intro-dialog-content {
-                max-height: calc(100vh - 280px);
-            }
-
-            #text-content {
-                font-size: 8px;
-            }
-
-            .dpad-container {
-                width: 75px;
-                height: 75px;
-            }
-
-            .dpad-btn {
-                width: 28px;
-                height: 28px;
-                font-size: 10px;
-            }
-
-            #action-btn {
-                width: 45px;
-                height: 45px;
-                font-size: 8px;
+            #mobile-controls {
+                padding: 5px 6px;
             }
         }
     </style>
@@ -741,9 +958,19 @@
             <div class="dpad-center"></div>
             <div id="dpad-right" class="dpad-btn">▶</div>
             <div id="dpad-down" class="dpad-btn">▼</div>
+            <!-- Gyro indicator overlays the dpad -->
+            <div id="gyro-indicator">
+                <div class="gyro-dot"></div>
+            </div>
+            <!-- Control mode toggle button in center -->
+            <div id="control-mode-toggle">
+                <span class="mode-icon">🎮</span>
+                <span class="mode-label">DPAD</span>
+            </div>
         </div>
         <div class="action-container">
             <div id="action-btn">A</div>
+            <div id="auto-shoot-indicator">AUTO-FIRE</div>
         </div>
     </div>
 </div>
@@ -5120,16 +5347,262 @@ window.addEventListener('keyup', e => {
 });
 
 // --- MOBILE CONTROLS ---
+// Enhanced mobile controls with gyroscope mode and vibration feedback
+
+// Global Vibration System - can be called from anywhere in the game
+const VibrationSystem = {
+    enabled: true,
+
+    // Vibrate with a pattern or duration
+    vibrate(pattern) {
+        if (!this.enabled || !navigator.vibrate) return;
+        navigator.vibrate(pattern);
+    },
+
+    // Pre-defined vibration patterns for different game events
+    patterns: {
+        buttonPress: 15,
+        actionButton: 30,
+        damage: [50, 30, 100],
+        heavyDamage: [100, 50, 150, 50, 100],
+        bossHit: [30, 20, 50],
+        bossDefeat: [50, 50, 100, 50, 150, 50, 200],
+        gameOver: [200, 100, 300, 100, 400],
+        victory: [50, 50, 100, 50, 150],
+        hazardFixed: [20, 30, 40],
+        secretFound: [30, 30, 60, 30, 90],
+        levelUp: [40, 40, 80, 40, 120],
+        gyroToggle: [25, 25],
+        autoShoot: 10
+    },
+
+    // Event-specific vibration methods
+    onButtonPress() { this.vibrate(this.patterns.buttonPress); },
+    onActionButton() { this.vibrate(this.patterns.actionButton); },
+    onDamage() { this.vibrate(this.patterns.damage); },
+    onHeavyDamage() { this.vibrate(this.patterns.heavyDamage); },
+    onBossHit() { this.vibrate(this.patterns.bossHit); },
+    onBossDefeat() { this.vibrate(this.patterns.bossDefeat); },
+    onGameOver() { this.vibrate(this.patterns.gameOver); },
+    onVictory() { this.vibrate(this.patterns.victory); },
+    onHazardFixed() { this.vibrate(this.patterns.hazardFixed); },
+    onSecretFound() { this.vibrate(this.patterns.secretFound); },
+    onLevelUp() { this.vibrate(this.patterns.levelUp); },
+    onGyroToggle() { this.vibrate(this.patterns.gyroToggle); },
+    onAutoShoot() { this.vibrate(this.patterns.autoShoot); }
+};
+
+// Gyroscope Control System
+const GyroControlSystem = {
+    enabled: false,
+    available: false,
+    calibrated: false,
+    baseGamma: 0,
+    baseBeta: 0,
+    currentGamma: 0,
+    currentBeta: 0,
+    sensitivity: 15, // Degrees of tilt needed for full movement
+    deadzone: 3, // Degrees of deadzone
+    autoShootEnabled: true,
+    autoShootInterval: null,
+    autoShootCooldown: 200, // ms between auto shots
+
+    init() {
+        // Check if DeviceOrientationEvent is available
+        if (typeof DeviceOrientationEvent !== 'undefined') {
+            // Check for iOS 13+ permission requirement
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                this.available = 'requires-permission';
+            } else {
+                this.available = true;
+                this.setupListener();
+            }
+        }
+    },
+
+    async requestPermission() {
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            try {
+                const response = await DeviceOrientationEvent.requestPermission();
+                if (response === 'granted') {
+                    this.available = true;
+                    this.setupListener();
+                    return true;
+                }
+            } catch (e) {
+                console.log('Gyro permission denied:', e);
+            }
+            return false;
+        }
+        return true;
+    },
+
+    setupListener() {
+        window.addEventListener('deviceorientation', (e) => {
+            if (!this.enabled) return;
+
+            // gamma: left-right tilt (-90 to 90)
+            // beta: front-back tilt (-180 to 180)
+            this.currentGamma = e.gamma || 0;
+            this.currentBeta = e.beta || 0;
+
+            // Calibrate on first valid reading
+            if (!this.calibrated && (this.currentGamma !== 0 || this.currentBeta !== 0)) {
+                this.calibrate();
+            }
+
+            this.updateMovement();
+            this.updateIndicator();
+        }, true);
+    },
+
+    calibrate() {
+        this.baseGamma = this.currentGamma;
+        this.baseBeta = this.currentBeta;
+        this.calibrated = true;
+    },
+
+    updateMovement() {
+        if (!this.enabled || !this.calibrated) return;
+
+        // Calculate relative tilt from calibrated position
+        const relativeGamma = this.currentGamma - this.baseGamma;
+        const relativeBeta = this.currentBeta - this.baseBeta;
+
+        // Clear all keys first
+        KEYS.up = false;
+        KEYS.down = false;
+        KEYS.left = false;
+        KEYS.right = false;
+
+        // Apply movement based on tilt (with deadzone)
+        if (Math.abs(relativeGamma) > this.deadzone) {
+            if (relativeGamma < -this.deadzone) {
+                KEYS.left = true;
+            } else if (relativeGamma > this.deadzone) {
+                KEYS.right = true;
+            }
+        }
+
+        if (Math.abs(relativeBeta) > this.deadzone) {
+            if (relativeBeta < -this.deadzone) {
+                KEYS.up = true;
+            } else if (relativeBeta > this.deadzone) {
+                KEYS.down = true;
+            }
+        }
+    },
+
+    updateIndicator() {
+        const dot = document.querySelector('#gyro-indicator .gyro-dot');
+        if (!dot) return;
+
+        // Calculate dot position based on tilt (normalized to indicator bounds)
+        const relativeGamma = this.currentGamma - this.baseGamma;
+        const relativeBeta = this.currentBeta - this.baseBeta;
+
+        // Map tilt to percentage (clamped to indicator bounds)
+        const maxTilt = this.sensitivity * 2;
+        const xPercent = 50 + Math.max(-45, Math.min(45, (relativeGamma / maxTilt) * 45));
+        const yPercent = 50 + Math.max(-45, Math.min(45, (relativeBeta / maxTilt) * 45));
+
+        dot.style.left = xPercent + '%';
+        dot.style.top = yPercent + '%';
+    },
+
+    startAutoShoot() {
+        if (this.autoShootInterval) return;
+
+        this.autoShootInterval = setInterval(() => {
+            if (!this.enabled || !this.autoShootEnabled) return;
+
+            // Only auto-shoot during gameplay states
+            const shootableStates = ['PLAY', 'BOSS', 'BEZOS_BOSS', 'MECHA_BOSS'];
+            if (shootableStates.includes(GAME.state)) {
+                VibrationSystem.onAutoShoot();
+                throwBook();
+            }
+        }, this.autoShootCooldown);
+    },
+
+    stopAutoShoot() {
+        if (this.autoShootInterval) {
+            clearInterval(this.autoShootInterval);
+            this.autoShootInterval = null;
+        }
+    },
+
+    toggle() {
+        this.enabled = !this.enabled;
+        VibrationSystem.onGyroToggle();
+
+        const mobileControls = document.getElementById('mobile-controls');
+        const toggleBtn = document.getElementById('control-mode-toggle');
+        const modeIcon = toggleBtn?.querySelector('.mode-icon');
+        const modeLabel = toggleBtn?.querySelector('.mode-label');
+
+        if (this.enabled) {
+            // Switching to gyro mode
+            if (this.available === 'requires-permission') {
+                this.requestPermission().then(granted => {
+                    if (granted) {
+                        this.activateGyroMode(mobileControls, toggleBtn, modeIcon, modeLabel);
+                    } else {
+                        this.enabled = false;
+                    }
+                });
+            } else if (this.available) {
+                this.activateGyroMode(mobileControls, toggleBtn, modeIcon, modeLabel);
+            } else {
+                this.enabled = false;
+                alert('Gyroscope not available on this device');
+            }
+        } else {
+            // Switching to D-Pad mode
+            this.deactivateGyroMode(mobileControls, toggleBtn, modeIcon, modeLabel);
+        }
+    },
+
+    activateGyroMode(mobileControls, toggleBtn, modeIcon, modeLabel) {
+        mobileControls?.classList.add('gyro-mode');
+        toggleBtn?.classList.add('gyro-active');
+        if (modeIcon) modeIcon.textContent = '📱';
+        if (modeLabel) modeLabel.textContent = 'GYRO';
+
+        // Recalibrate on activation
+        this.calibrated = false;
+
+        // Start auto-shoot
+        if (this.autoShootEnabled) {
+            this.startAutoShoot();
+        }
+    },
+
+    deactivateGyroMode(mobileControls, toggleBtn, modeIcon, modeLabel) {
+        mobileControls?.classList.remove('gyro-mode');
+        toggleBtn?.classList.remove('gyro-active');
+        if (modeIcon) modeIcon.textContent = '🎮';
+        if (modeLabel) modeLabel.textContent = 'DPAD';
+
+        // Clear gyro-set keys
+        KEYS.up = false;
+        KEYS.down = false;
+        KEYS.left = false;
+        KEYS.right = false;
+
+        // Stop auto-shoot
+        this.stopAutoShoot();
+    }
+};
+
 // Touch handlers for mobile controls (CSS handles visibility via media query)
 function initMobileControls() {
     // Only set up touch handlers if touch is available
     const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     if (!hasTouch) return;
 
-    // Vibrate helper
-    function vibrate(pattern) {
-        if (navigator.vibrate) navigator.vibrate(pattern);
-    }
+    // Initialize gyroscope system
+    GyroControlSystem.init();
 
     // D-Pad setup
     function setupDpad(id, key) {
@@ -5137,16 +5610,20 @@ function initMobileControls() {
         if (!btn) return;
         btn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            vibrate(15);
+            // Don't process D-Pad in gyro mode
+            if (GyroControlSystem.enabled) return;
+            VibrationSystem.onButtonPress();
             KEYS[key] = true;
             btn.classList.add('pressed');
         }, { passive: false });
         btn.addEventListener('touchend', (e) => {
             e.preventDefault();
+            if (GyroControlSystem.enabled) return;
             KEYS[key] = false;
             btn.classList.remove('pressed');
         }, { passive: false });
         btn.addEventListener('touchcancel', () => {
+            if (GyroControlSystem.enabled) return;
             KEYS[key] = false;
             btn.classList.remove('pressed');
         });
@@ -5157,12 +5634,31 @@ function initMobileControls() {
     setupDpad('dpad-left', 'left');
     setupDpad('dpad-right', 'right');
 
+    // Control mode toggle button
+    const toggleBtn = document.getElementById('control-mode-toggle');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleBtn.classList.add('pressed');
+        }, { passive: false });
+        toggleBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleBtn.classList.remove('pressed');
+            GyroControlSystem.toggle();
+        }, { passive: false });
+        toggleBtn.addEventListener('touchcancel', () => {
+            toggleBtn.classList.remove('pressed');
+        });
+    }
+
     // Action button
     const actionBtn = document.getElementById('action-btn');
     if (actionBtn) {
         actionBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            vibrate(30);
+            VibrationSystem.onActionButton();
             if (!KEYS.action) handleAction();
             KEYS.action = true;
             actionBtn.classList.add('pressed');
@@ -6577,6 +7073,7 @@ function updateYardLevel() {
         if (Math.abs((f.x + f.w/2) - (y.playerX + 8)) < (f.w/2 + 4) * romanMod && Math.abs((f.y + f.h/2) - (y.playerY + 8)) < (f.h/2 + 4) * romanMod) {
             if (GAME.player.iframe <= 0) {
                 GAME.lives--; GAME.flash = 15; GAME.shake = 20; AudioSys.sfx.hurt(); updateHud();
+                VibrationSystem.onHeavyDamage(); // Heavy damage vibration for forklift
                 // Teleport to start - no iframe needed since player is repositioned
                 y.playerX = canvas.width / 2 - 8;
                 y.playerY = y.startY;
@@ -6598,6 +7095,7 @@ function updateYardLevel() {
         if (Math.abs((v.x + v.w/2) - (y.playerX + 8)) < (v.w/2 + 5) * romanModV && Math.abs((v.y + v.h/2) - (y.playerY + 8)) < (v.h/2 + 5) * romanModV) {
             if (GAME.player.iframe <= 0) {
                 GAME.lives--; GAME.flash = 12; GAME.shake = 15; AudioSys.sfx.hurt(); updateHud();
+                VibrationSystem.onHeavyDamage(); // Heavy damage vibration for vehicle
                 // FULL RESET - player goes back to starting position, no iframe since teleporting
                 y.playerX = canvas.width / 2 - 8;
                 y.playerY = y.startY;
@@ -7543,6 +8041,7 @@ function updateProjectiles() {
                 // Nevena's FORESIGHT ability - longer invincibility frames
                 const iframeBonus = GAME.selectedChar === 'Nevena' ? 180 : 120;
                 GAME.lives--; GAME.player.iframe = iframeBonus; GAME.shake = 10; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
+                VibrationSystem.onDamage(); // Vibrate on damage
                 if (GAME.lives<=0 && !GAME.gameOverTriggered) triggerGameOver("OVERWHELMED!");
             }
             GAME.projectiles.splice(i,1);
@@ -7580,7 +8079,7 @@ function updateProjectiles() {
                     // Character ability damage multipliers
                     let dmg = 1;
                     if (GAME.selectedChar === 'Carrie') dmg = 2; // PRECISION FOCUS
-                    GAME.boss.hp -= dmg; updateBossHud(); AudioSys.sfx.bossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, attackMeta.color || '#ff0000', -2); GAME.projectiles.splice(i,1);
+                    GAME.boss.hp -= dmg; updateBossHud(); AudioSys.sfx.bossHit(); VibrationSystem.onBossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, attackMeta.color || '#ff0000', -2); GAME.projectiles.splice(i,1);
                     const dmgText = dmg > 1 ? `${attackMeta.text || 'Hit!'} x${dmg}` : (attackMeta.text || 'Hit!');
                     spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, dmgText, attackMeta.color || '#ff0000');
                     // Damage number above boss head
@@ -7793,6 +8292,7 @@ function tryInteract() {
     // Check if player is near fire exit door after exactly 4 hazards cleared
     if (GAME.issuesFixed >= 4 && GAME.fireExitDoor && Math.hypot(p.x - GAME.fireExitDoor.x, p.y - GAME.fireExitDoor.y) < 20) {
         AudioSys.sfx.secret(); // Zelda-style secret discovery tune
+        VibrationSystem.onSecretFound(); // Vibrate on secret discovery
         showDialog("You found a hidden exit!\n\nYou step through the fire door into the Amazon yard...", "SECRET", GFX.secretIcon, false);
         GAME.nextState = 'YARD_INTRO';
         return true;
@@ -7802,6 +8302,7 @@ function tryInteract() {
         let e = GAME.entities[i];
         if (e.type === 'runner' && Math.hypot(p.x-e.x, p.y-e.y) < 20) {
              e.type = 'assoc'; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
+             VibrationSystem.onHazardFixed(); // Vibrate on hazard fix
              spawnFloatingText(e.x, e.y, "Safe!", "#00ff00");
 
              if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
@@ -7824,6 +8325,7 @@ function tryInteract() {
     for(let h of GAME.activeIssues) {
         if (!h.fixed && Math.hypot(p.x-h.x, p.y-h.y) < 20) {
             h.fixed = true; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
+            VibrationSystem.onHazardFixed(); // Vibrate on hazard fix
             if (h.hiddenDoor && GAME.hiddenDoor) GAME.hiddenDoor.unlocked = true;
             spawnFloatingText(h.x, h.y, "Fixed!", "#00ff00");
 
@@ -7867,6 +8369,7 @@ function triggerGameOver(reason) {
     GAME.gameOverTriggered = true; GAME.nextState = 'TITLE'; GAME.state = 'LOSE_SPLASH'; GAME.splashTimer = 320; GAME.aiResultText = null; GAME.stateTimer = 0;
     GAME.gameOverPhase = 0; // Track voice phases: 0=corporate, 1=character, 2=simon
     stopPortraitAnimation();
+    VibrationSystem.onGameOver(); // Vibrate on game over
     document.getElementById('boss-hud').style.display = 'none'; document.getElementById('dialog-box').style.display = 'none';
     document.getElementById('hud-layer').style.display = 'none';
 
@@ -7907,6 +8410,7 @@ function triggerGameOver(reason) {
 function winGame() {
     AudioSys.sfx.start(); MusicSys.play('victory'); GAME.nextState = 'CREDITS'; GAME.creditsType = 'normal'; GAME.state = 'WIN_SPLASH'; GAME.splashTimer = 260; GAME.aiResultText = null; GAME.stateTimer = 0;
     stopPortraitAnimation();
+    VibrationSystem.onVictory(); // Vibrate on victory
     document.getElementById('boss-hud').style.display = 'none'; document.getElementById('dialog-box').style.display = 'none';
     document.getElementById('hud-layer').style.display = 'none';
     const currentGen = GAME.genId; const time = Math.floor((Date.now() - GAME.startTime)/1000);
