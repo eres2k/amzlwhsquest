@@ -380,6 +380,32 @@
             background: linear-gradient(135deg, #92400e 0%, #78350f 100%);
         }
 
+        .whatsnew-btn {
+            background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+            color: #5eead4;
+            font-family: 'Press Start 2P';
+            font-size: 0.8rem;
+            padding: 12px 25px;
+            border: 2px solid #14b8a6;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-shadow: 0 0 5px rgba(94, 234, 212, 0.5);
+            box-shadow: 0 0 15px rgba(20, 184, 166, 0.3);
+            margin: 10px;
+            animation: pulse-teal 2s infinite;
+        }
+        .whatsnew-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(20, 184, 166, 0.5);
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+        }
+        @keyframes pulse-teal {
+            0% { box-shadow: 0 0 15px rgba(20, 184, 166, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(20, 184, 166, 0.5), 0 0 0 8px rgba(20, 184, 166, 0.1); }
+            100% { box-shadow: 0 0 15px rgba(20, 184, 166, 0.3); }
+        }
+
         .modal-overlay {
             display: none;
             position: fixed;
@@ -547,9 +573,8 @@
     <div style="text-align: center; margin: 60px 0;">
         <a href="AMZLWHSQUEST122.html" class="play-btn">▶ START SHIFT</a>
         <br>
-        <a href="index-modular.html" class="play-btn-small">▶ MODULAR VERSION <span class="beta-badge">BETA</span></a>
-        <br>
         <button class="manual-btn" onclick="openManual()">📖 INSTRUCTION MANUAL</button>
+        <button class="whatsnew-btn" onclick="openWhatsNew()">🚀 WHAT'S NEW</button>
         <p style="color: #aaa; font-size: 0.8rem; margin-top: 15px;">(INPUT: KEYBOARD | REWARD: PIZZA PARTY)</p>
     </div>
 
@@ -757,6 +782,7 @@
 
     <footer>
         <p>© 2025 ERWIN ESENER PRODUCTIONS // WHS MEU // DVI1 VIENNA //</p>
+        <a href="index-modular.html" style="display: inline-block; margin-top: 10px; padding: 6px 12px; font-size: 0.6rem; font-family: 'Press Start 2P'; color: #64748b; text-decoration: none; border: 1px solid #334155; border-radius: 3px; background: rgba(15, 23, 42, 0.5); transition: all 0.2s;" onmouseover="this.style.color='#94a3b8'; this.style.borderColor='#475569';" onmouseout="this.style.color='#64748b'; this.style.borderColor='#334155';">MODULAR BUILD <span style="background: #854d0e; color: #fbbf24; font-size: 0.4rem; padding: 2px 5px; border-radius: 2px; margin-left: 5px;">WIP</span></a>
     </footer>
 </div>
 
@@ -1408,12 +1434,26 @@
 
     // Close modal on overlay click or Escape key
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeManual();
+        if (e.key === 'Escape') {
+            closeManual();
+            closeWhatsNew();
+        }
         if (document.getElementById('manual-modal').classList.contains('active')) {
             if (e.key === 'ArrowLeft') prevPage();
             if (e.key === 'ArrowRight') nextPage();
         }
     });
+
+    // --- 7. WHAT'S NEW MODAL SYSTEM ---
+    function openWhatsNew() {
+        document.getElementById('whatsnew-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeWhatsNew() {
+        document.getElementById('whatsnew-modal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
 
     fetchAnnouncement();
     renderPortraits();
@@ -1766,6 +1806,152 @@
             <button id="prev-btn" class="nav-btn" onclick="prevPage()" disabled>◄ PREV</button>
             <span id="page-indicator" class="page-indicator">Page 1 of 8</span>
             <button id="next-btn" class="nav-btn" onclick="nextPage()">NEXT ►</button>
+        </div>
+    </div>
+</div>
+
+<!-- WHAT'S NEW MODAL -->
+<div id="whatsnew-modal" class="modal-overlay" onclick="if(event.target === this) closeWhatsNew()" style="--accent-color: #14b8a6;">
+    <div class="modal-container" style="border-color: #14b8a6; max-width: 850px;">
+        <div class="modal-header" style="border-bottom-color: #14b8a6;">
+            <h2 class="modal-title" style="color: #5eead4;">🚀 RELEASE NOTES</h2>
+            <div class="modal-subtitle">Q4 2025 OPERATIONAL EXCELLENCE DEPLOYMENT • v12.2.5</div>
+            <button class="modal-close" onclick="closeWhatsNew()">✕</button>
+        </div>
+
+        <div class="modal-body" style="padding: 30px;">
+            <!-- LEADERSHIP MESSAGE -->
+            <div style="background: linear-gradient(135deg, rgba(20, 184, 166, 0.1) 0%, rgba(15, 118, 110, 0.15) 100%); border: 2px solid #14b8a6; border-radius: 8px; padding: 25px; margin-bottom: 25px;">
+                <div style="color: #5eead4; font-family: 'Press Start 2P', cursive; font-size: 0.8rem; margin-bottom: 15px; text-shadow: 0 0 10px rgba(94, 234, 212, 0.5);">📋 MESSAGE FROM LEADERSHIP</div>
+                <p style="color: #e2e8f0; line-height: 1.8; margin: 0; font-size: 1.05rem;">
+                    Dear Valued Associates and Stakeholders,<br><br>
+                    We are <span style="color: #fbbf24;">thrilled to announce</span> the deployment of our latest operational enhancements.
+                    These customer-obsessed improvements represent a <span style="color: #14b8a6;">paradigm shift</span> in warehouse safety gamification,
+                    driving <span style="color: #22c55e;">synergistic outcomes</span> across all verticals.<br><br>
+                    <span style="color: #94a3b8; font-style: italic;">— The AMZL WHS Quest Leadership Team</span>
+                </p>
+            </div>
+
+            <!-- ENHANCED BOSS COMBAT INITIATIVE -->
+            <div style="margin-bottom: 30px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 15px;">
+                    <span style="color: #ff4444; font-size: 1.5rem;">⚔️</span>
+                    <div>
+                        <div style="color: #ff4444; font-family: 'Press Start 2P', cursive; font-size: 0.75rem;">ENHANCED VISITOR ENGAGEMENT INITIATIVE</div>
+                        <div style="color: #94a3b8; font-size: 0.85rem; margin-top: 5px;">Reimagined Stakeholder Interaction Framework</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; gap: 15px;">
+                    <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 6px; border-left: 4px solid #fbbf24;">
+                        <div style="color: #fbbf24; font-weight: bold; margin-bottom: 8px;">💪 OPTIMIZED VISITOR RESILIENCE METRICS</div>
+                        <p style="margin: 0; color: #cbd5e1; line-height: 1.6;">
+                            We've <span style="color: #fbbf24;">right-sized</span> the visitor durability framework, implementing a
+                            <span style="color: #22c55e;">150-300% enhancement</span> to stakeholder health pools (25-50 HP).
+                            This enables <span style="color: #14b8a6;">extended customer touchpoints</span> and more meaningful engagement windows.
+                        </p>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 6px; border-left: 4px solid #ff4444;">
+                        <div style="color: #ff4444; font-weight: bold; margin-bottom: 8px;">⚡ DIFFERENTIATED FEEDBACK DELIVERY SYSTEMS</div>
+                        <p style="margin: 0; color: #cbd5e1; line-height: 1.6;">
+                            Each visitor now leverages <span style="color: #ff4444;">bespoke communication patterns</span> to drive alignment:
+                        </p>
+                        <ul style="margin: 10px 0 0 20px; color: #94a3b8;">
+                            <li><span style="color: #fbbf24;">Inspector:</span> 11-point sweeping line delivery framework</li>
+                            <li><span style="color: #fbbf24;">Auditor:</span> Homing grid synergy (6 touchpoints)</li>
+                            <li><span style="color: #fbbf24;">Sebastian:</span> 10-shot rapid barrage cadence optimization</li>
+                            <li><span style="color: #fbbf24;">Regional:</span> Dual rotating ring stakeholder outreach (16!)</li>
+                            <li><span style="color: #fbbf24;">Avetta:</span> Cross-functional laser alignment pattern</li>
+                            <li><span style="color: #fbbf24;">Jelena:</span> 7-wave cascade delivery methodology</li>
+                            <li><span style="color: #fbbf24;">Mega Simon:</span> 14-projectile chaos vortex (maximum disruption)</li>
+                        </ul>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 6px; border-left: 4px solid #dc2626;">
+                        <div style="color: #dc2626; font-weight: bold; margin-bottom: 8px;">💥 PROACTIVE ESCALATION PROTOCOL (40% THRESHOLD)</div>
+                        <p style="margin: 0; color: #cbd5e1; line-height: 1.6;">
+                            At <span style="color: #dc2626;">40% resource depletion</span>, visitors now trigger our new
+                            <span style="color: #ff4444;">"DESPERATION" escalation pathway</span>. This includes: massive screen shake for visibility optimization,
+                            visual flash for attention capture, warning signage deployment, and an <span style="color: #ff0000;">absolutely devastating ultimate feedback mechanism</span>
+                            (15-30 concurrent communications). Triple alert sounds. Particle-based visual indicators. Maximum stakeholder awareness.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OPERATIONAL IMPROVEMENTS -->
+            <div style="margin-bottom: 30px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 15px;">
+                    <span style="color: #22c55e; font-size: 1.5rem;">📈</span>
+                    <div>
+                        <div style="color: #22c55e; font-family: 'Press Start 2P', cursive; font-size: 0.75rem;">OPERATIONAL EXCELLENCE INITIATIVES</div>
+                        <div style="color: #94a3b8; font-size: 0.85rem; margin-top: 5px;">Continuous Improvement Deployments</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
+                    <div style="background: rgba(34, 197, 94, 0.1); padding: 18px; border: 1px solid #22c55e; border-radius: 6px;">
+                        <div style="color: #22c55e; font-weight: bold; margin-bottom: 8px;">🏢 FACILITY BRANDING ALIGNMENT</div>
+                        <p style="margin: 0; color: #94a3b8; font-size: 0.95rem; line-height: 1.5;">
+                            Enhanced warehouse visuals now feature <span style="color: #22c55e;">Amazon DVI1 Austria branding</span> for improved site identification and associate belonging metrics.
+                        </p>
+                    </div>
+
+                    <div style="background: rgba(34, 211, 238, 0.1); padding: 18px; border: 1px solid #22d3ee; border-radius: 6px;">
+                        <div style="color: #22d3ee; font-weight: bold; margin-bottom: 8px;">📖 KNOWLEDGE BASE EXPANSION</div>
+                        <p style="margin: 0; color: #94a3b8; font-size: 0.95rem; line-height: 1.5;">
+                            Deployed a <span style="color: #22d3ee;">retro SNES-style instruction manual</span> with sleek modal navigation to empower associate onboarding journeys.
+                        </p>
+                    </div>
+
+                    <div style="background: rgba(168, 85, 247, 0.1); padding: 18px; border: 1px solid #a855f7; border-radius: 6px;">
+                        <div style="color: #a855f7; font-weight: bold; margin-bottom: 8px;">🎵 AUDIO EXPERIENCE OPTIMIZATION</div>
+                        <p style="margin: 0; color: #94a3b8; font-size: 0.95rem; line-height: 1.5;">
+                            Fixed song timing alignment and added <span style="color: #a855f7;">secret discovery effects</span> to drive engagement and delight.
+                        </p>
+                    </div>
+
+                    <div style="background: rgba(251, 191, 36, 0.1); padding: 18px; border: 1px solid #fbbf24; border-radius: 6px;">
+                        <div style="color: #fbbf24; font-weight: bold; margin-bottom: 8px;">🎖️ RECOGNITION FRAMEWORK UPDATE</div>
+                        <p style="margin: 0; color: #94a3b8; font-size: 0.95rem; line-height: 1.5;">
+                            Implemented <span style="color: #fbbf24;">Simon performance evaluation dialog</span> with enhanced credits to celebrate associate contributions.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BUG FIXES -->
+            <div style="margin-bottom: 25px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 15px;">
+                    <span style="color: #f97316; font-size: 1.5rem;">🔧</span>
+                    <div>
+                        <div style="color: #f97316; font-family: 'Press Start 2P', cursive; font-size: 0.75rem;">DEFECT REMEDIATION SPRINTS</div>
+                        <div style="color: #94a3b8; font-size: 0.85rem; margin-top: 5px;">Technical Debt Reduction & Stability Improvements</div>
+                    </div>
+                </div>
+
+                <ul style="color: #cbd5e1; line-height: 2; margin: 0; padding-left: 25px;">
+                    <li>Resolved <span style="color: #f97316;">portrait flashing artifacts</span> during visitor engagement sequences</li>
+                    <li>Fixed <span style="color: #f97316;">credits initialization pipeline</span> to prevent mid-sequence startups</li>
+                    <li>Addressed <span style="color: #f97316;">Carrie character balance concerns</span> through damage/cooldown ratio optimization</li>
+                    <li>Corrected <span style="color: #f97316;">music logic pathways</span> for enraged, mecha-jeff, game-over, and yard timing scenarios</li>
+                    <li>Resolved <span style="color: #f97316;">Jeff Bezos conversation anomalies</span> including throne room background rendering and interaction flow</li>
+                    <li>Reworked <span style="color: #f97316;">Erwin sprite assets</span> for improved visual fidelity alignment</li>
+                </ul>
+            </div>
+
+            <!-- CLOSING STATEMENT -->
+            <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(10, 15, 30, 0.95) 100%); border: 2px dashed #475569; border-radius: 8px; padding: 20px; text-align: center;">
+                <p style="color: #94a3b8; margin: 0; font-style: italic; line-height: 1.6;">
+                    "These enhancements represent our unwavering commitment to <span style="color: #fbbf24;">Day 1 thinking</span> and
+                    <span style="color: #14b8a6;">customer obsession</span>. We remain laser-focused on
+                    <span style="color: #22c55e;">raising the bar</span> for warehouse safety gamification excellence."
+                </p>
+                <p style="color: #64748b; margin: 10px 0 0 0; font-size: 0.9rem;">
+                    🎯 Have Backbone; Disagree and Commit 🎯 Deliver Results 🎯 Earn Trust
+                </p>
+            </div>
         </div>
     </div>
 </div>
