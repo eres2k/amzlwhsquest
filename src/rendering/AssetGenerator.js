@@ -16,6 +16,7 @@ export class AssetGenerator {
         this.generateProjectiles();
         this.generateHazards();
         this.generateUI();
+        this.generateEnvironmentAssets();
         return this.assets;
     }
 
@@ -200,27 +201,330 @@ export class AssetGenerator {
             ctx.fillRect(3, 7, 2, 1);
         });
 
-        // Door/exit
+        // Door/exit (fire exit green)
         this.assets.door = this.createCanvas(16, 16, ctx => {
+            ctx.fillStyle = '#15803d';
+            ctx.fillRect(0, 0, 16, 16);
             ctx.fillStyle = '#22c55e';
-            ctx.fillRect(2, 0, 12, 16);
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(2, 0, 12, 16);
-            // Door handle
-            ctx.fillStyle = '#fbbf24';
-            ctx.fillRect(10, 8, 2, 2);
+            ctx.fillRect(2, 2, 12, 12);
+            ctx.fillStyle = '#fff';
+            ctx.font = '6px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('EXIT', 8, 10);
         });
 
-        // Floor tile
-        this.assets.floor = this.createRect(16, 16, '#1f2937');
+        // Warehouse concrete floor tile
+        this.assets.floor = this.createCanvas(16, 16, ctx => {
+            ctx.fillStyle = '#3a3f4a';
+            ctx.fillRect(0, 0, 16, 16);
+            ctx.fillStyle = '#424750';
+            ctx.fillRect(2, 2, 4, 4);
+            ctx.fillRect(10, 8, 3, 3);
+            ctx.strokeStyle = '#4a5058';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(0, 0, 16, 16);
+        });
 
-        // Wall tile
-        this.assets.wall = this.createRect(16, 16, '#475569');
+        // Industrial shelf/wall tile (orange Amazon racking with packages)
+        this.assets.wall = this.createCanvas(16, 16, ctx => {
+            // Metal shelf frame (orange Amazon-style)
+            ctx.fillStyle = '#c2410c';
+            ctx.fillRect(0, 0, 16, 16);
+            ctx.fillStyle = '#ea580c';
+            ctx.fillRect(1, 0, 2, 16);
+            ctx.fillRect(13, 0, 2, 16);
+            ctx.fillRect(0, 1, 16, 2);
+            ctx.fillRect(0, 7, 16, 2);
+            ctx.fillRect(0, 13, 16, 2);
+            ctx.fillStyle = '#fb923c';
+            ctx.fillRect(1, 0, 1, 16);
+            ctx.fillRect(13, 0, 1, 16);
+            // Packages
+            ctx.fillStyle = '#92400e';
+            ctx.fillRect(3, 3, 5, 3);
+            ctx.fillStyle = '#a3520f';
+            ctx.fillRect(9, 3, 4, 4);
+            ctx.fillStyle = '#78350f';
+            ctx.fillRect(4, 9, 4, 3);
+            ctx.fillStyle = '#92400e';
+            ctx.fillRect(9, 10, 3, 2);
+        });
 
         // Clutter items
         this.assets.clutter_coffee = this.createCircle(4, '#92400e');
         this.assets.clutter_paper = this.createRect(8, 8, '#f3f4f6');
         this.assets.clutter_tape = this.createRect(6, 6, '#fbbf24');
+    }
+
+    generateEnvironmentAssets() {
+        this.assets.environment = {};
+
+        // Warehouse concrete floor tile
+        this.assets.environment.floor = this.createCanvas(16, 16, ctx => {
+            ctx.fillStyle = '#3a3f4a';
+            ctx.fillRect(0, 0, 16, 16);
+            ctx.fillStyle = '#424750';
+            ctx.fillRect(2, 2, 4, 4);
+            ctx.fillRect(10, 8, 3, 3);
+            ctx.fillRect(5, 11, 4, 3);
+            ctx.strokeStyle = '#4a5058';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(0, 0, 16, 16);
+            ctx.fillStyle = '#32363d';
+            ctx.fillRect(8, 3, 2, 1);
+            ctx.fillRect(3, 9, 1, 2);
+        });
+
+        // Industrial warehouse wall/shelf racking
+        this.assets.environment.wall = this.createCanvas(16, 16, ctx => {
+            ctx.fillStyle = '#c2410c';
+            ctx.fillRect(0, 0, 16, 16);
+            ctx.fillStyle = '#ea580c';
+            ctx.fillRect(1, 0, 2, 16);
+            ctx.fillRect(13, 0, 2, 16);
+            ctx.fillRect(0, 1, 16, 2);
+            ctx.fillRect(0, 7, 16, 2);
+            ctx.fillRect(0, 13, 16, 2);
+            ctx.fillStyle = '#fb923c';
+            ctx.fillRect(1, 0, 1, 16);
+            ctx.fillRect(13, 0, 1, 16);
+            ctx.fillStyle = '#92400e';
+            ctx.fillRect(3, 3, 5, 3);
+            ctx.fillStyle = '#a3520f';
+            ctx.fillRect(9, 3, 4, 4);
+            ctx.fillStyle = '#78350f';
+            ctx.fillRect(4, 9, 4, 3);
+            ctx.fillStyle = '#92400e';
+            ctx.fillRect(9, 10, 3, 2);
+        });
+
+        // Conveyor belt
+        this.assets.environment.conveyor = this.createCanvas(16, 16, ctx => {
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(0, 0, 16, 16);
+            ctx.fillStyle = '#374151';
+            ctx.fillRect(1, 2, 14, 12);
+            ctx.fillStyle = '#4b5563';
+            for (let i = 0; i < 4; i++) {
+                ctx.fillRect(2 + i * 4, 4, 2, 8);
+            }
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.moveTo(4, 8);
+            ctx.lineTo(8, 5);
+            ctx.lineTo(8, 11);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(9, 8);
+            ctx.lineTo(13, 5);
+            ctx.lineTo(13, 11);
+            ctx.closePath();
+            ctx.fill();
+        });
+
+        // Floor with safety markings
+        this.assets.environment.floorMarked = this.createCanvas(16, 16, ctx => {
+            ctx.fillStyle = '#3a3f4a';
+            ctx.fillRect(0, 0, 16, 16);
+            ctx.fillStyle = '#424750';
+            ctx.fillRect(2, 2, 4, 4);
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(0, 7, 16, 2);
+        });
+
+        // Floor with pedestrian crossing
+        this.assets.environment.floorCrossing = this.createCanvas(16, 16, ctx => {
+            ctx.fillStyle = '#3a3f4a';
+            ctx.fillRect(0, 0, 16, 16);
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(1, 0, 3, 16);
+            ctx.fillRect(6, 0, 3, 16);
+            ctx.fillRect(11, 0, 3, 16);
+        });
+
+        // Shelf with boxes (variant 1)
+        this.assets.environment.shelfBoxes1 = this.createCanvas(16, 16, ctx => {
+            ctx.fillStyle = '#c2410c';
+            ctx.fillRect(0, 0, 16, 16);
+            ctx.fillStyle = '#ea580c';
+            ctx.fillRect(0, 0, 2, 16);
+            ctx.fillRect(14, 0, 2, 16);
+            ctx.fillRect(0, 7, 16, 2);
+            ctx.fillStyle = '#92400e';
+            ctx.fillRect(2, 1, 5, 5);
+            ctx.fillStyle = '#a16207';
+            ctx.fillRect(8, 2, 5, 4);
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(3, 4, 3, 1);
+            ctx.fillRect(9, 4, 3, 1);
+            ctx.fillStyle = '#78350f';
+            ctx.fillRect(3, 9, 4, 5);
+            ctx.fillStyle = '#92400e';
+            ctx.fillRect(8, 10, 5, 4);
+        });
+
+        // Shelf with boxes (variant 2 - totes)
+        this.assets.environment.shelfBoxes2 = this.createCanvas(16, 16, ctx => {
+            ctx.fillStyle = '#c2410c';
+            ctx.fillRect(0, 0, 16, 16);
+            ctx.fillStyle = '#ea580c';
+            ctx.fillRect(0, 0, 2, 16);
+            ctx.fillRect(14, 0, 2, 16);
+            ctx.fillRect(0, 7, 16, 2);
+            ctx.fillStyle = '#ca8a04';
+            ctx.fillRect(2, 1, 5, 5);
+            ctx.fillStyle = '#eab308';
+            ctx.fillRect(3, 2, 3, 3);
+            ctx.fillStyle = '#ca8a04';
+            ctx.fillRect(8, 2, 5, 4);
+            ctx.fillStyle = '#1e40af';
+            ctx.fillRect(3, 9, 4, 5);
+            ctx.fillStyle = '#2563eb';
+            ctx.fillRect(4, 10, 2, 3);
+            ctx.fillStyle = '#1e40af';
+            ctx.fillRect(8, 10, 5, 4);
+        });
+
+        // Empty shelf
+        this.assets.environment.shelfEmpty = this.createCanvas(16, 16, ctx => {
+            ctx.fillStyle = '#c2410c';
+            ctx.fillRect(0, 0, 16, 16);
+            ctx.fillStyle = '#ea580c';
+            ctx.fillRect(0, 0, 2, 16);
+            ctx.fillRect(14, 0, 2, 16);
+            ctx.fillRect(0, 3, 16, 1);
+            ctx.fillRect(0, 7, 16, 1);
+            ctx.fillRect(0, 11, 16, 1);
+            ctx.fillStyle = '#fb923c';
+            ctx.fillRect(0, 0, 1, 16);
+            ctx.fillRect(14, 0, 1, 16);
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(2, 1, 12, 2);
+            ctx.fillRect(2, 4, 12, 3);
+            ctx.fillRect(2, 8, 12, 3);
+            ctx.fillRect(2, 12, 12, 4);
+        });
+
+        // Pallet on floor
+        this.assets.environment.pallet = this.createCanvas(16, 16, ctx => {
+            ctx.fillStyle = '#3a3f4a';
+            ctx.fillRect(0, 0, 16, 16);
+            ctx.fillStyle = '#92400e';
+            ctx.fillRect(1, 10, 14, 5);
+            ctx.fillStyle = '#a16207';
+            ctx.fillRect(2, 11, 4, 3);
+            ctx.fillRect(7, 11, 4, 3);
+            ctx.fillStyle = '#78350f';
+            ctx.fillRect(1, 14, 14, 1);
+            ctx.fillStyle = '#78350f';
+            ctx.fillRect(2, 2, 12, 8);
+            ctx.fillStyle = '#92400e';
+            ctx.fillRect(3, 3, 10, 6);
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(7, 2, 2, 8);
+        });
+
+        // DVI1 Sign
+        this.assets.environment.signDVI1 = this.createCanvas(32, 16, ctx => {
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(0, 0, 32, 16);
+            ctx.fillStyle = '#374151';
+            ctx.fillRect(1, 1, 30, 14);
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(2, 2, 28, 12);
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = 'bold 10px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('DVI1', 16, 12);
+        });
+
+        // Amazon logo sign
+        this.assets.environment.signAmazon = this.createCanvas(32, 16, ctx => {
+            ctx.fillStyle = '#232f3e';
+            ctx.fillRect(0, 0, 32, 16);
+            ctx.fillStyle = '#ff9900';
+            ctx.font = 'bold 8px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('amazon', 16, 9);
+            ctx.strokeStyle = '#ff9900';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(8, 12);
+            ctx.quadraticCurveTo(16, 15, 24, 11);
+            ctx.stroke();
+            ctx.fillStyle = '#ff9900';
+            ctx.beginPath();
+            ctx.moveTo(24, 11);
+            ctx.lineTo(22, 9);
+            ctx.lineTo(23, 13);
+            ctx.closePath();
+            ctx.fill();
+        });
+
+        // Austria location sign
+        this.assets.environment.signAustria = this.createCanvas(32, 16, ctx => {
+            ctx.fillStyle = '#ed1c24';
+            ctx.fillRect(0, 0, 32, 5);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 5, 32, 6);
+            ctx.fillStyle = '#ed1c24';
+            ctx.fillRect(0, 11, 32, 5);
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(4, 4, 24, 8);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 6px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('AUSTRIA', 16, 10);
+        });
+
+        // Zone marker signs
+        const zones = ['INBOUND', 'OUTBOUND', 'PICKING', 'PACKING', 'SHIPPING'];
+        zones.forEach(zone => {
+            this.assets.environment[`sign${zone}`] = this.createCanvas(32, 12, ctx => {
+                ctx.fillStyle = '#1e40af';
+                ctx.fillRect(0, 0, 32, 12);
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillRect(1, 1, 30, 10);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 6px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(zone, 16, 8);
+            });
+        });
+
+        // Safety sign
+        this.assets.environment.signSafety = this.createCanvas(16, 16, ctx => {
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.moveTo(8, 1);
+            ctx.lineTo(15, 14);
+            ctx.lineTo(1, 14);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.fillStyle = '#000';
+            ctx.fillRect(7, 5, 2, 5);
+            ctx.fillRect(7, 11, 2, 2);
+        });
+
+        // Aisle markers (A1-D4)
+        for (let row of ['A', 'B', 'C', 'D']) {
+            for (let num of ['1', '2', '3', '4']) {
+                this.assets.environment[`aisle${row}${num}`] = this.createCanvas(16, 16, ctx => {
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.fillRect(0, 0, 16, 16);
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillRect(1, 1, 14, 14);
+                    ctx.fillStyle = '#000';
+                    ctx.font = 'bold 10px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`${row}${num}`, 8, 12);
+                });
+            }
+        }
     }
 }

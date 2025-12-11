@@ -3628,104 +3628,151 @@ function generateAssets() {
 
     // ENHANCED WAREHOUSE FLOOR - industrial concrete look
     GFX.floor = c(16,16, ctx => {
-        // Base concrete
-        const floorGrad = ctx.createLinearGradient(0, 0, 16, 16);
-        floorGrad.addColorStop(0, '#44444f');
-        floorGrad.addColorStop(0.5, '#3c3c47');
-        floorGrad.addColorStop(1, '#38383f');
-        ctx.fillStyle = floorGrad;
+        // Warehouse concrete base
+        ctx.fillStyle = '#3a3f4a';
         ctx.fillRect(0,0,16,16);
-        // Tile pattern
-        ctx.fillStyle = '#3a3a42';
-        ctx.fillRect(0,0,8,8);
-        ctx.fillRect(8,8,8,8);
-        // Subtle texture
-        ctx.fillStyle = '#4a4a55';
+        // Concrete texture variation
+        ctx.fillStyle = '#424750';
         ctx.fillRect(2,2,4,4);
-        ctx.fillRect(10,10,4,4);
-        // Grout lines
-        ctx.fillStyle = '#2d2d35';
-        ctx.fillRect(7,0,2,16);
-        ctx.fillRect(0,7,16,2);
-        // Wear marks
-        ctx.fillStyle = '#35353d';
-        ctx.fillRect(4,4,2,2);
-        ctx.fillRect(11,3,1,1);
-        ctx.fillRect(3,12,2,1);
-        // Edge shadow
-        ctx.fillStyle = '#28282e';
-        ctx.fillRect(0,15,16,1);
-        ctx.fillRect(15,0,1,16);
+        ctx.fillRect(10,8,3,3);
+        ctx.fillRect(5,11,4,3);
+        // Subtle grid lines
+        ctx.strokeStyle = '#4a5058';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(0,0,16,16);
+        // Scuff marks
+        ctx.fillStyle = '#32363d';
+        ctx.fillRect(8,3,2,1);
+        ctx.fillRect(3,9,1,2);
     });
 
-    // ENHANCED WAREHOUSE WALL - industrial cinder block
+    // ENHANCED WAREHOUSE WALL - Amazon orange shelf racking with packages
     GFX.wall = c(16,16, ctx => {
-        // Base wall color
-        const wallGrad = ctx.createLinearGradient(0, 0, 0, 16);
-        wallGrad.addColorStop(0, '#3d3530');
-        wallGrad.addColorStop(0.5, '#4a4138');
-        wallGrad.addColorStop(1, '#3a322c');
-        ctx.fillStyle = wallGrad;
+        // Metal shelf frame (orange Amazon-style)
+        ctx.fillStyle = '#c2410c';
         ctx.fillRect(0,0,16,16);
-        // Cinder block pattern
-        ctx.fillStyle = '#4e443c';
-        ctx.fillRect(1,1,6,6);
-        ctx.fillRect(9,1,6,6);
-        ctx.fillRect(1,9,6,6);
-        ctx.fillRect(9,9,6,6);
-        // Block highlights
-        ctx.fillStyle = '#5d5248';
-        ctx.fillRect(2,2,4,4);
-        ctx.fillRect(10,2,4,4);
-        ctx.fillRect(2,10,4,4);
-        ctx.fillRect(10,10,4,4);
-        // Block texture
-        ctx.fillStyle = '#6d6258';
-        ctx.fillRect(3,3,2,2);
-        ctx.fillRect(11,3,2,2);
-        ctx.fillRect(3,11,2,2);
-        ctx.fillRect(11,11,2,2);
-        // Mortar lines
-        ctx.fillStyle = '#2a241f';
-        ctx.fillRect(0,0,16,1);
-        ctx.fillRect(0,8,16,1);
-        ctx.fillRect(7,0,2,16);
-        // Shadow effects
-        ctx.fillStyle = '#1a1612';
-        ctx.fillRect(0,7,16,1);
-        ctx.fillRect(0,15,16,1);
-    });
-    // ENHANCED WAREHOUSE SHELF - industrial racking
-    GFX.shelf = c(16,16, ctx => {
-        // Vertical posts with shading
-        ctx.fillStyle = '#92400e';
-        ctx.fillRect(0,0,4,16);
-        ctx.fillRect(12,0,4,16);
-        ctx.fillStyle = '#b45309';
-        ctx.fillRect(1,0,3,16);
-        ctx.fillRect(13,0,3,16);
-        ctx.fillStyle = '#d97706';
-        ctx.fillRect(2,0,1,16);
+        // Shelf structure
+        ctx.fillStyle = '#ea580c';
+        ctx.fillRect(1,0,2,16); // Left upright
+        ctx.fillRect(13,0,2,16); // Right upright
+        ctx.fillRect(0,1,16,2); // Top beam
+        ctx.fillRect(0,7,16,2); // Middle beam
+        ctx.fillRect(0,13,16,2); // Bottom beam
+        // Highlight on metal
+        ctx.fillStyle = '#fb923c';
+        ctx.fillRect(1,0,1,16);
         ctx.fillRect(13,0,1,16);
-        // Horizontal shelves with depth
-        ctx.fillStyle = '#a16207';
-        ctx.fillRect(0,4,16,4);
-        ctx.fillRect(0,11,16,4);
-        ctx.fillStyle = '#ca8a04';
-        ctx.fillRect(1,5,14,2);
-        ctx.fillRect(1,12,14,2);
-        ctx.fillStyle = '#eab308';
-        ctx.fillRect(2,5,12,1);
-        ctx.fillRect(2,12,12,1);
-        // Shelf items
+        // Packages on shelf - top section
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(3,3,5,3);
+        ctx.fillStyle = '#a3520f';
+        ctx.fillRect(9,3,4,4);
+        // Packages on shelf - bottom section
         ctx.fillStyle = '#78350f';
-        ctx.fillRect(4,2,3,2);
-        ctx.fillRect(9,2,3,2);
-        ctx.fillRect(5,9,4,2);
-        // Safety labels
-        ctx.fillStyle = '#dc2626';
-        ctx.fillRect(6,6,4,1);
-        ctx.fillStyle = '#fbbf24'; ctx.fillRect(2,5,12,1); ctx.fillRect(2,11,12,1);
+        ctx.fillRect(4,9,4,3);
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(9,10,3,2);
+    });
+    // ENHANCED WAREHOUSE SHELF - Amazon orange racking with yellow/blue totes
+    GFX.shelf = c(16,16, ctx => {
+        // Metal frame (orange)
+        ctx.fillStyle = '#c2410c';
+        ctx.fillRect(0,0,16,16);
+        ctx.fillStyle = '#ea580c';
+        ctx.fillRect(0,0,2,16);
+        ctx.fillRect(14,0,2,16);
+        ctx.fillRect(0,7,16,2);
+        // Yellow totes - top
+        ctx.fillStyle = '#ca8a04';
+        ctx.fillRect(2,1,5,5);
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(3,2,3,3);
+        ctx.fillStyle = '#ca8a04';
+        ctx.fillRect(8,2,5,4);
+        // Blue totes - bottom
+        ctx.fillStyle = '#1e40af';
+        ctx.fillRect(3,9,4,5);
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(4,10,2,3);
+        ctx.fillStyle = '#1e40af';
+        ctx.fillRect(8,10,5,4);
+    });
+
+    // Amazon logo sign (32x16)
+    GFX.signAmazon = c(32,16, ctx => {
+        ctx.fillStyle = '#232f3e';
+        ctx.fillRect(0,0,32,16);
+        ctx.fillStyle = '#ff9900';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('amazon', 16, 9);
+        ctx.strokeStyle = '#ff9900';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(8, 12);
+        ctx.quadraticCurveTo(16, 15, 24, 11);
+        ctx.stroke();
+    });
+
+    // DVI1 Sign (Austria warehouse code)
+    GFX.signDVI1 = c(32,16, ctx => {
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(0,0,32,16);
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(1,1,30,14);
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(2,2,28,12);
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('DVI1', 16, 12);
+    });
+
+    // Austria location sign
+    GFX.signAustria = c(32,16, ctx => {
+        ctx.fillStyle = '#ed1c24';
+        ctx.fillRect(0,0,32,5);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0,5,32,6);
+        ctx.fillStyle = '#ed1c24';
+        ctx.fillRect(0,11,32,5);
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(4,4,24,8);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 6px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('AUSTRIA', 16, 10);
+    });
+
+    // Zone signs (INBOUND, OUTBOUND, etc.)
+    ['INBOUND', 'OUTBOUND', 'PICKING', 'PACKING', 'SHIPPING'].forEach(zone => {
+        GFX['sign' + zone] = c(40,12, ctx => {
+            ctx.fillStyle = '#1e40af';
+            ctx.fillRect(0,0,40,12);
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(1,1,38,10);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 7px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(zone, 20, 9);
+        });
+    });
+
+    // Aisle markers (A1-D4)
+    ['A','B','C','D'].forEach(row => {
+        [1,2,3,4].forEach(num => {
+            GFX['aisle' + row + num] = c(16,16, ctx => {
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(0,0,16,16);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(1,1,14,14);
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 10px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(row + num, 8, 12);
+            });
+        });
     });
     // ENHANCED RULE BOOK projectile
     GFX.book = c(10,10, ctx => {
@@ -11988,6 +12035,40 @@ function draw() {
     }
 
     GAME.clutter.forEach(c => { let img = GFX.clutter[c.type]; if(img) ctx.drawImage(img, c.x-cx, c.y-cy); });
+
+    // Draw Amazon DVI1 Austria warehouse signs
+    const signPositions = [
+        { x: 5, y: 1, gfx: GFX.signAmazon },
+        { x: Math.floor(MAP_W/2), y: 1, gfx: GFX.signDVI1 },
+        { x: MAP_W - 7, y: 1, gfx: GFX.signAustria },
+        { x: 8, y: 6, gfx: GFX.signINBOUND },
+        { x: MAP_W - 12, y: 6, gfx: GFX.signOUTBOUND },
+        { x: Math.floor(MAP_W/3), y: Math.floor(MAP_H/2), gfx: GFX.signPICKING },
+        { x: Math.floor(MAP_W*2/3), y: Math.floor(MAP_H/2), gfx: GFX.signPACKING },
+        { x: Math.floor(MAP_W/2), y: MAP_H - 4, gfx: GFX.signSHIPPING }
+    ];
+    signPositions.forEach(sign => {
+        if (sign.gfx) {
+            const sx = sign.x * TILE_SIZE - cx;
+            const sy = sign.y * TILE_SIZE - cy;
+            if (sx > -50 && sx < 270 && sy > -20 && sy < 250) {
+                ctx.drawImage(sign.gfx, sx, sy);
+            }
+        }
+    });
+
+    // Draw aisle markers
+    ['A','B','C','D'].forEach((row, i) => {
+        [1,2,3,4].forEach(num => {
+            const ax = (8 + i * 12) * TILE_SIZE - cx;
+            const ay = (4 + num * 7) * TILE_SIZE - cy;
+            const marker = GFX['aisle' + row + num];
+            if (marker && ax > -20 && ax < 270 && ay > -20 && ay < 250) {
+                ctx.drawImage(marker, ax, ay);
+            }
+        });
+    });
+
     GAME.activeIssues.forEach(h => { if(!h.fixed) { let img = GFX.hazards[h.data.type] || GFX.hazards.box; ctx.drawImage(img, h.x-cx, h.y-cy); } });
 
     // === WAREHOUSE ATMOSPHERE RENDERING ===
