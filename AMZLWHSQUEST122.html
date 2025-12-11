@@ -145,20 +145,21 @@
         /* INTRO CONVERSATION CENTERED PORTRAIT WINDOW */
         #intro-portrait-window {
             display: none;
-            position: absolute;
-            top: 45%;
+            position: fixed;
+            top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: linear-gradient(180deg, #0a1628 0%, #061020 100%);
             border: 4px solid #ffd700;
             border-radius: 16px;
-            padding: 24px;
+            padding: 20px;
             box-shadow:
                 0 0 30px rgba(255, 215, 0, 0.6),
                 8px 8px 0px rgba(0,0,0,0.8),
                 inset 0 0 40px rgba(255, 215, 0, 0.15);
             z-index: 1000;
-            max-width: 600px;
+            width: 320px;
+            max-width: 90vw;
             pointer-events: auto;
             animation: intro-window-appear 0.3s ease-out;
             overflow: hidden;
@@ -180,24 +181,24 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 20px;
-        }
-
-        #intro-portrait {
-            width: 128px;
-            height: 128px;
-            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a14 100%);
-            border: 4px solid #ffd700;
-            border-radius: 12px;
-            image-rendering: pixelated;
-            box-shadow:
-                0 0 20px rgba(255, 215, 0, 0.4),
-                inset 0 0 20px rgba(255, 215, 0, 0.1);
             margin-bottom: 12px;
         }
 
+        #intro-portrait {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a14 100%);
+            border: 3px solid #ffd700;
+            border-radius: 10px;
+            image-rendering: pixelated;
+            box-shadow:
+                0 0 15px rgba(255, 215, 0, 0.4),
+                inset 0 0 15px rgba(255, 215, 0, 0.1);
+            margin-bottom: 8px;
+        }
+
         #intro-speaker-name {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
             color: #ffd700;
             text-shadow:
@@ -210,15 +211,18 @@
         #intro-dialog-content {
             display: flex;
             flex-direction: column;
-            min-height: 120px;
+            max-height: 180px;
         }
 
         #intro-text-content {
             flex-grow: 1;
-            font-size: 15px;
-            line-height: 1.8;
+            font-size: 14px;
+            line-height: 1.6;
             color: #f0f0ff;
             text-shadow: 2px 2px 4px #000, 0 0 10px rgba(255, 255, 255, 0.1);
+            max-height: 140px;
+            overflow-y: auto;
+            padding-right: 8px;
             white-space: pre-wrap;
             text-align: center;
             padding: 0 20px;
@@ -1478,9 +1482,9 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
         const books = stats.books ?? "?";
         const ops = stats.ops ?? "?";
         if (is("reviews_loss")) {
-            return `Audit recap: ${hazards}/5 hazards, ${books} rule books thrown, ${ops} ops nudged in ${time}s. Safety tip: hydrate, then try again.`;
+            return `Audit recap: ${hazards}/5 hazards, ${books} rule books thrown, ${ops} ops nudged in ${time} seconds. Safety tip: hydrate, then try again.`;
         }
-        return `Victory recap: ${hazards}/5 hazards cleared in ${time}s, ${books} rule books launched, ${ops} ops redirected. Celebrate, then keep exits clear.`;
+        return `Victory recap: ${hazards}/5 hazards cleared in ${time} seconds, ${books} rule books launched, ${ops} ops redirected. Celebrate, then keep exits clear.`;
     }
     if (is("reviews_loss")) return pick(SIMULATED_AI.reviews_loss);
     if (is("reviews_win")) return pick(SIMULATED_AI.reviews_win);
@@ -6821,14 +6825,13 @@ function update() {
 
         if (ready && waitedEnough) {
             let finalText = GAME.aiResultText.replace(/\[.*?\]/g, GAME.selectedChar);
-            let stats = `\n\nStats:\nTime: ${Math.floor((Date.now() - GAME.startTime)/1000)}s | Rules: ${GAME.booksFired} | OPS: ${GAME.opsPushed}`;
             if (isWin) {
                 // Use intro dialog with HAPPY Simon
-                showPerformanceEvalIntroDialog(`OUTSTANDING!\n${finalText}${stats}`, true);
+                showPerformanceEvalIntroDialog(`OUTSTANDING!\n${finalText}`, true);
                 GAME.nextState = 'CREDITS';
             } else {
                 // Use intro dialog with DISAPPOINTED Simon
-                showPerformanceEvalIntroDialog(`${finalText}${stats}`, false);
+                showPerformanceEvalIntroDialog(finalText, false);
                 GAME.nextState = 'GAMEOVER_SPLASH';
             }
         } else if (!ready && GAME.splashTimer <= fallbackTimer) {
@@ -8436,7 +8439,7 @@ function triggerGameOver(reason) {
     }
     else {
         const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
-        callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator failed after ${time}s with ${GAME.issuesFixed}/5 hazards fixed, ${GAME.booksFired} rule books thrown, ${GAME.opsPushed} ops pushed. Deliver a scathing yet funny performance review that weaves those stats into a safety lesson. Threaten that their failure will be permanently documented and sent to upper management for review. Max 55 words.`, "reviews_loss", { stats }).then(review => {
+        callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator failed after ${time} seconds with ${GAME.issuesFixed}/5 hazards fixed, ${GAME.booksFired} rule books thrown, ${GAME.opsPushed} ops pushed. Deliver a scathing yet funny performance review that weaves those stats into a safety lesson. Threaten that their failure will be permanently documented and sent to upper management for review. Max 55 words.`, "reviews_loss", { stats }).then(review => {
              if (GAME.genId === currentGen) { GAME.aiResultText = review; }
         });
     }
@@ -8450,7 +8453,7 @@ function winGame() {
     document.getElementById('hud-layer').style.display = 'none';
     const currentGen = GAME.genId; const time = Math.floor((Date.now() - GAME.startTime)/1000);
     const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
-    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator won in ${time}s clearing ${GAME.issuesFixed}/5 hazards, tossing ${GAME.booksFired} rule books, redirecting ${GAME.opsPushed} ops. Give warm but witty praise plus one practical safety takeaway using those stats. Max 55 words.`, "reviews_win", { stats }).then(praise => {
+    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator won in ${time} seconds clearing ${GAME.issuesFixed}/5 hazards, tossing ${GAME.booksFired} rule books, redirecting ${GAME.opsPushed} ops. Give warm but witty praise plus one practical safety takeaway using those stats. Max 55 words.`, "reviews_win", { stats }).then(praise => {
         if (GAME.genId === currentGen) GAME.aiResultText = praise;
     });
 }
