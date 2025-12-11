@@ -145,8 +145,8 @@
         /* INTRO CONVERSATION CENTERED PORTRAIT WINDOW */
         #intro-portrait-window {
             display: none;
-            position: fixed;
-            top: 50%;
+            position: absolute;
+            top: 45%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: linear-gradient(180deg, #0a1628 0%, #061020 100%);
@@ -168,7 +168,7 @@
         @keyframes intro-window-appear {
             from {
                 opacity: 0;
-                transform: translate(-50%, -50%) scale(0.8);
+                transform: translate(-50%, -50%) scale(0.9);
             }
             to {
                 opacity: 1;
@@ -427,12 +427,10 @@
 
         /* CONTROL MODE TOGGLE BUTTON */
         #control-mode-toggle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            position: relative;
             width: 56px;
             height: 56px;
+            flex-shrink: 0;
             background: linear-gradient(145deg, rgba(0, 200, 200, 0.9) 0%, rgba(0, 150, 150, 0.95) 100%);
             border: 3px solid #00ffff;
             border-radius: 50%;
@@ -467,7 +465,7 @@
 
         #control-mode-toggle:active, #control-mode-toggle.pressed {
             background: linear-gradient(145deg, rgba(0, 255, 255, 0.95) 0%, rgba(0, 200, 200, 0.98) 100%);
-            transform: translate(-50%, -50%) scale(0.92);
+            transform: scale(0.92);
             box-shadow:
                 0 0 25px rgba(0, 255, 255, 0.8),
                 inset 0 0 15px rgba(255, 255, 255, 0.2);
@@ -962,11 +960,11 @@
             <div id="gyro-indicator">
                 <div class="gyro-dot"></div>
             </div>
-            <!-- Control mode toggle button in center -->
-            <div id="control-mode-toggle">
-                <span class="mode-icon">🎮</span>
-                <span class="mode-label">DPAD</span>
-            </div>
+        </div>
+        <!-- Control mode toggle button in middle -->
+        <div id="control-mode-toggle">
+            <span class="mode-icon">🎮</span>
+            <span class="mode-label">DPAD</span>
         </div>
         <div class="action-container">
             <div id="action-btn">A</div>
