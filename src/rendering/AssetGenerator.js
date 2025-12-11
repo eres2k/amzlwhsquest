@@ -200,23 +200,54 @@ export class AssetGenerator {
             ctx.fillRect(3, 7, 2, 1);
         });
 
-        // Door/exit
+        // Door/exit (fire exit green)
         this.assets.door = this.createCanvas(16, 16, ctx => {
+            ctx.fillStyle = '#15803d';
+            ctx.fillRect(0, 0, 16, 16);
             ctx.fillStyle = '#22c55e';
-            ctx.fillRect(2, 0, 12, 16);
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(2, 0, 12, 16);
-            // Door handle
-            ctx.fillStyle = '#fbbf24';
-            ctx.fillRect(10, 8, 2, 2);
+            ctx.fillRect(2, 2, 12, 12);
+            ctx.fillStyle = '#fff';
+            ctx.font = '6px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('EXIT', 8, 10);
         });
 
-        // Floor tile
-        this.assets.floor = this.createRect(16, 16, '#1f2937');
+        // Warehouse concrete floor tile
+        this.assets.floor = this.createCanvas(16, 16, ctx => {
+            ctx.fillStyle = '#3a3f4a';
+            ctx.fillRect(0, 0, 16, 16);
+            ctx.fillStyle = '#424750';
+            ctx.fillRect(2, 2, 4, 4);
+            ctx.fillRect(10, 8, 3, 3);
+            ctx.strokeStyle = '#4a5058';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(0, 0, 16, 16);
+        });
 
-        // Wall tile
-        this.assets.wall = this.createRect(16, 16, '#475569');
+        // Industrial shelf/wall tile (orange Amazon racking with packages)
+        this.assets.wall = this.createCanvas(16, 16, ctx => {
+            // Metal shelf frame (orange Amazon-style)
+            ctx.fillStyle = '#c2410c';
+            ctx.fillRect(0, 0, 16, 16);
+            ctx.fillStyle = '#ea580c';
+            ctx.fillRect(1, 0, 2, 16);
+            ctx.fillRect(13, 0, 2, 16);
+            ctx.fillRect(0, 1, 16, 2);
+            ctx.fillRect(0, 7, 16, 2);
+            ctx.fillRect(0, 13, 16, 2);
+            ctx.fillStyle = '#fb923c';
+            ctx.fillRect(1, 0, 1, 16);
+            ctx.fillRect(13, 0, 1, 16);
+            // Packages
+            ctx.fillStyle = '#92400e';
+            ctx.fillRect(3, 3, 5, 3);
+            ctx.fillStyle = '#a3520f';
+            ctx.fillRect(9, 3, 4, 4);
+            ctx.fillStyle = '#78350f';
+            ctx.fillRect(4, 9, 4, 3);
+            ctx.fillStyle = '#92400e';
+            ctx.fillRect(9, 10, 3, 2);
+        });
 
         // Clutter items
         this.assets.clutter_coffee = this.createCircle(4, '#92400e');

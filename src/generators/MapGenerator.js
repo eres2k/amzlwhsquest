@@ -683,18 +683,45 @@ export class MapGenerator {
             { x: 25 * this.tileSize, y: (this.height - 4) * this.tileSize }
         );
 
-        // Warehouse signs
+        // Amazon DVI1 Austria warehouse signs
         mapData.warehouseSigns.push(
-            { x: 10 * this.tileSize, y: 2 * this.tileSize, type: 'pick' },
-            { x: 30 * this.tileSize, y: 2 * this.tileSize, type: 'pack' },
-            { x: (this.width - 10) * this.tileSize, y: 2 * this.tileSize, type: 'ship' }
+            // Main branding signs at top
+            { x: 5 * this.tileSize, y: 1 * this.tileSize, type: 'amazon' },
+            { x: Math.floor(this.width / 2) * this.tileSize, y: 1 * this.tileSize, type: 'dvi1' },
+            { x: (this.width - 7) * this.tileSize, y: 1 * this.tileSize, type: 'austria' },
+            // Zone signs
+            { x: 8 * this.tileSize, y: 6 * this.tileSize, type: 'inbound' },
+            { x: (this.width - 12) * this.tileSize, y: 6 * this.tileSize, type: 'outbound' },
+            { x: Math.floor(this.width / 3) * this.tileSize, y: Math.floor(this.height / 2) * this.tileSize, type: 'picking' },
+            { x: Math.floor(this.width * 2 / 3) * this.tileSize, y: Math.floor(this.height / 2) * this.tileSize, type: 'packing' },
+            { x: Math.floor(this.width / 2) * this.tileSize, y: (this.height - 4) * this.tileSize, type: 'shipping' },
+            // Safety signs
+            { x: 3 * this.tileSize, y: 10 * this.tileSize, type: 'safety' },
+            { x: (this.width - 4) * this.tileSize, y: 15 * this.tileSize, type: 'safety' },
+            { x: Math.floor(this.width / 2) * this.tileSize, y: 25 * this.tileSize, type: 'safety' }
         );
 
-        // Clutter
+        // Aisle markers (A1-D4)
+        const aisleRows = ['A', 'B', 'C', 'D'];
+        for (let i = 0; i < aisleRows.length; i++) {
+            for (let j = 1; j <= 4; j++) {
+                const x = 8 + i * 12;
+                const y = 4 + j * 7;
+                if (x < this.width && y < this.height) {
+                    mapData.warehouseSigns.push({
+                        x: x * this.tileSize,
+                        y: y * this.tileSize,
+                        type: `aisle_${aisleRows[i]}${j}`
+                    });
+                }
+            }
+        }
+
+        // Clutter (reduced - warehouse should be mostly tidy)
         for (let y = 1; y < this.height - 1; y++) {
             for (let x = 1; x < this.width - 1; x++) {
-                if (mapData.tiles[y][x] === this.TILE_TYPES.FLOOR && Math.random() < 0.05) {
-                    const type = ['coffee', 'paper', 'tape'][Math.floor(Math.random() * 3)];
+                if (mapData.tiles[y][x] === this.TILE_TYPES.FLOOR && Math.random() < 0.03) {
+                    const type = ['coffee', 'paper', 'tape', 'label'][Math.floor(Math.random() * 4)];
                     mapData.clutter.push({
                         x: x * this.tileSize + 4,
                         y: y * this.tileSize + 4,

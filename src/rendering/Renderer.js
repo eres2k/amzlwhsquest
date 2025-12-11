@@ -79,18 +79,120 @@ export class Renderer {
         const startY = Math.floor(camera.y / tileSize);
         const endX = Math.ceil((camera.x + GAME_CONSTANTS.SCREEN_WIDTH) / tileSize);
         const endY = Math.ceil((camera.y + GAME_CONSTANTS.SCREEN_HEIGHT) / tileSize);
+        const env = assets.environment;
 
         for (let ty = Math.max(0, startY); ty < Math.min(map.length, endY); ty++) {
             for (let tx = Math.max(0, startX); tx < Math.min(map[0].length, endX); tx++) {
                 const screenX = tx * tileSize - camera.x;
                 const screenY = ty * tileSize - camera.y;
+                const tile = map[ty][tx];
 
-                if (map[ty][tx] === 1) {
-                    // Wall
-                    ctx.drawImage(assets.wall, screenX, screenY);
+                if (tile === 1) {
+                    // Wall/Shelf - use environment assets with variety
+                    if (env) {
+                        const hash = (tx * 37 + ty * 23) % 100;
+                        if (hash < 30 && env.shelfBoxes1) {
+                            ctx.drawImage(env.shelfBoxes1, screenX, screenY);
+                        } else if (hash < 55 && env.shelfBoxes2) {
+                            ctx.drawImage(env.shelfBoxes2, screenX, screenY);
+                        } else if (hash < 70 && env.shelfEmpty) {
+                            ctx.drawImage(env.shelfEmpty, screenX, screenY);
+                        } else if (env.wall) {
+                            ctx.drawImage(env.wall, screenX, screenY);
+                        } else {
+                            ctx.drawImage(assets.wall, screenX, screenY);
+                        }
+                    } else {
+                        ctx.drawImage(assets.wall, screenX, screenY);
+                    }
+                } else if (tile === 2) {
+                    // Conveyor
+                    if (env?.conveyor) {
+                        ctx.drawImage(env.conveyor, screenX, screenY);
+                    } else {
+                        ctx.drawImage(assets.floor, screenX, screenY);
+                    }
+                } else if (tile === 3) {
+                    // Door/Exit
+                    ctx.drawImage(assets.door, screenX, screenY);
                 } else {
-                    // Floor
-                    ctx.drawImage(assets.floor, screenX, screenY);
+                    // Floor - use environment assets with variety
+                    if (env) {
+                        const hash = (tx * 31 + ty * 17) % 100;
+                        if (hash < 5 && env.floorMarked) {
+                            ctx.drawImage(env.floorMarked, screenX, screenY);
+                        } else if (hash < 8 && env.floorCrossing) {
+                            ctx.drawImage(env.floorCrossing, screenX, screenY);
+                        } else if (hash < 12 && env.pallet) {
+                            ctx.drawImage(env.pallet, screenX, screenY);
+                        } else if (env.floor) {
+                            ctx.drawImage(env.floor, screenX, screenY);
+                        } else {
+                            ctx.drawImage(assets.floor, screenX, screenY);
+                        }
+                    } else {
+                        ctx.drawImage(assets.floor, screenX, screenY);
+                    }
+                }
+            }
+        }
+
+        // Draw warehouse signs
+        this.drawWarehouseSigns(ctx, map, assets, camera);
+    }
+
+    drawWarehouseSigns(ctx, map, assets, camera) {
+        const env = assets.environment;
+        if (!env) return;
+
+        const tileSize = GAME_CONSTANTS.TILE_SIZE;
+        const mapWidth = map[0]?.length || 60;
+        const mapHeight = map.length || 40;
+
+        // Define sign positions
+        const signs = [
+            { x: 5, y: 1, type: 'signAmazon' },
+            { x: Math.floor(mapWidth / 2), y: 1, type: 'signDVI1' },
+            { x: mapWidth - 7, y: 1, type: 'signAustria' },
+            { x: 8, y: 6, type: 'signINBOUND' },
+            { x: mapWidth - 12, y: 6, type: 'signOUTBOUND' },
+            { x: Math.floor(mapWidth / 3), y: Math.floor(mapHeight / 2), type: 'signPICKING' },
+            { x: Math.floor(mapWidth * 2 / 3), y: Math.floor(mapHeight / 2), type: 'signPACKING' },
+            { x: Math.floor(mapWidth / 2), y: mapHeight - 4, type: 'signSHIPPING' },
+            { x: 3, y: 10, type: 'signSafety' },
+            { x: mapWidth - 4, y: 15, type: 'signSafety' },
+        ];
+
+        for (const sign of signs) {
+            const screenX = sign.x * tileSize - camera.x;
+            const screenY = sign.y * tileSize - camera.y;
+
+            if (screenX < -50 || screenX > GAME_CONSTANTS.SCREEN_WIDTH + 50) continue;
+            if (screenY < -20 || screenY > GAME_CONSTANTS.SCREEN_HEIGHT + 20) continue;
+
+            const signAsset = env[sign.type];
+            if (signAsset) {
+                ctx.drawImage(signAsset, screenX, screenY);
+            }
+        }
+
+        // Draw aisle markers
+        const aisleRows = ['A', 'B', 'C', 'D'];
+        for (let i = 0; i < aisleRows.length; i++) {
+            for (let j = 1; j <= 4; j++) {
+                const x = 8 + i * 12;
+                const y = 4 + j * 7;
+                if (x < mapWidth && y < mapHeight) {
+                    const screenX = x * tileSize - camera.x;
+                    const screenY = y * tileSize - camera.y;
+
+                    if (screenX < -20 || screenX > GAME_CONSTANTS.SCREEN_WIDTH + 20) continue;
+                    if (screenY < -20 || screenY > GAME_CONSTANTS.SCREEN_HEIGHT + 20) continue;
+
+                    const markerAsset = env[`aisle${aisleRows[i]}${j}`];
+                    if (markerAsset) {
+                        ctx.drawImage(markerAsset, screenX, screenY);
+                    }
                 }
             }
         }
