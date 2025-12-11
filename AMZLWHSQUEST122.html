@@ -7553,6 +7553,12 @@ function closeIntroDialog() {
     document.getElementById('intro-portrait-window').style.display = 'none';
     GAME.state = GAME.nextState;
 
+    // If transitioning to credits, initialize immediately (before next draw call)
+    if (GAME.state === 'CREDITS') {
+        startCredits();
+        return;
+    }
+
     // Handle intro dialogue sequence - player responds to Simon in INTRO WINDOW
     if (GAME.state === 'INTRO_DIALOGUE_CONTINUE') {
         const currentGen = GAME.genId;
@@ -7773,6 +7779,12 @@ function closeDialog() {
     cancelTTS(); AudioSys.sfx.step(); document.getElementById('dialog-box').style.display = 'none';
 
     GAME.state = GAME.nextState;
+
+    // If transitioning to credits, initialize immediately (before next draw call)
+    if (GAME.state === 'CREDITS') {
+        startCredits();
+        return;
+    }
 
     // Handle boss taunt player reply
     if (GAME.state === 'BOSS_TAUNT_PLAYER_REPLY' && GAME.boss) {
