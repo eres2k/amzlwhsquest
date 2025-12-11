@@ -5599,11 +5599,20 @@ const GyroControlSystem = {
     }
 };
 
-// Touch handlers for mobile controls (CSS handles visibility via media query)
+// Touch handlers for mobile controls
 function initMobileControls() {
-    // Only set up touch handlers if touch is available
+    // Detect touch capability - more reliable than CSS media queries alone
     const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-    if (!hasTouch) return;
+    const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isMobile = hasTouch || isMobileUA;
+
+    if (!isMobile) return;
+
+    // Explicitly show mobile controls via JS (CSS media query is unreliable on some devices)
+    const mobileControls = document.getElementById('mobile-controls');
+    if (mobileControls) {
+        mobileControls.style.display = 'flex';
+    }
 
     // Initialize gyroscope system
     GyroControlSystem.init();
