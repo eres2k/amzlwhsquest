@@ -69,26 +69,52 @@ export class InputSystem {
         this.setupDpadButton('dpad-left', 'left');
         this.setupDpadButton('dpad-right', 'right');
 
-        // Action button
+        // Action button - dispatch keyboard events so dialogs and menus respond
         const actionBtn = document.getElementById('action-btn');
         if (actionBtn) {
             actionBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 this.vibrate(30); // Short vibration for action
-                if (!this.keys.action && this.actionHandler) {
-                    this.actionHandler();
-                }
+
+                // Dispatch a Space keydown event for dialogs/menus
+                const keydownEvent = new KeyboardEvent('keydown', {
+                    code: 'Space',
+                    key: ' ',
+                    bubbles: true,
+                    cancelable: true
+                });
+                document.dispatchEvent(keydownEvent);
+
                 this.keys.action = true;
                 actionBtn.classList.add('pressed');
             }, { passive: false });
 
             actionBtn.addEventListener('touchend', (e) => {
                 e.preventDefault();
+
+                // Dispatch a Space keyup event
+                const keyupEvent = new KeyboardEvent('keyup', {
+                    code: 'Space',
+                    key: ' ',
+                    bubbles: true,
+                    cancelable: true
+                });
+                document.dispatchEvent(keyupEvent);
+
                 this.keys.action = false;
                 actionBtn.classList.remove('pressed');
             }, { passive: false });
 
             actionBtn.addEventListener('touchcancel', (e) => {
+                // Dispatch keyup on cancel too
+                const keyupEvent = new KeyboardEvent('keyup', {
+                    code: 'Space',
+                    key: ' ',
+                    bubbles: true,
+                    cancelable: true
+                });
+                document.dispatchEvent(keyupEvent);
+
                 this.keys.action = false;
                 actionBtn.classList.remove('pressed');
             }, { passive: false });
