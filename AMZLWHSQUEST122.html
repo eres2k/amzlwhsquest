@@ -642,30 +642,34 @@
                 border-width: 3px;
             }
 
-            /* Intro portrait window - constrain to avoid overlapping mobile controls */
+            /* Intro portrait window - constrain to game area */
             #intro-portrait-window {
-                max-width: 95vw;
-                max-height: calc(100vh - 160px);
+                max-width: 90%;
+                max-height: 85%;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
             }
 
             #intro-dialog-content {
-                max-height: calc(100vh - 360px);
+                max-height: 150px;
                 overflow-y: auto;
             }
         }
 
         /* Extra small screens (Galaxy Fold folded, narrow phones) */
         @media (max-width: 380px) {
-            /* Intro portrait window - optimized for Fold5 */
+            /* Intro portrait window - optimized for Fold5, constrained to game area */
             #intro-portrait-window {
-                max-width: 98vw;
-                width: calc(100vw - 16px);
-                max-height: calc(100vh - 140px);
+                max-width: 95%;
+                width: calc(100% - 16px);
+                max-height: 80%;
                 padding: 10px;
                 border-width: 2px;
                 border-radius: 8px;
+                top: 50%;
                 left: 50%;
-                transform: translateX(-50%);
+                transform: translate(-50%, -50%);
             }
 
             #intro-portrait {
@@ -694,7 +698,7 @@
 
             #intro-dialog-content {
                 min-height: 70px;
-                max-height: calc(100vh - 300px);
+                max-height: 120px;
                 overflow-y: auto;
             }
 
@@ -804,8 +808,11 @@
         @media (max-width: 300px) {
             #intro-portrait-window {
                 padding: 6px;
-                max-height: calc(100vh - 110px);
+                max-height: 75%;
                 border-width: 2px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
             }
 
             #intro-portrait {
@@ -823,7 +830,7 @@
             }
 
             #intro-dialog-content {
-                max-height: calc(100vh - 260px);
+                max-height: 100px;
             }
 
             #intro-press-space-hint {
