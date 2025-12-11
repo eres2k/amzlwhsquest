@@ -517,6 +517,151 @@
                 border-width: 3px;
             }
         }
+
+        /* Extra small screens (Galaxy Fold folded, narrow phones) */
+        @media (max-width: 380px) {
+            /* Intro portrait window */
+            #intro-portrait-window {
+                max-width: 95vw;
+                padding: 12px;
+                border-width: 3px;
+                border-radius: 10px;
+            }
+
+            #intro-portrait {
+                width: 80px;
+                height: 80px;
+                border-width: 3px;
+                margin-bottom: 8px;
+            }
+
+            #intro-speaker-name {
+                font-size: 12px;
+                letter-spacing: 1px;
+            }
+
+            #intro-portrait-frame {
+                margin-bottom: 12px;
+            }
+
+            #intro-text-content {
+                font-size: 10px;
+                line-height: 1.5;
+                padding: 0 5px;
+            }
+
+            #intro-dialog-content {
+                min-height: 80px;
+            }
+
+            #intro-press-space-hint {
+                font-size: 9px;
+                margin-top: 10px;
+            }
+
+            /* Bottom dialog box */
+            #dialog-box {
+                min-height: 100px;
+                padding: 10px;
+                border-width: 2px;
+            }
+
+            #portrait {
+                width: 48px;
+                height: 48px;
+                margin-right: 10px;
+                border-width: 2px;
+            }
+
+            #text-content {
+                font-size: 9px;
+                line-height: 1.5;
+            }
+
+            #press-space-hint {
+                font-size: 8px;
+                margin-top: 6px;
+            }
+
+            /* HUD elements */
+            .hud-text {
+                font-size: 8px;
+                padding: 6px 8px;
+            }
+
+            .boss-name {
+                font-size: 8px;
+            }
+
+            /* Mobile controls for narrow screens */
+            .dpad-container {
+                width: 85px;
+                height: 85px;
+            }
+
+            .dpad-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+
+            .dpad-center {
+                width: 22px;
+                height: 22px;
+            }
+
+            #action-btn {
+                width: 52px;
+                height: 52px;
+                font-size: 9px;
+            }
+
+            #mobile-controls {
+                padding: 8px 10px;
+            }
+        }
+
+        /* Very narrow screens (Galaxy Fold inner edge case) */
+        @media (max-width: 300px) {
+            #intro-portrait-window {
+                padding: 8px;
+            }
+
+            #intro-portrait {
+                width: 60px;
+                height: 60px;
+            }
+
+            #intro-speaker-name {
+                font-size: 10px;
+            }
+
+            #intro-text-content {
+                font-size: 8px;
+                line-height: 1.4;
+            }
+
+            #text-content {
+                font-size: 8px;
+            }
+
+            .dpad-container {
+                width: 75px;
+                height: 75px;
+            }
+
+            .dpad-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 10px;
+            }
+
+            #action-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 8px;
+            }
+        }
     </style>
 </head>
 <body>
