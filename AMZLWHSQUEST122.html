@@ -145,8 +145,8 @@
         /* INTRO CONVERSATION CENTERED PORTRAIT WINDOW */
         #intro-portrait-window {
             display: none;
-            position: fixed;
-            top: 50%;
+            position: absolute;
+            top: 45%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: linear-gradient(180deg, #0a1628 0%, #061020 100%);
@@ -168,7 +168,7 @@
         @keyframes intro-window-appear {
             from {
                 opacity: 0;
-                transform: translate(-50%, -50%) scale(0.8);
+                transform: translate(-50%, -50%) scale(0.9);
             }
             to {
                 opacity: 1;
@@ -427,12 +427,10 @@
 
         /* CONTROL MODE TOGGLE BUTTON */
         #control-mode-toggle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            position: relative;
             width: 56px;
             height: 56px;
+            flex-shrink: 0;
             background: linear-gradient(145deg, rgba(0, 200, 200, 0.9) 0%, rgba(0, 150, 150, 0.95) 100%);
             border: 3px solid #00ffff;
             border-radius: 50%;
@@ -467,7 +465,7 @@
 
         #control-mode-toggle:active, #control-mode-toggle.pressed {
             background: linear-gradient(145deg, rgba(0, 255, 255, 0.95) 0%, rgba(0, 200, 200, 0.98) 100%);
-            transform: translate(-50%, -50%) scale(0.92);
+            transform: scale(0.92);
             box-shadow:
                 0 0 25px rgba(0, 255, 255, 0.8),
                 inset 0 0 15px rgba(255, 255, 255, 0.2);
@@ -931,7 +929,7 @@
                 <div style="display:flex; flex-direction:column; width:100%;">
                     <div id="gemini-badge" class="gemini-badge"></div>
                     <div id="text-content"></div>
-                    <div id="press-space-hint">▼ PRESS SPACE</div>
+                    <div id="press-space-hint">▼ TAP / SPACE</div>
                 </div>
             </div>
 
@@ -944,7 +942,7 @@
                 <div id="intro-dialog-content">
                     <div id="intro-gemini-badge" class="gemini-badge"></div>
                     <div id="intro-text-content"></div>
-                    <div id="intro-press-space-hint">▼ PRESS SPACE</div>
+                    <div id="intro-press-space-hint">▼ TAP / SPACE</div>
                 </div>
             </div>
         </div>
@@ -962,11 +960,11 @@
             <div id="gyro-indicator">
                 <div class="gyro-dot"></div>
             </div>
-            <!-- Control mode toggle button in center -->
-            <div id="control-mode-toggle">
-                <span class="mode-icon">🎮</span>
-                <span class="mode-label">DPAD</span>
-            </div>
+        </div>
+        <!-- Control mode toggle button in middle -->
+        <div id="control-mode-toggle">
+            <span class="mode-icon">🎮</span>
+            <span class="mode-label">DPAD</span>
         </div>
         <div class="action-container">
             <div id="action-btn">A</div>
@@ -5673,6 +5671,43 @@ function initMobileControls() {
             actionBtn.classList.remove('pressed');
         });
     }
+
+    // Make dialog boxes tappable to advance (so A button works as Space in menus)
+    const introWindow = document.getElementById('intro-portrait-window');
+    if (introWindow) {
+        introWindow.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            VibrationSystem.onActionButton();
+            if (!KEYS.action) handleAction();
+            KEYS.action = true;
+        }, { passive: false });
+        introWindow.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            KEYS.action = false;
+        }, { passive: false });
+        introWindow.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!KEYS.action) handleAction();
+        });
+    }
+
+    const dialogBox = document.getElementById('dialog-box');
+    if (dialogBox) {
+        dialogBox.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            VibrationSystem.onActionButton();
+            if (!KEYS.action) handleAction();
+            KEYS.action = true;
+        }, { passive: false });
+        dialogBox.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            KEYS.action = false;
+        }, { passive: false });
+        dialogBox.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!KEYS.action) handleAction();
+        });
+    }
 }
 
 // Initialize mobile controls when DOM is ready
@@ -6827,7 +6862,7 @@ function update() {
     if (GAME.state === 'DIALOG') {
         // Update press-space-hint
         const hintEl = document.getElementById('press-space-hint');
-        hintEl.innerText = '▼ PRESS SPACE';
+        hintEl.innerText = '▼ TAP / SPACE';
         hintEl.style.color = '#ffd700';
         hintEl.style.animation = 'blink 0.8s ease-in-out infinite';
 
