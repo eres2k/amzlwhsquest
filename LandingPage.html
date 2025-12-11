@@ -358,6 +358,176 @@
             vertical-align: middle;
             box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
         }
+
+        /* === MANUAL MODAL STYLES === */
+        .manual-btn {
+            background: linear-gradient(135deg, #78350f 0%, #451a03 100%);
+            color: #fbbf24;
+            font-family: 'Press Start 2P';
+            font-size: 0.8rem;
+            padding: 12px 25px;
+            border: 2px solid #fbbf24;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-shadow: 0 0 5px rgba(251, 191, 36, 0.5);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+            margin: 10px;
+        }
+        .manual-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(251, 191, 36, 0.5);
+            background: linear-gradient(135deg, #92400e 0%, #78350f 100%);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-overlay.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-container {
+            background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 50%, #0a0a14 100%);
+            border: 4px solid #fbbf24;
+            border-radius: 8px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 50px rgba(251, 191, 36, 0.4), inset 0 0 50px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.3s ease;
+            position: relative;
+        }
+        @keyframes slideIn { from { transform: scale(0.9) translateY(-20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+
+        .modal-header {
+            background: linear-gradient(90deg, #1a1a2e 0%, #2a2a4e 50%, #1a1a2e 100%);
+            padding: 20px;
+            border-bottom: 3px solid #fbbf24;
+            text-align: center;
+            position: relative;
+        }
+        .modal-title {
+            font-family: 'Press Start 2P', cursive;
+            color: #fbbf24;
+            font-size: 1.2rem;
+            text-shadow: 2px 2px #000, 0 0 20px rgba(251, 191, 36, 0.5);
+            margin: 0;
+        }
+        .modal-subtitle {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: #dc2626;
+            border: 2px solid #ff4444;
+            color: white;
+            width: 35px; height: 35px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Press Start 2P';
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        .modal-close:hover { background: #ef4444; transform: scale(1.1); }
+
+        .modal-tabs {
+            display: flex;
+            background: linear-gradient(180deg, #0a0a14 0%, #1a1a2e 100%);
+            border-bottom: 2px solid #334155;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #fbbf24 #1a1a2e;
+        }
+        .modal-tabs::-webkit-scrollbar { height: 6px; }
+        .modal-tabs::-webkit-scrollbar-track { background: #1a1a2e; }
+        .modal-tabs::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 3px; }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-family: 'Press Start 2P';
+            font-size: 0.55rem;
+            padding: 12px 15px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            flex-shrink: 0;
+        }
+        .tab-btn:hover { color: #94a3b8; background: rgba(251, 191, 36, 0.1); }
+        .tab-btn.active {
+            color: #fbbf24;
+            border-bottom-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            scrollbar-width: thin;
+            scrollbar-color: #22d3ee #1a1a2e;
+        }
+        .modal-body::-webkit-scrollbar { width: 8px; }
+        .modal-body::-webkit-scrollbar-track { background: #1a1a2e; }
+        .modal-body::-webkit-scrollbar-thumb { background: #22d3ee; border-radius: 4px; }
+
+        .tab-content { display: none; animation: fadeContent 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeContent { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .manual-page-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #334155;
+        }
+
+        .modal-footer {
+            background: linear-gradient(90deg, #1a1a2e 0%, #0f0f1a 100%);
+            padding: 15px 20px;
+            border-top: 2px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-btn {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            color: #22d3ee;
+            border: 2px solid #22d3ee;
+            font-family: 'Press Start 2P';
+            font-size: 0.6rem;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover:not(:disabled) { background: #1e3a5f; transform: translateY(-2px); }
+        .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .page-indicator { color: #64748b; font-size: 0.9rem; }
+
+        @media (max-width: 600px) {
+            .modal-container { max-height: 90vh; }
+            .modal-body { padding: 15px; }
+            .tab-btn { font-size: 0.5rem; padding: 10px 12px; }
+            .modal-title { font-size: 1rem; }
+        }
     </style>
 </head>
 <body class="crt-turn-on">
@@ -378,6 +548,8 @@
         <a href="AMZLWHSQUEST122.html" class="play-btn">▶ START SHIFT</a>
         <br>
         <a href="index-modular.html" class="play-btn-small">▶ MODULAR VERSION <span class="beta-badge">BETA</span></a>
+        <br>
+        <button class="manual-btn" onclick="openManual()">📖 INSTRUCTION MANUAL</button>
         <p style="color: #aaa; font-size: 0.8rem; margin-top: 15px;">(INPUT: KEYBOARD | REWARD: PIZZA PARTY)</p>
     </div>
 
@@ -411,491 +583,6 @@
             </div>
         </section>
 
-        <!-- OFFICIAL GAME MANUAL -->
-        <section id="manual-section" style="border-color: #fbbf24; background: linear-gradient(135deg, rgba(30, 25, 15, 0.95) 0%, rgba(20, 18, 12, 0.98) 100%);">
-            <h2 style="color: #fbbf24; text-shadow: 0 0 15px rgba(251, 191, 36, 0.6), 2px 2px #000;">> OFFICIAL INSTRUCTION MANUAL</h2>
-
-            <div style="text-align: center; margin-bottom: 20px;">
-                <button id="manual-toggle" class="ai-btn" style="background: linear-gradient(135deg, #78350f 0%, #451a03 100%); border-color: #fbbf24; color: #fbbf24; font-size: 0.9rem; padding: 15px 30px;" onclick="toggleManual()">
-                    📖 OPEN INSTRUCTION BOOKLET
-                </button>
-            </div>
-
-            <div id="manual-content" style="display: none; font-family: 'VT323', monospace;">
-                <!-- MANUAL COVER -->
-                <div style="text-align: center; padding: 30px; margin-bottom: 25px; background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%); border: 4px double #fbbf24; border-radius: 4px;">
-                    <div style="font-family: 'Press Start 2P', cursive; color: #fbbf24; font-size: 1.5rem; text-shadow: 3px 3px #000, 0 0 20px rgba(251, 191, 36, 0.5);">
-                        AMZL WHS QUEST
-                    </div>
-                    <div style="color: #ff9900; font-size: 1.2rem; margin-top: 10px; letter-spacing: 2px;">
-                        ━━━━━━━━━━━━━━━━━━━━
-                    </div>
-                    <div style="color: #94a3b8; font-size: 1rem; margin-top: 10px; font-style: italic;">
-                        OFFICIAL INSTRUCTION BOOKLET
-                    </div>
-                    <div style="color: #64748b; font-size: 0.9rem; margin-top: 5px;">
-                        For 1 Player • Keyboard Required • Sanity Optional
-                    </div>
-                    <div style="margin-top: 20px; padding: 10px; background: rgba(255, 153, 0, 0.1); border: 1px dashed #ff9900; border-radius: 4px;">
-                        <span style="color: #ff9900; font-size: 0.8rem;">
-                            ⚠️ WARNING: This game may cause flashbacks to actual warehouse shifts. ⚠️<br>
-                            Side effects include: involuntary TPH calculations, clipboard nightmares, and sudden urges to straighten boxes.
-                        </span>
-                    </div>
-                </div>
-
-                <!-- TABLE OF CONTENTS -->
-                <div style="background: rgba(0,0,0,0.4); padding: 20px; margin-bottom: 25px; border-left: 4px solid #22d3ee;">
-                    <div style="color: #22d3ee; font-family: 'Press Start 2P', cursive; font-size: 0.8rem; margin-bottom: 15px;">TABLE OF CONTENTS</div>
-                    <div style="color: #94a3b8; font-size: 1.1rem; line-height: 2;">
-                        <div>1. THE STORY SO FAR ............... <span style="color: #fbbf24;">pg. 1</span></div>
-                        <div>2. GETTING STARTED ................ <span style="color: #fbbf24;">pg. 2</span></div>
-                        <div>3. CONTROLS ....................... <span style="color: #fbbf24;">pg. 3</span></div>
-                        <div>4. YOUR HEROES .................... <span style="color: #fbbf24;">pg. 4</span></div>
-                        <div>5. ENEMIES & VISITORS ............. <span style="color: #fbbf24;">pg. 5</span></div>
-                        <div>6. ITEMS & POWER-UPS .............. <span style="color: #fbbf24;">pg. 6</span></div>
-                        <div>7. TIPS FROM THE PROS ............. <span style="color: #fbbf24;">pg. 7</span></div>
-                        <div>8. WARRANTY & LEGAL ............... <span style="color: #fbbf24;">pg. 8</span></div>
-                    </div>
-                </div>
-
-                <!-- PAGE 1: STORY -->
-                <div class="manual-page" style="background: rgba(0,0,0,0.3); padding: 20px; margin-bottom: 25px; border-radius: 4px;">
-                    <div style="color: #ff4444; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 15px; border-bottom: 2px solid #334155; padding-bottom: 10px;">
-                        PAGE 1 ═══════════════════════════ THE STORY SO FAR
-                    </div>
-                    <div style="color: #e2e8f0; font-size: 1.1rem; line-height: 1.8;">
-                        <p style="text-indent: 30px;">
-                            The year is <span style="color: #fbbf24;">2025</span>. The place: <span style="color: #22d3ee;">Delivery Station DVI1, Vienna</span>.
-                            You are a freshly minted <span style="color: #fbbf24;">Tier 1 WHS Coordinator</span> — which is corporate speak
-                            for "the person who gets blamed when someone trips over a banana peel."
-                        </p>
-                        <p style="text-indent: 30px; margin-top: 15px;">
-                            The warehouse is in <span style="color: #ff4444;">CHAOS</span>. Ops Managers roam the floor demanding
-                            impossible rates. Hazards multiply like rabbits. And somewhere, somehow, someone
-                            keeps blocking the fire exits with empty pallets.
-                        </p>
-                        <p style="text-indent: 30px; margin-top: 15px;">
-                            Your mission? <span style="color: #22c55e;">Find and eliminate 5 safety hazards</span> before the
-                            inevitable audit. Arm yourself with <span style="color: #22d3ee;">RULE BOOKS</span>, dodge the
-                            requests of productivity-obsessed managers, and pray that someone finally
-                            refills the coffee machine.
-                        </p>
-                        <div style="text-align: center; margin-top: 20px; padding: 15px; background: rgba(255, 153, 0, 0.1); border: 1px solid #ff9900; border-radius: 4px;">
-                            <span style="color: #ff9900; font-style: italic;">
-                                "Safety is everyone's responsibility. Especially yours. Only yours, actually."<br>
-                                — Anonymous Regional Manager, probably
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PAGE 2: GETTING STARTED -->
-                <div class="manual-page" style="background: rgba(0,0,0,0.3); padding: 20px; margin-bottom: 25px; border-radius: 4px;">
-                    <div style="color: #22c55e; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 15px; border-bottom: 2px solid #334155; padding-bottom: 10px;">
-                        PAGE 2 ═══════════════════════════ GETTING STARTED
-                    </div>
-                    <div style="color: #e2e8f0; font-size: 1.1rem; line-height: 1.8;">
-                        <div style="color: #fbbf24; font-weight: bold; margin-bottom: 10px;">SYSTEM REQUIREMENTS:</div>
-                        <ul style="margin-left: 20px; color: #94a3b8;">
-                            <li>A keyboard (preferably one that still works after your last audit)</li>
-                            <li>Functioning eyes (safety glasses recommended)</li>
-                            <li>Caffeine levels: HIGH to CRITICAL</li>
-                            <li>Patience levels: Optional (but recommended)</li>
-                        </ul>
-
-                        <div style="color: #fbbf24; font-weight: bold; margin-top: 20px; margin-bottom: 10px;">HOW TO START:</div>
-                        <ol style="margin-left: 20px; color: #94a3b8;">
-                            <li>Click <span style="color: #ff9900;">START SHIFT</span> (there's no going back now)</li>
-                            <li>Watch the intro (or press SPACE if you've seen it 47 times)</li>
-                            <li>Select your character (choose wisely, or don't, we're not your supervisor)</li>
-                            <li>Begin your shift and try not to cry</li>
-                        </ol>
-
-                        <div style="color: #fbbf24; font-weight: bold; margin-top: 20px; margin-bottom: 10px;">OBJECTIVE:</div>
-                        <div style="padding: 15px; background: rgba(34, 197, 94, 0.1); border: 2px solid #22c55e; border-radius: 4px;">
-                            <span style="color: #22c55e;">
-                                🎯 Find and fix <span style="font-weight: bold;">5 SAFETY HAZARDS</span> scattered across the warehouse floor.<br>
-                                🎯 Survive encounters with <span style="font-weight: bold;">VISITOR BOSSES</span> who show up unannounced.<br>
-                                🎯 Maintain your sanity (bonus objective, not required for completion).
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PAGE 3: CONTROLS -->
-                <div class="manual-page" style="background: rgba(0,0,0,0.3); padding: 20px; margin-bottom: 25px; border-radius: 4px;">
-                    <div style="color: #22d3ee; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 15px; border-bottom: 2px solid #334155; padding-bottom: 10px;">
-                        PAGE 3 ═══════════════════════════ CONTROLS
-                    </div>
-                    <div style="color: #e2e8f0; font-size: 1.1rem; line-height: 1.8;">
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 15px;">
-                            <!-- Movement -->
-                            <div style="background: rgba(34, 211, 238, 0.1); padding: 15px; border: 2px solid #22d3ee; border-radius: 4px; text-align: center;">
-                                <div style="color: #22d3ee; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 10px;">MOVEMENT</div>
-                                <div style="font-size: 2rem; margin: 10px 0;">
-                                    <span style="color: #fbbf24;">W A S D</span>
-                                </div>
-                                <div style="color: #64748b; font-size: 0.9rem;">— or —</div>
-                                <div style="font-size: 1.5rem; margin: 10px 0;">
-                                    <span style="color: #fbbf24;">↑ ← ↓ →</span>
-                                </div>
-                                <div style="color: #94a3b8; font-size: 0.9rem;">Move your character around</div>
-                            </div>
-                            <!-- Attack -->
-                            <div style="background: rgba(255, 68, 68, 0.1); padding: 15px; border: 2px solid #ff4444; border-radius: 4px; text-align: center;">
-                                <div style="color: #ff4444; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 10px;">ATTACK</div>
-                                <div style="font-size: 2rem; margin: 10px 0;">
-                                    <span style="color: #fbbf24;">SPACE</span>
-                                </div>
-                                <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 15px;">
-                                    Fire your signature attack!<br>
-                                    <span style="color: #22d3ee; font-size: 0.8rem;">(Each character has a unique weapon)</span>
-                                </div>
-                            </div>
-                            <!-- Skip -->
-                            <div style="background: rgba(251, 191, 36, 0.1); padding: 15px; border: 2px solid #fbbf24; border-radius: 4px; text-align: center;">
-                                <div style="color: #fbbf24; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 10px;">SKIP/CONFIRM</div>
-                                <div style="font-size: 2rem; margin: 10px 0;">
-                                    <span style="color: #fbbf24;">SPACE</span>
-                                </div>
-                                <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 15px;">
-                                    Skip dialogue, advance text,<br>
-                                    <span style="color: #64748b; font-size: 0.8rem;">or tell Simon to hurry up</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="margin-top: 25px; padding: 15px; background: rgba(255, 153, 0, 0.1); border: 1px dashed #ff9900; border-radius: 4px; text-align: center;">
-                            <span style="color: #ff9900; font-size: 0.9rem;">
-                                💡 PRO TIP: Your attacks shoot in the direction you're moving!<br>
-                                Stand still to fire at the last direction you faced.<br>
-                                <span style="color: #64748b;">(Just like real safety audits — always keep moving!)</span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PAGE 4: CHARACTERS -->
-                <div class="manual-page" style="background: rgba(0,0,0,0.3); padding: 20px; margin-bottom: 25px; border-radius: 4px;">
-                    <div style="color: #a855f7; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 15px; border-bottom: 2px solid #334155; padding-bottom: 10px;">
-                        PAGE 4 ═══════════════════════════ YOUR HEROES
-                    </div>
-                    <div style="color: #e2e8f0; font-size: 1rem; line-height: 1.6;">
-                        <p style="margin-bottom: 20px; color: #94a3b8; font-style: italic;">
-                            Choose your warrior! Each member of the WHS Austria team brings unique abilities to the warehouse floor.
-                            Choose based on your playstyle... or just pick whoever has the coolest hair.
-                        </p>
-
-                        <div style="display: grid; gap: 15px;">
-                            <!-- Carrie -->
-                            <div style="background: linear-gradient(90deg, rgba(168, 85, 247, 0.2) 0%, transparent 100%); padding: 12px; border-left: 4px solid #a855f7; border-radius: 0 4px 4px 0;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                    <div>
-                                        <span style="color: #a855f7; font-family: 'Press Start 2P', cursive; font-size: 0.8rem;">CARRIE</span>
-                                        <span style="color: #fbbf24; margin-left: 10px;">「THE 5S MONK」</span>
-                                    </div>
-                                    <span style="color: #22c55e; font-size: 0.9rem;">⚔️ Label Maker Burst</span>
-                                </div>
-                                <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 8px;">
-                                    <span style="color: #fbbf24;">ABILITY:</span> PRECISION FOCUS — Deals <span style="color: #22c55e;">2x damage to bosses</span>, but 30% slower reload.<br>
-                                    <span style="color: #64748b; font-style: italic;">Best for: Players who believe quality > quantity. Also label enthusiasts.</span>
-                                </div>
-                            </div>
-
-                            <!-- Nevena -->
-                            <div style="background: linear-gradient(90deg, rgba(14, 165, 233, 0.2) 0%, transparent 100%); padding: 12px; border-left: 4px solid #0ea5e9; border-radius: 0 4px 4px 0;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                    <div>
-                                        <span style="color: #0ea5e9; font-family: 'Press Start 2P', cursive; font-size: 0.8rem;">NEVENA</span>
-                                        <span style="color: #fbbf24; margin-left: 10px;">「THE ORACLE」</span>
-                                    </div>
-                                    <span style="color: #22c55e; font-size: 0.9rem;">⚔️ Clipboard Shockwave</span>
-                                </div>
-                                <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 8px;">
-                                    <span style="color: #fbbf24;">ABILITY:</span> FORESIGHT — <span style="color: #22c55e;">Longer invincibility</span> after taking damage.<br>
-                                    <span style="color: #64748b; font-style: italic;">Best for: Players who make mistakes but look graceful doing it.</span>
-                                </div>
-                            </div>
-
-                            <!-- Joao -->
-                            <div style="background: linear-gradient(90deg, rgba(249, 115, 22, 0.2) 0%, transparent 100%); padding: 12px; border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                    <div>
-                                        <span style="color: #f97316; font-family: 'Press Start 2P', cursive; font-size: 0.8rem;">JOAO</span>
-                                        <span style="color: #fbbf24; margin-left: 10px;">「THE SIREN」</span>
-                                    </div>
-                                    <span style="color: #22c55e; font-size: 0.9rem;">⚔️ Sonic Shout</span>
-                                </div>
-                                <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 8px;">
-                                    <span style="color: #fbbf24;">ABILITY:</span> CAFFEINE RUSH — <span style="color: #22c55e;">Faster attack cooldown.</span><br>
-                                    <span style="color: #64748b; font-style: italic;">Best for: Players who believe the best defense is MORE OFFENSE.</span>
-                                </div>
-                            </div>
-
-                            <!-- Roman -->
-                            <div style="background: linear-gradient(90deg, rgba(148, 163, 184, 0.2) 0%, transparent 100%); padding: 12px; border-left: 4px solid #94a3b8; border-radius: 0 4px 4px 0;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                    <div>
-                                        <span style="color: #94a3b8; font-family: 'Press Start 2P', cursive; font-size: 0.8rem;">ROMAN</span>
-                                        <span style="color: #fbbf24; margin-left: 10px;">「THE GHOST」</span>
-                                    </div>
-                                    <span style="color: #22c55e; font-size: 0.9rem;">⚔️ Stealth Audit Pulse</span>
-                                </div>
-                                <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 8px;">
-                                    <span style="color: #fbbf24;">ABILITY:</span> PHANTOM STEP — <span style="color: #22c55e;">Smaller collision radius.</span><br>
-                                    <span style="color: #64748b; font-style: italic;">Best for: Players who dodge responsibility AND projectiles.</span>
-                                </div>
-                            </div>
-
-                            <!-- Erwin -->
-                            <div style="background: linear-gradient(90deg, rgba(34, 211, 238, 0.2) 0%, transparent 100%); padding: 12px; border-left: 4px solid #22d3ee; border-radius: 0 4px 4px 0;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                    <div>
-                                        <span style="color: #22d3ee; font-family: 'Press Start 2P', cursive; font-size: 0.8rem;">ERWIN</span>
-                                        <span style="color: #fbbf24; margin-left: 10px;">「THE MANAGER」</span>
-                                    </div>
-                                    <span style="color: #22c55e; font-size: 0.9rem;">⚔️ Tesla Energy Pulse</span>
-                                </div>
-                                <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 8px;">
-                                    <span style="color: #fbbf24;">ABILITY:</span> TESLA RUSH — <span style="color: #22c55e;">30% faster movement</span>, but only <span style="color: #ff4444;">1 LIFE!</span><br>
-                                    <span style="color: #64748b; font-style: italic;">Best for: Speed runners and adrenaline junkies. YOLO mode activated.</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PAGE 5: ENEMIES -->
-                <div class="manual-page" style="background: rgba(0,0,0,0.3); padding: 20px; margin-bottom: 25px; border-radius: 4px;">
-                    <div style="color: #ff4444; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 15px; border-bottom: 2px solid #334155; padding-bottom: 10px;">
-                        PAGE 5 ═══════════════════════════ ENEMIES & VISITORS
-                    </div>
-                    <div style="color: #e2e8f0; font-size: 1rem; line-height: 1.6;">
-
-                        <!-- Regular Enemies -->
-                        <div style="color: #fbbf24; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 15px;">REGULAR ENEMIES</div>
-
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
-                            <div style="background: rgba(255, 204, 0, 0.1); padding: 12px; border: 1px solid #ffcc00; border-radius: 4px;">
-                                <div style="color: #ffcc00; font-weight: bold;">OPS MANAGERS</div>
-                                <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">
-                                    They want RATES! Hit them with rule books to convert them into harmless Associates.
-                                    <span style="color: #ff4444; display: block; margin-top: 5px;">⚠️ 10% chance to DEFLECT your attack!</span>
-                                </div>
-                            </div>
-                            <div style="background: rgba(150, 150, 150, 0.1); padding: 12px; border: 1px solid #999; border-radius: 4px;">
-                                <div style="color: #aaa; font-weight: bold;">ASSOCIATES</div>
-                                <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">
-                                    Harmless workers wandering around. They'll slowly revert back to Ops Managers if left alone.
-                                    <span style="color: #22c55e; display: block; margin-top: 5px;">They're just trying their best, okay?</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- BOSSES -->
-                        <div style="color: #ff4444; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 15px; margin-top: 20px;">VISITOR BOSSES</div>
-                        <p style="color: #94a3b8; font-style: italic; margin-bottom: 15px;">
-                            After clearing hazards, prepare for an uninvited VISITOR! Each boss has unique attack patterns
-                            and a devastating <span style="color: #ff4444;">DESPERATION PHASE</span> when low on health!
-                        </p>
-
-                        <div style="display: grid; gap: 10px;">
-                            <div style="display: flex; gap: 15px; align-items: center; padding: 10px; background: rgba(255, 68, 68, 0.1); border-left: 3px solid #ff4444;">
-                                <div style="min-width: 140px;"><span style="color: #ff4444;">LABOUR INSPECTOR</span></div>
-                                <div style="color: #64748b; font-size: 0.9rem;">The Enforcer — 11-shot sweeping lines. Nothing escapes his clipboard.</div>
-                            </div>
-                            <div style="display: flex; gap: 15px; align-items: center; padding: 10px; background: rgba(255, 68, 68, 0.05); border-left: 3px solid #ff4444;">
-                                <div style="min-width: 140px;"><span style="color: #ff4444;">COMPLIANCE</span></div>
-                                <div style="color: #64748b; font-size: 0.9rem;">The Auditor — Homing grid attacks. She WILL find your violations.</div>
-                            </div>
-                            <div style="display: flex; gap: 15px; align-items: center; padding: 10px; background: rgba(255, 68, 68, 0.1); border-left: 3px solid #ff4444;">
-                                <div style="min-width: 140px;"><span style="color: #ff4444;">SEBASTIAN</span></div>
-                                <div style="color: #64748b; font-size: 0.9rem;">The Station Commander — 10-shot rapid barrages. Rates above all else.</div>
-                            </div>
-                            <div style="display: flex; gap: 15px; align-items: center; padding: 10px; background: rgba(255, 68, 68, 0.05); border-left: 3px solid #ff4444;">
-                                <div style="min-width: 140px;"><span style="color: #ff4444;">REGIONAL OPS MGR</span></div>
-                                <div style="color: #64748b; font-size: 0.9rem;">The Executive — Dual rotating rings of 16 KPI missiles. Gold tie energy.</div>
-                            </div>
-                            <div style="display: flex; gap: 15px; align-items: center; padding: 10px; background: rgba(255, 68, 68, 0.1); border-left: 3px solid #ff4444;">
-                                <div style="min-width: 140px;"><span style="color: #ff4444;">AVETTA AI</span></div>
-                                <div style="color: #64748b; font-size: 0.9rem;">The Algorithm — Cross laser patterns. It knows what you did last shift.</div>
-                            </div>
-                            <div style="display: flex; gap: 15px; align-items: center; padding: 10px; background: rgba(255, 68, 68, 0.05); border-left: 3px solid #ff4444;">
-                                <div style="min-width: 140px;"><span style="color: #ff4444;">JELENA "JELLY"</span></div>
-                                <div style="color: #64748b; font-size: 0.9rem;">The HR Sentinel — 7-wave cascade. Smiles while destroying you.</div>
-                            </div>
-                        </div>
-
-                        <!-- SECRET BOSS HINT -->
-                        <div style="margin-top: 25px; padding: 20px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%); border: 2px dashed #8b5cf6; border-radius: 4px; text-align: center;">
-                            <div style="color: #c4b5fd; font-family: 'Press Start 2P', cursive; font-size: 0.6rem; margin-bottom: 10px;">
-                                ??? CLASSIFIED INTEL ???
-                            </div>
-                            <div style="color: #a78bfa; font-size: 1rem;">
-                                Rumors speak of <span style="color: #f472b6; font-weight: bold;">TWO SECRET BOSSES</span> hidden beyond the warehouse floor...<br>
-                                <span style="color: #64748b; font-size: 0.9rem; font-style: italic;">
-                                    They say one has "evolved" beyond his normal form...<br>
-                                    And the other? Let's just say he's not from around here. 🚀
-                                </span>
-                            </div>
-                            <div style="color: #64748b; font-size: 0.8rem; margin-top: 10px;">
-                                [ FILE CORRUPTED — CLEARANCE LEVEL: PIZZA PARTY REQUIRED ]
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PAGE 6: ITEMS -->
-                <div class="manual-page" style="background: rgba(0,0,0,0.3); padding: 20px; margin-bottom: 25px; border-radius: 4px;">
-                    <div style="color: #22c55e; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 15px; border-bottom: 2px solid #334155; padding-bottom: 10px;">
-                        PAGE 6 ═══════════════════════════ ITEMS & POWER-UPS
-                    </div>
-                    <div style="color: #e2e8f0; font-size: 1rem; line-height: 1.6;">
-
-                        <!-- Hazards -->
-                        <div style="color: #fbbf24; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 15px;">HAZARDS TO FIND</div>
-                        <p style="color: #94a3b8; margin-bottom: 15px;">
-                            These are your PRIMARY OBJECTIVES! Walk over them to fix them. Each one cleared is one step closer to survival.
-                        </p>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 25px;">
-                            <div style="background: rgba(251, 191, 36, 0.1); padding: 10px; border: 1px solid #fbbf24; border-radius: 4px; text-align: center;">
-                                <div style="font-size: 1.5rem;">📦</div>
-                                <div style="color: #fbbf24; font-size: 0.9rem;">Blocked Exit</div>
-                            </div>
-                            <div style="background: rgba(251, 191, 36, 0.1); padding: 10px; border: 1px solid #fbbf24; border-radius: 4px; text-align: center;">
-                                <div style="font-size: 1.5rem;">⚡</div>
-                                <div style="color: #fbbf24; font-size: 0.9rem;">Exposed Wire</div>
-                            </div>
-                            <div style="background: rgba(251, 191, 36, 0.1); padding: 10px; border: 1px solid #fbbf24; border-radius: 4px; text-align: center;">
-                                <div style="font-size: 1.5rem;">💧</div>
-                                <div style="color: #fbbf24; font-size: 0.9rem;">Spill Zone</div>
-                            </div>
-                            <div style="background: rgba(251, 191, 36, 0.1); padding: 10px; border: 1px solid #fbbf24; border-radius: 4px; text-align: center;">
-                                <div style="font-size: 1.5rem;">🔧</div>
-                                <div style="color: #fbbf24; font-size: 0.9rem;">Unstable Rack</div>
-                            </div>
-                            <div style="background: rgba(251, 191, 36, 0.1); padding: 10px; border: 1px solid #fbbf24; border-radius: 4px; text-align: center;">
-                                <div style="font-size: 1.5rem;">☕</div>
-                                <div style="color: #fbbf24; font-size: 0.9rem;">Coffee Ring of Doom</div>
-                            </div>
-                        </div>
-
-                        <!-- Power-ups -->
-                        <div style="color: #22c55e; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 15px;">POWER-UPS (YARD LEVEL)</div>
-                        <p style="color: #94a3b8; margin-bottom: 15px;">
-                            Found in special areas! Grab them for temporary boosts!
-                        </p>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
-                            <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border: 2px solid #3b82f6; border-radius: 4px;">
-                                <div style="color: #3b82f6; font-weight: bold;">⚡ SPEED BOOST</div>
-                                <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">
-                                    GOTTA GO FAST! 5 seconds of zoom-zoom energy. Perfect for dodging.
-                                </div>
-                            </div>
-                            <div style="background: rgba(168, 85, 247, 0.1); padding: 15px; border: 2px solid #a855f7; border-radius: 4px;">
-                                <div style="color: #a855f7; font-weight: bold;">🛡️ SHIELD</div>
-                                <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">
-                                    3 seconds of invincibility. Walk through danger like you own the place.
-                                </div>
-                            </div>
-                            <div style="background: rgba(239, 68, 68, 0.1); padding: 15px; border: 2px solid #ef4444; border-radius: 4px;">
-                                <div style="color: #ef4444; font-weight: bold;">❤️ EXTRA LIFE</div>
-                                <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">
-                                    One more chance! Collect these like they're free pizza slices.
-                                </div>
-                            </div>
-                            <div style="background: rgba(251, 191, 36, 0.1); padding: 15px; border: 2px solid #fbbf24; border-radius: 4px;">
-                                <div style="color: #fbbf24; font-weight: bold;">📦 BONUS PACKAGE</div>
-                                <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">
-                                    Extra points! Because who doesn't love meaningless numbers?
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PAGE 7: TIPS -->
-                <div class="manual-page" style="background: rgba(0,0,0,0.3); padding: 20px; margin-bottom: 25px; border-radius: 4px;">
-                    <div style="color: #f97316; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 15px; border-bottom: 2px solid #334155; padding-bottom: 10px;">
-                        PAGE 7 ═══════════════════════════ TIPS FROM THE PROS
-                    </div>
-                    <div style="color: #e2e8f0; font-size: 1rem; line-height: 1.8;">
-                        <div style="display: grid; gap: 15px;">
-                            <div style="padding: 15px; background: rgba(249, 115, 22, 0.1); border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
-                                <span style="color: #f97316; font-weight: bold;">TIP #1:</span>
-                                <span style="color: #94a3b8;"> Keep moving! A stationary target is a written warning waiting to happen.</span>
-                            </div>
-                            <div style="padding: 15px; background: rgba(249, 115, 22, 0.05); border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
-                                <span style="color: #f97316; font-weight: bold;">TIP #2:</span>
-                                <span style="color: #94a3b8;"> During boss fights, watch for the <span style="color: #ff4444;">DESPERATION PHASE</span> warning at 40% HP. That's when things get SPICY.</span>
-                            </div>
-                            <div style="padding: 15px; background: rgba(249, 115, 22, 0.1); border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
-                                <span style="color: #f97316; font-weight: bold;">TIP #3:</span>
-                                <span style="color: #94a3b8;"> Ops Managers can DEFLECT your attacks 10% of the time. Don't take it personally. Actually, do. It's infuriating.</span>
-                            </div>
-                            <div style="padding: 15px; background: rgba(249, 115, 22, 0.05); border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
-                                <span style="color: #f97316; font-weight: bold;">TIP #4:</span>
-                                <span style="color: #94a3b8;"> Carrie's 2x boss damage is perfect for speed runs. Just don't miss—her reload is slower than IT support tickets.</span>
-                            </div>
-                            <div style="padding: 15px; background: rgba(249, 115, 22, 0.1); border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
-                                <span style="color: #f97316; font-weight: bold;">TIP #5:</span>
-                                <span style="color: #94a3b8;"> Erwin is HIGH RISK, HIGH REWARD. One life, maximum speed. Perfect for players who peaked in Snake.</span>
-                            </div>
-                            <div style="padding: 15px; background: rgba(249, 115, 22, 0.05); border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
-                                <span style="color: #f97316; font-weight: bold;">TIP #6:</span>
-                                <span style="color: #94a3b8;"> Listen to the music! When it gets intense, something's about to go down. Probably your health bar.</span>
-                            </div>
-                            <div style="padding: 15px; background: rgba(249, 115, 22, 0.1); border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
-                                <span style="color: #f97316; font-weight: bold;">TIP #7:</span>
-                                <span style="color: #94a3b8;"> That fire exit in the corner? ...Probably nothing. Definitely don't investigate it. 👀</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PAGE 8: WARRANTY -->
-                <div class="manual-page" style="background: rgba(0,0,0,0.3); padding: 20px; margin-bottom: 25px; border-radius: 4px;">
-                    <div style="color: #64748b; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 15px; border-bottom: 2px solid #334155; padding-bottom: 10px;">
-                        PAGE 8 ═══════════════════════════ WARRANTY & LEGAL
-                    </div>
-                    <div style="color: #64748b; font-size: 0.9rem; line-height: 1.8;">
-                        <p style="text-transform: uppercase; font-size: 0.8rem; margin-bottom: 15px;">
-                            LIMITED WARRANTY AGREEMENT
-                        </p>
-                        <p>
-                            ERWIN ESENER PRODUCTIONS ("we," "us," "the people who made this instead of sleeping")
-                            warrants that this game will provide approximately 0 to ∞ hours of entertainment value,
-                            depending on your tolerance for warehouse-based humor.
-                        </p>
-                        <p style="margin-top: 15px;">
-                            <span style="color: #ff4444;">THIS WARRANTY DOES NOT COVER:</span>
-                        </p>
-                        <ul style="margin-left: 20px; margin-top: 10px;">
-                            <li>Emotional damage caused by boss desperation phases</li>
-                            <li>Carpal tunnel from excessive rule book throwing</li>
-                            <li>Existential crises about actual warehouse jobs</li>
-                            <li>Lost productivity (but really, were you being productive anyway?)</li>
-                            <li>Any resemblance to real persons, living or auditing</li>
-                        </ul>
-                        <p style="margin-top: 20px; padding: 15px; background: rgba(100, 116, 139, 0.1); border: 1px solid #64748b; border-radius: 4px;">
-                            <span style="color: #fbbf24;">FOR CUSTOMER SUPPORT:</span><br>
-                            Please submit a ticket, then wait 3-5 business days while we "escalate" your issue
-                            to someone who also doesn't know the answer. Just like real life!
-                        </p>
-                        <div style="text-align: center; margin-top: 25px; padding: 15px; border-top: 2px solid #334155;">
-                            <div style="color: #fbbf24; font-size: 1rem;">Thank you for playing!</div>
-                            <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">
-                                © 2025 ERWIN ESENER PRODUCTIONS<br>
-                                WHS MEU • DVI1 VIENNA<br>
-                                <span style="font-size: 0.8rem;">All Rights Reserved • Safety First • Rates Second</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
 
         <section>
             <h2>> MISSION BRIEFING</h2>
@@ -1683,31 +1370,406 @@
         });
     }
 
-    // --- 6. MANUAL TOGGLE ---
-    function toggleManual() {
-        const content = document.getElementById('manual-content');
-        const btn = document.getElementById('manual-toggle');
+    // --- 6. MANUAL MODAL SYSTEM ---
+    let currentTab = 0;
+    const totalTabs = 8;
 
-        if (content.style.display === 'none') {
-            content.style.display = 'block';
-            btn.innerHTML = '📕 CLOSE INSTRUCTION BOOKLET';
-            btn.style.background = 'linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%)';
-            btn.style.borderColor = '#ff4444';
-            btn.style.color = '#ff4444';
-            // Smooth scroll to manual
-            document.getElementById('manual-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-            content.style.display = 'none';
-            btn.innerHTML = '📖 OPEN INSTRUCTION BOOKLET';
-            btn.style.background = 'linear-gradient(135deg, #78350f 0%, #451a03 100%)';
-            btn.style.borderColor = '#fbbf24';
-            btn.style.color = '#fbbf24';
-        }
+    function openManual() {
+        document.getElementById('manual-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        switchTab(0);
     }
+
+    function closeManual() {
+        document.getElementById('manual-modal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function switchTab(index) {
+        currentTab = index;
+        // Update tab buttons
+        document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+            btn.classList.toggle('active', i === index);
+        });
+        // Update content
+        document.querySelectorAll('.tab-content').forEach((content, i) => {
+            content.classList.toggle('active', i === index);
+        });
+        // Update navigation
+        document.getElementById('prev-btn').disabled = index === 0;
+        document.getElementById('next-btn').disabled = index === totalTabs - 1;
+        document.getElementById('page-indicator').textContent = `Page ${index + 1} of ${totalTabs}`;
+        // Scroll to top of modal body
+        document.querySelector('.modal-body').scrollTop = 0;
+    }
+
+    function prevPage() { if (currentTab > 0) switchTab(currentTab - 1); }
+    function nextPage() { if (currentTab < totalTabs - 1) switchTab(currentTab + 1); }
+
+    // Close modal on overlay click or Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeManual();
+        if (document.getElementById('manual-modal').classList.contains('active')) {
+            if (e.key === 'ArrowLeft') prevPage();
+            if (e.key === 'ArrowRight') nextPage();
+        }
+    });
 
     fetchAnnouncement();
     renderPortraits();
 </script>
+
+<!-- MANUAL MODAL -->
+<div id="manual-modal" class="modal-overlay" onclick="if(event.target === this) closeManual()">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2 class="modal-title">📖 AMZL WHS QUEST</h2>
+            <div class="modal-subtitle">OFFICIAL INSTRUCTION MANUAL • v12.2.5</div>
+            <button class="modal-close" onclick="closeManual()">✕</button>
+        </div>
+
+        <div class="modal-tabs">
+            <button class="tab-btn active" onclick="switchTab(0)">1. STORY</button>
+            <button class="tab-btn" onclick="switchTab(1)">2. START</button>
+            <button class="tab-btn" onclick="switchTab(2)">3. CONTROLS</button>
+            <button class="tab-btn" onclick="switchTab(3)">4. HEROES</button>
+            <button class="tab-btn" onclick="switchTab(4)">5. ENEMIES</button>
+            <button class="tab-btn" onclick="switchTab(5)">6. ITEMS</button>
+            <button class="tab-btn" onclick="switchTab(6)">7. TIPS</button>
+            <button class="tab-btn" onclick="switchTab(7)">8. LEGAL</button>
+        </div>
+
+        <div class="modal-body">
+            <!-- TAB 1: STORY -->
+            <div class="tab-content active">
+                <div class="manual-page-title" style="color: #ff4444;">THE STORY SO FAR</div>
+                <div style="color: #e2e8f0; font-size: 1.1rem; line-height: 1.8;">
+                    <p style="text-indent: 30px;">
+                        The year is <span style="color: #fbbf24;">2025</span>. The place: <span style="color: #22d3ee;">Delivery Station DVI1, Vienna</span>.
+                        You are a freshly minted <span style="color: #fbbf24;">Tier 1 WHS Coordinator</span> — which is corporate speak
+                        for "the person who gets blamed when someone trips over a banana peel."
+                    </p>
+                    <p style="text-indent: 30px; margin-top: 15px;">
+                        The warehouse is in <span style="color: #ff4444;">CHAOS</span>. Ops Managers roam the floor demanding
+                        impossible rates. Hazards multiply like rabbits. And somewhere, somehow, someone
+                        keeps blocking the fire exits with empty pallets.
+                    </p>
+                    <p style="text-indent: 30px; margin-top: 15px;">
+                        Your mission? <span style="color: #22c55e;">Find and eliminate 5 safety hazards</span> before the
+                        inevitable audit. Arm yourself with <span style="color: #22d3ee;">RULE BOOKS</span>, dodge the
+                        requests of productivity-obsessed managers, and pray that someone finally
+                        refills the coffee machine.
+                    </p>
+                    <div style="text-align: center; margin-top: 25px; padding: 15px; background: rgba(255, 153, 0, 0.1); border: 1px solid #ff9900; border-radius: 4px;">
+                        <span style="color: #ff9900; font-style: italic;">
+                            "Safety is everyone's responsibility. Especially yours. Only yours, actually."<br>
+                            — Anonymous Regional Manager, probably
+                        </span>
+                    </div>
+                    <div style="margin-top: 25px; padding: 15px; background: rgba(255, 153, 0, 0.05); border: 1px dashed #ff9900; border-radius: 4px; text-align: center;">
+                        <span style="color: #ff9900; font-size: 0.9rem;">
+                            ⚠️ WARNING: This game may cause flashbacks to actual warehouse shifts.<br>
+                            Side effects include: involuntary TPH calculations, clipboard nightmares, and sudden urges to straighten boxes.
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: GETTING STARTED -->
+            <div class="tab-content">
+                <div class="manual-page-title" style="color: #22c55e;">GETTING STARTED</div>
+                <div style="color: #e2e8f0; font-size: 1.1rem; line-height: 1.8;">
+                    <div style="color: #fbbf24; font-weight: bold; margin-bottom: 10px;">SYSTEM REQUIREMENTS:</div>
+                    <ul style="margin-left: 20px; color: #94a3b8;">
+                        <li>A keyboard (preferably one that still works after your last audit)</li>
+                        <li>Functioning eyes (safety glasses recommended)</li>
+                        <li>Caffeine levels: HIGH to CRITICAL</li>
+                        <li>Patience levels: Optional (but recommended)</li>
+                    </ul>
+                    <div style="color: #fbbf24; font-weight: bold; margin-top: 25px; margin-bottom: 10px;">HOW TO START:</div>
+                    <ol style="margin-left: 20px; color: #94a3b8;">
+                        <li>Click <span style="color: #ff9900;">START SHIFT</span> (there's no going back now)</li>
+                        <li>Watch the intro (or press SPACE if you've seen it 47 times)</li>
+                        <li>Select your character (choose wisely, or don't, we're not your supervisor)</li>
+                        <li>Begin your shift and try not to cry</li>
+                    </ol>
+                    <div style="color: #fbbf24; font-weight: bold; margin-top: 25px; margin-bottom: 10px;">OBJECTIVE:</div>
+                    <div style="padding: 15px; background: rgba(34, 197, 94, 0.1); border: 2px solid #22c55e; border-radius: 4px;">
+                        <span style="color: #22c55e;">
+                            🎯 Find and fix <span style="font-weight: bold;">5 SAFETY HAZARDS</span> scattered across the warehouse floor.<br><br>
+                            🎯 Survive encounters with <span style="font-weight: bold;">VISITOR BOSSES</span> who show up unannounced.<br><br>
+                            🎯 Maintain your sanity (bonus objective, not required for completion).
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: CONTROLS -->
+            <div class="tab-content">
+                <div class="manual-page-title" style="color: #22d3ee;">CONTROLS</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-top: 15px;">
+                    <div style="background: rgba(34, 211, 238, 0.1); padding: 20px; border: 2px solid #22d3ee; border-radius: 4px; text-align: center;">
+                        <div style="color: #22d3ee; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 10px;">MOVEMENT</div>
+                        <div style="font-size: 2rem; margin: 10px 0; color: #fbbf24;">W A S D</div>
+                        <div style="color: #64748b; font-size: 0.9rem;">— or —</div>
+                        <div style="font-size: 1.5rem; margin: 10px 0; color: #fbbf24;">↑ ← ↓ →</div>
+                        <div style="color: #94a3b8; font-size: 0.9rem;">Move your character</div>
+                    </div>
+                    <div style="background: rgba(255, 68, 68, 0.1); padding: 20px; border: 2px solid #ff4444; border-radius: 4px; text-align: center;">
+                        <div style="color: #ff4444; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 10px;">ATTACK</div>
+                        <div style="font-size: 2rem; margin: 10px 0; color: #fbbf24;">SPACE</div>
+                        <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 15px;">Fire your signature attack!<br><span style="color: #22d3ee; font-size: 0.8rem;">(Each hero has unique weapon)</span></div>
+                    </div>
+                    <div style="background: rgba(251, 191, 36, 0.1); padding: 20px; border: 2px solid #fbbf24; border-radius: 4px; text-align: center;">
+                        <div style="color: #fbbf24; font-family: 'Press Start 2P', cursive; font-size: 0.7rem; margin-bottom: 10px;">SKIP/CONFIRM</div>
+                        <div style="font-size: 2rem; margin: 10px 0; color: #fbbf24;">SPACE</div>
+                        <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 15px;">Skip dialogue, advance text,<br><span style="color: #64748b; font-size: 0.8rem;">or tell Simon to hurry up</span></div>
+                    </div>
+                </div>
+                <div style="margin-top: 25px; padding: 15px; background: rgba(255, 153, 0, 0.1); border: 1px dashed #ff9900; border-radius: 4px; text-align: center;">
+                    <span style="color: #ff9900; font-size: 0.95rem;">
+                        💡 PRO TIP: Your attacks shoot in the direction you're moving!<br>
+                        Stand still to fire at the last direction you faced.<br>
+                        <span style="color: #64748b;">(Just like real safety audits — always keep moving!)</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- TAB 4: HEROES -->
+            <div class="tab-content">
+                <div class="manual-page-title" style="color: #a855f7;">YOUR HEROES</div>
+                <p style="margin-bottom: 20px; color: #94a3b8; font-style: italic;">
+                    Choose your warrior! Each member of the WHS Austria team brings unique abilities to the warehouse floor.
+                </p>
+                <div style="display: grid; gap: 12px;">
+                    <div style="background: linear-gradient(90deg, rgba(168, 85, 247, 0.2) 0%, transparent 100%); padding: 12px; border-left: 4px solid #a855f7; border-radius: 0 4px 4px 0;">
+                        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px;">
+                            <div><span style="color: #a855f7; font-family: 'Press Start 2P', cursive; font-size: 0.7rem;">CARRIE</span> <span style="color: #fbbf24;">「THE 5S MONK」</span></div>
+                            <span style="color: #22c55e; font-size: 0.85rem;">⚔️ Label Maker Burst</span>
+                        </div>
+                        <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 6px;">
+                            <span style="color: #fbbf24;">ABILITY:</span> PRECISION FOCUS — <span style="color: #22c55e;">2x boss damage</span>, 30% slower reload.<br>
+                            <span style="color: #64748b; font-style: italic;">Best for: Quality > quantity players. Label enthusiasts.</span>
+                        </div>
+                    </div>
+                    <div style="background: linear-gradient(90deg, rgba(14, 165, 233, 0.2) 0%, transparent 100%); padding: 12px; border-left: 4px solid #0ea5e9; border-radius: 0 4px 4px 0;">
+                        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px;">
+                            <div><span style="color: #0ea5e9; font-family: 'Press Start 2P', cursive; font-size: 0.7rem;">NEVENA</span> <span style="color: #fbbf24;">「THE ORACLE」</span></div>
+                            <span style="color: #22c55e; font-size: 0.85rem;">⚔️ Clipboard Shockwave</span>
+                        </div>
+                        <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 6px;">
+                            <span style="color: #fbbf24;">ABILITY:</span> FORESIGHT — <span style="color: #22c55e;">Longer invincibility</span> after damage.<br>
+                            <span style="color: #64748b; font-style: italic;">Best for: Players who make mistakes gracefully.</span>
+                        </div>
+                    </div>
+                    <div style="background: linear-gradient(90deg, rgba(249, 115, 22, 0.2) 0%, transparent 100%); padding: 12px; border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
+                        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px;">
+                            <div><span style="color: #f97316; font-family: 'Press Start 2P', cursive; font-size: 0.7rem;">JOAO</span> <span style="color: #fbbf24;">「THE SIREN」</span></div>
+                            <span style="color: #22c55e; font-size: 0.85rem;">⚔️ Sonic Shout</span>
+                        </div>
+                        <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 6px;">
+                            <span style="color: #fbbf24;">ABILITY:</span> CAFFEINE RUSH — <span style="color: #22c55e;">Faster attack cooldown.</span><br>
+                            <span style="color: #64748b; font-style: italic;">Best for: MORE OFFENSE is the best defense!</span>
+                        </div>
+                    </div>
+                    <div style="background: linear-gradient(90deg, rgba(148, 163, 184, 0.2) 0%, transparent 100%); padding: 12px; border-left: 4px solid #94a3b8; border-radius: 0 4px 4px 0;">
+                        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px;">
+                            <div><span style="color: #94a3b8; font-family: 'Press Start 2P', cursive; font-size: 0.7rem;">ROMAN</span> <span style="color: #fbbf24;">「THE GHOST」</span></div>
+                            <span style="color: #22c55e; font-size: 0.85rem;">⚔️ Stealth Audit Pulse</span>
+                        </div>
+                        <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 6px;">
+                            <span style="color: #fbbf24;">ABILITY:</span> PHANTOM STEP — <span style="color: #22c55e;">Smaller collision radius.</span><br>
+                            <span style="color: #64748b; font-style: italic;">Best for: Dodging responsibility AND projectiles.</span>
+                        </div>
+                    </div>
+                    <div style="background: linear-gradient(90deg, rgba(34, 211, 238, 0.2) 0%, transparent 100%); padding: 12px; border-left: 4px solid #22d3ee; border-radius: 0 4px 4px 0;">
+                        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px;">
+                            <div><span style="color: #22d3ee; font-family: 'Press Start 2P', cursive; font-size: 0.7rem;">ERWIN</span> <span style="color: #fbbf24;">「THE MANAGER」</span></div>
+                            <span style="color: #22c55e; font-size: 0.85rem;">⚔️ Tesla Energy Pulse</span>
+                        </div>
+                        <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 6px;">
+                            <span style="color: #fbbf24;">ABILITY:</span> TESLA RUSH — <span style="color: #22c55e;">30% faster</span>, but <span style="color: #ff4444;">1 LIFE ONLY!</span><br>
+                            <span style="color: #64748b; font-style: italic;">Best for: Speed runners. YOLO mode activated.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: ENEMIES -->
+            <div class="tab-content">
+                <div class="manual-page-title" style="color: #ff4444;">ENEMIES & VISITORS</div>
+                <div style="color: #fbbf24; font-family: 'Press Start 2P', cursive; font-size: 0.65rem; margin-bottom: 15px;">REGULAR ENEMIES</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 25px;">
+                    <div style="background: rgba(255, 204, 0, 0.1); padding: 12px; border: 1px solid #ffcc00; border-radius: 4px;">
+                        <div style="color: #ffcc00; font-weight: bold;">OPS MANAGERS</div>
+                        <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">They want RATES! Hit them to convert to Associates. <span style="color: #ff4444;">⚠️ 10% deflect chance!</span></div>
+                    </div>
+                    <div style="background: rgba(150, 150, 150, 0.1); padding: 12px; border: 1px solid #999; border-radius: 4px;">
+                        <div style="color: #aaa; font-weight: bold;">ASSOCIATES</div>
+                        <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">Harmless workers. Will slowly revert to Ops Managers if left alone.</div>
+                    </div>
+                </div>
+                <div style="color: #ff4444; font-family: 'Press Start 2P', cursive; font-size: 0.65rem; margin-bottom: 15px;">VISITOR BOSSES</div>
+                <p style="color: #94a3b8; font-style: italic; margin-bottom: 12px; font-size: 0.9rem;">
+                    Each boss has unique attacks and a <span style="color: #ff4444;">DESPERATION PHASE</span> at low HP!
+                </p>
+                <div style="display: grid; gap: 8px;">
+                    <div style="display: flex; gap: 10px; padding: 8px; background: rgba(255, 68, 68, 0.1); border-left: 3px solid #ff4444;">
+                        <span style="color: #ff4444; min-width: 130px; font-size: 0.9rem;">LABOUR INSPECTOR</span>
+                        <span style="color: #64748b; font-size: 0.85rem;">The Enforcer — 11-shot sweeping lines</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 8px; background: rgba(255, 68, 68, 0.05); border-left: 3px solid #ff4444;">
+                        <span style="color: #ff4444; min-width: 130px; font-size: 0.9rem;">COMPLIANCE</span>
+                        <span style="color: #64748b; font-size: 0.85rem;">The Auditor — Homing grid attacks</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 8px; background: rgba(255, 68, 68, 0.1); border-left: 3px solid #ff4444;">
+                        <span style="color: #ff4444; min-width: 130px; font-size: 0.9rem;">SEBASTIAN</span>
+                        <span style="color: #64748b; font-size: 0.85rem;">Station Commander — 10-shot rapid barrages</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 8px; background: rgba(255, 68, 68, 0.05); border-left: 3px solid #ff4444;">
+                        <span style="color: #ff4444; min-width: 130px; font-size: 0.9rem;">REGIONAL OPS MGR</span>
+                        <span style="color: #64748b; font-size: 0.85rem;">The Executive — Dual rotating rings (16!)</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 8px; background: rgba(255, 68, 68, 0.1); border-left: 3px solid #ff4444;">
+                        <span style="color: #ff4444; min-width: 130px; font-size: 0.9rem;">AVETTA AI</span>
+                        <span style="color: #64748b; font-size: 0.85rem;">The Algorithm — Cross laser patterns</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 8px; background: rgba(255, 68, 68, 0.05); border-left: 3px solid #ff4444;">
+                        <span style="color: #ff4444; min-width: 130px; font-size: 0.9rem;">JELENA "JELLY"</span>
+                        <span style="color: #64748b; font-size: 0.85rem;">HR Sentinel — 7-wave cascade</span>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%); border: 2px dashed #8b5cf6; border-radius: 4px; text-align: center;">
+                    <div style="color: #c4b5fd; font-family: 'Press Start 2P', cursive; font-size: 0.55rem; margin-bottom: 8px;">??? CLASSIFIED INTEL ???</div>
+                    <div style="color: #a78bfa; font-size: 0.95rem;">
+                        Rumors speak of <span style="color: #f472b6; font-weight: bold;">TWO SECRET BOSSES</span> hidden beyond the warehouse...<br>
+                        <span style="color: #64748b; font-size: 0.85rem; font-style: italic;">One has "evolved" beyond normal form... The other? Not from around here. 🚀</span>
+                    </div>
+                    <div style="color: #64748b; font-size: 0.75rem; margin-top: 8px;">[ CLEARANCE: PIZZA PARTY REQUIRED ]</div>
+                </div>
+            </div>
+
+            <!-- TAB 6: ITEMS -->
+            <div class="tab-content">
+                <div class="manual-page-title" style="color: #22c55e;">ITEMS & POWER-UPS</div>
+                <div style="color: #fbbf24; font-family: 'Press Start 2P', cursive; font-size: 0.65rem; margin-bottom: 15px;">HAZARDS TO FIND</div>
+                <p style="color: #94a3b8; margin-bottom: 12px; font-size: 0.9rem;">Walk over hazards to fix them. Find all 5 to win!</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 25px;">
+                    <div style="background: rgba(251, 191, 36, 0.1); padding: 10px; border: 1px solid #fbbf24; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 1.5rem;">📦</div>
+                        <div style="color: #fbbf24; font-size: 0.8rem;">Blocked Exit</div>
+                    </div>
+                    <div style="background: rgba(251, 191, 36, 0.1); padding: 10px; border: 1px solid #fbbf24; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 1.5rem;">⚡</div>
+                        <div style="color: #fbbf24; font-size: 0.8rem;">Exposed Wire</div>
+                    </div>
+                    <div style="background: rgba(251, 191, 36, 0.1); padding: 10px; border: 1px solid #fbbf24; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 1.5rem;">💧</div>
+                        <div style="color: #fbbf24; font-size: 0.8rem;">Spill Zone</div>
+                    </div>
+                    <div style="background: rgba(251, 191, 36, 0.1); padding: 10px; border: 1px solid #fbbf24; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 1.5rem;">🔧</div>
+                        <div style="color: #fbbf24; font-size: 0.8rem;">Unstable Rack</div>
+                    </div>
+                    <div style="background: rgba(251, 191, 36, 0.1); padding: 10px; border: 1px solid #fbbf24; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 1.5rem;">☕</div>
+                        <div style="color: #fbbf24; font-size: 0.8rem;">Coffee Doom</div>
+                    </div>
+                </div>
+                <div style="color: #22c55e; font-family: 'Press Start 2P', cursive; font-size: 0.65rem; margin-bottom: 15px;">POWER-UPS (YARD LEVEL)</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+                    <div style="background: rgba(59, 130, 246, 0.1); padding: 12px; border: 2px solid #3b82f6; border-radius: 4px;">
+                        <div style="color: #3b82f6; font-weight: bold;">⚡ SPEED BOOST</div>
+                        <div style="color: #94a3b8; font-size: 0.85rem; margin-top: 5px;">5 seconds of zoom-zoom energy!</div>
+                    </div>
+                    <div style="background: rgba(168, 85, 247, 0.1); padding: 12px; border: 2px solid #a855f7; border-radius: 4px;">
+                        <div style="color: #a855f7; font-weight: bold;">🛡️ SHIELD</div>
+                        <div style="color: #94a3b8; font-size: 0.85rem; margin-top: 5px;">3 seconds of invincibility!</div>
+                    </div>
+                    <div style="background: rgba(239, 68, 68, 0.1); padding: 12px; border: 2px solid #ef4444; border-radius: 4px;">
+                        <div style="color: #ef4444; font-weight: bold;">❤️ EXTRA LIFE</div>
+                        <div style="color: #94a3b8; font-size: 0.85rem; margin-top: 5px;">One more chance!</div>
+                    </div>
+                    <div style="background: rgba(251, 191, 36, 0.1); padding: 12px; border: 2px solid #fbbf24; border-radius: 4px;">
+                        <div style="color: #fbbf24; font-weight: bold;">📦 BONUS PKG</div>
+                        <div style="color: #94a3b8; font-size: 0.85rem; margin-top: 5px;">Extra points!</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 7: TIPS -->
+            <div class="tab-content">
+                <div class="manual-page-title" style="color: #f97316;">TIPS FROM THE PROS</div>
+                <div style="display: grid; gap: 12px;">
+                    <div style="padding: 12px; background: rgba(249, 115, 22, 0.1); border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
+                        <span style="color: #f97316; font-weight: bold;">TIP #1:</span>
+                        <span style="color: #94a3b8;"> Keep moving! A stationary target is a written warning waiting to happen.</span>
+                    </div>
+                    <div style="padding: 12px; background: rgba(249, 115, 22, 0.05); border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
+                        <span style="color: #f97316; font-weight: bold;">TIP #2:</span>
+                        <span style="color: #94a3b8;"> Watch for <span style="color: #ff4444;">DESPERATION PHASE</span> at 40% HP. That's when things get SPICY.</span>
+                    </div>
+                    <div style="padding: 12px; background: rgba(249, 115, 22, 0.1); border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
+                        <span style="color: #f97316; font-weight: bold;">TIP #3:</span>
+                        <span style="color: #94a3b8;"> Ops Managers can DEFLECT 10% of attacks. It's infuriating. We know.</span>
+                    </div>
+                    <div style="padding: 12px; background: rgba(249, 115, 22, 0.05); border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
+                        <span style="color: #f97316; font-weight: bold;">TIP #4:</span>
+                        <span style="color: #94a3b8;"> Carrie's 2x boss damage = speed runs. Just don't miss—reload is slow as IT tickets.</span>
+                    </div>
+                    <div style="padding: 12px; background: rgba(249, 115, 22, 0.1); border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
+                        <span style="color: #f97316; font-weight: bold;">TIP #5:</span>
+                        <span style="color: #94a3b8;"> Erwin = HIGH RISK, HIGH REWARD. One life. Maximum speed. Peak Snake energy.</span>
+                    </div>
+                    <div style="padding: 12px; background: rgba(249, 115, 22, 0.05); border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
+                        <span style="color: #f97316; font-weight: bold;">TIP #6:</span>
+                        <span style="color: #94a3b8;"> Listen to the music! When it intensifies, something's about to go down. Probably your HP.</span>
+                    </div>
+                    <div style="padding: 12px; background: rgba(249, 115, 22, 0.1); border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
+                        <span style="color: #f97316; font-weight: bold;">TIP #7:</span>
+                        <span style="color: #94a3b8;"> That fire exit in the corner? ...Probably nothing. Definitely don't investigate it. 👀</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 8: LEGAL -->
+            <div class="tab-content">
+                <div class="manual-page-title" style="color: #64748b;">WARRANTY & LEGAL</div>
+                <div style="color: #64748b; font-size: 0.95rem; line-height: 1.8;">
+                    <p style="text-transform: uppercase; font-size: 0.8rem; margin-bottom: 15px; color: #94a3b8;">LIMITED WARRANTY AGREEMENT</p>
+                    <p>ERWIN ESENER PRODUCTIONS ("we," "us," "the people who made this instead of sleeping") warrants that this game will provide approximately 0 to ∞ hours of entertainment value, depending on your tolerance for warehouse-based humor.</p>
+                    <p style="margin-top: 15px; color: #ff4444;">THIS WARRANTY DOES NOT COVER:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px; color: #94a3b8;">
+                        <li>Emotional damage from boss desperation phases</li>
+                        <li>Carpal tunnel from excessive rule book throwing</li>
+                        <li>Existential crises about actual warehouse jobs</li>
+                        <li>Lost productivity (were you being productive anyway?)</li>
+                        <li>Any resemblance to real persons, living or auditing</li>
+                    </ul>
+                    <p style="margin-top: 20px; padding: 12px; background: rgba(100, 116, 139, 0.1); border: 1px solid #64748b; border-radius: 4px;">
+                        <span style="color: #fbbf24;">FOR CUSTOMER SUPPORT:</span><br>
+                        Please submit a ticket, then wait 3-5 business days while we "escalate" your issue to someone who also doesn't know the answer. Just like real life!
+                    </p>
+                    <div style="text-align: center; margin-top: 25px; padding: 15px; border-top: 2px solid #334155;">
+                        <div style="color: #fbbf24; font-size: 1rem;">Thank you for playing!</div>
+                        <div style="color: #94a3b8; font-size: 0.9rem; margin-top: 8px;">
+                            © 2025 ERWIN ESENER PRODUCTIONS<br>
+                            WHS MEU • DVI1 VIENNA<br>
+                            <span style="font-size: 0.8rem;">All Rights Reserved • Safety First • Rates Second</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button id="prev-btn" class="nav-btn" onclick="prevPage()" disabled>◄ PREV</button>
+            <span id="page-indicator" class="page-indicator">Page 1 of 8</span>
+            <button id="next-btn" class="nav-btn" onclick="nextPage()">NEXT ►</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
 
