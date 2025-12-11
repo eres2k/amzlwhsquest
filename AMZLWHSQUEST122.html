@@ -5120,18 +5120,11 @@ window.addEventListener('keyup', e => {
 });
 
 // --- MOBILE CONTROLS ---
+// Touch handlers for mobile controls (CSS handles visibility via media query)
 function initMobileControls() {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                     ('ontouchstart' in window) ||
-                     (navigator.maxTouchPoints > 0);
-
-    if (!isMobile) return;
-
-    // Show mobile controls
-    const mobileControls = document.getElementById('mobile-controls');
-    if (mobileControls) {
-        mobileControls.style.display = 'flex';
-    }
+    // Only set up touch handlers if touch is available
+    const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    if (!hasTouch) return;
 
     // Vibrate helper
     function vibrate(pattern) {
