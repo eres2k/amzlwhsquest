@@ -1054,11 +1054,18 @@ const AudioSys = {
         start: () => { [440,440,440,660].forEach((f,i)=>setTimeout(()=>AudioSys.playTone(f,'square',0.2,0.2), i*150)); },
         angry: () => AudioSys.playTone(150, 'square', 0.5, 0.2),
         select: () => AudioSys.playTone(550, 'square', 0.1, 0.1),
-        bossIntro: () => { 
+        bossIntro: () => {
             AudioSys.playTone(100, 'sawtooth', 1.0, 0.3);
             setTimeout(() => AudioSys.playTone(80, 'sawtooth', 1.0, 0.3), 200);
         },
-        pop: () => AudioSys.playTone(1200, 'sine', 0.05, 0.1) // New pop sound for banter
+        pop: () => AudioSys.playTone(1200, 'sine', 0.05, 0.1), // New pop sound for banter
+        // Zelda-style secret discovery tune - ascending arpeggio
+        secret: () => {
+            const notes = [392, 440, 494, 523, 587, 659, 698, 784]; // G4-G5 scale
+            notes.forEach((freq, i) => {
+                setTimeout(() => AudioSys.playTone(freq, 'sine', 0.15, 0.12), i * 60);
+            });
+        }
     }
 };
 
@@ -1950,6 +1957,34 @@ function generateAssets() {
         "Simon Unglaube": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceTalking,0,0,48,48,0,0,96,96); }),
         "Jeff Bezos": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.jeffFaceTalking,0,0,48,48,0,0,96,96); })
     };
+
+    // Secret discovery "!" icon - 48x48 for dialog portrait
+    GFX.secretIcon = c(48, 48, ctx => {
+        // Gradient background circle
+        const grad = ctx.createRadialGradient(24, 24, 8, 24, 24, 24);
+        grad.addColorStop(0, '#fbbf24');
+        grad.addColorStop(0.7, '#f59e0b');
+        grad.addColorStop(1, '#d97706');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(24, 24, 22, 0, Math.PI * 2);
+        ctx.fill();
+        // Border
+        ctx.strokeStyle = '#92400e';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        // Big exclamation mark
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 32px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('!', 24, 22);
+        // Shadow for depth
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillText('!', 25, 23);
+        ctx.fillStyle = '#fff';
+        ctx.fillText('!', 24, 22);
+    });
 
     // ENHANCED SIMON BOSS - 32x32 detailed sprite - Short brown hair, glasses, brown beard
     GFX.simonBoss = c(32,32, ctx => {
@@ -4770,12 +4805,15 @@ function resetGame() {
     GAME.hiddenDoor = null; GAME.yard = null; GAME.mecha = null;
     GAME.nextState = 'PLAY'; GAME.aiResultText = null;
     GAME.startTime = Date.now(); GAME.booksFired = 0; GAME.opsPushed = 0;
-    
+
     generateMap();
     GAME.entities.push({ type: 'simon', x: 100, y: 80, w: 16, h: 16 });
     document.getElementById('hud-layer').style.display = 'block'; updateHud();
     document.getElementById('boss-hud').style.display = 'none';
-    
+
+    // Start warehouse theme immediately when mission intro begins
+    MusicSys.play('ingame');
+
     // --- INTRO DIALOGUE SEQUENCE ---
     GAME.introDialogueStep = 0;
     const currentGen = GAME.genId;
@@ -4793,7 +4831,6 @@ function resetGame() {
              showIntroDialog(finalText, "Simon Unglaube", true);
         }
     });
-    updateMusicForState();
 }
 
 function generateMap() {
@@ -5157,7 +5194,7 @@ function startYardLevel() {
     GAME.projectiles = [];
     GAME.particles = [];
     GAME.floatingTexts = [];
-    updateMusicForState();
+    // Don't start yard music here - it will start when Simon's safety speech dialog closes
 
     // Show Simon's yard safety tip
     const safetyTip = SIMON_YARD_TIPS[Math.floor(Math.random() * SIMON_YARD_TIPS.length)];
@@ -7225,8 +7262,8 @@ function tryInteract() {
 
     // Check if player is near fire exit door after exactly 4 hazards cleared
     if (GAME.issuesFixed >= 4 && GAME.fireExitDoor && Math.hypot(p.x - GAME.fireExitDoor.x, p.y - GAME.fireExitDoor.y) < 20) {
-        AudioSys.sfx.alert();
-        showDialog("You found the hidden exit!\n\nYou step through the fire door into the Amazon yard...", "System", null, false);
+        AudioSys.sfx.secret(); // Zelda-style secret discovery tune
+        showDialog("You found a hidden exit!\n\nYou step through the fire door into the Amazon yard...", "SECRET", GFX.secretIcon, false);
         GAME.nextState = 'YARD_INTRO';
         return true;
     }
