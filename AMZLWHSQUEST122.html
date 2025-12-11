@@ -17,9 +17,16 @@
         body {
             margin: 0; padding: 0;
             background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a12 50%, #000 100%);
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            min-height: 100vh; overflow-x: hidden;
             font-family: 'Press Start 2P', monospace; color: white; user-select: none;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
         }
 
         #game-wrapper {
@@ -283,24 +290,24 @@
 
         /* MOBILE CONTROLS */
         #mobile-controls {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 20px;
+            display: flex;
+            width: 768px;
+            padding: 15px 20px;
             justify-content: space-between;
-            align-items: flex-end;
-            z-index: 2000;
-            pointer-events: none;
+            align-items: center;
+            box-sizing: border-box;
+            background: linear-gradient(180deg, rgba(10, 10, 20, 0.9) 0%, rgba(5, 5, 15, 0.95) 100%);
+            border: 3px solid #333;
+            border-top: none;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
         }
 
         /* D-PAD CONTAINER */
         .dpad-container {
             position: relative;
-            width: 140px;
-            height: 140px;
-            pointer-events: auto;
+            width: 120px;
+            height: 120px;
         }
 
         .dpad-btn {
@@ -372,7 +379,8 @@
 
         /* ACTION BUTTON */
         .action-container {
-            pointer-events: auto;
+            display: flex;
+            align-items: center;
         }
 
         #action-btn {
@@ -408,48 +416,28 @@
 
         /* Responsive adjustments for mobile */
         @media (max-width: 900px) {
-            #game-wrapper {
-                width: 100vw;
-                height: auto;
-                aspect-ratio: 768 / 672;
-                max-height: 60vh;
-                border-radius: 0;
-            }
-
-            #game-wrapper::before {
-                border-radius: 0;
-            }
-
             body {
-                align-items: flex-start;
+                justify-content: flex-start;
                 padding-top: 10px;
             }
 
+            #game-wrapper {
+                width: 95vw;
+                max-width: 768px;
+                height: auto;
+                aspect-ratio: 768 / 672;
+                border-radius: 16px 16px 0 0;
+            }
+
+            #game-wrapper::before {
+                border-radius: 20px 20px 0 0;
+            }
+
             #mobile-controls {
-                padding: 15px 25px 30px 25px;
-            }
-
-            .dpad-container {
-                width: 130px;
-                height: 130px;
-            }
-
-            .dpad-btn {
-                width: 44px;
-                height: 44px;
-                font-size: 18px;
-            }
-
-            #action-btn {
-                width: 75px;
-                height: 75px;
-                font-size: 11px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            #mobile-controls {
-                padding: 10px 15px 25px 15px;
+                width: 95vw;
+                max-width: 768px;
+                padding: 12px 20px;
+                border-radius: 0 0 16px 16px;
             }
 
             .dpad-container {
@@ -458,10 +446,9 @@
             }
 
             .dpad-btn {
-                width: 38px;
-                height: 38px;
+                width: 42px;
+                height: 42px;
                 font-size: 16px;
-                border-width: 2px;
             }
 
             .dpad-center {
@@ -470,8 +457,55 @@
             }
 
             #action-btn {
-                width: 65px;
-                height: 65px;
+                width: 70px;
+                height: 70px;
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-top: 5px;
+            }
+
+            #game-wrapper {
+                width: 100vw;
+                border-radius: 0;
+            }
+
+            #game-wrapper::before {
+                border-radius: 0;
+            }
+
+            #mobile-controls {
+                width: 100vw;
+                max-width: none;
+                padding: 10px 15px;
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+
+            .dpad-container {
+                width: 100px;
+                height: 100px;
+            }
+
+            .dpad-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 14px;
+                border-width: 2px;
+            }
+
+            .dpad-center {
+                width: 26px;
+                height: 26px;
+            }
+
+            #action-btn {
+                width: 60px;
+                height: 60px;
                 font-size: 10px;
                 border-width: 3px;
             }
@@ -480,6 +514,7 @@
 </head>
 <body>
 
+<div id="game-container">
     <div id="game-wrapper">
         <div id="ai-status">AI Status: Init</div>
         <canvas id="gameCanvas" width="256" height="224"></canvas>
@@ -536,7 +571,7 @@
             <div id="action-btn">ATK</div>
         </div>
     </div>
-
+</div>
 
 <script type="module">
 // --- CONFIG ---
