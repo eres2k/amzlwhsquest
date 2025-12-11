@@ -931,7 +931,7 @@
                 <div style="display:flex; flex-direction:column; width:100%;">
                     <div id="gemini-badge" class="gemini-badge"></div>
                     <div id="text-content"></div>
-                    <div id="press-space-hint">▼ PRESS SPACE</div>
+                    <div id="press-space-hint">▼ TAP / SPACE</div>
                 </div>
             </div>
 
@@ -944,7 +944,7 @@
                 <div id="intro-dialog-content">
                     <div id="intro-gemini-badge" class="gemini-badge"></div>
                     <div id="intro-text-content"></div>
-                    <div id="intro-press-space-hint">▼ PRESS SPACE</div>
+                    <div id="intro-press-space-hint">▼ TAP / SPACE</div>
                 </div>
             </div>
         </div>
@@ -5673,6 +5673,43 @@ function initMobileControls() {
             actionBtn.classList.remove('pressed');
         });
     }
+
+    // Make dialog boxes tappable to advance (so A button works as Space in menus)
+    const introWindow = document.getElementById('intro-portrait-window');
+    if (introWindow) {
+        introWindow.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            VibrationSystem.onActionButton();
+            if (!KEYS.action) handleAction();
+            KEYS.action = true;
+        }, { passive: false });
+        introWindow.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            KEYS.action = false;
+        }, { passive: false });
+        introWindow.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!KEYS.action) handleAction();
+        });
+    }
+
+    const dialogBox = document.getElementById('dialog-box');
+    if (dialogBox) {
+        dialogBox.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            VibrationSystem.onActionButton();
+            if (!KEYS.action) handleAction();
+            KEYS.action = true;
+        }, { passive: false });
+        dialogBox.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            KEYS.action = false;
+        }, { passive: false });
+        dialogBox.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!KEYS.action) handleAction();
+        });
+    }
 }
 
 // Initialize mobile controls when DOM is ready
@@ -6827,7 +6864,7 @@ function update() {
     if (GAME.state === 'DIALOG') {
         // Update press-space-hint
         const hintEl = document.getElementById('press-space-hint');
-        hintEl.innerText = '▼ PRESS SPACE';
+        hintEl.innerText = '▼ TAP / SPACE';
         hintEl.style.color = '#ffd700';
         hintEl.style.animation = 'blink 0.8s ease-in-out infinite';
 
