@@ -7732,9 +7732,9 @@ function updateBoss() {
         b.lowHealthAttackTriggered = true;
         b.desperationMode = true; // 🔥 ENRAGED STATE - 30% faster, 10% blocked, 10% deflected!
 
-        // 🔥 RESTORE BOSS HEALTH TO 50% with animated restoration
+        // 🔥 RESTORE BOSS HEALTH TO 30% with animated restoration
         {
-            const targetHp = Math.floor(b.maxHp * 0.5);
+            const targetHp = Math.floor(b.maxHp * 0.3);
             const startHp = b.hp;
 
             // Animate health bar restoration over 2 seconds
