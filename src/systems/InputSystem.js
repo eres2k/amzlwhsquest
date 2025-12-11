@@ -46,10 +46,8 @@ export class InputSystem {
             if (e.code === 'Space') this.keys.action = false;
         });
 
-        // Initialize mobile controls if on mobile
-        if (this.isMobile) {
-            this.initMobileControls();
-        }
+        // Always initialize mobile controls (they're always visible below the game)
+        this.initMobileControls();
     }
 
     detectMobile() {
@@ -65,12 +63,6 @@ export class InputSystem {
     }
 
     initMobileControls() {
-        // Show mobile controls container
-        const mobileControls = document.getElementById('mobile-controls');
-        if (mobileControls) {
-            mobileControls.style.display = 'flex';
-        }
-
         // D-Pad buttons
         this.setupDpadButton('dpad-up', 'up');
         this.setupDpadButton('dpad-down', 'down');
@@ -99,14 +91,6 @@ export class InputSystem {
             actionBtn.addEventListener('touchcancel', (e) => {
                 this.keys.action = false;
                 actionBtn.classList.remove('pressed');
-            }, { passive: false });
-        }
-
-        // Prevent default touch behaviors on the game wrapper
-        const gameWrapper = document.getElementById('game-wrapper');
-        if (gameWrapper) {
-            gameWrapper.addEventListener('touchmove', (e) => {
-                e.preventDefault();
             }, { passive: false });
         }
     }
