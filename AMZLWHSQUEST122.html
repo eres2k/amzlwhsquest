@@ -4759,6 +4759,7 @@ function resetGame() {
     GAME.genId++;
     GAME.gameOverTriggered = false;
     GAME.mechaSimonDefeat = false; // Reset Mecha Mega Simon defeat flag
+    GAME.creditsStarted = false; // Reset credits flag for new playthrough
     const stats = getCharStats(GAME.selectedChar);
     GAME.player = { x: 100, y: 100, dir: 0, speed: stats.speed, iframe: 0, cooldown: 0, cooldownMax: 120 };
     GAME.entities = []; GAME.projectiles = []; GAME.particles = []; GAME.floatingTexts = [];
@@ -4951,7 +4952,7 @@ function triggerFakeVictoryDialogue() {
         if (GAME.state !== 'SIMON_FAKE_VICTORY') return;
 
         // Phase 1: Player expresses surprise (~2 seconds)
-        showDialog("That was... surprisingly easy?", GAME.selectedChar, GFX.chars[GAME.selectedChar], false);
+        showDialog("That was... surprisingly easy?", GAME.selectedChar, GFX.charFaces[GAME.selectedChar], false);
         GAME.fakeVictoryPhase = 1;
         GAME.nextState = 'SIMON_FAKE_VICTORY_CONTINUE';
     }, 500);
@@ -7552,6 +7553,12 @@ function closeIntroDialog() {
     document.getElementById('intro-portrait-window').style.display = 'none';
     GAME.state = GAME.nextState;
 
+    // If transitioning to credits, initialize immediately (before next draw call)
+    if (GAME.state === 'CREDITS') {
+        startCredits();
+        return;
+    }
+
     // Handle intro dialogue sequence - player responds to Simon in INTRO WINDOW
     if (GAME.state === 'INTRO_DIALOGUE_CONTINUE') {
         const currentGen = GAME.genId;
@@ -7773,10 +7780,16 @@ function closeDialog() {
 
     GAME.state = GAME.nextState;
 
+    // If transitioning to credits, initialize immediately (before next draw call)
+    if (GAME.state === 'CREDITS') {
+        startCredits();
+        return;
+    }
+
     // Handle boss taunt player reply
     if (GAME.state === 'BOSS_TAUNT_PLAYER_REPLY' && GAME.boss) {
         const currentGen = GAME.genId;
-        const playerPortrait = GFX.chars[GAME.selectedChar];
+        const playerPortrait = GFX.charFaces[GAME.selectedChar]; // Use 48x48 face portrait, not 16x16 sprite
         const charData = CHAR_DATA[GAME.selectedChar] || {};
         const personality = charData.backstory || "a dedicated WHS coordinator";
 
