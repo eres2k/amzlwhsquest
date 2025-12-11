@@ -288,9 +288,9 @@
             z-index: 2000;
         }
 
-        /* MOBILE CONTROLS */
+        /* MOBILE CONTROLS - Hidden by default, shown on touch devices */
         #mobile-controls {
-            display: flex;
+            display: none;
             width: 768px;
             padding: 15px 20px;
             justify-content: space-between;
@@ -301,6 +301,13 @@
             border-top: none;
             border-radius: 0 0 20px 20px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Show on touch/mobile devices */
+        @media (hover: none) and (pointer: coarse) {
+            #mobile-controls {
+                display: flex;
+            }
         }
 
         /* D-PAD CONTAINER */
@@ -568,7 +575,7 @@
             <div id="dpad-down" class="dpad-btn">▼</div>
         </div>
         <div class="action-container">
-            <div id="action-btn">ATK</div>
+            <div id="action-btn">A</div>
         </div>
     </div>
 </div>
