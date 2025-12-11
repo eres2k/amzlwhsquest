@@ -63,6 +63,14 @@ export class InputSystem {
     }
 
     initMobileControls() {
+        // Show mobile controls via JS if mobile detected (more reliable than CSS media queries)
+        if (this.isMobile) {
+            const mobileControls = document.getElementById('mobile-controls');
+            if (mobileControls) {
+                mobileControls.style.display = 'flex';
+            }
+        }
+
         // D-Pad buttons
         this.setupDpadButton('dpad-up', 'up');
         this.setupDpadButton('dpad-down', 'down');
