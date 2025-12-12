@@ -14,11 +14,15 @@
             --accent-orange: #ff9900;
         }
 
+        html, body {
+            overflow-x: hidden;
+        }
+
         body {
             margin: 0; padding: 0;
             background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a12 50%, #000 100%);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            min-height: 100vh; overflow-x: hidden;
+            min-height: 100vh;
             font-family: 'Press Start 2P', monospace; color: white; user-select: none;
         }
 
@@ -159,7 +163,7 @@
                 inset 0 0 20px rgba(255, 215, 0, 0.15);
             z-index: 1000;
             width: 70%;
-            max-width: 320px;
+            max-width: 450px;
             max-height: 90%;
             pointer-events: auto;
             animation: intro-window-appear 0.3s ease-out;
