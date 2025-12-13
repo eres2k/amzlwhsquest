@@ -4953,6 +4953,103 @@ function generateAssets() {
         ctx.fillRect(3,9,1,2);
     });
 
+    // 5S FLOOR MARKINGS - Amazon warehouse style
+    // Yellow walkway line (horizontal)
+    GFX.floor5sLineH = c(16,16, ctx => {
+        // Base floor
+        ctx.fillStyle = '#3a3f4a';
+        ctx.fillRect(0,0,16,16);
+        // Yellow walkway tape - horizontal
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(0,6,16,4);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(0,7,16,2);
+    });
+
+    // Yellow walkway line (vertical)
+    GFX.floor5sLineV = c(16,16, ctx => {
+        // Base floor
+        ctx.fillStyle = '#3a3f4a';
+        ctx.fillRect(0,0,16,16);
+        // Yellow walkway tape - vertical
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(6,0,4,16);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(7,0,2,16);
+    });
+
+    // Yellow walkway corner (top-left to bottom)
+    GFX.floor5sCornerTL = c(16,16, ctx => {
+        ctx.fillStyle = '#3a3f4a';
+        ctx.fillRect(0,0,16,16);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(6,6,10,4);
+        ctx.fillRect(6,6,4,10);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(7,7,9,2);
+        ctx.fillRect(7,7,2,9);
+    });
+
+    // Yellow walkway corner (top-right to bottom)
+    GFX.floor5sCornerTR = c(16,16, ctx => {
+        ctx.fillStyle = '#3a3f4a';
+        ctx.fillRect(0,0,16,16);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(0,6,10,4);
+        ctx.fillRect(6,6,4,10);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(0,7,9,2);
+        ctx.fillRect(7,7,2,9);
+    });
+
+    // Hazard zone tape (yellow/black diagonal stripes)
+    GFX.floor5sHazard = c(16,16, ctx => {
+        ctx.fillStyle = '#3a3f4a';
+        ctx.fillRect(0,0,16,16);
+        // Yellow/black hazard stripes on edges
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(0,0,16,3);
+        ctx.fillRect(0,13,16,3);
+        // Black stripes
+        ctx.fillStyle = '#1f2937';
+        for (let i = 0; i < 8; i++) {
+            ctx.fillRect(i*4, 0, 2, 3);
+            ctx.fillRect(i*4+2, 13, 2, 3);
+        }
+    });
+
+    // Pedestrian crossing / zebra marking
+    GFX.floor5sZebra = c(16,16, ctx => {
+        ctx.fillStyle = '#3a3f4a';
+        ctx.fillRect(0,0,16,16);
+        // White zebra stripes
+        ctx.fillStyle = '#e5e7eb';
+        ctx.fillRect(0,2,16,2);
+        ctx.fillRect(0,6,16,2);
+        ctx.fillRect(0,10,16,2);
+        ctx.fillRect(0,14,16,2);
+    });
+
+    // Equipment zone (blue marking)
+    GFX.floor5sEquip = c(16,16, ctx => {
+        ctx.fillStyle = '#3a3f4a';
+        ctx.fillRect(0,0,16,16);
+        // Blue equipment zone border
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(1,1,14,14);
+        // Blue corner marks
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(0,0,4,2);
+        ctx.fillRect(0,0,2,4);
+        ctx.fillRect(12,0,4,2);
+        ctx.fillRect(14,0,2,4);
+        ctx.fillRect(0,14,4,2);
+        ctx.fillRect(0,12,2,4);
+        ctx.fillRect(12,14,4,2);
+        ctx.fillRect(14,12,2,4);
+    });
+
     // ENHANCED WAREHOUSE WALL - Amazon orange shelf racking with packages
     GFX.wall = c(16,16, ctx => {
         // Metal shelf frame (orange Amazon-style)
@@ -6116,9 +6213,11 @@ const PPE_ITEMS = [
       desc: 'Auto-Tag Hazards, +1s Invuln', context: 'EN 812 with integrated HMI display', buff: { type: 'multi', effects: [{ type: 'hazard_reveal', value: 1 }, { type: 'iframe', value: 60 }] } },
     { id: 'quantum_vest', name: 'Quantum Shield Vest', cost: 10000, icon: 'quantum',
       desc: '25% Dmg Reflect, Regen 1HP/20s', context: 'Experimental OSHA-X prototype tech', buff: { type: 'multi', effects: [{ type: 'reflect', value: 0.25 }, { type: 'regen', value: 1200 }] } },
-    // === SPECIAL ACTION: Return All PPE ===
+    // === SPECIAL ACTIONS ===
     { id: 'return_all', name: '>> RETURN ALL PPE <<', cost: 0, icon: 'return',
-      desc: 'Return ALL items for full refund', context: 'Full PPE reset - get your Safety Points back!', buff: null, isAction: true }
+      desc: 'Return ALL items for full refund', context: 'Full PPE reset - get your Safety Points back!', buff: null, isAction: true },
+    { id: 'exit_shop', name: '>> EXIT SHOP <<', cost: 0, icon: 'exit',
+      desc: 'Leave the Safety Locker', context: 'Return to the warehouse floor', buff: null, isAction: true, isExit: true }
 ];
 
 // --- GAME STATE ---
@@ -7241,17 +7340,6 @@ if (gameCanvas) {
         const x = (touch.clientX - rect.left) * scaleX;
         const y = (touch.clientY - rect.top) * scaleY;
 
-        // PPE Shop return button
-        if (GAME.state === 'PPE_SHOP' && GAME.ppeReturnButton) {
-            const btn = GAME.ppeReturnButton;
-            if (x >= btn.x && x <= btn.x + btn.w && y >= btn.y && y <= btn.y + btn.h) {
-                e.preventDefault();
-                VibrationSystem.onButtonPress();
-                exitPPEShop();
-                return;
-            }
-        }
-
         // PPE Dialog menu options (tap to select and confirm)
         if (GAME.state === 'PPE_DIALOG' && GAME.ppeDialogButtons) {
             for (let i = 0; i < GAME.ppeDialogButtons.length; i++) {
@@ -7409,6 +7497,15 @@ function handleAction() {
                 });
                 saveGameProgress();
             }
+            return;
+        }
+
+        // === SPECIAL ACTION: Exit Shop ===
+        if (item.id === 'exit_shop' || item.isExit) {
+            AudioSys.sfx.step();
+            GAME.state = 'PLAY';
+            GAME.shopMessage = null;
+            GAME.shopMessageTimer = 0;
             return;
         }
 
@@ -15151,7 +15248,7 @@ function draw() {
         const glowIntensity = Math.sin(t * 0.08) * 0.3 + 0.7;
         ctx.shadowColor = '#ff9900';
         ctx.shadowBlur = 12 * glowIntensity;
-        ctx.font = '14px "Press Start 2P"';
+        ctx.font = '12px "Press Start 2P"';
         const warehouseCode = getWarehouseCode();
         ctx.fillStyle = '#7c2d12';
         ctx.fillText(warehouseCode, canvas.width / 2 + 2, 52);
@@ -15165,7 +15262,7 @@ function draw() {
         ctx.shadowColor = '#22d3ee';
         ctx.shadowBlur = 6;
         ctx.fillStyle = '#22d3ee';
-        ctx.font = '6px "Press Start 2P"';
+        ctx.font = '5px "Press Start 2P"';
         ctx.fillText('DELIVERY STATION', canvas.width / 2, 65);
         ctx.shadowBlur = 0;
 
@@ -15177,34 +15274,34 @@ function draw() {
 
         // Story text with styling
         ctx.textAlign = 'left';
-        ctx.font = '7px "Press Start 2P"';
+        ctx.font = '6px "Press Start 2P"';
 
         ctx.fillStyle = '#94a3b8';
         ctx.fillText('Ops Managers obsess over', 30, 100);
         ctx.fillStyle = '#ef4444';
-        ctx.fillText('rates.', 180, 100);
+        ctx.fillText('rates.', 175, 100);
 
         ctx.fillStyle = '#94a3b8';
-        ctx.fillText('They throw', 30, 120);
+        ctx.fillText('They throw', 30, 118);
         ctx.fillStyle = '#f97316';
-        ctx.fillText('Crazy Requests.', 105, 120);
+        ctx.fillText('Crazy Requests.', 100, 118);
 
         ctx.fillStyle = '#94a3b8';
-        ctx.fillText('You must protect', 30, 140);
+        ctx.fillText('You must protect', 30, 136);
         ctx.fillStyle = '#22c55e';
-        ctx.fillText('Safety.', 155, 140);
+        ctx.fillText('Safety.', 145, 136);
 
         ctx.fillStyle = '#94a3b8';
-        ctx.fillText('Stop runners.', 30, 160);
+        ctx.fillText('Stop runners.', 30, 154);
         ctx.fillStyle = '#22d3ee';
-        ctx.fillText('Fix hazards.', 130, 160);
+        ctx.fillText('Fix hazards.', 120, 154);
 
         // Animated prompt
         ctx.textAlign = 'center';
         const blink = Math.sin(t * 0.12) > 0;
         if (blink) {
             ctx.fillStyle = '#fff';
-            ctx.font = '7px "Press Start 2P"';
+            ctx.font = '6px "Press Start 2P"';
             ctx.fillText('[SPACE TO SKIP]', canvas.width / 2, 195);
         }
 
@@ -15680,63 +15777,68 @@ function draw() {
         ctx.strokeRect(mX, mY, mW, mH);
         ctx.shadowBlur = 0;
 
-        // Draw Simon's portrait (left side, conversation style)
-        const portraitX = mX + 10;
-        const portraitY = mY + 12;
-        const portraitSize = 48;
+        // Draw Simon's portrait (small, top-left corner)
+        const portraitX = mX + 8;
+        const portraitY = mY + 8;
+        const portraitSize = 32;
 
-        // Portrait background
         ctx.fillStyle = '#1a1a2e';
         ctx.fillRect(portraitX, portraitY, portraitSize, portraitSize);
         ctx.strokeStyle = '#ffd700';
         ctx.lineWidth = 2;
         ctx.strokeRect(portraitX, portraitY, portraitSize, portraitSize);
 
-        // Draw Simon's face
         if (GFX.simonFaceLarge) {
             ctx.imageSmoothingEnabled = false;
             ctx.drawImage(GFX.simonFaceLarge, portraitX, portraitY, portraitSize, portraitSize);
         }
 
-        // Speaker name under portrait
-        crispText('SIMON', portraitX + portraitSize / 2, portraitY + portraitSize + 12, '8px monospace', '#ffd700', 'center');
+        // Speaker name next to portrait
+        crispText('SIMON', portraitX + portraitSize + 6, portraitY + 20, '7px monospace', '#ffd700', 'left');
 
-        // Content area (to the right of portrait)
-        const contentX = portraitX + portraitSize + 12;
-        const contentY = mY + 14;
-        const contentW = mW - portraitSize - 36;
+        // Full-width content area
+        const contentX = mX + 12;
+        const contentY = portraitY + portraitSize + 8;
+        const contentW = mW - 24;
 
         if (modal.loading) {
-            // Loading animation (conversation style)
             const dots = '.'.repeat((Math.floor(t / 20) % 4));
             crispText(getLocalizedText('loading').replace('...', '') + dots, contentX, contentY + 30, '10px monospace', '#f0f0ff', 'left');
         } else {
-            // Hazard name header (golden, prominent)
-            const hazardNameTrunc = modal.hazardName.length > 22 ? modal.hazardName.substring(0, 22) + '..' : modal.hazardName;
-            crispText(hazardNameTrunc, contentX, contentY + 4, '9px monospace', '#ffd700', 'left');
+            // Hazard name header (golden, prominent) - full width
+            const hazardNameTrunc = modal.hazardName.length > 30 ? modal.hazardName.substring(0, 30) + '..' : modal.hazardName;
+            crispText(hazardNameTrunc, contentX, contentY, '8px monospace', '#ffd700', 'left');
 
-            // Region badge
-            const regionBadgeX = contentX;
-            const regionBadgeY = contentY + 10;
+            // Region badge (inline with name)
+            const regionBadgeX = mW - 55;
             ctx.fillStyle = '#1e40af';
-            ctx.fillRect(regionBadgeX, regionBadgeY, 55, 11);
-            crispText(modal.regionName, regionBadgeX + 3, regionBadgeY + 8, '7px monospace', '#22d3ee', 'left');
+            ctx.fillRect(regionBadgeX, contentY - 8, 45, 11);
+            crispText(modal.regionName, regionBadgeX + 3, contentY, '6px monospace', '#22d3ee', 'left');
 
-            // Regulation citation box
-            const regBoxY = contentY + 26;
+            // Regulation citation box - full width with auto-scroll
+            const regBoxY = contentY + 8;
             ctx.fillStyle = 'rgba(26, 26, 46, 0.8)';
-            ctx.fillRect(contentX - 2, regBoxY, contentW + 4, 22);
+            ctx.fillRect(contentX - 2, regBoxY, contentW + 4, 20);
             ctx.strokeStyle = '#3b82f6';
             ctx.lineWidth = 1;
-            ctx.strokeRect(contentX - 2, regBoxY, contentW + 4, 22);
+            ctx.strokeRect(contentX - 2, regBoxY, contentW + 4, 20);
 
-            const regTrunc = modal.regulation.length > 28 ? modal.regulation.substring(0, 28) + '..' : modal.regulation;
-            crispText(regTrunc, contentX + 2, regBoxY + 9, '7px monospace', '#60a5fa', 'left');
-            const titleTrunc = modal.title.length > 32 ? modal.title.substring(0, 32) + '..' : modal.title;
-            crispText(titleTrunc, contentX + 2, regBoxY + 18, '6px monospace', '#94a3b8', 'left');
+            // Auto-scroll regulation text if too long
+            const regFullText = modal.regulation + ' - ' + modal.title;
+            const regScrollSpeed = 0.5;
+            const regMaxVisible = 42;
+            let regDisplayText = regFullText;
+            if (regFullText.length > regMaxVisible) {
+                // Create scrolling text effect
+                const scrollPos = Math.floor(t * regScrollSpeed) % (regFullText.length + 10);
+                const paddedText = regFullText + '          ' + regFullText;
+                regDisplayText = paddedText.substring(scrollPos, scrollPos + regMaxVisible);
+            }
+            crispText(regDisplayText, contentX + 2, regBoxY + 13, '6px monospace', '#60a5fa', 'left');
 
-            // Summary section (conversation text style)
-            const summaryY = regBoxY + 30;
+            // Summary section - FULL WIDTH, limited to key info
+            const summaryY = regBoxY + 28;
+            const summaryW = contentW;
 
             const wrapTextLines = (text, maxChars) => {
                 const words = text.split(' '); const lines = []; let line = '';
@@ -15749,14 +15851,16 @@ function draw() {
                 return lines;
             };
 
-            const summaryLines = wrapTextLines(modal.summary, 30);
-            const maxVisibleLines = 6;
+            // Limit summary to first 200 chars for focus on key info
+            const limitedSummary = modal.summary.length > 200 ? modal.summary.substring(0, 200) + '...' : modal.summary;
+            const summaryLines = wrapTextLines(limitedSummary, 38); // Wider wrap for full width
+            const maxVisibleLines = 8;
             const scrollOffset = modal.scrollOffset || 0;
             const visibleLines = summaryLines.slice(scrollOffset, scrollOffset + maxVisibleLines);
-            const lineHeight = 11;
+            const lineHeight = 10;
 
             visibleLines.forEach((line, i) => {
-                crispText(line, contentX, summaryY + i * lineHeight, '7px monospace', '#f0f0ff', 'left');
+                crispText(line, contentX, summaryY + i * lineHeight, '6px monospace', '#f0f0ff', 'left');
             });
 
             // Update max scroll
@@ -15765,23 +15869,23 @@ function draw() {
             // Scroll indicators (right side)
             if (summaryLines.length > maxVisibleLines) {
                 if (scrollOffset > 0) {
-                    crispText('\u25B2', mW - 8, summaryY + 5, '10px monospace', '#ffd700', 'left');
+                    crispText('\u25B2', mW - 6, summaryY + 5, '8px monospace', '#ffd700', 'left');
                 }
                 if (scrollOffset < modal.maxScroll) {
-                    crispText('\u25BC', mW - 8, summaryY + 55, '10px monospace', '#ffd700', 'left');
+                    crispText('\u25BC', mW - 6, summaryY + 70, '8px monospace', '#ffd700', 'left');
                 }
             }
 
             // MEU comparison badge
             if (modal.region === 'MEU') {
-                const meuY = summaryY + 68;
+                const meuY = mY + mH - 34;
                 ctx.fillStyle = '#1e40af';
-                ctx.fillRect(contentX - 2, meuY, contentW + 4, 14);
+                ctx.fillRect(contentX - 2, meuY, contentW + 4, 12);
                 ctx.strokeStyle = '#3b82f6';
                 ctx.lineWidth = 1;
-                ctx.strokeRect(contentX - 2, meuY, contentW + 4, 14);
+                ctx.strokeRect(contentX - 2, meuY, contentW + 4, 12);
 
-                crispText(getLocalizedText('multi_country'), contentX + contentW / 2, meuY + 10, '6px monospace', '#22d3ee', 'center');
+                crispText(getLocalizedText('multi_country'), canvas.width / 2, meuY + 9, '5px monospace', '#22d3ee', 'center');
             }
         }
 
@@ -16083,56 +16187,15 @@ function draw() {
             ctx.fillText(getLocalizedText('next') + ' \u25B6', panelW - 40, pageY);
         }
 
-        // AI Message area (conversation style)
-        const msgY = panelY + panelH - 50;
-        ctx.fillStyle = 'rgba(26, 26, 46, 0.8)';
-        ctx.fillRect(panelX + 6, msgY, panelW - 12, 30);
-        ctx.strokeStyle = '#ffd700';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(panelX + 6, msgY, panelW - 12, 30);
-
-        // Simon's message
-        if (GAME.shopMessage && GAME.shopMessageTimer > 0) {
-            ctx.fillStyle = '#f0f0ff';
-            ctx.font = '6px monospace';
-            ctx.textAlign = 'left';
-            const msgLines = GAME.shopMessage.split('\n').slice(0, 2);
-            msgLines.forEach((line, i) => {
-                const truncLine = line.length > 42 ? line.substring(0, 42) + '...' : line;
-                ctx.fillText(truncLine, panelX + 10, msgY + 10 + i * 10);
-            });
-        } else {
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '6px monospace';
-            ctx.textAlign = 'left';
-            ctx.fillText(getLocalizedText('select_ppe'), panelX + 10, msgY + 16);
-        }
-
-        // Return button (conversation style)
-        const returnBtnX = panelW - 50;
-        const returnBtnY = panelY + panelH - 18;
-        const returnBtnW = 48;
-        const returnBtnH = 14;
-        GAME.ppeReturnButton = { x: returnBtnX, y: returnBtnY, w: returnBtnW, h: returnBtnH };
-
-        ctx.fillStyle = '#7f1d1d';
-        ctx.fillRect(returnBtnX, returnBtnY, returnBtnW, returnBtnH);
-        ctx.strokeStyle = '#ef4444';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(returnBtnX, returnBtnY, returnBtnW, returnBtnH);
-        ctx.fillStyle = '#fff';
-        ctx.font = '7px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(getLocalizedText('leave'), returnBtnX + returnBtnW / 2, returnBtnY + 10);
-
-        // Controls footer (conversation style)
+        // Controls footer (conversation style) - full width since exit is now a list item
         ctx.fillStyle = 'rgba(31, 41, 55, 0.9)';
-        ctx.fillRect(panelX + 4, panelY + panelH - 18, panelW - 60, 14);
+        ctx.fillRect(panelX + 4, panelY + panelH - 18, panelW - 8, 14);
 
         const blink = Math.sin(t * 0.12) > 0;
         ctx.fillStyle = blink ? '#ffd700' : '#64748b';
         ctx.font = '6px monospace';
-        ctx.fillText('\u25B2\u25BC | SPACE', panelX + 60, panelY + panelH - 9);
+        ctx.textAlign = 'center';
+        ctx.fillText('\u25B2\u25BC ' + getLocalizedText('scroll') + ' | SPACE', canvas.width / 2, panelY + panelH - 9);
 
         ctx.textAlign = 'left';
         ctx.restore(); return;
@@ -16609,6 +16672,54 @@ function draw() {
                     ctx.drawImage(GFX.floor, dx, dy);
                 }
             }
+        }
+    }
+
+    // Draw 5S floor markings (Amazon warehouse style)
+    // Main horizontal walkways
+    const walkwayY1 = 10; // Upper walkway
+    const walkwayY2 = MAP_H - 8; // Lower walkway
+    for (let x = 3; x < MAP_W - 3; x++) {
+        const dx1 = x * TILE_SIZE - cx;
+        const dy1 = walkwayY1 * TILE_SIZE - cy;
+        const dy2 = walkwayY2 * TILE_SIZE - cy;
+        if (dx1 > -20 && dx1 < 270) {
+            if (dy1 > -20 && dy1 < 250) ctx.drawImage(GFX.floor5sLineH, dx1, dy1);
+            if (dy2 > -20 && dy2 < 250) ctx.drawImage(GFX.floor5sLineH, dx1, dy2);
+        }
+    }
+    // Main vertical walkways (aisles)
+    const walkwayX1 = 6; // Left aisle
+    const walkwayX2 = MAP_W - 6; // Right aisle
+    for (let y = 4; y < MAP_H - 4; y++) {
+        const dx1 = walkwayX1 * TILE_SIZE - cx;
+        const dx2 = walkwayX2 * TILE_SIZE - cx;
+        const dy = y * TILE_SIZE - cy;
+        if (dy > -20 && dy < 250) {
+            if (dx1 > -20 && dx1 < 270) ctx.drawImage(GFX.floor5sLineV, dx1, dy);
+            if (dx2 > -20 && dx2 < 270) ctx.drawImage(GFX.floor5sLineV, dx2, dy);
+        }
+    }
+    // Hazard tape near fire exit door
+    if (GAME.fireExitDoor) {
+        const doorX = GAME.fireExitDoor.x;
+        const doorY = GAME.fireExitDoor.y;
+        for (let i = -2; i <= 2; i++) {
+            const hx = (doorX + i) * TILE_SIZE - cx;
+            const hy = (doorY + 1) * TILE_SIZE - cy;
+            if (hx > -20 && hx < 270 && hy > -20 && hy < 250) {
+                ctx.drawImage(GFX.floor5sHazard, hx, hy);
+            }
+        }
+    }
+    // Equipment zone near PPE vending machine
+    if (GAME.ppeVendingMachine) {
+        const vmX = Math.floor(GAME.ppeVendingMachine.x / TILE_SIZE);
+        const vmY = Math.floor(GAME.ppeVendingMachine.y / TILE_SIZE);
+        const ex = vmX * TILE_SIZE - cx;
+        const ey = (vmY + 1) * TILE_SIZE - cy;
+        if (ex > -20 && ex < 270 && ey > -20 && ey < 250) {
+            ctx.drawImage(GFX.floor5sEquip, ex, ey);
         }
     }
 
