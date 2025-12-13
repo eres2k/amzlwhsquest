@@ -5171,7 +5171,7 @@ function generateAssets() {
 }
 // --- GAME STATE ---
 const GAME = {
-    state: 'REGION_SELECT',
+    state: 'PRESS_START',
     stateTimer: 0,
     nextState: 'PLAY',
     ticks: 0,
@@ -5864,18 +5864,10 @@ function handleAction() {
         console.error("Audio init error:", e);
     }
 
-    // Handle region selection confirmation
-    if (GAME.state === 'REGION_SELECT') {
-        GAME.region = GAME.regionList[GAME.regionIndex];
-        AudioSys.sfx.select();
-        GAME.state = 'PRESS_START';
-        GAME.stateTimer = 0;
-        return;
-    }
-
     // Force intro music to start on first user interaction (bypass autoplay restrictions)
     if (GAME.state === 'PRESS_START') {
-        // First interaction - allows audio to play
+        // Set the selected region before advancing
+        GAME.region = GAME.regionList[GAME.regionIndex];
         advanceState(); // Move to LOGO state and start intro music
         return;
     }
@@ -7020,15 +7012,14 @@ function update() {
 
     if (GAME.state === 'LOGO' && GAME.stateTimer > 420) advanceState();
 
-    // Region selection navigation (up/down)
-    if (GAME.state === 'REGION_SELECT') {
+    // Region selection navigation in PRESS_START screen (up/down)
+    if (GAME.state === 'PRESS_START') {
         let changed = false;
         if (KEYS.up && GAME.ticks % 10 === 0) { GAME.regionIndex--; AudioSys.sfx.step(); changed = true; }
         if (KEYS.down && GAME.ticks % 10 === 0) { GAME.regionIndex++; AudioSys.sfx.step(); changed = true; }
         if (changed) {
             if (GAME.regionIndex < 0) GAME.regionIndex = GAME.regionList.length - 1;
             if (GAME.regionIndex >= GAME.regionList.length) GAME.regionIndex = 0;
-            speakTTS(GAME.regionNames[GAME.regionList[GAME.regionIndex]], "System");
         }
         return;
     }
@@ -12485,8 +12476,7 @@ function draw() {
     if (GAME.shake > 0) { dxShake = (Math.random() - 0.5) * GAME.shake; dyShake = (Math.random() - 0.5) * GAME.shake; }
     ctx.save(); ctx.translate(dxShake, dyShake);
 
-    // === REGION SELECTION MENU ===
-    if (GAME.state === 'REGION_SELECT') {
+    if (GAME.state === 'PRESS_START') {
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -12496,128 +12486,98 @@ function draw() {
             let x = ((seed * 9301 + 49297) % 233280) / 910;
             let y = ((seed * 1234 + 8765) % 233280) / 1040;
             let speed = (i % 3) + 1;
-            let starY = (y + GAME.stateTimer * speed * 0.2) % 224;
-            let brightness = Math.sin(GAME.stateTimer * 0.08 + i) * 0.3 + 0.5;
-            ctx.fillStyle = `rgba(100, 200, 255, ${brightness})`;
+            let starY = (y + GAME.stateTimer * speed * 0.15) % 224;
+            let brightness = Math.sin(GAME.stateTimer * 0.06 + i) * 0.25 + 0.4;
+            ctx.fillStyle = `rgba(100, 180, 255, ${brightness})`;
             ctx.fillRect(x, starY, 1, 1);
         }
 
         // Background gradient glow
-        let hue = (GAME.stateTimer * 0.5) % 360;
-        let gradient = ctx.createRadialGradient(128, 112, 0, 128, 112, 120);
-        gradient.addColorStop(0, `hsla(${hue}, 60%, 25%, 0.3)`);
+        let hue = (GAME.stateTimer * 0.3) % 360;
+        let gradient = ctx.createRadialGradient(128, 100, 0, 128, 100, 100);
+        gradient.addColorStop(0, `hsla(${hue}, 50%, 20%, 0.25)`);
         gradient.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.textAlign = 'center';
 
-        // Title
-        ctx.font = 'bold 14px monospace';
-        ctx.fillStyle = '#ffd700';
-        ctx.shadowColor = '#ffd700';
-        ctx.shadowBlur = 10;
-        ctx.fillText('SELECT YOUR REGION', canvas.width / 2, 50);
-        ctx.shadowBlur = 0;
-
-        // Subtitle
-        ctx.font = '8px monospace';
+        // Region selection title
+        ctx.font = 'bold 10px monospace';
         ctx.fillStyle = '#88ccff';
-        ctx.fillText('Safety regulations vary by country', canvas.width / 2, 65);
+        ctx.fillText('SELECT YOUR REGION', canvas.width / 2, 35);
 
         // Region options
         const regions = GAME.regionList;
-        const startY = 95;
-        const spacing = 35;
+        const startY = 55;
+        const spacing = 28;
 
         regions.forEach((region, idx) => {
             const y = startY + idx * spacing;
             const isSelected = idx === GAME.regionIndex;
 
-            // Selection highlight box
+            // Selection highlight
             if (isSelected) {
-                ctx.fillStyle = 'rgba(255, 215, 0, 0.15)';
-                ctx.fillRect(50, y - 12, canvas.width - 100, 28);
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.12)';
+                ctx.fillRect(45, y - 10, canvas.width - 90, 22);
                 ctx.strokeStyle = '#ffd700';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(50, y - 12, canvas.width - 100, 28);
+                ctx.lineWidth = 1;
+                ctx.strokeRect(45, y - 10, canvas.width - 90, 22);
 
-                // Animated selector arrows
-                const arrowPulse = Math.sin(GAME.stateTimer * 0.15) * 3;
+                // Animated arrows
+                const arrowPulse = Math.sin(GAME.stateTimer * 0.12) * 2;
                 ctx.fillStyle = '#ffd700';
-                ctx.font = '12px monospace';
-                ctx.fillText('▶', 40 - arrowPulse, y + 4);
-                ctx.fillText('◀', canvas.width - 40 + arrowPulse, y + 4);
+                ctx.font = '10px monospace';
+                ctx.fillText('▶', 35 - arrowPulse, y + 3);
+                ctx.fillText('◀', canvas.width - 35 + arrowPulse, y + 3);
             }
 
-            // Region code
-            ctx.font = isSelected ? 'bold 14px monospace' : '12px monospace';
-            ctx.fillStyle = isSelected ? '#ffd700' : '#aaaaaa';
-            ctx.fillText(region, canvas.width / 2 - 50, y + 5);
-
-            // Region full name
-            ctx.font = isSelected ? 'bold 10px monospace' : '9px monospace';
-            ctx.fillStyle = isSelected ? '#ffffff' : '#888888';
-            ctx.fillText(GAME.regionNames[region], canvas.width / 2 + 30, y + 5);
-
-            // Region-specific icons/flags (simple representations)
+            // Flag colors
             const flagColors = {
                 'DE': ['#000000', '#dd0000', '#ffcc00'],
                 'AT': ['#ed2939', '#ffffff', '#ed2939'],
                 'NL': ['#ae1c28', '#ffffff', '#21468b']
             };
             const colors = flagColors[region];
-            const flagX = canvas.width / 2 - 80;
-            const flagY = y - 5;
+            const flagX = canvas.width / 2 - 70;
             colors.forEach((color, ci) => {
                 ctx.fillStyle = color;
-                ctx.fillRect(flagX, flagY + ci * 4, 16, 4);
+                ctx.fillRect(flagX, y - 4 + ci * 4, 14, 4);
             });
+
+            // Region code and name
+            ctx.font = isSelected ? 'bold 10px monospace' : '9px monospace';
+            ctx.fillStyle = isSelected ? '#ffd700' : '#888888';
+            ctx.fillText(region, canvas.width / 2 - 35, y + 4);
+
+            ctx.font = isSelected ? '9px monospace' : '8px monospace';
+            ctx.fillStyle = isSelected ? '#ffffff' : '#666666';
+            ctx.fillText(GAME.regionNames[region], canvas.width / 2 + 25, y + 4);
         });
 
-        // Instructions
-        ctx.font = '7px monospace';
-        ctx.fillStyle = '#66aaff';
-        const instructPulse = 0.5 + Math.sin(GAME.stateTimer * 0.1) * 0.3;
-        ctx.globalAlpha = instructPulse;
-        ctx.fillText('↑↓ SELECT   SPACE TO CONFIRM', canvas.width / 2, 195);
-        ctx.globalAlpha = 1;
+        // Divider line
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
+        ctx.beginPath();
+        ctx.moveTo(60, 145);
+        ctx.lineTo(canvas.width - 60, 145);
+        ctx.stroke();
 
-        // Educational note
-        ctx.font = '6px monospace';
-        ctx.fillStyle = '#888888';
-        ctx.fillText('Learn real safety regulations from your region!', canvas.width / 2, 212);
-
-        ctx.textAlign = 'start';
-        ctx.restore();
-        return;
-    }
-
-    if (GAME.state === 'PRESS_START') {
-        // Black screen with pulsing "PRESS SPACEBAR" prompt
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Starfield background (subtle)
-        for(let i = 0; i < 20; i++) {
-            let seed = i * 123.456;
-            let x = ((seed * 9301 + 49297) % 233280) / 910;
-            let y = ((seed * 1234 + 8765) % 233280) / 1040;
-            let brightness = Math.sin(GAME.stateTimer * 0.05 + i) * 0.2 + 0.3;
-            ctx.fillStyle = `rgba(255,255,255,${brightness})`;
-            ctx.fillRect(x, y, 1, 1);
-        }
-
-        // Pulsing text
-        const pulse = 0.4 + Math.abs(Math.sin(GAME.stateTimer * 0.05)) * 0.6;
-        ctx.textAlign = 'center';
-        ctx.font = '12px monospace';
+        // Pulsing "PRESS SPACEBAR" text
+        const pulse = 0.5 + Math.abs(Math.sin(GAME.stateTimer * 0.06)) * 0.5;
+        ctx.font = 'bold 11px monospace';
         ctx.fillStyle = `rgba(255, 215, 0, ${pulse})`;
-        ctx.fillText('PRESS SPACEBAR', canvas.width/2, canvas.height/2);
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 8;
+        ctx.fillText('PRESS SPACEBAR', canvas.width / 2, 165);
+        ctx.shadowBlur = 0;
 
-        ctx.font = '8px monospace';
+        ctx.font = '7px monospace';
         ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        ctx.fillText('(Audio will be enabled)', canvas.width/2, canvas.height/2 + 20);
+        ctx.fillText('↑↓ Select Region | SPACE to Start', canvas.width / 2, 180);
+
+        ctx.font = '6px monospace';
+        ctx.fillStyle = 'rgba(136, 204, 255, 0.6)';
+        ctx.fillText('Learn real safety regulations!', canvas.width / 2, 195);
 
         ctx.textAlign = 'start';
         ctx.restore();
