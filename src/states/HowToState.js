@@ -117,42 +117,16 @@ export class HowToState extends State {
         context.font = '6px monospace';
         context.fillText('Attack / Interact', 80, 95);
 
-        // YOUR MISSION section
-        context.fillStyle = '#ef4444';
-        context.font = '7px "Press Start 2P"';
-        context.fillText('YOUR MISSION', 20, 118);
-
-        context.font = '6px "Press Start 2P"';
-
-        context.fillStyle = '#22c55e';
-        context.fillText('1', 25, 132);
-        context.fillStyle = '#e2e8f0';
-        context.font = '6px monospace';
-        context.fillText('Find and fix 5 safety hazards', 35, 132);
-
-        context.fillStyle = '#f97316';
-        context.font = '6px "Press Start 2P"';
-        context.fillText('2', 25, 145);
-        context.fillStyle = '#e2e8f0';
-        context.font = '6px monospace';
-        context.fillText('Dodge crazy Ops requests!', 35, 145);
-
-        context.fillStyle = '#a855f7';
-        context.font = '6px "Press Start 2P"';
-        context.fillText('3', 25, 158);
-        context.fillStyle = '#e2e8f0';
-        context.font = '6px monospace';
-        context.fillText('Defeat the surprise visitor', 35, 158);
-
         // TIPS section
         context.fillStyle = '#22d3ee';
         context.font = '7px "Press Start 2P"';
-        context.fillText('TIPS', 20, 178);
+        context.fillText('TIPS', 20, 118);
 
         context.fillStyle = '#fbbf24';
         context.font = '6px monospace';
-        context.fillText('> Collect packages for power-ups', 25, 191);
-        context.fillText('> Fire books to push back enemies', 25, 203);
+        context.fillText('> Walk into hazards to fix them', 25, 135);
+        context.fillText('> Fire books to push back enemies', 25, 150);
+        context.fillText('> Watch your lives counter!', 25, 165);
 
         // Animated prompt
         context.textAlign = 'center';

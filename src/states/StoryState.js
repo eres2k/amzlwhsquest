@@ -99,8 +99,7 @@ export class StoryState extends State {
         context.textAlign = 'left';
         context.font = '7px "Press Start 2P"';
         context.fillStyle = '#94a3b8';
-        context.fillText('Simon Unglaube asks', 58, 78);
-        context.fillText('you to:', 58, 90);
+        context.fillText('Simon asks you to:', 58, 83);
 
         // Mission objectives with bullet styling
         context.font = '7px "Press Start 2P"';
