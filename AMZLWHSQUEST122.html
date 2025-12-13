@@ -1113,8 +1113,74 @@ const BANTER_DB = {
         "Too early...", "Night shift...", "Pizza party?",
         "Belt keeps eating me", "Where's my badge?", "Snacks when?",
         "Scanner dying...", "Stuck in pack?", "Shift never ends"
-    ]
+    ],
+    // Region-specific banter with local slang
+    regional: {
+        AT: {
+            ops: [
+                "Oida, TPH is down!", "Geh schneller, herst!", "Ned tratschen!",
+                "Schleich di!", "Wo is dei Weste?", "Audit, oida!",
+                "Mei Bonus!", "Schneller scannen!", "Des geht si ned aus!",
+                "Gemma, gemma!", "Wos is mit der Rate?", "Zeit is Göd!",
+                "Beweg di, herst!", "Weniger reden!", "Hawara, zack zack!"
+            ],
+            assoc: [
+                "Mei Füße...", "Pause, oida?", "Schachtel schwer...", "Uff...",
+                "Sicherheitsschuhe zwicken", "Wo is HR?", "Brauch Kaffee...",
+                "Vü zu früh...", "Nachtschicht, oida...", "Pizza Party?",
+                "Band frisst mi auf", "Wo is mei Badge?", "Jausen wann?",
+                "Scanner stirbt...", "Im Pack hängen?", "Schicht endet nie"
+            ]
+        },
+        DE: {
+            ops: [
+                "TPH ist runter!", "Schneller laufen!", "Nicht quatschen!",
+                "VTO?", "Scannen scannen!", "Wo ist deine Weste?", "Audit Panik!",
+                "Mein Bonus!", "TOT!", "Schlechte Rate!", "Los geht's!",
+                "Blaue Linie!", "Weniger reden!", "Zeit ist Geld!", "Weniger Leerlauf!",
+                "Metriken schlafen nicht!", "Aufheben!", "In der Spur bleiben!"
+            ],
+            assoc: [
+                "Meine Füße...", "Pause?", "Karton schwer...", "Ugh...",
+                "Sicherheitsschuhe drücken", "Wo ist HR?", "Brauche Kaffee...",
+                "Zu früh...", "Nachtschicht...", "Pizza Party?",
+                "Band frisst mich", "Wo ist mein Badge?", "Snacks wann?",
+                "Scanner stirbt...", "In Pack stecken?", "Schicht endet nie"
+            ]
+        },
+        NL: {
+            ops: [
+                "TPH is laag!", "Sneller lopen!", "Niet kletsen!", "VTO?",
+                "Scannen scannen!", "Waar is je vest?", "Audit paniek!",
+                "Mijn bonus!", "TOT!", "Slechte rate!", "Kom op!",
+                "Blauwe lijn!", "Minder praten!", "Tijd is geld!", "Minder stilstand!",
+                "Metrics slapen niet!", "Oppakken!", "In de baan blijven!"
+            ],
+            assoc: [
+                "Mijn voeten...", "Pauze?", "Doos zwaar...", "Pff...",
+                "Veiligheidsschoenen doen pijn", "Waar is HR?", "Koffie nodig...",
+                "Te vroeg...", "Nachtdienst...", "Pizza feest?",
+                "Band vreet me op", "Waar is mijn badge?", "Snacks wanneer?",
+                "Scanner gaat dood...", "Vast in pack?", "Dienst stopt nooit"
+            ]
+        }
+    }
 };
+
+// Helper to get region-appropriate banter
+function getRegionalBanter(type) {
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : null;
+    // Try region-specific banter first
+    if (region && BANTER_DB.regional[region] && BANTER_DB.regional[region][type]) {
+        // 70% chance to use regional banter, 30% to use generic English
+        if (Math.random() < 0.7) {
+            const regionalLines = BANTER_DB.regional[region][type];
+            return regionalLines[Math.floor(Math.random() * regionalLines.length)];
+        }
+    }
+    // Fall back to generic English banter
+    return BANTER_DB[type][Math.floor(Math.random() * BANTER_DB[type].length)];
+}
 
 // --- CHARACTER DATA ---
 const CHAR_DATA = {
@@ -1555,8 +1621,8 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
         // Prioritize region-specific tips when available
         return pickRegionTip();
     }
-    if (is("banter_ops")) return pick(BANTER_DB.ops);
-    if (is("banter_assoc")) return pick(BANTER_DB.assoc);
+    if (is("banter_ops")) return getRegionalBanter('ops');
+    if (is("banter_assoc")) return getRegionalBanter('assoc');
 
     return pickRegionTip();
 }
@@ -4518,7 +4584,58 @@ function generateAssets() {
         ctx.stroke();
     });
 
-    // DVI1 Sign (Austria warehouse code)
+    // Region-specific warehouse codes and country names
+    const WAREHOUSE_SIGNS = {
+        AT: { code: 'DVI1', country: 'AUSTRIA', flag: ['#ed1c24', '#ffffff', '#ed1c24'] },
+        DE: { code: 'DMU3', country: 'GERMANY', flag: ['#000000', '#dd0000', '#ffcc00'] },
+        NL: { code: 'DNL1', country: 'NETHERLANDS', flag: ['#ae1c28', '#ffffff', '#21468b'] }
+    };
+
+    // Helper to get current region's warehouse info
+    GFX.getWarehouseInfo = function() {
+        const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'AT';
+        return WAREHOUSE_SIGNS[region] || WAREHOUSE_SIGNS.AT;
+    };
+
+    // Function to regenerate region-specific signs (called when region changes)
+    GFX.regenerateRegionSigns = function() {
+        const info = GFX.getWarehouseInfo();
+
+        // Regenerate warehouse code sign
+        GFX.signDVI1 = c(32,16, ctx => {
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(0,0,32,16);
+            ctx.fillStyle = '#374151';
+            ctx.fillRect(1,1,30,14);
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(2,2,28,12);
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = 'bold 10px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(info.code, 16, 12);
+        });
+
+        // Regenerate country location sign with flag colors
+        GFX.signAustria = c(32,16, ctx => {
+            // Draw flag stripes
+            ctx.fillStyle = info.flag[0];
+            ctx.fillRect(0,0,32,5);
+            ctx.fillStyle = info.flag[1];
+            ctx.fillRect(0,5,32,6);
+            ctx.fillStyle = info.flag[2];
+            ctx.fillRect(0,11,32,5);
+            // Country name overlay
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(4,4,24,8);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 5px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(info.country, 16, 10);
+        });
+    };
+
+    // Initial warehouse code sign (Austria default)
     GFX.signDVI1 = c(32,16, ctx => {
         ctx.fillStyle = '#1f2937';
         ctx.fillRect(0,0,32,16);
@@ -4533,18 +4650,20 @@ function generateAssets() {
         ctx.fillText('DVI1', 16, 12);
     });
 
-    // Austria location sign
+    // Initial country location sign (Austria default)
     GFX.signAustria = c(32,16, ctx => {
+        // Austrian flag colors (red-white-red)
         ctx.fillStyle = '#ed1c24';
         ctx.fillRect(0,0,32,5);
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0,5,32,6);
         ctx.fillStyle = '#ed1c24';
         ctx.fillRect(0,11,32,5);
+        // Country name overlay
         ctx.fillStyle = '#1f2937';
         ctx.fillRect(4,4,24,8);
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 6px monospace';
+        ctx.font = 'bold 5px monospace';
         ctx.textAlign = 'center';
         ctx.fillText('AUSTRIA', 16, 10);
     });
@@ -5960,6 +6079,8 @@ function handleAction() {
     if (GAME.state === 'PRESS_START') {
         // Set the selected region before advancing
         GAME.region = GAME.regionList[GAME.regionIndex];
+        // Regenerate dynamic signs for the selected region
+        if (GFX.regenerateRegionSigns) GFX.regenerateRegionSigns();
         advanceState(); // Move to LOGO state and start intro music
         return;
     }
@@ -8612,6 +8733,18 @@ function getRegionSafetyContext() {
 
 function getRegionName() {
     return GAME.regionNames[GAME.region] || 'Europe';
+}
+
+// Get warehouse code based on region (DVI1 for AT, DMU3 for DE, DNL1 for NL)
+function getWarehouseCode() {
+    const codes = { AT: 'DVI1', DE: 'DMU3', NL: 'DNL1' };
+    return codes[GAME.region] || 'DVI1';
+}
+
+// Get country name for warehouse signs
+function getWarehouseCountry() {
+    const countries = { AT: 'AUSTRIA', DE: 'GERMANY', NL: 'NETHERLANDS' };
+    return countries[GAME.region] || 'AUSTRIA';
 }
 
 function tryInteract() {
@@ -12814,18 +12947,19 @@ function draw() {
         ctx.lineWidth = 1;
         ctx.strokeRect(17, 27, canvas.width - 34, canvas.height - 59);
 
-        // Title with glow effect
+        // Title with glow effect - uses dynamic warehouse code
         ctx.textAlign = 'center';
         const glowIntensity = Math.sin(t * 0.08) * 0.3 + 0.7;
         ctx.shadowColor = '#ff9900';
         ctx.shadowBlur = 12 * glowIntensity;
         ctx.font = '14px "Press Start 2P"';
+        const warehouseCode = getWarehouseCode();
         ctx.fillStyle = '#7c2d12';
-        ctx.fillText('DVI1', canvas.width / 2 + 2, 52);
+        ctx.fillText(warehouseCode, canvas.width / 2 + 2, 52);
         ctx.fillStyle = '#ea580c';
-        ctx.fillText('DVI1', canvas.width / 2 + 1, 51);
+        ctx.fillText(warehouseCode, canvas.width / 2 + 1, 51);
         ctx.fillStyle = '#fbbf24';
-        ctx.fillText('DVI1', canvas.width / 2, 50);
+        ctx.fillText(warehouseCode, canvas.width / 2, 50);
         ctx.shadowBlur = 0;
 
         // Subtitle
