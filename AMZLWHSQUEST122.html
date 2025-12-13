@@ -12852,47 +12852,101 @@ function draw() {
         ctx.fillStyle = '#22d3ee';
         ctx.fillRect(50, 56, canvas.width - 100, 1);
 
-        // Simon icon area (small box)
-        ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
-        ctx.fillRect(20, 68, 30, 30);
-        ctx.strokeStyle = '#3b82f6';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(20, 68, 30, 30);
+        // Amazon-style badge for Simon
+        const badgeX = 20, badgeY = 62, badgeW = 50, badgeH = 70;
 
-        // "S" for Simon
-        ctx.fillStyle = '#60a5fa';
-        ctx.font = '12px "Press Start 2P"';
+        // Badge outer border (orange/amber like Amazon badge)
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+
+        // Badge inner background (blue like Amazon badge)
+        ctx.fillStyle = '#1e3a5f';
+        ctx.fillRect(badgeX + 3, badgeY + 3, badgeW - 6, badgeH - 6);
+
+        // "WHS" header on badge
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = 'bold 7px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('S', 35, 88);
+        ctx.fillText('WHS', badgeX + badgeW / 2, badgeY + 12);
+
+        // Portrait area (white background)
+        const portraitX = badgeX + 10, portraitY = badgeY + 16, portraitSize = 30;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(portraitX, portraitY, portraitSize, portraitSize);
+
+        // Draw Simon's portrait if available
+        if (GFX.simonFace) {
+            ctx.save();
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(GFX.simonFace, portraitX + 2, portraitY + 2, portraitSize - 4, portraitSize - 4);
+            ctx.restore();
+        } else {
+            // Fallback: draw a simple face placeholder
+            ctx.fillStyle = '#d4a574';
+            ctx.fillRect(portraitX + 8, portraitY + 6, 14, 18);
+            ctx.fillStyle = '#333';
+            ctx.fillRect(portraitX + 10, portraitY + 10, 3, 3);
+            ctx.fillRect(portraitX + 17, portraitY + 10, 3, 3);
+            ctx.fillRect(portraitX + 12, portraitY + 18, 6, 2);
+        }
+
+        // "Simon" name on badge
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 5px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Simon', badgeX + badgeW / 2, badgeY + 54);
+
+        // Title on badge
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '4px monospace';
+        ctx.fillText('Snr. Regional Mgr', badgeX + badgeW / 2, badgeY + 62);
+
+        // Barcode effect at bottom
+        ctx.fillStyle = '#000';
+        for (let i = 0; i < 12; i++) {
+            const barW = (i % 3 === 0) ? 2 : 1;
+            ctx.fillRect(badgeX + 10 + i * 3, badgeY + badgeH - 8, barW, 5);
+        }
+
+        // Badge lanyard hole
+        ctx.fillStyle = '#1e3a5f';
+        ctx.beginPath();
+        ctx.arc(badgeX + badgeW / 2, badgeY - 2, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#0a1525';
+        ctx.beginPath();
+        ctx.arc(badgeX + badgeW / 2, badgeY - 2, 2, 0, Math.PI * 2);
+        ctx.fill();
 
         // Mission text
         ctx.textAlign = 'left';
         ctx.font = '7px "Press Start 2P"';
         ctx.fillStyle = '#94a3b8';
-        ctx.fillText('Simon asks you to:', 58, 83);
+        ctx.fillText('Simon asks you to:', 78, 95);
 
-        // Mission objectives with bullet styling
-        ctx.font = '7px "Press Start 2P"';
+        // Mission objectives with bullet styling (positioned right of badge)
+        ctx.font = '6px "Press Start 2P"';
+        const objX = 78;
 
         ctx.fillStyle = '#22c55e';
-        ctx.fillText('>', 25, 115);
+        ctx.fillText('>', objX, 110);
         ctx.fillStyle = '#e2e8f0';
-        ctx.fillText('Do the safety audit', 38, 115);
+        ctx.fillText('Do the safety audit', objX + 10, 110);
 
         ctx.fillStyle = '#f97316';
-        ctx.fillText('>', 25, 133);
+        ctx.fillText('>', objX, 124);
         ctx.fillStyle = '#e2e8f0';
-        ctx.fillText('Dodge crazy Ops requests', 38, 133);
+        ctx.fillText('Dodge Ops requests', objX + 10, 124);
 
         ctx.fillStyle = '#a855f7';
-        ctx.fillText('>', 25, 151);
+        ctx.fillText('>', objX, 138);
         ctx.fillStyle = '#e2e8f0';
-        ctx.fillText('Push back with rules', 38, 151);
+        ctx.fillText('Push back with rules', objX + 10, 138);
 
         ctx.fillStyle = '#ef4444';
-        ctx.fillText('>', 25, 169);
+        ctx.fillText('>', objX, 152);
         ctx.fillStyle = '#e2e8f0';
-        ctx.fillText('Deal with "visitors"', 38, 169);
+        ctx.fillText('Deal with "visitors"', objX + 10, 152);
 
         // Animated prompt
         ctx.textAlign = 'center';
