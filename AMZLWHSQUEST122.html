@@ -934,7 +934,8 @@
             <div class="hud-text" id="hud-layer" style="display:none;">
                 <div style="color:#ff4444; margin-bottom:5px;">LIFE <span id="life-val">❤️❤️❤️❤️❤️</span></div>
                 <div style="color:#44ff44;">HAZARDS: <span id="score-val">0/5</span></div>
-                <div style="color:#66aaff; margin-top:5px; font-size:8px;">REGION: <span id="region-val">EU</span></div>
+                <div style="color:#22d3ee; margin-top:3px; font-size:8px;">SP: <span id="sp-val">0</span></div>
+                <div style="color:#66aaff; margin-top:3px; font-size:8px;">REGION: <span id="region-val">EU</span></div>
             </div>
         
             <div id="boss-hud">
@@ -5742,7 +5743,119 @@ function generateAssets() {
         ctx.fillStyle = '#a16207';
         ctx.fillRect(2,2,2,2);
     });
+
+    // === QUARTERMASTER'S SAFETY CAGE DOOR ===
+    GFX.quartermasterDoor = c(24, 24, ctx => {
+        // Blue metal cage frame
+        ctx.fillStyle = '#1e3a5f';
+        ctx.fillRect(0, 0, 24, 24);
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(2, 2, 20, 20);
+
+        // Wire mesh pattern (cage look)
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 1;
+        for (let i = 4; i < 20; i += 4) {
+            ctx.beginPath();
+            ctx.moveTo(i, 2);
+            ctx.lineTo(i, 22);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(2, i);
+            ctx.lineTo(22, i);
+            ctx.stroke();
+        }
+
+        // PPE sign at top
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(6, 3, 12, 6);
+        ctx.fillStyle = '#1f2937';
+        ctx.font = '4px monospace';
+        ctx.fillText('PPE', 8, 8);
+
+        // Safety helmet icon
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.arc(12, 15, 4, Math.PI, 0);
+        ctx.fill();
+        ctx.fillRect(8, 15, 8, 2);
+
+        // Border highlight
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(1, 1, 22, 22);
+    });
+
+    // Quartermaster portrait (Simon's safety locker persona)
+    GFX.quartermaster = c(48, 48, ctx => {
+        // Background
+        ctx.fillStyle = '#1e3a5f';
+        ctx.fillRect(0, 0, 48, 48);
+
+        // Body (blue safety vest)
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(12, 28, 24, 20);
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(14, 30, 20, 16);
+
+        // Reflective strips
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(14, 32, 20, 2);
+        ctx.fillRect(14, 38, 20, 2);
+
+        // Head with hard hat
+        ctx.fillStyle = '#d4a574';
+        ctx.fillRect(18, 14, 12, 14);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(14, 8, 20, 8);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(16, 10, 16, 4);
+
+        // Eyes
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(20, 18, 3, 3);
+        ctx.fillRect(26, 18, 3, 3);
+        ctx.fillStyle = '#64748b';
+        ctx.fillRect(21, 19, 1, 1);
+        ctx.fillRect(27, 19, 1, 1);
+
+        // Neutral expression
+        ctx.fillStyle = '#8b6b5a';
+        ctx.fillRect(22, 24, 4, 1);
+
+        // Safety goggles on hat
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillRect(18, 11, 5, 2);
+        ctx.fillRect(26, 11, 5, 2);
+        ctx.fillStyle = '#0e7490';
+        ctx.fillRect(23, 11, 3, 2);
+    });
 }
+
+// === PPE ITEMS FOR QUARTERMASTER'S SAFETY LOCKER ===
+const PPE_ITEMS = [
+    { id: 'safety_shoes', name: 'S3 Safety Shoes', cost: 500, icon: 'shoe',
+      desc: '+15% Move Speed', context: 'Slip resistance EN ISO 20345', buff: { type: 'speed', value: 0.15 } },
+    { id: 'hi_vis_vest', name: 'High-Vis Vest', cost: 1000, icon: 'vest',
+      desc: '15% Dodge Chance', context: 'Visibility EN ISO 20471', buff: { type: 'dodge', value: 0.15 } },
+    { id: 'ear_defenders', name: 'Ear Defenders', cost: 800, icon: 'ear',
+      desc: '+1 Max HP', context: 'Noise protection >85dB', buff: { type: 'maxhp', value: 1 } },
+    { id: 'cut_gloves', name: 'Cut-Resistant Gloves', cost: 1200, icon: 'glove',
+      desc: '+20% Fire Rate', context: 'Hand protection EN 388', buff: { type: 'firerate', value: 0.20 } },
+    { id: 'safety_goggles', name: 'Safety Goggles', cost: 750, icon: 'goggle',
+      desc: '+50% Projectile Size', context: 'Eye protection EN 166', buff: { type: 'projsize', value: 0.50 } },
+    { id: 'back_belt', name: 'Back Support Belt', cost: 600, icon: 'belt',
+      desc: '+50% Knockback Resist', context: 'Ergonomic lifting support', buff: { type: 'knockback', value: 0.50 } },
+    { id: 'bump_cap', name: 'Bump Cap', cost: 900, icon: 'cap',
+      desc: '+0.5s Invincibility', context: 'Head impact protection EN 812', buff: { type: 'iframe', value: 30 } },
+    { id: 'hydration', name: 'Hydration Pouch', cost: 2000, icon: 'water',
+      desc: 'Regen 1 HP / 30s', context: 'Heat stress prevention', buff: { type: 'regen', value: 1800 } },
+    { id: 'knee_pads', name: 'Knee Pads', cost: 550, icon: 'knee',
+      desc: '+50% Interact Range', context: 'Kneeling work EN 14404', buff: { type: 'interact', value: 0.50 } },
+    { id: 'walkie_talkie', name: 'Walkie-Talkie', cost: 1100, icon: 'radio',
+      desc: '-30% Ops Aggro', context: 'Clear communication channels', buff: { type: 'stealth', value: 0.30 } }
+];
+
 // --- GAME STATE ---
 const GAME = {
     state: 'PRESS_START',
@@ -5806,6 +5919,16 @@ const GAME = {
 
     // === FOOTPRINT/TIRE MARK SYSTEM ===
     footprints: [], // Trail marks left by characters (footprints or tire marks)
+
+    // === QUARTERMASTER'S SAFETY LOCKER (PPE SHOP) ===
+    safetyPoints: 0, // Currency earned by fixing hazards
+    ppeUnlocked: [], // Array of unlocked PPE item IDs
+    ppeShopIndex: 0, // Current selection in shop
+    quartermasterDoor: null, // Position of the safety cage door
+    lastPlayerPos: null, // Position before entering shop
+    regenTimer: 0, // Timer for hydration pouch regen
+    shopMessage: '', // AI message in shop
+    shopMessageTimer: 0, // Timer for shop message display
 
     bossTypes: [
         { name: "Labour Inspector", sprite: "boss_inspector", hp: 25, speed: 1.2, attackDelay: 50, title: "The Enforcer", desc: "Checks every corner.", attackName: "Violation Notice", attackPattern: "sweep" },
@@ -6430,6 +6553,13 @@ window.addEventListener('keydown', e => {
     if(e.key==='a'||e.key==='ArrowLeft') KEYS.left=true;
     if(e.key==='d'||e.key==='ArrowRight') KEYS.right=true;
     if(e.code==='Space') { if(!KEYS.action) handleAction(); KEYS.action=true; }
+    // Escape key to exit PPE shop
+    if(e.key==='Escape') {
+        if (GAME.state === 'PPE_SHOP') {
+            exitPPEShop();
+            e.preventDefault();
+        }
+    }
 });
 window.addEventListener('keyup', e => {
     if(e.key==='w'||e.key==='ArrowUp') KEYS.up=false;
@@ -6879,6 +7009,50 @@ function handleAction() {
             }
         }
     }
+    else if (GAME.state === 'HAZARD_DETAIL_MODAL') {
+        // Close modal on space or down
+        closeHazardDetailModal();
+        return;
+    }
+    else if (GAME.state === 'PPE_SHOP') {
+        // Buy selected item
+        const item = PPE_ITEMS[GAME.ppeShopIndex];
+        if (!item) return;
+
+        if (GAME.ppeUnlocked.includes(item.id)) {
+            // Already owned
+            AudioSys.sfx.alert();
+            GAME.shopMessage = "Already equipped! This PPE is in your loadout.";
+            GAME.shopMessageTimer = 180;
+        } else if (GAME.safetyPoints >= item.cost) {
+            // Purchase successful
+            GAME.safetyPoints -= item.cost;
+            GAME.ppeUnlocked.push(item.id);
+            AudioSys.sfx.fix(); // Success sound
+            spawnFloatingText(canvas.width / 2, canvas.height / 2, "UNLOCKED!", "#22c55e");
+
+            // Call AI for witty regulation comment
+            const regionName = getRegionName();
+            const langInst = getLanguageInstruction();
+            callGemini(
+                `You are Simon Unglaube, the Quartermaster. Approve the PPE item "${item.name}" for ${regionName} regulations. Context: "${item.context}". Be witty and dry. Max 20 words. ${langInst}`,
+                "ppe_purchase",
+                { item: item.name, region: GAME.region }
+            ).then(response => {
+                if (GAME.state === 'PPE_SHOP') {
+                    GAME.shopMessage = response;
+                    GAME.shopMessageTimer = 300;
+                    speakTTS(response, "Simon");
+                }
+            });
+        } else {
+            // Not enough points
+            AudioSys.sfx.hurt();
+            GAME.shopMessage = "Insufficient Safety Points! Fix more hazards.";
+            GAME.shopMessageTimer = 180;
+        }
+        return;
+    }
     else if (GAME.state === 'VISITOR_SPLASH') { initBossEncounter(); }
     else if (GAME.state === 'BOSS_INTRO') { GAME.state = 'BOSS'; GAME.nextState = 'BOSS'; updateMusicForState(); }
     else if (GAME.state === 'BEZOS_INTRO') { GAME.state = 'BEZOS_BOSS'; GAME.nextState = 'BEZOS_BOSS'; updateMusicForState(); }
@@ -6948,6 +7122,7 @@ function init() {
     CachedValues.init(canvas);
 
     generateAssets();
+    loadGameProgress(); // Load saved PPE and safety points
     GAME.state = 'PRESS_START';
     // DON'T call updateMusicForState() here - it will fail due to autoplay policy
     // Music will start on first user interaction in handleAction()
@@ -6976,7 +7151,13 @@ function resetGame() {
     // Performance: Reset object pools on game restart
     ObjectPool.reset();
     GAME.activeIssues = []; GAME.clutter = [];
-    GAME.issuesFixed = 0; GAME.lives = stats.lives; GAME.simonHits = 0; GAME.boss = null; GAME.pendingBossIntro = false;
+
+    // === PPE BUFF: Ear Defenders - +1 Max HP ===
+    let baseLives = stats.lives;
+    if (GAME.ppeUnlocked.includes('ear_defenders')) baseLives += 1;
+
+    GAME.issuesFixed = 0; GAME.lives = baseLives; GAME.simonHits = 0; GAME.boss = null; GAME.pendingBossIntro = false;
+    GAME.regenTimer = 0; // Reset hydration pouch timer
     GAME.hiddenDoor = null; GAME.yard = null; GAME.mecha = null;
     GAME.nextState = 'PLAY'; GAME.aiResultText = null;
     GAME.startTime = Date.now(); GAME.booksFired = 0; GAME.opsPushed = 0;
@@ -7110,6 +7291,13 @@ function generateMap() {
     GAME.map[door.hazardY][door.hazardX] = 0;
     GAME.fireExitDoor = { x: door.doorX * TILE_SIZE, y: door.doorY * TILE_SIZE }; // Store door position for hidden level
     GAME.activeIssues.push({ x: door.hazardX*TILE_SIZE, y: door.hazardY*TILE_SIZE, data: {name: "Blocked Exit", type: "box"}, fixed: false });
+
+    // === SPAWN QUARTERMASTER'S SAFETY CAGE DOOR ===
+    // Place near the center/start of the warehouse for easy access
+    const qmX = 8; // Near left side but accessible
+    const qmY = 10; // In the main work area
+    GAME.map[qmY][qmX] = 4; // Tile type 4 = Quartermaster Door
+    GAME.quartermasterDoor = { x: qmX * TILE_SIZE, y: qmY * TILE_SIZE };
 
     spawnEntity('runner'); spawnEntity('runner');
 
@@ -8047,6 +8235,35 @@ function update() {
         return;
     }
 
+    // Hazard Detail Modal - handle scroll with up/down keys
+    if (GAME.state === 'HAZARD_DETAIL_MODAL' && GAME.hazardModal && !GAME.hazardModal.loading) {
+        if (KEYS.up && GAME.ticks % 8 === 0 && GAME.hazardModal.scrollOffset > 0) {
+            GAME.hazardModal.scrollOffset--;
+            AudioSys.sfx.step();
+        }
+        if (KEYS.down && GAME.ticks % 8 === 0 && GAME.hazardModal.scrollOffset < GAME.hazardModal.maxScroll) {
+            GAME.hazardModal.scrollOffset++;
+            AudioSys.sfx.step();
+        }
+        return;
+    }
+
+    // PPE Shop - handle navigation and message timer
+    if (GAME.state === 'PPE_SHOP') {
+        // Navigate up/down
+        if (KEYS.up && GAME.ticks % 10 === 0) {
+            GAME.ppeShopIndex = Math.max(0, GAME.ppeShopIndex - 1);
+            AudioSys.sfx.step();
+        }
+        if (KEYS.down && GAME.ticks % 10 === 0) {
+            GAME.ppeShopIndex = Math.min(PPE_ITEMS.length - 1, GAME.ppeShopIndex + 1);
+            AudioSys.sfx.step();
+        }
+        // Decrement message timer
+        if (GAME.shopMessageTimer > 0) GAME.shopMessageTimer--;
+        return;
+    }
+
     // Phase 3: Health Bar Animation during Simon transformation
     if (GAME.state === 'SIMON_MECHA_TRANSFORM') {
         // Animate health bar from 0% to 100% over 120 frames (~2 seconds at 60fps)
@@ -8075,7 +8292,7 @@ function update() {
         return;
     }
 
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM', 'MECHA_SIMON_SPLASH', 'BEZOS_ESCAPE', 'BEZOS_ESCAPE_MECHA_LINE', 'BEZOS_ESCAPE_JEFF_LINE', 'BEZOS_ESCAPE_DIALOGUE', 'SIMON_FAKE_VICTORY'].includes(GAME.state)) return;
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM', 'MECHA_SIMON_SPLASH', 'BEZOS_ESCAPE', 'BEZOS_ESCAPE_MECHA_LINE', 'BEZOS_ESCAPE_JEFF_LINE', 'BEZOS_ESCAPE_DIALOGUE', 'SIMON_FAKE_VICTORY', 'HAZARD_DETAIL_MODAL', 'PPE_SHOP'].includes(GAME.state)) return;
 
     // Bezos victory screen
     if (GAME.state === 'BEZOS_WIN') {
@@ -8109,8 +8326,31 @@ function updatePlayer() {
     // Guard against undefined player state
     if (!p) return;
     if (p.iframe>0) p.iframe--; if (p.cooldown>0) p.cooldown--;
+
+    // === PPE BUFF: Hydration Pouch regeneration ===
+    if (GAME.ppeUnlocked.includes('hydration')) {
+        GAME.regenTimer = (GAME.regenTimer || 0) + 1;
+        if (GAME.regenTimer >= 1800) { // 30 seconds at 60fps
+            GAME.regenTimer = 0;
+            const stats = getCharStats(GAME.selectedChar);
+            const maxHp = stats.lives + (GAME.ppeUnlocked.includes('ear_defenders') ? 1 : 0);
+            if (GAME.lives < maxHp) {
+                GAME.lives++;
+                updateHud();
+                spawnFloatingText(p.x, p.y - 20, "+1 HP", "#22c55e");
+                AudioSys.sfx.fix();
+            }
+        }
+    }
+
+    // === PPE BUFF: Safety Shoes speed bonus ===
+    let speedMod = 1.0;
+    if (GAME.ppeUnlocked.includes('safety_shoes')) speedMod += 0.15;
+
     let dx=0, dy=0;
-    if (KEYS.up) dy = -p.speed; if (KEYS.down) dy = p.speed; if (KEYS.left) dx = -p.speed; if (KEYS.right) dx = p.speed;
+    const effectiveSpeed = p.speed * speedMod;
+    if (KEYS.up) dy = -effectiveSpeed; if (KEYS.down) dy = effectiveSpeed;
+    if (KEYS.left) dx = -effectiveSpeed; if (KEYS.right) dx = effectiveSpeed;
     if (dx!==0 && dy!==0) { dx *= GAME_CONSTANTS.DIAGONAL_FACTOR; dy *= GAME_CONSTANTS.DIAGONAL_FACTOR; }
     if (dx!==0 || dy!==0) {
         // In Bezos boss mode, no collision detection with walls
@@ -8844,19 +9084,24 @@ function triggerBanter(entity) {
 }
 
 function updateEntities() {
+    // === PPE BUFF: Walkie-Talkie - 30% reduced ops aggro range ===
+    const stealthMod = GAME.ppeUnlocked.includes('walkie_talkie') ? 0.70 : 1.0;
+    const chaseRange = Math.floor(100 * stealthMod);
+    const shootRange = Math.floor(80 * stealthMod);
+
     GAME.entities.forEach(e => {
         if (e.type === 'simon') return;
-        
+
         // Banter Trigger (Random Chance)
         if (Math.random() < 0.002) triggerBanter(e); // Low chance per tick
 
         if (e.type === 'ops') {
             let d = Math.hypot(GAME.player.x - e.x, GAME.player.y - e.y);
-            if (d < 100) {
+            if (d < chaseRange) {
                 if (GAME.player.x > e.x) e.x += 0.4; else e.x -= 0.4;
                 if (GAME.player.y > e.y) e.y += 0.4; else e.y -= 0.4;
             }
-            if (d < 80 && Math.random() < 0.01) {
+            if (d < shootRange && Math.random() < 0.01) {
                 let angle = Math.atan2(GAME.player.y - e.y, GAME.player.x - e.x);
                 GAME.projectiles.push({ type: 'req', x: e.x, y: e.y, vx: Math.cos(angle)*2, vy: Math.sin(angle)*2, life: 80 });
                 AudioSys.sfx.alert();
@@ -9238,8 +9483,19 @@ function updateProjectiles() {
         const projectileRadius = GAME.selectedChar === 'Roman' ? 6 : 10;
         if ((p.type === 'req') && Math.hypot(p.x-GAME.player.x, p.y-GAME.player.y) < projectileRadius) {
             if (GAME.player.iframe<=0) {
+                // === PPE BUFF: High-Vis Vest - 15% dodge chance ===
+                if (GAME.ppeUnlocked.includes('hi_vis_vest') && Math.random() < 0.15) {
+                    spawnFloatingText(GAME.player.x, GAME.player.y - 16, "DODGE!", "#22d3ee");
+                    GAME.projectiles.splice(i,1);
+                    continue;
+                }
+
                 // Nevena's FORESIGHT ability - longer invincibility frames
-                const iframeBonus = GAME.selectedChar === 'Nevena' ? 180 : 120;
+                let iframeBonus = GAME.selectedChar === 'Nevena' ? 180 : 120;
+
+                // === PPE BUFF: Bump Cap - +30 frames (0.5s) invincibility ===
+                if (GAME.ppeUnlocked.includes('bump_cap')) iframeBonus += 30;
+
                 GAME.lives--; GAME.player.iframe = iframeBonus; GAME.shake = 10; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
                 VibrationSystem.onDamage(); // Vibrate on damage
                 if (GAME.lives<=0 && !GAME.gameOverTriggered) triggerGameOver("OVERWHELMED!");
@@ -9248,8 +9504,10 @@ function updateProjectiles() {
         }
         if (p.type === 'attack') {
             const attackMeta = getAttackData(p.owner);
+            // === PPE BUFF: Safety Goggles - larger boss hit radius ===
+            const bossHitRadius = 24 * (p.sizeMod || 1.0);
             if (GAME.state === 'BOSS' && GAME.boss) {
-                if (Math.hypot(p.x - (GAME.boss.x+16), p.y - (GAME.boss.y+16)) < 24) {
+                if (Math.hypot(p.x - (GAME.boss.x+16), p.y - (GAME.boss.y+16)) < bossHitRadius) {
                     // If Mecha Mega Simon, attacks are ineffective
                     if (GAME.boss.isMecha) {
                         GAME.projectiles.splice(i,1);
@@ -9318,8 +9576,10 @@ function updateProjectiles() {
                      continue;
                 }
                 let hit = false;
+                // === PPE BUFF: Safety Goggles - larger projectile collision ===
+                const hitRadius = 12 * (p.sizeMod || 1.0);
                 GAME.entities.forEach(e => {
-                    if (e.type === 'ops' && Math.hypot(p.x-e.x, p.y-e.y) < 12) {
+                    if (e.type === 'ops' && Math.hypot(p.x-e.x, p.y-e.y) < hitRadius) {
                         const rng = Math.random();
                         // 🔥 10% DEFLECT CHANCE FOR OPS ENEMIES - throws projectile back at player
                         if (rng < 0.1) {
@@ -9470,6 +9730,10 @@ function throwBook() {
     let cooldownMod = 1.0;
     if (GAME.selectedChar === 'Joao') cooldownMod = 0.65; // 35% faster
     else if (GAME.selectedChar === 'Carrie') cooldownMod = 1.3; // 30% slower
+
+    // === PPE BUFF: Cut-Resistant Gloves - 20% faster fire rate ===
+    if (GAME.ppeUnlocked.includes('cut_gloves')) cooldownMod *= 0.80;
+
     const finalCooldown = Math.floor((attackMeta.cooldown || 120) * cooldownMod);
     p.cooldown = finalCooldown; p.cooldownMax = finalCooldown; GAME.booksFired++;
     const speed = attackMeta.speed || 4;
@@ -9484,7 +9748,11 @@ function throwBook() {
         if (target) { let angle = Math.atan2(target.y - p.y, target.x - p.x); vx = Math.cos(angle) * speed; vy = Math.sin(angle) * speed; }
         else { if (KEYS.up) vy=-speed; else if (KEYS.down) vy=speed; else if (KEYS.left) vx=-speed; else vx=speed; }
     }
-    GAME.projectiles.push({ type:'attack', owner: GAME.selectedChar, sprite: attackMeta.sprite, color: attackMeta.color, x:p.x+8, y:p.y+8, vx, vy, life:attackMeta.life || 40, text: attackMeta.text }); AudioSys.sfx.throw();
+
+    // === PPE BUFF: Safety Goggles - 50% larger projectile collision ===
+    const projSizeMod = GAME.ppeUnlocked.includes('safety_goggles') ? 1.5 : 1.0;
+
+    GAME.projectiles.push({ type:'attack', owner: GAME.selectedChar, sprite: attackMeta.sprite, color: attackMeta.color, x:p.x+8, y:p.y+8, vx, vy, life:attackMeta.life || 40, text: attackMeta.text, sizeMod: projSizeMod }); AudioSys.sfx.throw();
 }
 
 // Helper function to get region-specific safety context for AI prompts
@@ -9538,12 +9806,30 @@ function tryInteract() {
         return true;
     }
 
+    // Check if player is near Quartermaster's Safety Cage Door
+    if (GAME.quartermasterDoor && Math.hypot(p.x - GAME.quartermasterDoor.x, p.y - GAME.quartermasterDoor.y) < 20) {
+        AudioSys.sfx.text(); // Door interaction sound
+        GAME.lastPlayerPos = { x: p.x, y: p.y }; // Save position for return
+        GAME.ppeShopIndex = 0;
+        GAME.shopMessage = '';
+        GAME.shopMessageTimer = 0;
+        GAME.state = 'PPE_SHOP';
+        GAME.stateTimer = 0;
+        return true;
+    }
+
     for (let i=0; i<GAME.entities.length; i++) {
         let e = GAME.entities[i];
         if (e.type === 'runner' && Math.hypot(p.x-e.x, p.y-e.y) < 20) {
              e.type = 'assoc'; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
              VibrationSystem.onHazardFixed(); // Vibrate on hazard fix
+
+             // Award safety points for stopping runner (75-125 SP)
+             const runnerPoints = 75 + Math.floor(Math.random() * 50);
+             GAME.safetyPoints += runnerPoints;
+             spawnFloatingText(e.x, e.y - 16, "+" + runnerPoints + " SP", "#22d3ee");
              spawnFloatingText(e.x, e.y, "Safe!", "#00ff00");
+             saveGameProgress(); // Auto-save progress
 
              if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
 
@@ -9566,11 +9852,19 @@ function tryInteract() {
         }
     }
     for(let h of GAME.activeIssues) {
-        if (!h.fixed && Math.hypot(p.x-h.x, p.y-h.y) < 20) {
+        // Apply interact range bonus from Knee Pads PPE
+        const interactRange = GAME.ppeUnlocked.includes('knee_pads') ? 30 : 20;
+        if (!h.fixed && Math.hypot(p.x-h.x, p.y-h.y) < interactRange) {
             h.fixed = true; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
             VibrationSystem.onHazardFixed(); // Vibrate on hazard fix
             if (h.hiddenDoor && GAME.hiddenDoor) GAME.hiddenDoor.unlocked = true;
+
+            // Award safety points (100-200 based on hazard type)
+            const pointsAwarded = 100 + Math.floor(Math.random() * 100);
+            GAME.safetyPoints += pointsAwarded;
+            spawnFloatingText(h.x, h.y - 16, "+" + pointsAwarded + " SP", "#22d3ee");
             spawnFloatingText(h.x, h.y, "Fixed!", "#00ff00");
+            saveGameProgress(); // Auto-save progress
 
             if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
 
@@ -9682,6 +9976,9 @@ function checkCol(x, y) {
 function updateHud() {
     document.getElementById('life-val').innerText = "❤️".repeat(Math.max(0, GAME.lives));
     document.getElementById('score-val').innerText = GAME.issuesFixed + "/5";
+    // Update safety points display
+    const spEl = document.getElementById('sp-val');
+    if (spEl) spEl.innerText = GAME.safetyPoints;
     // Update region indicator
     const regionEl = document.getElementById('region-val');
     if (regionEl) regionEl.innerText = GAME.region;
@@ -10038,7 +10335,7 @@ function showHazardDialog(text, speaker, portrait, isAI = false, hazard = null) 
     if (speaker) speakTTS(text.replace(/\n/g, ' '), speaker);
 }
 
-// Show hazard regulatory detail information (uses Gemini AI with static fallback)
+// Show hazard regulatory detail information in Audit Page modal
 function showHazardDetail() {
     if (!GAME.currentHazard) return;
 
@@ -10046,15 +10343,8 @@ function showHazardDetail() {
     GAME.showingHazardDetail = true;
     GAME.hasHazardDetail = false; // Disable further UP presses
 
-    // Update badge to show we're fetching regulation
-    const badge = document.getElementById('gemini-badge');
-    badge.innerHTML = "REGULATION";
-    badge.style.display = 'block';
-
-    // Show processing state while fetching from AI
-    document.getElementById('text-content').innerHTML = "<span class='loading-dots'>FETCHING REGULATION</span>";
-    GAME.dialogText = "";
-    GAME.dialogVisible = "";
+    // Hide the regular dialog box
+    document.getElementById('dialog-box').style.display = 'none';
     cancelTTS();
 
     const hazardName = GAME.currentHazard.data.name;
@@ -10063,6 +10353,26 @@ function showHazardDetail() {
     const regionName = getRegionName();
     const safetyContext = getRegionSafetyContext();
     const langInst = getLanguageInstruction();
+
+    // Initialize modal state with loading
+    GAME.hazardModal = {
+        loading: true,
+        hazardName: hazardName,
+        hazardType: hazardType,
+        region: hazardRegion,
+        regionName: regionName,
+        regulation: '',
+        title: '',
+        summary: '',
+        penalty: '',
+        scrollOffset: 0,
+        maxScroll: 0
+    };
+
+    // Switch to modal state
+    GAME.previousState = GAME.state;
+    GAME.state = 'HAZARD_DETAIL_MODAL';
+    GAME.stateTimer = 0;
 
     // Build the AI prompt for regulatory information
     const prompt = `You are a workplace safety compliance expert. Provide detailed regulatory information for the following warehouse hazard:
@@ -10086,49 +10396,125 @@ ${langInst}`;
     // Call Gemini AI for regulatory information
     callGemini(prompt, "hazard_regulation", { hazardName, hazardType, region: hazardRegion })
         .then(response => {
-            if (GAME.genId !== currentGen || !GAME.showingHazardDetail) return;
+            if (GAME.genId !== currentGen || GAME.state !== 'HAZARD_DETAIL_MODAL') return;
 
-            let detailText;
-
-            // Check if we got a valid AI response (not fallback, and has proper format)
+            // Parse the response into structured data
             if (response && response !== "FALLBACK_USE_STATIC" &&
                 response.includes('REGULATION:') && response.length > 50) {
-                // Use AI response - clean up formatting
-                detailText = response
-                    .replace(/^REGULATION:\s*/im, '[')
-                    .replace(/\nTITLE:\s*/im, ']\n')
-                    .replace(/\nSUMMARY:\s*/im, '\n\n')
-                    .replace(/\nPENALTY:\s*/im, '\n\nPenalty: ')
-                    .trim();
-            } else if (fallbackDetail) {
-                // Fallback to static details
-                detailText = `[${fallbackDetail.regulation}]\n${fallbackDetail.title}\n\n${fallbackDetail.detail}\n\nPenalty: ${fallbackDetail.penalty}`;
-            } else {
-                detailText = "[General Safety Standards]\nWorkplace Safety\n\nThis hazard poses risks to worker safety. Follow established safety procedures and report concerns to your supervisor.\n\nPenalty: Varies by jurisdiction";
-            }
+                // Parse AI response
+                const regMatch = response.match(/REGULATION:\s*(.+?)(?=\nTITLE:|$)/is);
+                const titleMatch = response.match(/TITLE:\s*(.+?)(?=\nSUMMARY:|$)/is);
+                const summaryMatch = response.match(/SUMMARY:\s*(.+?)(?=\nPENALTY:|$)/is);
+                const penaltyMatch = response.match(/PENALTY:\s*(.+?)$/is);
 
-            displayHazardDetailText(detailText);
+                GAME.hazardModal.regulation = regMatch ? regMatch[1].trim() : 'N/A';
+                GAME.hazardModal.title = titleMatch ? titleMatch[1].trim() : 'Safety Regulation';
+                GAME.hazardModal.summary = summaryMatch ? summaryMatch[1].trim() : 'Follow established safety procedures.';
+                GAME.hazardModal.penalty = penaltyMatch ? penaltyMatch[1].trim() : 'Varies by jurisdiction';
+            } else if (fallbackDetail) {
+                GAME.hazardModal.regulation = fallbackDetail.regulation;
+                GAME.hazardModal.title = fallbackDetail.title;
+                GAME.hazardModal.summary = fallbackDetail.detail;
+                GAME.hazardModal.penalty = fallbackDetail.penalty;
+            } else {
+                GAME.hazardModal.regulation = 'General Safety Standards';
+                GAME.hazardModal.title = 'Workplace Safety';
+                GAME.hazardModal.summary = 'This hazard poses risks to worker safety. Follow established safety procedures and report concerns to your supervisor.';
+                GAME.hazardModal.penalty = 'Varies by jurisdiction';
+            }
+            GAME.hazardModal.loading = false;
+
+            // Speak the summary
+            speakTTS(`${GAME.hazardModal.title}. ${GAME.hazardModal.summary}`, "Simon");
         })
         .catch(() => {
-            if (GAME.genId !== currentGen || !GAME.showingHazardDetail) return;
+            if (GAME.genId !== currentGen || GAME.state !== 'HAZARD_DETAIL_MODAL') return;
 
             // Fallback to static details on error
-            let detailText;
             if (fallbackDetail) {
-                detailText = `[${fallbackDetail.regulation}]\n${fallbackDetail.title}\n\n${fallbackDetail.detail}\n\nPenalty: ${fallbackDetail.penalty}`;
+                GAME.hazardModal.regulation = fallbackDetail.regulation;
+                GAME.hazardModal.title = fallbackDetail.title;
+                GAME.hazardModal.summary = fallbackDetail.detail;
+                GAME.hazardModal.penalty = fallbackDetail.penalty;
             } else {
-                detailText = "[General Safety Standards]\nWorkplace Safety\n\nThis hazard poses risks to worker safety. Follow established safety procedures and report concerns to your supervisor.\n\nPenalty: Varies by jurisdiction";
+                GAME.hazardModal.regulation = 'General Safety Standards';
+                GAME.hazardModal.title = 'Workplace Safety';
+                GAME.hazardModal.summary = 'This hazard poses risks to worker safety. Follow established safety procedures.';
+                GAME.hazardModal.penalty = 'Varies by jurisdiction';
             }
-            displayHazardDetailText(detailText);
+            GAME.hazardModal.loading = false;
         });
 }
 
-// Helper to display the hazard detail text with typewriter effect
-function displayHazardDetailText(detailText) {
-    GAME.dialogText = detailText;
-    GAME.dialogVisible = "";
-    document.getElementById('text-content').innerText = "";
-    speakTTS(detailText.replace(/\n/g, ' ').replace(/\[|\]/g, ''), "Simon");
+// Close hazard detail modal and return to game
+function closeHazardDetailModal() {
+    GAME.showingHazardDetail = false;
+    GAME.hazardModal = null;
+    GAME.state = 'PLAY';
+    GAME.nextState = 'PLAY';
+    cancelTTS();
+    AudioSys.sfx.select();
+}
+
+// Exit PPE Shop and return to game at saved position
+function exitPPEShop() {
+    if (GAME.lastPlayerPos) {
+        GAME.player.x = GAME.lastPlayerPos.x;
+        GAME.player.y = GAME.lastPlayerPos.y;
+    }
+    GAME.state = 'PLAY';
+    GAME.nextState = 'PLAY';
+    GAME.shopMessage = '';
+    GAME.shopMessageTimer = 0;
+    AudioSys.sfx.select();
+    // Auto-save after exiting shop
+    saveGameProgress();
+}
+
+// === SAVE/LOAD SYSTEM FOR PPE AND SAFETY POINTS ===
+function saveGameProgress() {
+    try {
+        const saveData = {
+            safetyPoints: GAME.safetyPoints,
+            ppeUnlocked: GAME.ppeUnlocked,
+            region: GAME.region,
+            savedAt: Date.now()
+        };
+        localStorage.setItem('amzl_whs_quest_save', JSON.stringify(saveData));
+    } catch (e) {
+        console.warn('Could not save game progress:', e);
+    }
+}
+
+function loadGameProgress() {
+    try {
+        const saveStr = localStorage.getItem('amzl_whs_quest_save');
+        if (saveStr) {
+            const saveData = JSON.parse(saveStr);
+            if (saveData.safetyPoints !== undefined) GAME.safetyPoints = saveData.safetyPoints;
+            if (Array.isArray(saveData.ppeUnlocked)) GAME.ppeUnlocked = saveData.ppeUnlocked;
+            // Optionally restore region
+            if (saveData.region && GAME.regionList.includes(saveData.region)) {
+                GAME.region = saveData.region;
+                GAME.regionIndex = GAME.regionList.indexOf(saveData.region);
+            }
+            console.log('Loaded save data:', saveData);
+        }
+    } catch (e) {
+        console.warn('Could not load game progress:', e);
+    }
+}
+
+// Clear save data (for debugging/reset)
+function clearSaveData() {
+    try {
+        localStorage.removeItem('amzl_whs_quest_save');
+        GAME.safetyPoints = 0;
+        GAME.ppeUnlocked = [];
+        console.log('Save data cleared');
+    } catch (e) {
+        console.warn('Could not clear save data:', e);
+    }
 }
 
 // --- NEW FUNCTION: Show "Thinking" state ---
@@ -14279,104 +14665,441 @@ function draw() {
             ctx.fillRect(x, y, 2, 2);
         }
 
-        // Animated grid lines
-        const offset = (t * 0.6) % 32;
-        for (let i = -1; i < 16; i++) {
-            const y = i * 16 + offset;
-            ctx.strokeStyle = `rgba(251, 191, 36, ${0.05 + (y / canvas.height) * 0.08})`;
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(canvas.width, y);
-            ctx.stroke();
-        }
-
         // Panel background with gold glow
         ctx.shadowColor = '#fbbf24';
-        ctx.shadowBlur = 12;
-        ctx.fillStyle = 'rgba(10, 10, 20, 0.9)';
-        ctx.fillRect(12, 12, canvas.width - 24, canvas.height - 28);
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = 'rgba(10, 10, 20, 0.95)';
+        ctx.fillRect(8, 8, canvas.width - 16, canvas.height - 20);
         ctx.shadowBlur = 0;
 
-        // Panel border (double border effect)
+        // Panel border
         ctx.strokeStyle = '#fbbf24';
         ctx.lineWidth = 2;
-        ctx.strokeRect(12, 12, canvas.width - 24, canvas.height - 28);
+        ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 20);
         ctx.strokeStyle = '#92400e';
         ctx.lineWidth = 1;
-        ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 32);
+        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 24);
 
         // Title with glow effect
         ctx.textAlign = 'center';
         const glowIntensity = Math.sin(t * 0.08) * 0.3 + 0.7;
         ctx.shadowColor = '#fbbf24';
-        ctx.shadowBlur = 12 * glowIntensity;
-        ctx.font = '11px "Press Start 2P"';
+        ctx.shadowBlur = 10 * glowIntensity;
+        ctx.font = '10px "Press Start 2P"';
         ctx.fillStyle = '#92400e';
-        ctx.fillText('HOW TO PLAY', canvas.width / 2 + 1, 31);
+        ctx.fillText('HOW TO PLAY', canvas.width / 2 + 1, 24);
         ctx.fillStyle = '#fbbf24';
-        ctx.fillText('HOW TO PLAY', canvas.width / 2, 30);
+        ctx.fillText('HOW TO PLAY', canvas.width / 2, 23);
         ctx.shadowBlur = 0;
 
         // Decorative line under title
         ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(30, 38, canvas.width - 60, 2);
-        ctx.fillStyle = '#22d3ee';
-        ctx.fillRect(45, 42, canvas.width - 90, 1);
+        ctx.fillRect(20, 30, canvas.width - 40, 1);
 
         ctx.textAlign = 'left';
 
-        // CONTROLS section header
-        ctx.fillStyle = '#22d3ee';
-        ctx.font = '7px "Press Start 2P"';
-        ctx.fillText('CONTROLS', 20, 58);
+        // === LEFT COLUMN: CONTROLS ===
+        const leftCol = 16;
+        const rightCol = canvas.width / 2 + 8;
 
-        // Control key boxes
-        ctx.fillStyle = 'rgba(34, 211, 238, 0.15)';
-        ctx.fillRect(20, 64, 55, 16);
-        ctx.strokeStyle = '#22d3ee';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(20, 64, 55, 16);
+        // CONTROLS header
         ctx.fillStyle = '#22d3ee';
         ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('W A S D', 25, 75);
+        ctx.fillText('CONTROLS', leftCol, 44);
 
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '6px monospace';
-        ctx.fillText('Move around', 80, 75);
+        // Control key boxes with descriptions
+        const drawKeyBox = (x, y, key, desc) => {
+            ctx.fillStyle = 'rgba(34, 211, 238, 0.12)';
+            ctx.fillRect(x, y, 40, 12);
+            ctx.strokeStyle = '#22d3ee';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, 40, 12);
+            ctx.fillStyle = '#22d3ee';
+            ctx.font = '5px "Press Start 2P"';
+            ctx.fillText(key, x + 3, y + 9);
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '6px monospace';
+            ctx.fillText(desc, x + 44, y + 9);
+        };
 
-        ctx.fillStyle = 'rgba(34, 211, 238, 0.15)';
-        ctx.fillRect(20, 84, 55, 16);
-        ctx.strokeStyle = '#22d3ee';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(20, 84, 55, 16);
+        drawKeyBox(leftCol, 50, 'W A S D', 'Move');
+        drawKeyBox(leftCol, 66, 'SPACE', 'Attack/Interact');
+        drawKeyBox(leftCol, 82, 'ARROWS', 'Menu navigation');
+        drawKeyBox(leftCol, 98, 'UP', 'Hazard details');
+
+        // === OBJECTIVE header ===
         ctx.fillStyle = '#22d3ee';
         ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('SPACE', 27, 95);
+        ctx.fillText('OBJECTIVE', leftCol, 120);
 
-        ctx.fillStyle = '#94a3b8';
+        ctx.fillStyle = '#f0f0ff';
         ctx.font = '6px monospace';
-        ctx.fillText('Attack / Interact', 80, 95);
+        ctx.fillText('Find and fix 5 safety', leftCol + 2, 132);
+        ctx.fillText('hazards in the warehouse', leftCol + 2, 142);
+        ctx.fillText('before losing all lives!', leftCol + 2, 152);
 
-        // TIPS section
+        // === RIGHT COLUMN: TIPS & ENEMIES ===
+        // TIPS header
         ctx.fillStyle = '#22d3ee';
-        ctx.font = '7px "Press Start 2P"';
-        ctx.fillText('TIPS', 20, 118);
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText('TIPS', rightCol, 44);
 
         ctx.fillStyle = '#fbbf24';
         ctx.font = '6px monospace';
-        ctx.fillText('> Walk into hazards to fix them', 25, 135);
-        ctx.fillText('> Fire books to push back enemies', 25, 150);
-        ctx.fillText('> Watch your lives counter!', 25, 165);
+        const tips = [
+            '> Walk into hazards to fix',
+            '> Throw books at ops mgrs',
+            '> Avoid ops manager requests',
+            '> Find secret fire exit!'
+        ];
+        tips.forEach((tip, i) => {
+            ctx.fillText(tip, rightCol + 2, 56 + i * 11);
+        });
 
-        // Animated prompt
+        // ENEMIES header
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText('WATCH OUT FOR', rightCol, 105);
+
+        // Enemy icons with descriptions
+        ctx.fillStyle = '#ef4444';
+        ctx.font = '6px monospace';
+        ctx.fillText('OPS MANAGERS - Chase & shoot', rightCol + 2, 117);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText('RUNNERS - Stop floor runners', rightCol + 2, 129);
+        ctx.fillStyle = '#a855f7';
+        ctx.fillText('BOSSES - Surprise visitors!', rightCol + 2, 141);
+
+        // PPE SHOP hint
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText('PPE SHOP', rightCol, 158);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '6px monospace';
+        ctx.fillText('Find the Safety Cage', rightCol + 2, 170);
+        ctx.fillText('to unlock PPE buffs!', rightCol + 2, 180);
+
+        // Animated prompt at bottom
         ctx.textAlign = 'center';
         const blink = Math.sin(t * 0.12) > 0;
         if (blink) {
             ctx.fillStyle = '#fff';
             ctx.font = '7px "Press Start 2P"';
-            ctx.fillText('[SPACE TO CONTINUE]', canvas.width / 2, 218);
+            ctx.fillText('[SPACE TO CONTINUE]', canvas.width / 2, 206);
         }
+        ctx.textAlign = 'left';
+        ctx.restore(); return;
+    }
+    // === HAZARD DETAIL MODAL (Audit Page themed) ===
+    if (GAME.state === 'HAZARD_DETAIL_MODAL' && GAME.hazardModal) {
+        const t = GAME.stateTimer;
+        const modal = GAME.hazardModal;
+
+        // Semi-transparent overlay
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Modal frame (Audit Page theme)
+        const mX = 12, mY = 10, mW = canvas.width - 24, mH = canvas.height - 24;
+
+        // Main panel background
+        ctx.fillStyle = '#0a1020';
+        ctx.fillRect(mX, mY, mW, mH);
+
+        // Yellow/orange audit border
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(mX, mY, mW, mH);
+        ctx.strokeStyle = '#92400e';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(mX + 3, mY + 3, mW - 6, mH - 6);
+
+        // Header bar (red like safety warning)
+        ctx.fillStyle = '#7f1d1d';
+        ctx.fillRect(mX + 5, mY + 5, mW - 10, 20);
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(mX + 6, mY + 6, mW - 12, 18);
+
+        // Title
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#fff';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillText('SAFETY AUDIT REPORT', canvas.width / 2, mY + 18);
+
+        ctx.textAlign = 'left';
+
+        if (modal.loading) {
+            // Loading animation
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = '8px "Press Start 2P"';
+            const dots = '.'.repeat((Math.floor(t / 20) % 4));
+            ctx.fillText('FETCHING REGULATION' + dots, canvas.width / 2, canvas.height / 2);
+            ctx.textAlign = 'left';
+        } else {
+            // Content area with scroll support
+            const contentY = mY + 32;
+            const contentH = mH - 55;
+            const lineHeight = 11;
+
+            // Hazard name header
+            ctx.fillStyle = '#ef4444';
+            ctx.font = '7px "Press Start 2P"';
+            ctx.fillText('HAZARD:', mX + 10, contentY);
+            ctx.fillStyle = '#fff';
+            ctx.font = '6px monospace';
+            const hazardNameTrunc = modal.hazardName.length > 30 ? modal.hazardName.substring(0, 30) + '...' : modal.hazardName;
+            ctx.fillText(hazardNameTrunc, mX + 70, contentY);
+
+            // Region
+            ctx.fillStyle = '#22d3ee';
+            ctx.font = '6px "Press Start 2P"';
+            ctx.fillText('REGION:', mX + 10, contentY + 14);
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '6px monospace';
+            ctx.fillText(modal.regionName + ' (' + modal.region + ')', mX + 70, contentY + 14);
+
+            // Divider
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(mX + 10, contentY + 22, mW - 30, 1);
+
+            // Regulation code
+            ctx.fillStyle = '#22d3ee';
+            ctx.font = '6px "Press Start 2P"';
+            ctx.fillText('REGULATION:', mX + 10, contentY + 34);
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = '7px monospace';
+            const regTrunc = modal.regulation.length > 32 ? modal.regulation.substring(0, 32) + '...' : modal.regulation;
+            ctx.fillText(regTrunc, mX + 10, contentY + 46);
+
+            // Title
+            ctx.fillStyle = '#22d3ee';
+            ctx.font = '6px "Press Start 2P"';
+            ctx.fillText('TITLE:', mX + 10, contentY + 62);
+            ctx.fillStyle = '#fff';
+            ctx.font = '6px monospace';
+            const titleTrunc = modal.title.length > 36 ? modal.title.substring(0, 36) + '...' : modal.title;
+            ctx.fillText(titleTrunc, mX + 10, contentY + 74);
+
+            // Summary (with word wrap)
+            ctx.fillStyle = '#22d3ee';
+            ctx.font = '6px "Press Start 2P"';
+            ctx.fillText('DETAILS:', mX + 10, contentY + 90);
+
+            ctx.fillStyle = '#f0f0ff';
+            ctx.font = '6px monospace';
+            const wrapTextLines = (text, maxChars) => {
+                const words = text.split(' '); const lines = []; let line = '';
+                words.forEach(word => {
+                    const candidate = line.length ? line + ' ' + word : word;
+                    if (candidate.length > maxChars) { if (line) lines.push(line); line = word; }
+                    else { line = candidate; }
+                });
+                if (line) lines.push(line);
+                return lines;
+            };
+            const summaryLines = wrapTextLines(modal.summary, 38);
+            const maxVisibleLines = 4;
+            const scrollOffset = modal.scrollOffset || 0;
+            const visibleLines = summaryLines.slice(scrollOffset, scrollOffset + maxVisibleLines);
+            visibleLines.forEach((line, i) => {
+                ctx.fillText(line, mX + 10, contentY + 102 + i * lineHeight);
+            });
+
+            // Update max scroll
+            modal.maxScroll = Math.max(0, summaryLines.length - maxVisibleLines);
+
+            // Scroll indicator if needed
+            if (summaryLines.length > maxVisibleLines) {
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = '6px "Press Start 2P"';
+                if (scrollOffset > 0) {
+                    ctx.fillText('\u25B2', mW - 8, contentY + 100); // Up arrow
+                }
+                if (scrollOffset < modal.maxScroll) {
+                    ctx.fillText('\u25BC', mW - 8, contentY + 130); // Down arrow
+                }
+            }
+
+            // Penalty
+            ctx.fillStyle = '#ef4444';
+            ctx.font = '6px "Press Start 2P"';
+            ctx.fillText('PENALTY:', mX + 10, contentY + 150);
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = '6px monospace';
+            const penTrunc = modal.penalty.length > 38 ? modal.penalty.substring(0, 38) + '...' : modal.penalty;
+            ctx.fillText(penTrunc, mX + 10, contentY + 162);
+        }
+
+        // Footer with controls
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(mX + 5, mY + mH - 18, mW - 10, 13);
+
+        ctx.textAlign = 'center';
+        const blink = Math.sin(t * 0.12) > 0;
+        ctx.fillStyle = blink ? '#fbbf24' : '#92400e';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText('\u25B2\u25BC SCROLL | SPACE/DOWN CLOSE', canvas.width / 2, mY + mH - 9);
+        ctx.textAlign = 'left';
+
+        ctx.restore(); return;
+    }
+    // === QUARTERMASTER'S SAFETY LOCKER (PPE SHOP) ===
+    if (GAME.state === 'PPE_SHOP') {
+        const t = GAME.stateTimer;
+        const idx = GAME.ppeShopIndex;
+        const itemsPerPage = 5;
+        const pageStart = Math.floor(idx / itemsPerPage) * itemsPerPage;
+
+        // Dark warehouse background with blue tint
+        const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        grad.addColorStop(0, '#0a1628');
+        grad.addColorStop(0.5, '#0c1e3a');
+        grad.addColorStop(1, '#0a1628');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Wire mesh cage overlay effect
+        ctx.strokeStyle = 'rgba(59, 130, 246, 0.15)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < canvas.width; i += 12) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i, canvas.height);
+            ctx.stroke();
+        }
+        for (let i = 0; i < canvas.height; i += 12) {
+            ctx.beginPath();
+            ctx.moveTo(0, i);
+            ctx.lineTo(canvas.width, i);
+            ctx.stroke();
+        }
+
+        // Main panel
+        ctx.fillStyle = 'rgba(10, 20, 40, 0.95)';
+        ctx.fillRect(8, 8, canvas.width - 16, canvas.height - 16);
+
+        // Border (safety blue)
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+        ctx.strokeStyle = '#1d4ed8';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+        // Header bar
+        ctx.fillStyle = '#1e3a5f';
+        ctx.fillRect(10, 10, canvas.width - 20, 22);
+
+        // Title
+        ctx.textAlign = 'center';
+        const glowPulse = Math.sin(t * 0.08) * 0.3 + 0.7;
+        ctx.shadowColor = '#3b82f6';
+        ctx.shadowBlur = 8 * glowPulse;
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillText("SAFETY LOCKER", canvas.width / 2, 24);
+        ctx.shadowBlur = 0;
+
+        // Safety Points display
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText('SAFETY POINTS: ' + GAME.safetyPoints, canvas.width / 2, 40);
+
+        ctx.textAlign = 'left';
+
+        // Item list area
+        const listY = 50;
+        const itemHeight = 28;
+
+        for (let i = 0; i < itemsPerPage; i++) {
+            const itemIdx = pageStart + i;
+            if (itemIdx >= PPE_ITEMS.length) break;
+
+            const item = PPE_ITEMS[itemIdx];
+            const y = listY + i * itemHeight;
+            const isSelected = itemIdx === idx;
+            const isOwned = GAME.ppeUnlocked.includes(item.id);
+
+            // Selection highlight
+            if (isSelected) {
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
+                ctx.fillRect(12, y, canvas.width - 24, itemHeight - 2);
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(12, y, canvas.width - 24, itemHeight - 2);
+
+                // Selection arrow
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = '8px monospace';
+                ctx.fillText('\u25B6', 15, y + 16);
+            }
+
+            // Item name
+            ctx.fillStyle = isOwned ? '#22c55e' : (isSelected ? '#fff' : '#94a3b8');
+            ctx.font = '6px "Press Start 2P"';
+            ctx.fillText(item.name, 28, y + 10);
+
+            // Description
+            ctx.fillStyle = isOwned ? '#86efac' : '#64748b';
+            ctx.font = '6px monospace';
+            ctx.fillText(item.desc, 28, y + 20);
+
+            // Cost or OWNED
+            ctx.textAlign = 'right';
+            if (isOwned) {
+                ctx.fillStyle = '#22c55e';
+                ctx.font = '6px "Press Start 2P"';
+                ctx.fillText('OWNED', canvas.width - 18, y + 15);
+            } else {
+                const canAfford = GAME.safetyPoints >= item.cost;
+                ctx.fillStyle = canAfford ? '#fbbf24' : '#ef4444';
+                ctx.font = '6px "Press Start 2P"';
+                ctx.fillText(item.cost + ' SP', canvas.width - 18, y + 15);
+            }
+            ctx.textAlign = 'left';
+        }
+
+        // Pagination indicator
+        const totalPages = Math.ceil(PPE_ITEMS.length / itemsPerPage);
+        const currentPage = Math.floor(idx / itemsPerPage) + 1;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#64748b';
+        ctx.font = '5px monospace';
+        ctx.fillText('Page ' + currentPage + '/' + totalPages, canvas.width / 2, listY + itemsPerPage * itemHeight + 5);
+
+        // AI Message area (bottom panel)
+        const msgY = canvas.height - 50;
+        ctx.fillStyle = 'rgba(30, 58, 95, 0.8)';
+        ctx.fillRect(12, msgY, canvas.width - 24, 32);
+        ctx.strokeStyle = '#3b82f6';
+        ctx.strokeRect(12, msgY, canvas.width - 24, 32);
+
+        // Simon's Quartermaster message
+        if (GAME.shopMessage && GAME.shopMessageTimer > 0) {
+            ctx.fillStyle = '#f0f0ff';
+            ctx.font = '5px monospace';
+            const msgLines = GAME.shopMessage.split('\n').slice(0, 2);
+            msgLines.forEach((line, i) => {
+                const truncLine = line.length > 45 ? line.substring(0, 45) + '...' : line;
+                ctx.fillText(truncLine, 16, msgY + 10 + i * 10);
+            });
+        } else {
+            ctx.fillStyle = '#64748b';
+            ctx.font = '5px monospace';
+            ctx.fillText('Select PPE to view safety regulations...', 16, msgY + 16);
+        }
+
+        // Controls footer
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(10, canvas.height - 18, canvas.width - 20, 10);
+
+        ctx.textAlign = 'center';
+        const blink = Math.sin(t * 0.12) > 0;
+        ctx.fillStyle = blink ? '#fbbf24' : '#64748b';
+        ctx.font = '5px "Press Start 2P"';
+        ctx.fillText('\u25B2\u25BC SELECT | SPACE BUY | ESC EXIT', canvas.width / 2, canvas.height - 11);
+
         ctx.textAlign = 'left';
         ctx.restore(); return;
     }
@@ -14846,6 +15569,18 @@ function draw() {
                         ctx.fillStyle = `rgba(255, 215, 0, ${pulse * 0.4})`;
                         ctx.fillRect(dx - 2, dy - 2, 20, 20);
                     }
+                }
+                // Quartermaster's Safety Cage Door (tile type 4)
+                if (t===4) {
+                    ctx.drawImage(GFX.floor, dx, dy);
+                    ctx.save();
+                    // Draw the quartermaster door with blue glow
+                    const pulse = Math.sin(GAME.ticks * 0.08) * 0.3 + 0.7;
+                    ctx.shadowColor = '#3b82f6';
+                    ctx.shadowBlur = 6 * pulse;
+                    ctx.drawImage(GFX.quartermasterDoor, dx - 4, dy - 4);
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
                 }
             }
         }
