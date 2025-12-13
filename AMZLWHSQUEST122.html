@@ -2054,6 +2054,304 @@ function getLocalizedMechaJeffPhaseTaunts() {
     return MECHA_JEFF_PHASE_TAUNTS[region] || MECHA_JEFF_PHASE_TAUNTS.EN;
 }
 
+// === WAREHOUSE RANDOM EVENTS SYSTEM ===
+// One random event triggers per game with random timer
+const WAREHOUSE_EVENTS = {
+    OPS_GEMBA: {
+        id: 'OPS_GEMBA',
+        duration: 900, // 15 seconds at 60fps
+        warning: {
+            EN: "OPS GEMBA WALK",
+            AT: "OPS GEMBA RUNDGANG",
+            DE: "OPS GEMBA RUNDGANG",
+            NL: "OPS GEMBA RONDE"
+        },
+        subtitle: {
+            EN: "Management patrol incoming!",
+            AT: "Führungsteam kommt!",
+            DE: "Führungsteam kommt!",
+            NL: "Management patrouille nadert!"
+        }
+    },
+    ENERGY_CUTOFF: {
+        id: 'ENERGY_CUTOFF',
+        duration: 600, // 10 seconds
+        warning: {
+            EN: "POWER OUTAGE",
+            AT: "STROMAUSFALL",
+            DE: "STROMAUSFALL",
+            NL: "STROOMSTORING"
+        },
+        subtitle: {
+            EN: "Emergency lights only!",
+            AT: "Nur Notbeleuchtung!",
+            DE: "Nur Notbeleuchtung!",
+            NL: "Alleen noodverlichting!"
+        }
+    },
+    TPH_RUSH: {
+        id: 'TPH_RUSH',
+        duration: 720, // 12 seconds
+        warning: {
+            EN: "TPH RUSH HOUR",
+            AT: "TPH HOCHBETRIEB",
+            DE: "TPH HOCHBETRIEB",
+            NL: "TPH PIEKUUR"
+        },
+        subtitle: {
+            EN: "OPS are faster and tougher!",
+            AT: "OPS sind schneller und härter!",
+            DE: "OPS sind schneller und härter!",
+            NL: "OPS zijn sneller en sterker!"
+        }
+    },
+    FIRE_DRILL: {
+        id: 'FIRE_DRILL',
+        duration: 480, // 8 seconds
+        warning: {
+            EN: "FIRE DRILL",
+            AT: "FEUERALARM",
+            DE: "FEUERALARM",
+            NL: "BRANDOEFENING"
+        },
+        subtitle: {
+            EN: "Everyone freeze!",
+            AT: "Alle stehen bleiben!",
+            DE: "Alle stehen bleiben!",
+            NL: "Iedereen bevriezen!"
+        }
+    },
+    PRIME_DAY: {
+        id: 'PRIME_DAY',
+        duration: 840, // 14 seconds
+        warning: {
+            EN: "PRIME DAY CHAOS",
+            AT: "PRIME DAY CHAOS",
+            DE: "PRIME DAY CHAOS",
+            NL: "PRIME DAY CHAOS"
+        },
+        subtitle: {
+            EN: "Maximum package volume!",
+            AT: "Maximales Paketaufkommen!",
+            DE: "Maximales Paketaufkommen!",
+            NL: "Maximaal pakketvolume!"
+        }
+    }
+};
+
+// Get localized event text
+function getLocalizedEventText(event, field) {
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    return event[field][region] || event[field].EN;
+}
+
+// Initialize random warehouse event for this game
+function initWarehouseEvent() {
+    const eventKeys = Object.keys(WAREHOUSE_EVENTS);
+    const selectedEvent = WAREHOUSE_EVENTS[eventKeys[Math.floor(Math.random() * eventKeys.length)]];
+
+    // Random trigger time between 30-90 seconds into the game (1800-5400 frames)
+    const triggerTime = 1800 + Math.floor(Math.random() * 3600);
+
+    GAME.warehouseEvent = {
+        type: selectedEvent,
+        triggerTime: triggerTime,
+        triggered: false,
+        active: false,
+        timer: 0,
+        warningTimer: 0,
+        warningPhase: 0, // 0 = not shown, 1 = showing, 2 = done
+        gembaOps: [], // For OPS_GEMBA event
+        originalOpsStats: null // For TPH_RUSH event
+    };
+}
+
+// Update warehouse event system
+function updateWarehouseEvent() {
+    if (!GAME.warehouseEvent || GAME.state !== 'PLAY') return;
+
+    const ev = GAME.warehouseEvent;
+
+    // Check if event should trigger
+    if (!ev.triggered) {
+        ev.timer++;
+        if (ev.timer >= ev.triggerTime) {
+            ev.triggered = true;
+            ev.warningPhase = 1;
+            ev.warningTimer = 0;
+            AudioSys.sfx.alert();
+        }
+        return;
+    }
+
+    // Warning phase
+    if (ev.warningPhase === 1) {
+        ev.warningTimer++;
+        if (ev.warningTimer >= 180) { // 3 second warning
+            ev.warningPhase = 2;
+            ev.active = true;
+            ev.timer = 0;
+            startEventEffects(ev.type);
+        }
+        return;
+    }
+
+    // Active event phase
+    if (ev.active) {
+        ev.timer++;
+        updateEventEffects(ev.type);
+
+        if (ev.timer >= ev.type.duration) {
+            ev.active = false;
+            endEventEffects(ev.type);
+        }
+    }
+}
+
+// Start event-specific effects
+function startEventEffects(eventType) {
+    const p = GAME.player;
+
+    switch (eventType.id) {
+        case 'OPS_GEMBA':
+            // Spawn 6 OPS in a patrol group
+            const startX = Math.random() < 0.5 ? 50 : MAP_W * TILE_SIZE - 100;
+            const startY = 100 + Math.random() * 100;
+            for (let i = 0; i < 6; i++) {
+                GAME.entities.push({
+                    type: 'ops',
+                    x: startX + (i % 3) * 24,
+                    y: startY + Math.floor(i / 3) * 24,
+                    w: 16, h: 16,
+                    dir: startX < 100 ? 1 : -1,
+                    gembaPatrol: true, // Mark as gemba patrol
+                    patrolSpeed: 1.2
+                });
+            }
+            GAME.shake = 10;
+            break;
+
+        case 'ENERGY_CUTOFF':
+            GAME.flashlightMode = true;
+            GAME.flashlightRadius = 45;
+            break;
+
+        case 'TPH_RUSH':
+            // Boost all OPS speed and give them 2 HP
+            GAME.warehouseEvent.originalOpsStats = [];
+            GAME.entities.forEach((e, idx) => {
+                if (e.type === 'ops') {
+                    GAME.warehouseEvent.originalOpsStats.push({ idx, hp: e.hp || 1 });
+                    e.tphRush = true;
+                    e.hp = 2;
+                }
+            });
+            break;
+
+        case 'FIRE_DRILL':
+            // Freeze all entities
+            GAME.fireDrillActive = true;
+            GAME.shake = 15;
+            break;
+
+        case 'PRIME_DAY':
+            // Spawn extra runners and make everything more chaotic
+            for (let i = 0; i < 4; i++) {
+                const rx = 50 + Math.random() * (MAP_W * TILE_SIZE - 100);
+                const ry = 50 + Math.random() * (MAP_H * TILE_SIZE - 100);
+                GAME.entities.push({
+                    type: 'runner',
+                    x: rx, y: ry, w: 16, h: 16,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() - 0.5) * 4,
+                    primeDay: true
+                });
+            }
+            break;
+    }
+}
+
+// Update event-specific effects each frame
+function updateEventEffects(eventType) {
+    switch (eventType.id) {
+        case 'OPS_GEMBA':
+            // Gemba patrol moves across the map
+            GAME.entities.forEach(e => {
+                if (e.gembaPatrol) {
+                    e.x += e.dir * e.patrolSpeed;
+                    // Remove if off screen
+                    if (e.x < -50 || e.x > MAP_W * TILE_SIZE + 50) {
+                        e.remove = true;
+                    }
+                }
+            });
+            GAME.entities = GAME.entities.filter(e => !e.remove);
+            break;
+
+        case 'ENERGY_CUTOFF':
+            // Flashlight flickers occasionally
+            if (Math.random() < 0.02) {
+                GAME.flashlightRadius = 30 + Math.random() * 30;
+            }
+            break;
+
+        case 'TPH_RUSH':
+            // OPS move faster
+            // (handled in updateEntities by checking tphRush flag)
+            break;
+
+        case 'FIRE_DRILL':
+            // Alarm flash effect
+            if (GAME.warehouseEvent.timer % 30 === 0) {
+                AudioSys.sfx.alert();
+            }
+            break;
+
+        case 'PRIME_DAY':
+            // Extra chaos - occasional screen shake
+            if (Math.random() < 0.05) {
+                GAME.shake = Math.max(GAME.shake, 3);
+            }
+            break;
+    }
+}
+
+// End event-specific effects
+function endEventEffects(eventType) {
+    switch (eventType.id) {
+        case 'OPS_GEMBA':
+            // Remove any remaining gemba patrol OPS
+            GAME.entities = GAME.entities.filter(e => !e.gembaPatrol);
+            break;
+
+        case 'ENERGY_CUTOFF':
+            GAME.flashlightMode = false;
+            break;
+
+        case 'TPH_RUSH':
+            // Restore OPS stats
+            GAME.entities.forEach(e => {
+                if (e.type === 'ops' && e.tphRush) {
+                    e.tphRush = false;
+                    e.hp = 1;
+                }
+            });
+            break;
+
+        case 'FIRE_DRILL':
+            GAME.fireDrillActive = false;
+            break;
+
+        case 'PRIME_DAY':
+            // Remove prime day runners
+            GAME.entities = GAME.entities.filter(e => !e.primeDay);
+            break;
+    }
+
+    // Show "Event Over" floating text
+    spawnFloatingText(GAME.player.x, GAME.player.y - 30, "EVENT OVER", "#22c55e");
+}
+
 function getRandomFallback(prompt, category = 'generic', context = {}) {
     const hazardName = context.hazardName;
     const stats = context.stats;
@@ -7763,6 +8061,11 @@ function resetGame() {
     document.getElementById('hud-layer').style.display = 'block'; updateHud();
     document.getElementById('boss-hud').style.display = 'none';
 
+    // Initialize random warehouse event for this game
+    initWarehouseEvent();
+    GAME.flashlightMode = false;
+    GAME.fireDrillActive = false;
+
     // Start warehouse theme immediately when mission intro begins
     MusicSys.play('ingame');
 
@@ -8912,6 +9215,7 @@ function update() {
     if (GAME.state === 'PLAY') {
         updateEntities();
         updateWarehouseAtmosphere(); // Update warehouse atmosphere (packages, kivas, cart workers)
+        updateWarehouseEvent(); // Update random warehouse event system
     }
     if (GAME.state === 'BOSS') updateBoss();
     if (GAME.state === 'BEZOS_BOSS') updateMechaBezos();
@@ -9680,10 +9984,17 @@ function triggerBanter(entity) {
 }
 
 function updateEntities() {
+    // === FIRE DRILL EVENT: Freeze all entities ===
+    if (GAME.fireDrillActive) return;
+
     // === PPE BUFF: Walkie-Talkie - 30% reduced ops aggro range ===
     const stealthMod = GAME.ppeUnlocked.includes('walkie_talkie') ? 0.70 : 1.0;
     const chaseRange = Math.floor(100 * stealthMod);
     const shootRange = Math.floor(80 * stealthMod);
+
+    // === TPH RUSH EVENT: Speed multiplier for OPS ===
+    const tphRushSpeedMult = (GAME.warehouseEvent && GAME.warehouseEvent.active &&
+                              GAME.warehouseEvent.type.id === 'TPH_RUSH') ? 1.5 : 1.0;
 
     GAME.entities.forEach(e => {
         if (e.type === 'simon') return;
@@ -9692,10 +10003,13 @@ function updateEntities() {
         if (Math.random() < 0.002) triggerBanter(e); // Low chance per tick
 
         if (e.type === 'ops') {
+            // Apply TPH Rush speed multiplier
+            const speedMod = e.tphRush ? tphRushSpeedMult : 1.0;
+            const baseSpeed = 0.4 * speedMod;
             let d = Math.hypot(GAME.player.x - e.x, GAME.player.y - e.y);
             if (d < chaseRange) {
-                if (GAME.player.x > e.x) e.x += 0.4; else e.x -= 0.4;
-                if (GAME.player.y > e.y) e.y += 0.4; else e.y -= 0.4;
+                if (GAME.player.x > e.x) e.x += baseSpeed; else e.x -= baseSpeed;
+                if (GAME.player.y > e.y) e.y += baseSpeed; else e.y -= baseSpeed;
             }
             if (d < shootRange && Math.random() < 0.01) {
                 let angle = Math.atan2(GAME.player.y - e.y, GAME.player.x - e.x);
@@ -15883,7 +16197,7 @@ function draw() {
             const dots = '.'.repeat((Math.floor(t / 15) % 4));
             crispText(getLocalizedText('loading').replace('...', '') + dots, canvas.width / 2, contentY + 40, '10px monospace', '#f0f0ff', 'center');
         } else {
-            // === SUMMARY TEXT (main content, well-spaced, with scrolling) ===
+            // === SUMMARY TEXT (main content, with scrolling) ===
             const wrapTextLines = (text, maxChars) => {
                 const words = text.split(' '); const lines = []; let line = '';
                 words.forEach(word => {
@@ -15895,14 +16209,14 @@ function draw() {
                 return lines;
             };
 
-            // Full summary text with scrolling support (no character limit)
-            const summaryLines = wrapTextLines(modal.summary, 28);
-            const lineHeight = 12;
-            const maxVisibleLines = 7;
+            // Full summary text - wrap at 38 chars to fit 80% width with 7px font
+            const summaryLines = wrapTextLines(modal.summary, 38);
+            const lineHeight = 11;
+            const maxVisibleLines = 8;
             const scrollOffset = modal.scrollOffset || 0;
             const visibleLines = summaryLines.slice(scrollOffset, scrollOffset + maxVisibleLines);
 
-            // Draw summary lines centered in content area
+            // Draw summary lines in content area
             visibleLines.forEach((line, i) => {
                 crispText(line, contentX, contentY + i * lineHeight, '7px monospace', '#e0e0f0', 'left');
             });
@@ -17072,6 +17386,105 @@ function draw() {
         ctx.restore();
     }
     ctx.textAlign = 'left'; // Reset
+
+    // === WAREHOUSE EVENT: ENERGY CUTOFF - Flashlight effect ===
+    if (GAME.flashlightMode && GAME.state === 'PLAY') {
+        const px = GAME.player.x - cx + 8;
+        const py = GAME.player.y - cy + 8;
+        const radius = GAME.flashlightRadius || 45;
+
+        // Create dark overlay with circular cutout
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.92)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Cut out the flashlight circle using composite operation
+        ctx.globalCompositeOperation = 'destination-out';
+        const gradient = ctx.createRadialGradient(px, py, 0, px, py, radius);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.8)');
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(px, py, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.restore();
+
+        // Add flickering emergency light effect
+        if (Math.random() < 0.03) {
+            ctx.fillStyle = 'rgba(255, 50, 50, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    // === WAREHOUSE EVENT: Warning Overlay ===
+    if (GAME.warehouseEvent && GAME.warehouseEvent.warningPhase === 1 && GAME.state === 'PLAY') {
+        const ev = GAME.warehouseEvent;
+        const t = ev.warningTimer;
+
+        // Dark overlay that fades in
+        const fadeIn = Math.min(1, t / 30);
+        ctx.fillStyle = `rgba(0, 0, 0, ${fadeIn * 0.7})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Warning text
+        ctx.save();
+        ctx.textAlign = 'center';
+
+        // Main warning - pulsing
+        const pulse = Math.sin(t * 0.2) * 0.3 + 0.7;
+        ctx.globalAlpha = pulse;
+        ctx.font = '12px "Press Start 2P"';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 4;
+        const warningText = getLocalizedEventText(ev.type, 'warning');
+        ctx.strokeText(warningText, canvas.width / 2, canvas.height / 2 - 15);
+        ctx.fillStyle = '#ff9900';
+        ctx.fillText(warningText, canvas.width / 2, canvas.height / 2 - 15);
+
+        // Subtitle
+        ctx.globalAlpha = fadeIn;
+        ctx.font = '7px "Press Start 2P"';
+        const subtitleText = getLocalizedEventText(ev.type, 'subtitle');
+        ctx.strokeText(subtitleText, canvas.width / 2, canvas.height / 2 + 10);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(subtitleText, canvas.width / 2, canvas.height / 2 + 10);
+
+        ctx.textAlign = 'left';
+        ctx.globalAlpha = 1;
+        ctx.restore();
+    }
+
+    // === WAREHOUSE EVENT: Active Event Indicator ===
+    if (GAME.warehouseEvent && GAME.warehouseEvent.active && GAME.state === 'PLAY') {
+        const ev = GAME.warehouseEvent;
+        const remaining = Math.ceil((ev.type.duration - ev.timer) / 60);
+
+        ctx.save();
+        ctx.font = '6px "Press Start 2P"';
+        ctx.textAlign = 'right';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+
+        const eventName = getLocalizedEventText(ev.type, 'warning');
+        const timerText = `${eventName}: ${remaining}s`;
+
+        ctx.strokeText(timerText, canvas.width - 5, 20);
+        ctx.fillStyle = '#ff9900';
+        ctx.fillText(timerText, canvas.width - 5, 20);
+
+        ctx.textAlign = 'left';
+        ctx.restore();
+    }
+
+    // === FIRE DRILL: Screen flash effect ===
+    if (GAME.fireDrillActive && GAME.state === 'PLAY') {
+        if (GAME.warehouseEvent && GAME.warehouseEvent.timer % 15 < 8) {
+            ctx.fillStyle = 'rgba(255, 100, 50, 0.15)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+    }
 
     if (GAME.flash > 0) { ctx.globalAlpha = GAME.flash / 10; ctx.fillStyle = 'white'; ctx.fillRect(0,0,canvas.width, canvas.height); ctx.globalAlpha = 1.0; }
 
