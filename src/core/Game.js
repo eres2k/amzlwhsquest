@@ -306,9 +306,9 @@ export class Game {
             this.boss.draw(ctx, this.assets);
         }
 
-        // Draw particles
+        // Draw particles (pass {x:0, y:0} since ctx is already translated)
         if (this.particleSystem) {
-            this.particleSystem.draw(ctx);
+            this.particleSystem.draw(ctx, { x: 0, y: 0 });
         }
 
         ctx.restore();
