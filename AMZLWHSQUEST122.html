@@ -1536,77 +1536,202 @@ function getLocalizedYardTip() {
     return pick(tips);
 }
 
-// --- JEFF YARD TAUNTS ---
-const JEFF_YARD_TAUNTS = [
-    "Come on then! I haven't got all day!",
-    "You call that speed? My grandmother moves faster!",
-    "The yard separates the workers from the WIMPS!",
-    "Every second you waste costs the company money!",
-    "I built this empire from NOTHING!",
-    "You want a raise? EARN IT!",
-    "Keep dodging! It's good entertainment!",
-    "I've seen better coordination from interns!",
-    "Tick tock! Your shift is almost OVER!",
-    "Almost there... just kidding, you'll never make it!",
-    "This is YOUR performance review!",
-    "The trucks don't stop for ANYONE!",
-    "MY DELIVERY FLEET IS UNSTOPPABLE!",
-    "SAFETY? THAT'S NOT IN THE METRICS!",
-    "PRODUCTIVITY OR TERMINATION!",
-    "I CAN SEE YOUR TOT FROM HERE!",
-    "YOUR RATE IS UNACCEPTABLE!",
-    "CUSTOMER OBSESSION DEMANDS SACRIFICE!",
-    "THINK BIG, DIE TRYING!",
-    "NO BATHROOM BREAKS IN MY YARD!",
-    "BIAS FOR ACTION MEANS RUN FASTER!",
-    "I OWN THE CLOUDS AND THE GROUND!"
-];
+// --- JEFF YARD TAUNTS (Localized) ---
+const JEFF_YARD_TAUNTS = {
+    EN: [
+        "Come on then! I haven't got all day!",
+        "You call that speed? My grandmother moves faster!",
+        "The yard separates the workers from the WIMPS!",
+        "Every second you waste costs the company money!",
+        "I built this empire from NOTHING!",
+        "You want a raise? EARN IT!",
+        "Keep dodging! It's good entertainment!",
+        "I've seen better coordination from interns!",
+        "Tick tock! Your shift is almost OVER!",
+        "Almost there... just kidding, you'll never make it!",
+        "This is YOUR performance review!",
+        "The trucks don't stop for ANYONE!"
+    ],
+    AT: [
+        "Na los, oida! I hab ned den ganzen Tag Zeit!",
+        "Des nennst du schnell? Mei Oma is schneller!",
+        "Der Hof trennt die Hackler von die Weicheier!",
+        "Jede Sekunde kostet die Firma Göd!",
+        "I hab des Imperium aus NIX aufbaut!",
+        "Du willst a Gehaltserhöhung? VERDIEN sie da!",
+        "Weiter ausweichen! Is a guate Unterhaltung!",
+        "I hab bessere Koordination von Praktikanten gsehen!",
+        "Tick tack! Dei Schicht is fast vorbei!",
+        "Fast da... ha, Scherz, du schaffst es nie!",
+        "Des is DEINE Leistungsbeurteilung!",
+        "Die LKWs halten für NIEMANDEN!"
+    ],
+    DE: [
+        "Na los! Ich hab nicht den ganzen Tag Zeit!",
+        "Das nennst du Geschwindigkeit? Meine Oma ist schneller!",
+        "Der Hof trennt die Arbeiter von den WEICHEIERN!",
+        "Jede Sekunde kostet die Firma Geld!",
+        "Ich habe dieses Imperium aus NICHTS aufgebaut!",
+        "Du willst eine Gehaltserhöhung? VERDIEN sie dir!",
+        "Weiter ausweichen! Gute Unterhaltung!",
+        "Ich habe bessere Koordination von Praktikanten gesehen!",
+        "Tick tack! Deine Schicht ist fast vorbei!",
+        "Fast da... nur Spaß, du schaffst es nie!",
+        "Das ist DEINE Leistungsbeurteilung!",
+        "Die LKWs halten für NIEMANDEN!"
+    ],
+    NL: [
+        "Kom op dan! Ik heb niet de hele dag!",
+        "Noem je dat snelheid? Mijn oma is sneller!",
+        "Het terrein scheidt de werkers van de WATJES!",
+        "Elke seconde kost het bedrijf geld!",
+        "Ik heb dit imperium uit NIETS opgebouwd!",
+        "Wil je opslag? VERDIEN het!",
+        "Blijf ontwijken! Leuke entertainment!",
+        "Ik heb betere coördinatie van stagiaires gezien!",
+        "Tik tak! Je dienst is bijna voorbij!",
+        "Bijna... grapje, je haalt het nooit!",
+        "Dit is JOUW functioneringsgesprek!",
+        "De vrachtwagens stoppen voor NIEMAND!"
+    ]
+};
 
-// --- JEFF CASTLE TAUNTS ---
-const JEFF_CASTLE_TAUNTS = [
-    "WELCOME TO MY FORTRESS OF EFFICIENCY!",
-    "THIS CASTLE WAS BUILT ON PRIME SUBSCRIPTIONS!",
-    "EVERY BRICK IS A WORKER'S DREAM... CRUSHED!",
-    "YOU DARE ENTER THE BEZOS DOMAIN?!",
-    "MY TOWERS REACH HIGHER THAN YOUR AMBITIONS!",
-    "I WATCH EVERYTHING FROM UP HERE!",
-    "THE ALGORITHMS DESIGNED THIS MAZE!",
-    "PRODUCTIVITY FLOWS THROUGH THESE HALLS!",
-    "NO UNION CAN SIEGE THESE WALLS!",
-    "MY THRONE AWAITS... BUT YOU WON'T REACH IT!",
-    "THIS IS WHERE WORKERS BECOME... OPTIMIZED!",
-    "EACH STEP YOU TAKE, I GROW STRONGER!",
-    "THE CASTLE IS MY FINAL WAREHOUSE!",
-    "CUSTOMER OBSESSION BUILT THESE STONES!",
-    "FEEL THE WEIGHT OF A TRILLION DOLLARS!",
-    "MY DRONES PATROL THESE CORRIDORS!",
-    "THE EXIT INTERVIEW IS AT THE TOP!",
-    "ONLY THE WORTHY MEET MECHA JEFF!",
-];
+// --- JEFF CASTLE TAUNTS (Localized) ---
+const JEFF_CASTLE_TAUNTS = {
+    EN: [
+        "WELCOME TO MY FORTRESS OF EFFICIENCY!",
+        "THIS CASTLE WAS BUILT ON PRIME SUBSCRIPTIONS!",
+        "EVERY BRICK IS A WORKER'S DREAM... CRUSHED!",
+        "YOU DARE ENTER THE BEZOS DOMAIN?!",
+        "MY TOWERS REACH HIGHER THAN YOUR AMBITIONS!",
+        "THE ALGORITHMS DESIGNED THIS MAZE!",
+        "NO UNION CAN SIEGE THESE WALLS!",
+        "THIS IS WHERE WORKERS BECOME... OPTIMIZED!",
+        "THE CASTLE IS MY FINAL WAREHOUSE!",
+        "ONLY THE WORTHY MEET MECHA JEFF!"
+    ],
+    AT: [
+        "WILLKOMMEN IN MEINER FESTUNG DER EFFIZIENZ!",
+        "DES SCHLOSS WURDE AUF PRIME-ABOS GEBAUT!",
+        "JEDER ZIEGEL IS A ARBEITERTRAUM... ZERMALMT!",
+        "DU WAGST ES IN DIE BEZOS-DOMÄNE?!",
+        "MEINE TÜRME REICHEN HÖHER ALS DEINE AMBITIONEN!",
+        "DIE ALGORITHMEN HABEN DES LABYRINTH DESIGNT!",
+        "KA GEWERKSCHAFT KANN DIESE MAUERN BELAGERN!",
+        "DO WERDEN ARBEITER... OPTIMIERT!",
+        "DES SCHLOSS IS MEI LETZTES LAGER!",
+        "NUR DIE WÜRDIGEN TREFFEN MECHA JEFF!"
+    ],
+    DE: [
+        "WILLKOMMEN IN MEINER FESTUNG DER EFFIZIENZ!",
+        "DIESES SCHLOSS WURDE AUF PRIME-ABOS GEBAUT!",
+        "JEDER ZIEGEL IST EIN ARBEITERTRAUM... ZERMALMT!",
+        "DU WAGST ES IN DIE BEZOS-DOMÄNE?!",
+        "MEINE TÜRME REICHEN HÖHER ALS DEINE AMBITIONEN!",
+        "DIE ALGORITHMEN HABEN DIESES LABYRINTH DESIGNT!",
+        "KEINE GEWERKSCHAFT KANN DIESE MAUERN BELAGERN!",
+        "HIER WERDEN ARBEITER... OPTIMIERT!",
+        "DAS SCHLOSS IST MEIN LETZTES LAGER!",
+        "NUR DIE WÜRDIGEN TREFFEN MECHA JEFF!"
+    ],
+    NL: [
+        "WELKOM IN MIJN FORT VAN EFFICIËNTIE!",
+        "DIT KASTEEL IS GEBOUWD OP PRIME-ABONNEMENTEN!",
+        "ELKE STEEN IS EEN ARBEIDERSDROOM... VERPLETTERD!",
+        "DURF JE HET BEZOS-DOMEIN TE BETREDEN?!",
+        "MIJN TORENS REIKEN HOGER DAN JE AMBITIES!",
+        "DE ALGORITMES ONTWIERPEN DIT DOOLHOF!",
+        "GEEN VAKBOND KAN DEZE MUREN BELEGEREN!",
+        "HIER WORDEN WERKERS... GEOPTIMALISEERD!",
+        "HET KASTEEL IS MIJN LAATSTE MAGAZIJN!",
+        "ALLEEN DE WAARDIGEN ONTMOETEN MECHA JEFF!"
+    ]
+};
 
-// --- BEZOS TAUNTS FOR BOSS FIGHT ---
-const BEZOS_TAUNTS = [
-    "Work harder, not smarter!",
-    "Day One? Try Day DONE!",
-    "No bathroom breaks in space!",
-    "Prime delivery: FAILURE!",
-    "Your metrics are TERRIBLE!",
-    "Automate or ELIMINATE!",
-    "I'm watching your IDLE TIME!",
-    "Customer obsession DEMANDS speed!",
-    "Move faster! Time is MONEY!",
-    "Safety? I have insurance!",
-    "Be peculiar! Like a PANCAKE!",
-    "Invent and SIMPLIFY your exit!",
-    "Ownership? I own EVERYTHING!",
-    "Bias for ACTION not survival!",
-    "Think BIG or go HOME!",
-    "Frugality means NO raises!",
-    "Deliver RESULTS or get REPLACED!",
-    "Your TOT is UNACCEPTABLE!",
-    "The yard IS the final exam!",
-    "Automation never complains!"
-];
+// --- BEZOS TAUNTS FOR BOSS FIGHT (Localized) ---
+const BEZOS_TAUNTS = {
+    EN: [
+        "Work harder, not smarter!",
+        "Day One? Try Day DONE!",
+        "No bathroom breaks in space!",
+        "Prime delivery: FAILURE!",
+        "Your metrics are TERRIBLE!",
+        "Automate or ELIMINATE!",
+        "I'm watching your IDLE TIME!",
+        "Customer obsession DEMANDS speed!",
+        "Move faster! Time is MONEY!",
+        "Safety? I have insurance!",
+        "Ownership? I own EVERYTHING!",
+        "Think BIG or go HOME!",
+        "Deliver RESULTS or get REPLACED!",
+        "Automation never complains!"
+    ],
+    AT: [
+        "Härter hackeln, ned gscheiter!",
+        "Tag Eins? Probier Tag ENDE!",
+        "Ka Klopause im Weltall!",
+        "Prime-Lieferung: VERSAGT!",
+        "Deine Metriken san FURCHTBAR!",
+        "Automatisieren oder ELIMINIEREN!",
+        "I beobacht deine STILLSTANDSZEIT!",
+        "Kundenobsession VERLANGT Tempo!",
+        "Schneller! Zeit is GÖD!",
+        "Sicherheit? I hab a Versicherung!",
+        "Ownership? MIR GHÖRT ALLES!",
+        "Denk GROSS oder geh HAM!",
+        "Liefer ERGEBNISSE oder wirst ERSETZT!",
+        "Automatisierung beschwert si nie!"
+    ],
+    DE: [
+        "Härter arbeiten, nicht schlauer!",
+        "Tag Eins? Versuch Tag ENDE!",
+        "Keine Toilettenpause im Weltall!",
+        "Prime-Lieferung: VERSAGT!",
+        "Deine Metriken sind FURCHTBAR!",
+        "Automatisieren oder ELIMINIEREN!",
+        "Ich beobachte deine STILLSTANDSZEIT!",
+        "Kundenobsession VERLANGT Geschwindigkeit!",
+        "Schneller! Zeit ist GELD!",
+        "Sicherheit? Ich habe Versicherung!",
+        "Ownership? MIR GEHÖRT ALLES!",
+        "Denk GROSS oder geh NACH HAUSE!",
+        "Liefer ERGEBNISSE oder wirst ERSETZT!",
+        "Automatisierung beschwert sich nie!"
+    ],
+    NL: [
+        "Harder werken, niet slimmer!",
+        "Dag Een? Probeer Dag KLAAR!",
+        "Geen toiletpauze in de ruimte!",
+        "Prime-levering: MISLUKT!",
+        "Je metrics zijn VERSCHRIKKELIJK!",
+        "Automatiseren of ELIMINEREN!",
+        "Ik bekijk je STILSTANDTIJD!",
+        "Klantobsessie EIST snelheid!",
+        "Sneller! Tijd is GELD!",
+        "Veiligheid? Ik heb verzekering!",
+        "Eigenaarschap? IK BEZIT ALLES!",
+        "Denk GROOT of ga NAAR HUIS!",
+        "Lever RESULTATEN of word VERVANGEN!",
+        "Automatisering klaagt nooit!"
+    ]
+};
+
+// Helper to get localized Jeff taunt
+function getLocalizedJeffTaunt(type) {
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+
+    if (type === 'yard') {
+        const taunts = JEFF_YARD_TAUNTS[region] || JEFF_YARD_TAUNTS.EN;
+        return pick(taunts);
+    } else if (type === 'castle') {
+        const taunts = JEFF_CASTLE_TAUNTS[region] || JEFF_CASTLE_TAUNTS.EN;
+        return pick(taunts);
+    } else {
+        const taunts = BEZOS_TAUNTS[region] || BEZOS_TAUNTS.EN;
+        return pick(taunts);
+    }
+}
 
 // --- SNARKY CORPORATE GAME OVER MESSAGES ---
 const CORPORATE_GAME_OVER = [
@@ -1746,11 +1871,76 @@ async function callGemini(prompt, category = 'generic', context = {}) {
     }
 }
 
+// Localized bezos_transform fallbacks
+const BEZOS_TRANSFORM_LINES = {
+    EN: [
+        "WITNESS MY TRUE FORM! MECHA JEFF RISES!",
+        "You forced this! BEHOLD MY ULTIMATE POWER!",
+        "NOW YOU DIE! TRANSFORMATION SEQUENCE INITIATED!",
+        "FOOLISH WORKER! FACE MY MECHANICAL MIGHT!",
+        "PRIME TIME IS OVER! EXTINCTION MODE ACTIVATED!"
+    ],
+    AT: [
+        "SIEH MEINE WAHRE FORM! MECHA JEFF ERHEBT SI!",
+        "Du hast des erzwungen! SIEH MEINE ULTIMATIVE MACHT!",
+        "JETZT STIRBST DU! TRANSFORMATIONSSEQUENZ AKTIVIERT!",
+        "DUMMER HACKLER! STELL DI MEINER MECHANISCHEN MACHT!",
+        "PRIME TIME IS VORBEI! AUSLÖSCHUNGSMODUS AKTIVIERT!"
+    ],
+    DE: [
+        "SEHT MEINE WAHRE FORM! MECHA JEFF ERHEBT SICH!",
+        "Du hast das erzwungen! SEHT MEINE ULTIMATIVE MACHT!",
+        "JETZT STIRBST DU! TRANSFORMATIONSSEQUENZ INITIIERT!",
+        "DUMMER ARBEITER! STELL DICH MEINER MECHANISCHEN MACHT!",
+        "PRIME TIME IST VORBEI! AUSLÖSCHUNGSMODUS AKTIVIERT!"
+    ],
+    NL: [
+        "AANSCHOUW MIJN WARE VORM! MECHA JEFF RIJST!",
+        "Jij dwong dit af! AANSCHOUW MIJN ULTIEME KRACHT!",
+        "NU STERF JE! TRANSFORMATIEREEKS GESTART!",
+        "DWAZE WERKER! ONTMOET MIJN MECHANISCHE MACHT!",
+        "PRIME TIME IS VOORBIJ! UITROEIINGSMODUS GEACTIVEERD!"
+    ]
+};
+
+// Localized player_response fallbacks
+const PLAYER_RESPONSE_LINES = {
+    EN: [
+        "Your reign of terror ends here, Bezos!",
+        "The workers will NOT be silenced!",
+        "Time to break your prime directive!",
+        "This delivery is YOUR termination notice!",
+        "No more exploiting workers! Today you fall!"
+    ],
+    AT: [
+        "Deine Schreckensherrschaft endet do, Bezos!",
+        "Die Hackler lassen si ned zum Schweigen bringen!",
+        "Zeit deine Prime-Direktive zu brechen!",
+        "Des is DEINE Kündigung!",
+        "Ka Ausbeutung mehr! Heit fällst du!"
+    ],
+    DE: [
+        "Deine Schreckensherrschaft endet hier, Bezos!",
+        "Die Arbeiter lassen sich NICHT zum Schweigen bringen!",
+        "Zeit deine Prime-Direktive zu brechen!",
+        "Diese Lieferung ist DEINE Kündigung!",
+        "Keine Ausbeutung mehr! Heute fällst du!"
+    ],
+    NL: [
+        "Je schrikbewind eindigt hier, Bezos!",
+        "De werkers zullen NIET zwijgen!",
+        "Tijd om je prime-directief te breken!",
+        "Deze levering is JOUW ontslagbrief!",
+        "Geen uitbuiting meer! Vandaag val je!"
+    ]
+};
+
 function getRandomFallback(prompt, category = 'generic', context = {}) {
     const hazardName = context.hazardName;
     const stats = context.stats;
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const is = (key) => category === key || prompt.includes(key);
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
 
     // Use localized Simon dialogue
     if (is("runners")) return getLocalizedSimonDialogue('runners');
@@ -1759,25 +1949,15 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
         return getLocalizedSimonWarning(idx);
     }
     if (is("bezos_taunt") || is("bezos_confrontation")) {
-        return pick(BEZOS_TAUNTS);
+        return getLocalizedJeffTaunt('boss');
     }
     if (is("bezos_transform")) {
-        return pick([
-            "WITNESS MY TRUE FORM! MECHA JEFF RISES!",
-            "You forced this! BEHOLD MY ULTIMATE POWER!",
-            "NOW YOU DIE! TRANSFORMATION SEQUENCE INITIATED!",
-            "FOOLISH WORKER! FACE MY MECHANICAL MIGHT!",
-            "PRIME TIME IS OVER! EXTINCTION MODE ACTIVATED!"
-        ]);
+        const lines = BEZOS_TRANSFORM_LINES[region] || BEZOS_TRANSFORM_LINES.EN;
+        return pick(lines);
     }
     if (is("player_response")) {
-        return pick([
-            "Your reign of terror ends here, Bezos!",
-            "The workers will NOT be silenced!",
-            "Time to break your prime directive!",
-            "This delivery is YOUR termination notice!",
-            "No more exploiting workers! Today you fall!"
-        ]);
+        const lines = PLAYER_RESPONSE_LINES[region] || PLAYER_RESPONSE_LINES.EN;
+        return pick(lines);
     }
     if (is("taunt")) {
          if(prompt.includes("Simon")) return getLocalizedSimonDialogue('simon_taunts');
@@ -6260,6 +6440,8 @@ function handleAction() {
         GAME.region = GAME.regionList[GAME.regionIndex];
         // Regenerate dynamic signs for the selected region
         if (GFX.regenerateRegionSigns) GFX.regenerateRegionSigns();
+        // Reinitialize TTS for the selected region's language
+        if (TTSSys.init) TTSSys.init();
         advanceState(); // Move to LOGO state and start intro music
         return;
     }
@@ -11335,50 +11517,82 @@ function drawMechaSimonSplash() {
     ctx.textAlign = 'left';
 }
 
-// === BEZOS ESCAPE SEQUENCE ===
+// === BEZOS ESCAPE SEQUENCE (Localized) ===
 // Mecha Jeff's defeat one-liner (shown right after defeat)
-const MECHA_JEFF_DEFEAT_LINE = {
-    speaker: "Mecha Jeff",
-    portrait: "mechaJeff",
-    text: "CRITICAL... SYSTEM... FAILURE! But you haven't won yet, worker ant! My TRUE form awaits..."
+const MECHA_JEFF_DEFEAT_LINES = {
+    EN: "CRITICAL... SYSTEM... FAILURE! But you haven't won yet, worker ant! My TRUE form awaits...",
+    AT: "KRITISCHER... SYSTEM... AUSFALL! Aber du hast no ned gwonnen, Hacklerameise! Meine WAHRE Form wartet...",
+    DE: "KRITISCHER... SYSTEM... AUSFALL! Aber du hast noch nicht gewonnen, Arbeiterameise! Meine WAHRE Form wartet...",
+    NL: "KRITIEKE... SYSTEEM... FOUT! Maar je hebt nog niet gewonnen, werkiermier! Mijn WARE vorm wacht..."
 };
+
+function getMechaJeffDefeatLine() {
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    return {
+        speaker: "Mecha Jeff",
+        portrait: "mechaJeff",
+        text: MECHA_JEFF_DEFEAT_LINES[region] || MECHA_JEFF_DEFEAT_LINES.EN
+    };
+}
 
 // Jeff Bezos one-liner after transforming back (shown after de-mecha transformation)
-const JEFF_TRANSFORM_LINE = {
-    speaker: "Jeff Bezos",
-    portrait: "jeffYard",
-    text: "Ugh! That mecha suit cost more than your entire BLOODLINE! No matter... I have a BACKUP plan!"
+const JEFF_TRANSFORM_LINES = {
+    EN: "Ugh! That mecha suit cost more than your entire BLOODLINE! No matter... I have a BACKUP plan!",
+    AT: "Pfui! Der Mecha-Anzug hat mehr kost als deine ganze BLUTLINIE! Egal... i hab an BACKUP-Plan!",
+    DE: "Pfui! Der Mecha-Anzug hat mehr gekostet als deine ganze BLUTLINIE! Egal... ich habe einen BACKUP-Plan!",
+    NL: "Bah! Dat mechapak kostte meer dan je hele BLOEDLIJN! Maakt niet uit... ik heb een BACK-UP plan!"
 };
 
-// Snarky dialogue exchange during/after rocket escape
-const BEZOS_ESCAPE_DIALOGUES = [
-    {
+function getJeffTransformLine() {
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    return {
         speaker: "Jeff Bezos",
         portrait: "jeffYard",
-        text: "Ha! You think this is over? I've got a rocket for EXACTLY this situation! Customer obsession includes ME escaping!"
-    },
-    {
-        speaker: GAME?.selectedChar || "Player",
-        portrait: "player",
-        text: "Running away? That's NOT very 'Day One' of you, Bezos! What happened to 'bias for action'?"
-    },
-    {
-        speaker: "Jeff Bezos",
-        portrait: "jeffYard",
-        text: "I'm not running, I'm PIVOTING! To space! Where there are no unions, no bathroom breaks, and NO SAFETY COORDINATORS!"
-    },
-    {
-        speaker: GAME?.selectedChar || "Player",
-        portrait: "player",
-        text: "Go on then! We'll send the safety violations to orbit! Workers 1, Billionaire Bald Guy 0!"
-    },
-    {
-        speaker: "Jeff Bezos",
-        portrait: "jeffYard",
-        text: "This isn't goodbye... it's 'See you in the next Prime Day'! BEZOS AWAAAAAY!",
-        final: true
-    }
-];
+        text: JEFF_TRANSFORM_LINES[region] || JEFF_TRANSFORM_LINES.EN
+    };
+}
+
+// Snarky dialogue exchange during/after rocket escape (Localized)
+const BEZOS_ESCAPE_TEXTS = {
+    EN: [
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Ha! You think this is over? I've got a rocket for EXACTLY this situation! Customer obsession includes ME escaping!" },
+        { speaker: "player", portrait: "player", text: "Running away? That's NOT very 'Day One' of you, Bezos! What happened to 'bias for action'?" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "I'm not running, I'm PIVOTING! To space! Where there are no unions, no bathroom breaks, and NO SAFETY COORDINATORS!" },
+        { speaker: "player", portrait: "player", text: "Go on then! We'll send the safety violations to orbit! Workers 1, Billionaire Bald Guy 0!" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "This isn't goodbye... it's 'See you in the next Prime Day'! BEZOS AWAAAAAY!", final: true }
+    ],
+    AT: [
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Ha! Glaubst des is vorbei? I hab a Rakete für GENAU so a Situation! Kundenobsession schließt MEIN Entkommen ein!" },
+        { speaker: "player", portrait: "player", text: "Wegrennen? Des is ned sehr 'Tag Eins' von dir, Bezos! Wos is mit 'Bias for Action' passiert?" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "I renn ned, i PIVOTIER! Ins Weltall! Wo's ka Gewerkschaften, ka Klopausen und KA SICHERHEITSKOORDINATOREN gibt!" },
+        { speaker: "player", portrait: "player", text: "Dann hau ab! Mir schicken die Sicherheitsverstöße in die Umlaufbahn! Hackler 1, Milliardärs-Glatzkopf 0!" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Des is ka Abschied... es is 'Bis zum nächsten Prime Day'! BEZOS ABFLUUUUG!", final: true }
+    ],
+    DE: [
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Ha! Glaubst du das ist vorbei? Ich habe eine Rakete für GENAU diese Situation! Kundenobsession schließt MEIN Entkommen ein!" },
+        { speaker: "player", portrait: "player", text: "Wegrennen? Das ist NICHT sehr 'Tag Eins' von dir, Bezos! Was ist mit 'Bias for Action' passiert?" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Ich renne nicht, ich PIVOTIERE! Ins Weltall! Wo es keine Gewerkschaften, keine Toilettenpausen und KEINE SICHERHEITSKOORDINATOREN gibt!" },
+        { speaker: "player", portrait: "player", text: "Dann hau ab! Wir schicken die Sicherheitsverstöße in die Umlaufbahn! Arbeiter 1, Milliardärs-Glatzkopf 0!" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Das ist kein Abschied... es ist 'Bis zum nächsten Prime Day'! BEZOS ABFLUUUUG!", final: true }
+    ],
+    NL: [
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Ha! Denk je dat dit voorbij is? Ik heb een raket voor PRECIES deze situatie! Klantobsessie omvat MIJN ontsnapping!" },
+        { speaker: "player", portrait: "player", text: "Wegrennen? Dat is NIET erg 'Dag Eén' van je, Bezos! Wat is er met 'bias for action' gebeurd?" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Ik ren niet, ik PIVOT! Naar de ruimte! Waar geen vakbonden zijn, geen toiletpauzes, en GEEN VEILIGHEIDSCOÖRDINATOREN!" },
+        { speaker: "player", portrait: "player", text: "Ga dan maar! We sturen de veiligheidsovertredingen naar de baan! Werkers 1, Miljardair Kale Kerel 0!" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Dit is geen afscheid... het is 'Tot de volgende Prime Day'! BEZOS WEEEEEG!", final: true }
+    ]
+};
+
+function getBezosEscapeDialogues() {
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    const texts = BEZOS_ESCAPE_TEXTS[region] || BEZOS_ESCAPE_TEXTS.EN;
+    // Replace "player" speaker with actual selected character
+    return texts.map(d => ({
+        ...d,
+        speaker: d.speaker === "player" ? (GAME?.selectedChar || "Player") : d.speaker
+    }));
+}
 
 function updateBezosEscape() {
     GAME.stateTimer++;
@@ -11395,7 +11609,8 @@ function updateBezosEscape() {
             scene.phaseTimer = 0;
             // Show Mecha Jeff's defeat one-liner
             GAME.dialogBackgroundState = 'BEZOS_ESCAPE';
-            showDialog(MECHA_JEFF_DEFEAT_LINE.text, MECHA_JEFF_DEFEAT_LINE.speaker, GFX.mechaJeff, true);
+            const defeatLine = getMechaJeffDefeatLine();
+            showDialog(defeatLine.text, defeatLine.speaker, GFX.mechaJeff, true);
             GAME.nextState = 'BEZOS_ESCAPE_MECHA_LINE';
         }
     }
@@ -11463,7 +11678,8 @@ function updateBezosEscape() {
             scene.phaseTimer = 0;
             // Show Jeff's one-liner after transformation
             GAME.dialogBackgroundState = 'BEZOS_ESCAPE';
-            showDialog(JEFF_TRANSFORM_LINE.text, JEFF_TRANSFORM_LINE.speaker, GFX.jeffYard, true);
+            const transformLine = getJeffTransformLine();
+            showDialog(transformLine.text, transformLine.speaker, GFX.jeffYard, true);
             GAME.nextState = 'BEZOS_ESCAPE_JEFF_LINE';
         }
     }
@@ -11592,39 +11808,38 @@ function updateBezosEscape() {
     }
 }
 
+// Localized Simon congratulations after Bezos defeat
+const SIMON_BEZOS_CONGRATS = {
+    EN: 'OUTSTANDING! You actually did it! You defeated the corporate overlord himself! This calls for a celebration... and possibly a promotion. The warehouse is finally safe from maniacal billionaire tyranny!',
+    AT: 'HERVORRAGEND! Du hast es tatsächlich gschafft! Du hast den Konzernherrn persönlich besiegt! Des verdient a Feier... und vielleicht a Beförderung. Das Lager is endlich sicher vor wahnsinniger Milliardärstyrannei!',
+    DE: 'HERVORRAGEND! Du hast es tatsächlich geschafft! Du hast den Konzernherren persönlich besiegt! Das verdient eine Feier... und vielleicht eine Beförderung. Das Lager ist endlich sicher vor wahnsinniger Milliardärstyrannei!',
+    NL: 'UITSTEKEND! Je hebt het echt gedaan! Je hebt de bedrijfsoverlord zelf verslagen! Dit vraagt om een feestje... en misschien een promotie. Het magazijn is eindelijk veilig voor waanzinnige miljardairstirannie!'
+};
+
 function showBezosEscapeDialogue(index) {
-    if (index >= BEZOS_ESCAPE_DIALOGUES.length) {
+    const dialogues = getBezosEscapeDialogues();
+
+    if (index >= dialogues.length) {
         // All dialogues done, move to Simon joining (phase 8)
         GAME.escapeScene.phase = 8;
         GAME.escapeScene.phaseTimer = 0;
-        // Show Simon's congratulations
+        // Show Simon's congratulations (localized)
+        const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+        const congratsText = SIMON_BEZOS_CONGRATS[region] || SIMON_BEZOS_CONGRATS.EN;
         GAME.dialogBackgroundState = 'BEZOS_ESCAPE';
-        showDialog(
-            'OUTSTANDING! You actually did it! You defeated the corporate overlord himself! ' +
-            'This calls for a celebration... and possibly a promotion. ' +
-            'The warehouse is finally safe from maniacal billionaire tyranny!',
-            'Simon',
-            GFX.simonFaceLarge,
-            false
-        );
+        showDialog(congratsText, 'Simon', GFX.simonFaceLarge, false);
         GAME.nextState = 'BEZOS_ESCAPE'; // Stay in escape to continue animation
         return;
     }
 
-    const dialogue = BEZOS_ESCAPE_DIALOGUES[index];
+    const dialogue = dialogues[index];
     let portrait = GFX.jeffYard;
     if (dialogue.portrait === 'player') {
         portrait = GFX.chars[GAME.selectedChar];
     }
 
-    // Update speaker name for player
-    let speaker = dialogue.speaker;
-    if (dialogue.portrait === 'player') {
-        speaker = GAME.selectedChar;
-    }
-
     GAME.dialogBackgroundState = 'BEZOS_ESCAPE';
-    showDialog(dialogue.text, speaker, portrait, true);
+    showDialog(dialogue.text, dialogue.speaker, portrait, true);
     GAME.escapeScene.dialogueStep = index;
     GAME.nextState = 'BEZOS_ESCAPE_DIALOGUE'; // Special state for escape dialogue continuation
 }
