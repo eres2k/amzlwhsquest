@@ -14359,9 +14359,10 @@ function draw() {
             const flagColors = {
                 'DE': ['#000000', '#dd0000', '#ffcc00'],
                 'AT': ['#ed2939', '#ffffff', '#ed2939'],
-                'NL': ['#ae1c28', '#ffffff', '#21468b']
+                'NL': ['#ae1c28', '#ffffff', '#21468b'],
+                'MEU': ['#003399', '#ffcc00', '#003399'] // EU flag colors
             };
-            const colors = flagColors[region];
+            const colors = flagColors[region] || ['#003399', '#ffcc00', '#003399'];
             const flagX = canvas.width / 2 - 70;
             colors.forEach((color, ci) => {
                 ctx.fillStyle = color;
