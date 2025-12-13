@@ -2002,6 +2002,58 @@ function getLocalizedMechaAttack(type) {
     return attacks[type] || attacks.enraged;
 }
 
+// Localized Mecha Jeff phase names
+const MECHA_JEFF_PHASE_NAMES = {
+    EN: ['PRIME STRIKE', 'DRONE SWARM', 'PACKAGE STORM', 'LASER GRID', 'GROUND SLAM'],
+    AT: ['PRIME-ANGRIFF', 'DROHNENSCHWARM', 'PAKETSTURM', 'LASERGITTER', 'BODENSCHLAG'],
+    DE: ['PRIME-ANGRIFF', 'DROHNENSCHWARM', 'PAKETSTURM', 'LASERGITTER', 'BODENSCHLAG'],
+    NL: ['PRIME-AANVAL', 'DRONENZWERM', 'PAKKETSTORM', 'LASERRASTER', 'GRONDSLAG']
+};
+
+// Localized Mecha Jeff phase taunts
+const MECHA_JEFF_PHASE_TAUNTS = {
+    EN: [
+        "PRIME DELIVERY INCOMING!",
+        "RELEASE THE DRONES!",
+        "BOXES FROM THE SKY!",
+        "LASER PRECISION!",
+        "FEEL THE EARTH SHAKE!"
+    ],
+    AT: [
+        "PRIME-LIEFERUNG IM ANMARSCH!",
+        "DROHNEN LOSGELASSEN!",
+        "PAKETE VOM HIMMEL!",
+        "LASERPRÄZISION!",
+        "SPÜR DIE ERDE BEBEN!"
+    ],
+    DE: [
+        "PRIME-LIEFERUNG IM ANMARSCH!",
+        "DROHNEN LOSGELASSEN!",
+        "PAKETE VOM HIMMEL!",
+        "LASERPRÄZISION!",
+        "SPÜRT DIE ERDE BEBEN!"
+    ],
+    NL: [
+        "PRIME-LEVERING ONDERWEG!",
+        "LAAT DE DRONES LOS!",
+        "DOZEN UIT DE LUCHT!",
+        "LASERPRECISIE!",
+        "VOEL DE AARDE SCHUDDEN!"
+    ]
+};
+
+// Helper to get localized Mecha Jeff phase names
+function getLocalizedMechaJeffPhaseNames() {
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    return MECHA_JEFF_PHASE_NAMES[region] || MECHA_JEFF_PHASE_NAMES.EN;
+}
+
+// Helper to get localized Mecha Jeff phase taunts
+function getLocalizedMechaJeffPhaseTaunts() {
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    return MECHA_JEFF_PHASE_TAUNTS[region] || MECHA_JEFF_PHASE_TAUNTS.EN;
+}
+
 function getRandomFallback(prompt, category = 'generic', context = {}) {
     const hazardName = context.hazardName;
     const stats = context.stats;
@@ -8194,15 +8246,9 @@ function beginMechaEncounter() {
         slamming: false,
         slamTimer: 0,
         slamY: 18,
-        // Phase names for announcements
-        phaseNames: ['PRIME STRIKE', 'DRONE SWARM', 'PACKAGE STORM', 'LASER GRID', 'GROUND SLAM'],
-        phaseTaunts: [
-            "PRIME DELIVERY INCOMING!",
-            "RELEASE THE DRONES!",
-            "BOXES FROM THE SKY!",
-            "LASER PRECISION!",
-            "FEEL THE EARTH SHAKE!"
-        ]
+        // Phase names for announcements (localized)
+        phaseNames: getLocalizedMechaJeffPhaseNames(),
+        phaseTaunts: getLocalizedMechaJeffPhaseTaunts()
     };
     GAME.player.x = canvas.width / 2 - 8;
     GAME.player.y = canvas.height - 28;
@@ -9279,7 +9325,7 @@ function updateMechaBattle() {
         m.enraged = true;
         m.phaseDuration = 200; // Faster phases
         GAME.shake = 20;
-        spawnFloatingText(m.x + 32, m.y, "ENRAGED!", "#ff0000");
+        // Attack message overlay removed to reduce screen clutter
         AudioSys.sfx.bossIntro();
         MusicSys.play('enraged', 1.0);
     }
@@ -9292,16 +9338,8 @@ function updateMechaBattle() {
             m.phaseTransition = false;
             m.transitionTimer = 0;
             m.phaseTimer = 0;
-            // Announce new phase with attack warning
-            const phaseWarnings = {
-                0: { text: "MISSILES!", color: "#dc2626" },
-                1: { text: "DRONES!", color: "#22d3ee" },
-                2: { text: "PRIME DROP!", color: "#f59e0b" },
-                3: { text: "LASER GRID!", color: "#38bdf8" },
-                4: { text: "GROUND SLAM!", color: "#a855f7" }
-            };
-            const warning = phaseWarnings[m.currentPhase];
-            spawnFloatingText(canvas.width / 2 - 40, 60, warning.text, warning.color);
+            // Phase warnings removed - attack overlays cluttered the screen
+            // Visual feedback now provided via phase transition overlay only
         }
         return; // Pause attacks during transition
     }
@@ -10707,7 +10745,7 @@ function tryInteract() {
                  `You are Simon, WHS Senior Regional Manager in ${regionName}. Personality: bone-dry humor, deadpan delivery, secretly enjoys quoting regulations with a hint of sarcasm. The player stopped a runner. Give dry, brief praise with subtle wit, then quote the specific regulation (e.g. "DGUV Regel 108-007: No running in warehouse areas"). Be sardonic but professional. No "Safety Tip:" prefix. Max 30 words. ${safetyContext} ${langInstRunner}`,
                  "runners"
              ).then(tip => {
-                if (GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon", GFX.simonFaceLarge, true);
+                if (GAME.genId === currentGen) showDialog(`Runner!\n${tip}`, "Simon", GFX.simonFaceLarge, true);
              });
              return true;
         }
@@ -10746,7 +10784,7 @@ function tryInteract() {
                 "hazard",
                 { hazardName: h.data.name }
             ).then(tip => {
-                if (GAME.genId === currentGen) showHazardDialog(`Fixed: ${h.data.name}!\n${tip}`, "Simon", GFX.simonFaceLarge, true, h);
+                if (GAME.genId === currentGen) showHazardDialog(`${h.data.name}!\n${tip}`, "Simon", GFX.simonFaceLarge, true, h);
             });
             return true;
         }
@@ -15835,17 +15873,17 @@ function draw() {
             crispText(regText, canvas.width / 2, headerY + 14, '6px monospace', '#6b7280', 'center');
         }
 
-        // === CONTENT AREA ===
+        // === CONTENT AREA (80% width, centered) ===
         const contentY = headerY + 28;
-        const contentX = mX + 14;
-        const contentW = mW - 28;
+        const contentW = Math.floor(mW * 0.8);
+        const contentX = mX + Math.floor((mW - contentW) / 2);
 
         if (modal.loading) {
             // Loading animation
             const dots = '.'.repeat((Math.floor(t / 15) % 4));
             crispText(getLocalizedText('loading').replace('...', '') + dots, canvas.width / 2, contentY + 40, '10px monospace', '#f0f0ff', 'center');
         } else {
-            // === SUMMARY TEXT (main content, well-spaced) ===
+            // === SUMMARY TEXT (main content, well-spaced, with scrolling) ===
             const wrapTextLines = (text, maxChars) => {
                 const words = text.split(' '); const lines = []; let line = '';
                 words.forEach(word => {
@@ -15857,15 +15895,14 @@ function draw() {
                 return lines;
             };
 
-            // Limit summary to 180 chars for clean display
-            const limitedSummary = modal.summary.length > 180 ? modal.summary.substring(0, 180) + '...' : modal.summary;
-            const summaryLines = wrapTextLines(limitedSummary, 34);
+            // Full summary text with scrolling support (no character limit)
+            const summaryLines = wrapTextLines(modal.summary, 28);
             const lineHeight = 12;
             const maxVisibleLines = 7;
             const scrollOffset = modal.scrollOffset || 0;
             const visibleLines = summaryLines.slice(scrollOffset, scrollOffset + maxVisibleLines);
 
-            // Draw summary lines with good spacing
+            // Draw summary lines centered in content area
             visibleLines.forEach((line, i) => {
                 crispText(line, contentX, contentY + i * lineHeight, '7px monospace', '#e0e0f0', 'left');
             });
