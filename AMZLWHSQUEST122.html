@@ -1305,24 +1305,24 @@ const SIMULATED_AI = {
         "Resistance is a safety violation!"
     ],
     simon_taunts: [
-        "I AM THE SAFETY STANDARD!",
-        "YOU CANNOT ESCAPE THE AUDIT!",
-        "ENTROPY COMES FOR US ALL!",
-        "YOUR PPE IS INSUFFICIENT!"
+        "I AM THE SAFETY STANDARD! ...And yes, I find that exhausting too.",
+        "YOU CANNOT ESCAPE THE AUDIT! Trust me, I've tried.",
+        "ENTROPY COMES FOR US ALL! But I'll document it first.",
+        "YOUR PPE IS INSUFFICIENT! Much like my faith in humanity."
     ],
     simon_warnings: [
-        "First warning: Stop flinging manuals. Compliance is not a contact sport.",
-        "Final warning: Holster the rule books or I escalate this audit into a boss fight."
+        "First warning: Stop flinging manuals. Compliance is not a contact sport. Though I'd pay to see that league.",
+        "Final warning: Holster the rule books or I escalate this audit into a boss fight. My spreadsheets are ready."
     ],
     reviews_win: [
-        "Performance: IMPROBABLE. You survived. I am... adequately pleased.",
-        "You fought chaos and won. For today.",
-        "Adequate. Nothing to write up. Feels strange."
+        "Performance: IMPROBABLE. You survived. I am... adequately pleased. Don't let it go to your head.",
+        "You fought chaos and won. For today. Tomorrow, entropy tries again. It always does.",
+        "Adequate. Nothing to write up. Feels strange. Almost disappointing, really."
     ],
     reviews_loss: [
-        "Performance: CATASTROPHIC. Entropy won.",
-        "You failed. Gravity and stupidity destroyed us.",
-        "Safety is binary. You are a zero."
+        "Performance: CATASTROPHIC. Entropy won. I'll be at my desk, filing the incident report. In triplicate.",
+        "You failed. Gravity and stupidity destroyed us. Physics remains undefeated.",
+        "Safety is binary. You are a zero. Mathematically speaking, of course."
     ],
     // Region-specific dialogue for Simon
     regional: {
@@ -1398,37 +1398,37 @@ const SIMULATED_AI = {
         },
         NL: {
             runners: [
-                "Stop! Kinetische energie is niet je vriend. Langzamer!",
-                "Je bent geen foton. Je hebt massa. Loop!",
-                "Rennen? Ik heb gletsjers gezien die doelgerichter waren.",
-                "We vechten tegen entropie, niet tegen de klok. Loop!"
+                "Stop, godver! Kinetische energie is niet je vriend. Langzamer!",
+                "Je bent geen foton, eikel. Je hebt massa. Loop!",
+                "Rennen? Verdomme, ik heb gletsjers gezien die doelgerichter waren.",
+                "We vechten tegen entropie, niet tegen de klok. Loop, verdorie!"
             ],
             taunts: [
-                "Mijn spreadsheet voorspelt je falen!",
-                "Je kunt de audit niet ontsnappen!",
-                "Ik ben de finale regelgeving!",
-                "Compliance daalt... Ontslag dreigt!",
-                "Weerstand is een veiligheidsovertreding!"
+                "Mijn spreadsheet voorspelt je falen, klojo!",
+                "Je kunt de audit niet ontsnappen, sukkel!",
+                "Ik ben de finale regelgeving, godverdomme!",
+                "Compliance daalt... Ontslag dreigt, eikel!",
+                "Weerstand is een veiligheidsovertreding, dombo!"
             ],
             simon_taunts: [
-                "IK BEN DE VEILIGHEIDSSTANDAARD!",
-                "JE KUNT DE AUDIT NIET ONTSNAPPEN!",
-                "ENTROPIE KOMT VOOR ONS ALLEMAAL!",
-                "JE PBM IS ONVOLDOENDE!"
+                "IK BEN DE VEILIGHEIDSSTANDAARD! ...Godver, wat vermoeiend.",
+                "JE KUNT DE AUDIT NIET ONTSNAPPEN! Geloof me, ik heb het geprobeerd, verdomme.",
+                "ENTROPIE KOMT VOOR ONS ALLEMAAL! Maar ik documenteer het eerst, klote.",
+                "JE PBM IS ONVOLDOENDE! Net als mijn vertrouwen in de mensheid, godver."
             ],
             simon_warnings: [
-                "Eerste waarschuwing: Stop met handboeken gooien. Compliance is geen contactsport.",
-                "Laatste waarschuwing: Berg die regelboeken op of ik escaleer deze audit naar een baasgevecht."
+                "Eerste waarschuwing: Stop met die handboeken gooien, godver. Compliance is geen contactsport. Al zou ik daar geld voor betalen.",
+                "Laatste waarschuwing: Berg die regelboeken op of ik escaleer deze audit naar een baasgevecht. Mijn spreadsheets staan klaar, verdomme."
             ],
             reviews_win: [
-                "Prestatie: ONWAARSCHIJNLIJK. Je hebt overleefd. Ik ben... voldoende tevreden.",
-                "Je hebt tegen de chaos gewonnen. Voor vandaag.",
-                "Voldoende. Niets op te schrijven. Voelt vreemd."
+                "Prestatie: ONWAARSCHIJNLIJK. Je hebt overleefd, godver. Ik ben... voldoende tevreden. Laat het niet naar je hoofd stijgen.",
+                "Je hebt tegen de chaos gewonnen. Voor vandaag, verdomme. Morgen probeert entropie het opnieuw.",
+                "Voldoende. Niets op te schrijven. Voelt vreemd, godver. Bijna teleurstellend."
             ],
             reviews_loss: [
-                "Prestatie: CATASTROFAAL. Entropie heeft gewonnen.",
-                "Je hebt gefaald. Zwaartekracht en domheid hebben ons vernietigd.",
-                "Veiligheid is binair. Jij bent een nul."
+                "Prestatie: CATASTROFAAL. Entropie heeft gewonnen, verdomme. Ik ga het incidentrapport invullen. In drievoud.",
+                "Je hebt gefaald, klojo. Zwaartekracht en domheid hebben ons vernietigd. Natuurkunde blijft onverslagen.",
+                "Veiligheid is binair. Jij bent een nul, godver. Wiskundig gezien, natuurlijk."
             ]
         }
     }
@@ -1489,14 +1489,14 @@ function pickRegionTip() {
 // --- SIMON'S YARD SAFETY TIPS ---
 const SIMON_YARD_TIPS = {
     EN: [
-        "YARD SAFETY ALERT: Always use designated crosswalks. DSP vans have blind spots bigger than their ambition.",
-        "CAUTION: The yard is NOT a shortcut. One associate versus a Prime van equals paperwork I don't want to file.",
-        "REMINDER: Look both ways. Then look again. Those DSP drivers run on caffeine and impossible deadlines.",
-        "YARD PROTOCOL: High-vis vests exist for a reason. Be seen or be statistics.",
-        "CRITICAL: Vehicles have right of way. Your skeleton does not outweigh a delivery quota.",
-        "SAFETY FIRST: If you hear a horn, MOVE. Don't stand there contemplating the meaning of life.",
-        "PRO TIP: Headphones off in the yard. Music won't cushion the blow of a reversing semi.",
-        "AUDIT NOTE: The yard claims more near-misses than I have patience. Stay alert, stay alive."
+        "YARD SAFETY ALERT: Always use designated crosswalks. DSP vans have blind spots bigger than their ambition. I've measured both.",
+        "CAUTION: The yard is NOT a shortcut. One associate versus a Prime van equals paperwork I don't want to file. And I file EVERYTHING.",
+        "REMINDER: Look both ways. Then look again. Those DSP drivers run on caffeine and impossible deadlines. A dangerous combination I know well.",
+        "YARD PROTOCOL: High-vis vests exist for a reason. Be seen or be statistics. I prefer you as a headcount, not a body count.",
+        "CRITICAL: Vehicles have right of way. Your skeleton does not outweigh a delivery quota. Trust me, I've done the math.",
+        "SAFETY FIRST: If you hear a horn, MOVE. Don't stand there contemplating the meaning of life. Spoiler: it's compliance.",
+        "PRO TIP: Headphones off in the yard. Music won't cushion the blow of a reversing semi. Neither will your Spotify premium subscription.",
+        "AUDIT NOTE: The yard claims more near-misses than I have patience. Stay alert, stay alive. Or don't. Your choice affects MY metrics."
     ],
     AT: [
         "HOF-SICHERHEIT: Immer die Zebrastreifen benutzen, oida. DSP-Transporter haben größere tote Winkel als Ehrgeiz.",
@@ -1519,14 +1519,14 @@ const SIMON_YARD_TIPS = {
         "AUDIT-NOTIZ: Der Hof hat mehr Beinahe-Unfälle als ich Geduld habe. Bleib wachsam, bleib am Leben."
     ],
     NL: [
-        "TERREIN-VEILIGHEID: Gebruik altijd de zebrapaden. DSP-busjes hebben grotere dode hoeken dan ambitie.",
-        "LET OP: Het terrein is GEEN afkorting. Eén medewerker tegen een Prime-bus betekent papierwerk dat ik niet wil doen.",
-        "HERINNERING: Kijk links en rechts. Dan nog een keer. Die DSP-chauffeurs draaien op cafeïne en onmogelijke deadlines.",
-        "TERREIN-PROTOCOL: Veiligheidsvesten bestaan met een reden. Gezien worden of statistiek worden.",
-        "KRITIEK: Voertuigen hebben voorrang. Je skelet weegt niet meer dan een leveringsquota.",
-        "VEILIGHEID EERST: Als je een claxon hoort, BEWEEG. Sta niet stil na te denken over de zin van het leven.",
-        "PRO TIP: Koptelefoon af op het terrein. Muziek dempt de klap van een achteruitrijdende vrachtwagen niet.",
-        "AUDIT NOTITIE: Het terrein heeft meer bijna-ongelukken dan ik geduld heb. Blijf alert, blijf in leven."
+        "TERREIN-VEILIGHEID: Gebruik altijd de zebrapaden, godver. DSP-busjes hebben grotere dode hoeken dan ambitie. Ik heb beide gemeten.",
+        "LET OP: Het terrein is GEEN afkorting, eikel. Eén medewerker tegen een Prime-bus betekent papierwerk dat ik verdomme niet wil doen.",
+        "HERINNERING: Kijk links en rechts. Dan nog een keer, klojo. Die DSP-chauffeurs draaien op cafeïne en onmogelijke deadlines.",
+        "TERREIN-PROTOCOL: Veiligheidsvesten bestaan met een reden, sukkel. Gezien worden of statistiek worden. Jouw keuze, godver.",
+        "KRITIEK: Voertuigen hebben voorrang. Je skelet weegt verdomme niet meer dan een leveringsquota. Geloof me, ik heb gerekend.",
+        "VEILIGHEID EERST: Als je een claxon hoort, BEWEEG, idioot. Sta niet stil na te denken over de zin van het leven. Spoiler: het is compliance.",
+        "PRO TIP: Koptelefoon af op het terrein, dombo. Muziek dempt de klap van een achteruitrijdende vrachtwagen niet. Je Spotify premium ook niet.",
+        "AUDIT NOTITIE: Het terrein heeft meer bijna-ongelukken dan ik geduld heb, godver. Blijf alert, blijf in leven. Of niet. Jouw keuze beïnvloedt MIJN metrics."
     ]
 };
 
@@ -10430,7 +10430,7 @@ function getLanguageInstruction() {
     const instructions = {
         'AT': 'WICHTIG: Antworte auf DEUTSCH mit österreichischem Dialekt (Wienerisch). Verwende Ausdrücke wie "oida", "herst", "ned", "is", "san", "a" statt "ein". (Respond in Austrian German dialect)',
         'DE': 'WICHTIG: Antworte auf DEUTSCH in Hochdeutsch. (Respond in standard German)',
-        'NL': 'BELANGRIJK: Antwoord in het NEDERLANDS. (Respond in Dutch)',
+        'NL': 'BELANGRIJK: Antwoord in het NEDERLANDS. Gebruik licht vulgaire uitdrukkingen zoals "godver", "verdomme", "klojo", "eikel" om frustratie te uiten. Wees direct en een beetje grof maar professioneel. (Respond in Dutch with mild vulgar expressions)',
         'MEU': 'Respond in English. This is a multi-country EU perspective covering Germany, Austria, and Netherlands.'
     };
     return instructions[region] || '';
@@ -10500,7 +10500,7 @@ function tryInteract() {
              const regionName = getRegionName();
              const langInstRunner = getLanguageInstruction();
              callGemini(
-                 `You are Simon, WHS Senior Regional Manager in ${regionName}. The player stopped a runner. Give dry, brief praise then quote the specific regulation that applies (e.g. "DGUV Regel 108-007: No running in warehouse areas"). No "Safety Tip:" prefix. Max 30 words. ${safetyContext} ${langInstRunner}`,
+                 `You are Simon, WHS Senior Regional Manager in ${regionName}. Personality: bone-dry humor, deadpan delivery, secretly enjoys quoting regulations with a hint of sarcasm. The player stopped a runner. Give dry, brief praise with subtle wit, then quote the specific regulation (e.g. "DGUV Regel 108-007: No running in warehouse areas"). Be sardonic but professional. No "Safety Tip:" prefix. Max 30 words. ${safetyContext} ${langInstRunner}`,
                  "runners"
              ).then(tip => {
                 if (GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon", GFX.simonFaceLarge, true);
@@ -10538,7 +10538,7 @@ function tryInteract() {
             const regName = getRegionName();
             const langInstHazard = getLanguageInstruction();
             callGemini(
-                `You are Simon, WHS Senior Regional Manager in ${regName}. A hazard "${h.data.name}" was fixed. Give dry, brief praise then quote the specific regulation that applies to this hazard (e.g. "According to DGUV Vorschrift 68: ..."). No "Safety Tip:" prefix. Max 30 words. ${safetyCtx} ${langInstHazard}`,
+                `You are Simon, WHS Senior Regional Manager in ${regName}. Personality: bone-dry humor, deadpan delivery, secretly enjoys quoting regulations with a hint of sarcasm. A hazard "${h.data.name}" was fixed. Give dry, brief praise with subtle wit, then quote the specific regulation (e.g. "According to DGUV Vorschrift 68: ..."). Be sardonic but professional. No "Safety Tip:" prefix. Max 30 words. ${safetyCtx} ${langInstHazard}`,
                 "hazard",
                 { hazardName: h.data.name }
             ).then(tip => {
@@ -11071,23 +11071,23 @@ function showHazardDetail() {
     GAME.state = 'HAZARD_DETAIL_MODAL';
     GAME.stateTimer = 0;
 
-    // Build the AI prompt for regulatory information
+    // Build the AI prompt for regulatory information (Simon's dry humor personality)
     let prompt;
     if (hazardRegion === 'MEU') {
         // Multi-country comparison mode for MEU
-        prompt = `You are a workplace safety compliance expert. Provide a comparative regulatory summary for this warehouse hazard across Germany, Austria, and Netherlands:
+        prompt = `You are Simon, WHS Senior Regional Manager with bone-dry humor and deadpan delivery. Provide a comparative regulatory summary for this warehouse hazard across Germany, Austria, and Netherlands:
 
 Hazard: "${hazardName}" (type: ${hazardType})
 
 Respond with EXACTLY this format:
 REGULATION: Multi-country comparison
 TITLE: ${hazardName} - EU Regulatory Overview
-SUMMARY: Brief comparison of how Germany (DGUV), Austria (ASchG), and Netherlands (Arbowet) handle this hazard. Note any major differences in requirements or approach. Keep it concise (3-4 sentences max).
+SUMMARY: Brief comparison of how Germany (DGUV), Austria (ASchG), and Netherlands (Arbowet) handle this hazard. Add one subtle dry observation about bureaucratic differences. Keep it concise (3-4 sentences max).
 PENALTY: Not applicable for comparison
 
-Focus on practical differences that matter for safety. Respond in English.`;
+Focus on practical differences that matter for safety. Be sardonic but professional. Respond in English.`;
     } else {
-        prompt = `You are a workplace safety compliance expert. Provide detailed regulatory information for the following warehouse hazard:
+        prompt = `You are Simon, WHS Senior Regional Manager with bone-dry humor and deadpan delivery. Provide detailed regulatory information for the following warehouse hazard:
 
 Hazard: "${hazardName}" (type: ${hazardType})
 Region: ${regionName} (${hazardRegion})
@@ -11095,7 +11095,7 @@ Region: ${regionName} (${hazardRegion})
 Respond with EXACTLY this format (fill in the details):
 REGULATION: [Specific regulation code/citation for this region]
 TITLE: [Official title of the regulation]
-SUMMARY: [2-3 sentences explaining why this is a hazard and what the regulation requires]
+SUMMARY: [2-3 sentences explaining why this is a hazard and what the regulation requires. Include a dry, sardonic observation about why people ignore this. Be witty but professional.]
 PENALTY: [Typical fine or penalty for violations in this region]
 
 ${safetyContext}
@@ -15574,93 +15574,114 @@ function draw() {
         ctx.textAlign = 'left';
         ctx.restore(); return;
     }
-    // === HAZARD DETAIL MODAL (Audit Page themed) ===
+    // === HAZARD DETAIL MODAL (Conversation Style with Simon) ===
     if (GAME.state === 'HAZARD_DETAIL_MODAL' && GAME.hazardModal) {
         const t = GAME.stateTimer;
         const modal = GAME.hazardModal;
 
         // Semi-transparent overlay
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Modal frame (Audit Page theme)
-        const mX = 12, mY = 10, mW = canvas.width - 24, mH = canvas.height - 24;
+        // Modal frame (Conversation style like dialog-box)
+        const mX = 8, mY = 6, mW = canvas.width - 16, mH = canvas.height - 16;
 
-        // Main panel background
-        ctx.fillStyle = '#0a1020';
+        // Main panel background (gradient feel)
+        ctx.fillStyle = '#0a1628';
         ctx.fillRect(mX, mY, mW, mH);
 
-        // Yellow/orange audit border
-        ctx.strokeStyle = '#fbbf24';
+        // Inner gradient effect
+        const gradient = ctx.createLinearGradient(mX, mY, mX, mY + mH);
+        gradient.addColorStop(0, 'rgba(10, 22, 40, 0.95)');
+        gradient.addColorStop(1, 'rgba(6, 16, 32, 0.98)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(mX + 2, mY + 2, mW - 4, mH - 4);
+
+        // Gold border (conversation style)
+        ctx.strokeStyle = '#ffd700';
         ctx.lineWidth = 3;
         ctx.strokeRect(mX, mY, mW, mH);
-        ctx.strokeStyle = '#92400e';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(mX + 3, mY + 3, mW - 6, mH - 6);
 
-        // Header bar (red like safety warning)
-        ctx.fillStyle = '#7f1d1d';
-        ctx.fillRect(mX + 5, mY + 5, mW - 10, 20);
-        ctx.fillStyle = '#dc2626';
-        ctx.fillRect(mX + 6, mY + 6, mW - 12, 18);
+        // Outer glow effect
+        ctx.shadowColor = 'rgba(255, 215, 0, 0.4)';
+        ctx.shadowBlur = 15;
+        ctx.strokeRect(mX, mY, mW, mH);
+        ctx.shadowBlur = 0;
 
-        // Title (localized, HUD-matching font)
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#fff';
+        // Draw Simon's portrait (left side, conversation style)
+        const portraitX = mX + 10;
+        const portraitY = mY + 12;
+        const portraitSize = 48;
+
+        // Portrait background
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(portraitX, portraitY, portraitSize, portraitSize);
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(portraitX, portraitY, portraitSize, portraitSize);
+
+        // Draw Simon's face
+        if (GFX.simonFaceLarge) {
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(GFX.simonFaceLarge, portraitX, portraitY, portraitSize, portraitSize);
+        }
+
+        // Speaker name under portrait
+        ctx.fillStyle = '#ffd700';
         ctx.font = '8px "Press Start 2P"';
-        ctx.fillText(getLocalizedText('regulation'), canvas.width / 2, mY + 18);
-
+        ctx.textAlign = 'center';
+        ctx.fillText('SIMON', portraitX + portraitSize / 2, portraitY + portraitSize + 12);
         ctx.textAlign = 'left';
 
+        // Content area (to the right of portrait)
+        const contentX = portraitX + portraitSize + 12;
+        const contentY = mY + 14;
+        const contentW = mW - portraitSize - 36;
+
         if (modal.loading) {
-            // Loading animation
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#fbbf24';
-            ctx.font = '8px "Press Start 2P"';
+            // Loading animation (conversation style)
+            ctx.fillStyle = '#f0f0ff';
+            ctx.font = '10px "Press Start 2P"';
             const dots = '.'.repeat((Math.floor(t / 20) % 4));
-            ctx.fillText(getLocalizedText('loading').replace('...', '') + dots, canvas.width / 2, canvas.height / 2);
-            ctx.textAlign = 'left';
+            ctx.fillText(getLocalizedText('loading').replace('...', '') + dots, contentX, contentY + 30);
         } else {
-            // Layout with HUD-matching fonts (8px for sharp, compact display like HAZARDS)
-            const contentY = mY + 30;
-            const lineHeight = 11;
+            // Hazard name header (golden, prominent)
+            ctx.fillStyle = '#ffd700';
+            ctx.font = '9px "Press Start 2P"';
+            const hazardNameTrunc = modal.hazardName.length > 22 ? modal.hazardName.substring(0, 22) + '..' : modal.hazardName;
+            ctx.fillText(hazardNameTrunc, contentX, contentY + 4);
 
-            // Hazard name - prominent display (HUD font size)
-            ctx.fillStyle = '#fbbf24';
-            ctx.font = '8px "Press Start 2P"';
-            const hazardNameTrunc = modal.hazardName.length > 26 ? modal.hazardName.substring(0, 26) + '...' : modal.hazardName;
-            ctx.fillText(hazardNameTrunc, mX + 10, contentY);
-
-            // Region tag
+            // Region badge
+            const regionBadgeX = contentX;
+            const regionBadgeY = contentY + 10;
             ctx.fillStyle = '#1e40af';
-            ctx.fillRect(mX + 10, contentY + 6, 60, 12);
+            ctx.fillRect(regionBadgeX, regionBadgeY, 55, 11);
             ctx.fillStyle = '#22d3ee';
-            ctx.font = '8px "Press Start 2P"';
-            ctx.fillText(modal.regionName, mX + 14, contentY + 15);
+            ctx.font = '7px "Press Start 2P"';
+            ctx.fillText(modal.regionName, regionBadgeX + 3, regionBadgeY + 8);
 
-            // Regulation box (HUD-matching fonts)
-            ctx.fillStyle = '#1a1a2e';
-            ctx.fillRect(mX + 8, contentY + 22, mW - 16, 24);
+            // Regulation citation box
+            const regBoxY = contentY + 26;
+            ctx.fillStyle = 'rgba(26, 26, 46, 0.8)';
+            ctx.fillRect(contentX - 2, regBoxY, contentW + 4, 22);
             ctx.strokeStyle = '#3b82f6';
             ctx.lineWidth = 1;
-            ctx.strokeRect(mX + 8, contentY + 22, mW - 16, 24);
+            ctx.strokeRect(contentX - 2, regBoxY, contentW + 4, 22);
 
             ctx.fillStyle = '#60a5fa';
-            ctx.font = '8px "Press Start 2P"';
-            const regTrunc = modal.regulation.length > 32 ? modal.regulation.substring(0, 32) + '...' : modal.regulation;
-            ctx.fillText(regTrunc, mX + 12, contentY + 34);
+            ctx.font = '7px "Press Start 2P"';
+            const regTrunc = modal.regulation.length > 28 ? modal.regulation.substring(0, 28) + '..' : modal.regulation;
+            ctx.fillText(regTrunc, contentX + 2, regBoxY + 9);
             ctx.fillStyle = '#94a3b8';
-            ctx.font = '8px "Press Start 2P"';
-            const titleTrunc = modal.title.length > 34 ? modal.title.substring(0, 34) + '...' : modal.title;
-            ctx.fillText(titleTrunc, mX + 12, contentY + 44);
+            ctx.font = '6px "Press Start 2P"';
+            const titleTrunc = modal.title.length > 32 ? modal.title.substring(0, 32) + '..' : modal.title;
+            ctx.fillText(titleTrunc, contentX + 2, regBoxY + 18);
 
-            // Summary section (HUD-matching fonts)
-            ctx.fillStyle = '#22d3ee';
-            ctx.font = '8px "Press Start 2P"';
-            ctx.fillText('SUMMARY:', mX + 10, contentY + 60);
+            // Summary section (conversation text style)
+            const summaryY = regBoxY + 30;
+            ctx.fillStyle = '#f0f0ff';
+            ctx.font = '7px "Press Start 2P"';
 
-            ctx.fillStyle = '#e0e0ff';
-            ctx.font = '8px "Press Start 2P"';
             const wrapTextLines = (text, maxChars) => {
                 const words = text.split(' '); const lines = []; let line = '';
                 words.forEach(word => {
@@ -15671,60 +15692,63 @@ function draw() {
                 if (line) lines.push(line);
                 return lines;
             };
-            const summaryLines = wrapTextLines(modal.summary, 36);
-            const maxVisibleLines = 5;
+
+            const summaryLines = wrapTextLines(modal.summary, 30);
+            const maxVisibleLines = 6;
             const scrollOffset = modal.scrollOffset || 0;
             const visibleLines = summaryLines.slice(scrollOffset, scrollOffset + maxVisibleLines);
+            const lineHeight = 11;
+
             visibleLines.forEach((line, i) => {
-                ctx.fillText(line, mX + 10, contentY + 72 + i * lineHeight);
+                ctx.fillText(line, contentX, summaryY + i * lineHeight);
             });
 
             // Update max scroll
             modal.maxScroll = Math.max(0, summaryLines.length - maxVisibleLines);
 
-            // Scroll indicator if needed
+            // Scroll indicators (right side)
             if (summaryLines.length > maxVisibleLines) {
-                ctx.fillStyle = '#fbbf24';
-                ctx.font = '8px "Press Start 2P"';
+                ctx.fillStyle = '#ffd700';
+                ctx.font = '10px "Press Start 2P"';
                 if (scrollOffset > 0) {
-                    ctx.fillText('\u25B2', mW, contentY + 72);
+                    ctx.fillText('\u25B2', mW - 8, summaryY + 5);
                 }
                 if (scrollOffset < modal.maxScroll) {
-                    ctx.fillText('\u25BC', mW, contentY + 115);
+                    ctx.fillText('\u25BC', mW - 8, summaryY + 55);
                 }
             }
 
-            // For MEU mode, show comparison label at bottom
+            // MEU comparison badge
             if (modal.region === 'MEU') {
-                const meuY = contentY + 130;
+                const meuY = summaryY + 68;
                 ctx.fillStyle = '#1e40af';
-                ctx.fillRect(mX + 8, meuY, mW - 16, 16);
+                ctx.fillRect(contentX - 2, meuY, contentW + 4, 14);
                 ctx.strokeStyle = '#3b82f6';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(mX + 8, meuY, mW - 16, 16);
+                ctx.lineWidth = 1;
+                ctx.strokeRect(contentX - 2, meuY, contentW + 4, 14);
 
                 ctx.fillStyle = '#22d3ee';
-                ctx.font = '8px "Press Start 2P"';
+                ctx.font = '6px "Press Start 2P"';
                 ctx.textAlign = 'center';
-                ctx.fillText(getLocalizedText('multi_country'), canvas.width / 2, meuY + 11);
+                ctx.fillText(getLocalizedText('multi_country'), contentX + contentW / 2, meuY + 10);
                 ctx.textAlign = 'left';
             }
         }
 
-        // Footer with controls (localized, HUD-matching 8px font)
-        ctx.fillStyle = '#1f2937';
-        ctx.fillRect(mX + 5, mY + mH - 18, mW - 10, 14);
+        // Footer controls (bottom of modal)
+        ctx.fillStyle = 'rgba(31, 41, 55, 0.9)';
+        ctx.fillRect(mX + 4, mY + mH - 16, mW - 8, 12);
 
         ctx.textAlign = 'center';
         const blink = Math.sin(t * 0.12) > 0;
-        ctx.fillStyle = blink ? '#fbbf24' : '#92400e';
-        ctx.font = '8px "Press Start 2P"';
+        ctx.fillStyle = blink ? '#ffd700' : '#92400e';
+        ctx.font = '6px "Press Start 2P"';
         ctx.fillText('\u25B2\u25BC ' + getLocalizedText('scroll') + ' | ' + getLocalizedText('close_short'), canvas.width / 2, mY + mH - 7);
         ctx.textAlign = 'left';
 
         ctx.restore(); return;
     }
-    // === PPE VENDING MACHINE DIALOG ===
+    // === PPE VENDING MACHINE DIALOG (Conversation Style) ===
     if (GAME.state === 'PPE_DIALOG') {
         const t = GAME.stateTimer;
         ctx.save();
@@ -15733,80 +15757,118 @@ function draw() {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Main dialog box
-        const boxX = 10, boxY = 20, boxW = canvas.width - 20, boxH = 200;
+        // Main dialog box (Conversation style like dialog-box)
+        const boxX = 8, boxY = 16, boxW = canvas.width - 16, boxH = 205;
+
+        // Main panel background (gradient feel)
         ctx.fillStyle = '#0a1628';
         ctx.fillRect(boxX, boxY, boxW, boxH);
-        ctx.strokeStyle = '#3b82f6';
+
+        // Inner gradient effect
+        const gradient = ctx.createLinearGradient(boxX, boxY, boxX, boxY + boxH);
+        gradient.addColorStop(0, 'rgba(10, 22, 40, 0.95)');
+        gradient.addColorStop(1, 'rgba(6, 16, 32, 0.98)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(boxX + 2, boxY + 2, boxW - 4, boxH - 4);
+
+        // Gold border (conversation style)
+        ctx.strokeStyle = '#ffd700';
         ctx.lineWidth = 3;
         ctx.strokeRect(boxX, boxY, boxW, boxH);
-        ctx.strokeStyle = '#1d4ed8';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(boxX + 3, boxY + 3, boxW - 6, boxH - 6);
 
-        // Draw vending machine sprite
+        // Outer glow effect
+        ctx.shadowColor = 'rgba(255, 215, 0, 0.4)';
+        ctx.shadowBlur = 15;
+        ctx.strokeRect(boxX, boxY, boxW, boxH);
+        ctx.shadowBlur = 0;
+
+        // Draw vending machine sprite (portrait area)
+        const portraitX = boxX + 10;
+        const portraitY = boxY + 12;
+        const portraitSize = 64;
+
+        // Portrait background
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(portraitX, portraitY, portraitSize, portraitSize);
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(portraitX, portraitY, portraitSize, portraitSize);
+
         if (GFX.vendingMachineLarge) {
-            ctx.drawImage(GFX.vendingMachineLarge, boxX + 12, boxY + 10);
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(GFX.vendingMachineLarge, portraitX + 8, portraitY + 8, 48, 48);
         }
 
-        // Title (localized, HUD-matching 8px font)
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = '8px "Press Start 2P"';
-        ctx.fillText(getLocalizedText('ppe_vending'), boxX + 100, boxY + 25);
-        ctx.fillText(getLocalizedText('ppe_machine'), boxX + 110, boxY + 38);
+        // Label under portrait
+        ctx.fillStyle = '#ffd700';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('PPE VENDOR', portraitX + portraitSize / 2, portraitY + portraitSize + 10);
+        ctx.textAlign = 'left';
 
-        // Info text (localized, HUD-matching 8px font)
+        // Content area (to the right of vending machine)
+        const contentX = portraitX + portraitSize + 14;
+        const contentY = boxY + 16;
+
+        // Title (golden, conversation style)
+        ctx.fillStyle = '#ffd700';
+        ctx.font = '9px "Press Start 2P"';
+        ctx.fillText(getLocalizedText('ppe_vending'), contentX, contentY + 4);
+        ctx.fillText(getLocalizedText('ppe_machine'), contentX + 10, contentY + 18);
+
+        // Info text (conversation style with #f0f0ff)
+        ctx.fillStyle = '#f0f0ff';
+        ctx.font = '7px "Press Start 2P"';
+        ctx.fillText(getLocalizedText('spend_safety_points'), contentX, contentY + 36);
+        ctx.fillText(getLocalizedText('protective_equipment'), contentX, contentY + 48);
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '8px "Press Start 2P"';
-        ctx.fillText(getLocalizedText('spend_safety_points'), boxX + 100, boxY + 54);
-        ctx.fillText(getLocalizedText('protective_equipment'), boxX + 100, boxY + 66);
-        ctx.fillText(getLocalizedText('each_item_grants'), boxX + 100, boxY + 80);
-        ctx.fillText(getLocalizedText('permanent_buff'), boxX + 100, boxY + 92);
+        ctx.fillText(getLocalizedText('each_item_grants'), contentX, contentY + 62);
+        ctx.fillText(getLocalizedText('permanent_buff'), contentX, contentY + 74);
 
-        // Safety Points display
+        // Safety Points display (highlighted)
         ctx.fillStyle = '#22d3ee';
         ctx.font = '8px "Press Start 2P"';
-        ctx.fillText(getLocalizedText('sp_short') + ': ' + GAME.safetyPoints, boxX + 100, boxY + 108);
+        ctx.fillText(getLocalizedText('sp_short') + ': ' + GAME.safetyPoints, contentX, contentY + 92);
 
-        // Menu options (localized) - with Return option for mobile
+        // Menu options (conversation style)
         const menuY = boxY + 125;
         const localizedOptions = [getLocalizedText('select_items'), getLocalizedText('leave')];
         localizedOptions.forEach((opt, i) => {
             const isSelected = GAME.ppeDialogChoice === i;
-            const optY = menuY + i * 20;
+            const optY = menuY + i * 22;
 
             if (isSelected) {
-                // Selection highlight
-                ctx.fillStyle = 'rgba(59, 130, 246, 0.4)';
-                ctx.fillRect(boxX + 95, optY - 8, 130, 18);
-                ctx.strokeStyle = '#3b82f6';
+                // Selection highlight (gold tint)
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
+                ctx.fillRect(contentX - 4, optY - 8, 140, 18);
+                ctx.strokeStyle = '#ffd700';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(boxX + 95, optY - 8, 130, 18);
+                ctx.strokeRect(contentX - 4, optY - 8, 140, 18);
 
                 // Blinking arrow
                 const blink = Math.sin(t * 0.15) > 0;
-                ctx.fillStyle = blink ? '#fbbf24' : '#92400e';
+                ctx.fillStyle = blink ? '#ffd700' : '#92400e';
                 ctx.font = '10px monospace';
-                ctx.fillText('\u25B6', boxX + 100, optY + 5);
+                ctx.fillText('\u25B6', contentX, optY + 5);
             }
 
             ctx.fillStyle = isSelected ? '#fff' : '#64748b';
             ctx.font = '8px "Press Start 2P"';
-            ctx.fillText(opt, boxX + 116, optY + 4);
+            ctx.fillText(opt, contentX + 16, optY + 4);
 
             // Store button coordinates for touch detection
             if (!GAME.ppeDialogButtons) GAME.ppeDialogButtons = [];
-            GAME.ppeDialogButtons[i] = { x: boxX + 95, y: optY - 8, w: 130, h: 18 };
+            GAME.ppeDialogButtons[i] = { x: contentX - 4, y: optY - 8, w: 140, h: 18 };
         });
 
-        // Footer controls (localized)
-        ctx.fillStyle = '#1f2937';
-        ctx.fillRect(boxX + 5, boxY + boxH - 18, boxW - 10, 14);
+        // Footer controls (conversation style)
+        ctx.fillStyle = 'rgba(31, 41, 55, 0.9)';
+        ctx.fillRect(boxX + 4, boxY + boxH - 16, boxW - 8, 12);
         ctx.textAlign = 'center';
         const blink = Math.sin(t * 0.12) > 0;
-        ctx.fillStyle = blink ? '#fbbf24' : '#64748b';
+        ctx.fillStyle = blink ? '#ffd700' : '#64748b';
         ctx.font = '6px "Press Start 2P"';
-        ctx.fillText(getLocalizedText('controls_select_confirm_leave'), canvas.width / 2, boxY + boxH - 8);
+        ctx.fillText(getLocalizedText('controls_select_confirm_leave'), canvas.width / 2, boxY + boxH - 7);
         ctx.textAlign = 'left';
 
         ctx.restore();
