@@ -1321,8 +1321,147 @@ const SIMULATED_AI = {
         "Performance: CATASTROPHIC. Entropy won.",
         "You failed. Gravity and stupidity destroyed us.",
         "Safety is binary. You are a zero."
-    ]
+    ],
+    // Region-specific dialogue for Simon
+    regional: {
+        AT: {
+            runners: [
+                "Halt, oida! Kinetische Energie is ned dei Freund. Langsamer!",
+                "Du bist ka Photon. Du hast Masse. Geh!",
+                "Rennen? I hab Gletscher gsehen die schneller san.",
+                "Mir kämpfen gegen Entropie, ned gegen die Uhr. Geh!"
+            ],
+            taunts: [
+                "Mei Tabellenkalkulation sagt dei Scheitern voraus!",
+                "Du kannst des Audit ned entkommen!",
+                "I bin die finale Vorschrift!",
+                "Compliance sinkt... Kündigung steht bevor!",
+                "Widerstand is a Sicherheitsverletzung!"
+            ],
+            simon_taunts: [
+                "I BIN DER SICHERHEITSSTANDARD!",
+                "DU KANNST DEM AUDIT NED ENTKOMMEN!",
+                "ENTROPIE KOMMT FÜR UNS ALLE!",
+                "DEINE PSA IS UNZUREICHEND!"
+            ],
+            simon_warnings: [
+                "Erste Verwarnung: Hör auf mit die Handbücher zu werfen. Compliance is ka Kontaktsport.",
+                "Letzte Verwarnung: Steck die Regelbücher weg oder i eskalier des Audit zum Bossfight."
+            ],
+            reviews_win: [
+                "Leistung: UNWAHRSCHEINLICH. Du hast überlebt. I bin... angemessen zufrieden.",
+                "Du hast gegen das Chaos gewonnen. Für heit.",
+                "Ausreichend. Nix zum Aufschreiben. Fühlt si komisch an."
+            ],
+            reviews_loss: [
+                "Leistung: KATASTROPHAL. Entropie hat gwonnen.",
+                "Du hast versagt. Schwerkraft und Dummheit haben uns zerstört.",
+                "Sicherheit is binär. Du bist a Null."
+            ]
+        },
+        DE: {
+            runners: [
+                "Halt! Kinetische Energie ist nicht dein Freund. Langsamer!",
+                "Du bist kein Photon. Du hast Masse. Geh!",
+                "Rennen? Ich habe Gletscher gesehen die zielstrebiger waren.",
+                "Wir kämpfen gegen Entropie, nicht gegen die Uhr. Geh!"
+            ],
+            taunts: [
+                "Meine Tabellenkalkulation sagt dein Scheitern voraus!",
+                "Du kannst das Audit nicht entkommen!",
+                "Ich bin die finale Vorschrift!",
+                "Compliance sinkt... Kündigung steht bevor!",
+                "Widerstand ist eine Sicherheitsverletzung!"
+            ],
+            simon_taunts: [
+                "ICH BIN DER SICHERHEITSSTANDARD!",
+                "DU KANNST DEM AUDIT NICHT ENTKOMMEN!",
+                "ENTROPIE KOMMT FÜR UNS ALLE!",
+                "DEINE PSA IST UNZUREICHEND!"
+            ],
+            simon_warnings: [
+                "Erste Verwarnung: Hör auf Handbücher zu werfen. Compliance ist kein Kontaktsport.",
+                "Letzte Verwarnung: Steck die Regelbücher weg oder ich eskaliere dieses Audit zum Bossfight."
+            ],
+            reviews_win: [
+                "Leistung: UNWAHRSCHEINLICH. Du hast überlebt. Ich bin... angemessen zufrieden.",
+                "Du hast gegen das Chaos gewonnen. Für heute.",
+                "Ausreichend. Nichts aufzuschreiben. Fühlt sich seltsam an."
+            ],
+            reviews_loss: [
+                "Leistung: KATASTROPHAL. Entropie hat gewonnen.",
+                "Du hast versagt. Schwerkraft und Dummheit haben uns zerstört.",
+                "Sicherheit ist binär. Du bist eine Null."
+            ]
+        },
+        NL: {
+            runners: [
+                "Stop! Kinetische energie is niet je vriend. Langzamer!",
+                "Je bent geen foton. Je hebt massa. Loop!",
+                "Rennen? Ik heb gletsjers gezien die doelgerichter waren.",
+                "We vechten tegen entropie, niet tegen de klok. Loop!"
+            ],
+            taunts: [
+                "Mijn spreadsheet voorspelt je falen!",
+                "Je kunt de audit niet ontsnappen!",
+                "Ik ben de finale regelgeving!",
+                "Compliance daalt... Ontslag dreigt!",
+                "Weerstand is een veiligheidsovertreding!"
+            ],
+            simon_taunts: [
+                "IK BEN DE VEILIGHEIDSSTANDAARD!",
+                "JE KUNT DE AUDIT NIET ONTSNAPPEN!",
+                "ENTROPIE KOMT VOOR ONS ALLEMAAL!",
+                "JE PBM IS ONVOLDOENDE!"
+            ],
+            simon_warnings: [
+                "Eerste waarschuwing: Stop met handboeken gooien. Compliance is geen contactsport.",
+                "Laatste waarschuwing: Berg die regelboeken op of ik escaleer deze audit naar een baasgevecht."
+            ],
+            reviews_win: [
+                "Prestatie: ONWAARSCHIJNLIJK. Je hebt overleefd. Ik ben... voldoende tevreden.",
+                "Je hebt tegen de chaos gewonnen. Voor vandaag.",
+                "Voldoende. Niets op te schrijven. Voelt vreemd."
+            ],
+            reviews_loss: [
+                "Prestatie: CATASTROFAAL. Entropie heeft gewonnen.",
+                "Je hebt gefaald. Zwaartekracht en domheid hebben ons vernietigd.",
+                "Veiligheid is binair. Jij bent een nul."
+            ]
+        }
+    }
 };
+
+// Helper function to get localized Simon dialogue
+function getLocalizedSimonDialogue(category) {
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : null;
+
+    // Try region-specific dialogue first (80% chance if available)
+    if (region && SIMULATED_AI.regional[region] && SIMULATED_AI.regional[region][category]) {
+        if (Math.random() < 0.8) {
+            return pick(SIMULATED_AI.regional[region][category]);
+        }
+    }
+
+    // Fall back to English
+    return pick(SIMULATED_AI[category] || []);
+}
+
+// Helper function to get localized dialogue by index (for warnings)
+function getLocalizedSimonWarning(index) {
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : null;
+
+    // Try region-specific warning first
+    if (region && SIMULATED_AI.regional[region] && SIMULATED_AI.regional[region].simon_warnings) {
+        const warnings = SIMULATED_AI.regional[region].simon_warnings;
+        if (warnings[index]) return warnings[index];
+    }
+
+    // Fall back to English
+    const defaultWarnings = SIMULATED_AI.simon_warnings || [];
+    return defaultWarnings[index] || defaultWarnings[0] || "";
+}
 
 // Helper function to pick region-specific tips when offline
 function pickRegionTip() {
@@ -1346,16 +1485,56 @@ function pickRegionTip() {
 }
 
 // --- SIMON'S YARD SAFETY TIPS ---
-const SIMON_YARD_TIPS = [
-    "YARD SAFETY ALERT: Always use designated crosswalks. DSP vans have blind spots bigger than their ambition.",
-    "CAUTION: The yard is NOT a shortcut. One associate versus a Prime van equals paperwork I don't want to file.",
-    "REMINDER: Look both ways. Then look again. Those DSP drivers run on caffeine and impossible deadlines.",
-    "YARD PROTOCOL: High-vis vests exist for a reason. Be seen or be statistics.",
-    "CRITICAL: Vehicles have right of way. Your skeleton does not outweigh a delivery quota.",
-    "SAFETY FIRST: If you hear a horn, MOVE. Don't stand there contemplating the meaning of life.",
-    "PRO TIP: Headphones off in the yard. Music won't cushion the blow of a reversing semi.",
-    "AUDIT NOTE: The yard claims more near-misses than I have patience. Stay alert, stay alive."
-];
+const SIMON_YARD_TIPS = {
+    EN: [
+        "YARD SAFETY ALERT: Always use designated crosswalks. DSP vans have blind spots bigger than their ambition.",
+        "CAUTION: The yard is NOT a shortcut. One associate versus a Prime van equals paperwork I don't want to file.",
+        "REMINDER: Look both ways. Then look again. Those DSP drivers run on caffeine and impossible deadlines.",
+        "YARD PROTOCOL: High-vis vests exist for a reason. Be seen or be statistics.",
+        "CRITICAL: Vehicles have right of way. Your skeleton does not outweigh a delivery quota.",
+        "SAFETY FIRST: If you hear a horn, MOVE. Don't stand there contemplating the meaning of life.",
+        "PRO TIP: Headphones off in the yard. Music won't cushion the blow of a reversing semi.",
+        "AUDIT NOTE: The yard claims more near-misses than I have patience. Stay alert, stay alive."
+    ],
+    AT: [
+        "HOF-SICHERHEIT: Immer die Zebrastreifen benutzen, oida. DSP-Transporter haben größere tote Winkel als Ehrgeiz.",
+        "ACHTUNG: Der Hof is ka Abkürzung. Ein Mitarbeiter gegen an Prime-Transporter bedeutet Papierkram, den i ned will.",
+        "ERINNERUNG: Schau links und rechts. Dann nochmal. Die DSP-Fahrer laufen auf Koffein und unmöglichen Deadlines.",
+        "HOF-PROTOKOLL: Warnwesten gibt's aus gutem Grund. Gsehen werden oder Statistik werden.",
+        "KRITISCH: Fahrzeuge haben Vorfahrt. Dei Skelett wiegt ned mehr als a Lieferquote.",
+        "SICHERHEIT ZUERST: Wenn du a Hupe hörst, BEWEG DI. Steh ned rum und denk über den Sinn des Lebens nach.",
+        "PROFI-TIPP: Kopfhörer runter im Hof. Musik dämpft ned den Aufprall eines rückwärtsfahrenden LKWs.",
+        "AUDIT-NOTIZ: Der Hof hat mehr Beinahe-Unfälle als i Geduld hab. Bleib wachsam, bleib am Leben."
+    ],
+    DE: [
+        "HOF-SICHERHEIT: Immer die Zebrastreifen benutzen. DSP-Transporter haben größere tote Winkel als Ehrgeiz.",
+        "ACHTUNG: Der Hof ist keine Abkürzung. Ein Mitarbeiter gegen einen Prime-Transporter bedeutet Papierkram.",
+        "ERINNERUNG: Schau links und rechts. Dann nochmal. Die DSP-Fahrer laufen auf Koffein und unmöglichen Deadlines.",
+        "HOF-PROTOKOLL: Warnwesten gibt es aus gutem Grund. Gesehen werden oder Statistik werden.",
+        "KRITISCH: Fahrzeuge haben Vorfahrt. Dein Skelett wiegt nicht mehr als eine Lieferquote.",
+        "SICHERHEIT ZUERST: Wenn du eine Hupe hörst, BEWEG DICH. Steh nicht rum und denk über den Sinn des Lebens nach.",
+        "PROFI-TIPP: Kopfhörer runter im Hof. Musik dämpft nicht den Aufprall eines rückwärtsfahrenden LKWs.",
+        "AUDIT-NOTIZ: Der Hof hat mehr Beinahe-Unfälle als ich Geduld habe. Bleib wachsam, bleib am Leben."
+    ],
+    NL: [
+        "TERREIN-VEILIGHEID: Gebruik altijd de zebrapaden. DSP-busjes hebben grotere dode hoeken dan ambitie.",
+        "LET OP: Het terrein is GEEN afkorting. Eén medewerker tegen een Prime-bus betekent papierwerk dat ik niet wil doen.",
+        "HERINNERING: Kijk links en rechts. Dan nog een keer. Die DSP-chauffeurs draaien op cafeïne en onmogelijke deadlines.",
+        "TERREIN-PROTOCOL: Veiligheidsvesten bestaan met een reden. Gezien worden of statistiek worden.",
+        "KRITIEK: Voertuigen hebben voorrang. Je skelet weegt niet meer dan een leveringsquota.",
+        "VEILIGHEID EERST: Als je een claxon hoort, BEWEEG. Sta niet stil na te denken over de zin van het leven.",
+        "PRO TIP: Koptelefoon af op het terrein. Muziek dempt de klap van een achteruitrijdende vrachtwagen niet.",
+        "AUDIT NOTITIE: Het terrein heeft meer bijna-ongelukken dan ik geduld heb. Blijf alert, blijf in leven."
+    ]
+};
+
+// Helper to get localized yard tip
+function getLocalizedYardTip() {
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    const tips = SIMON_YARD_TIPS[region] || SIMON_YARD_TIPS.EN;
+    return pick(tips);
+}
 
 // --- JEFF YARD TAUNTS ---
 const JEFF_YARD_TAUNTS = [
@@ -1573,11 +1752,11 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const is = (key) => category === key || prompt.includes(key);
 
-    if (is("runners")) return pick(SIMULATED_AI.runners);
+    // Use localized Simon dialogue
+    if (is("runners")) return getLocalizedSimonDialogue('runners');
     if (is("simon_warning")) {
-        const warnings = SIMULATED_AI.simon_warnings || [];
-        const idx = Math.min(context.warningIndex || 0, warnings.length - 1);
-        return warnings.length ? warnings[Math.max(0, idx)] : pick(SIMULATED_AI.taunts);
+        const idx = context.warningIndex || 0;
+        return getLocalizedSimonWarning(idx);
     }
     if (is("bezos_taunt") || is("bezos_confrontation")) {
         return pick(BEZOS_TAUNTS);
@@ -1601,8 +1780,8 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
         ]);
     }
     if (is("taunt")) {
-         if(prompt.includes("Simon")) return pick(SIMULATED_AI.simon_taunts);
-         return pick(SIMULATED_AI.taunts);
+         if(prompt.includes("Simon")) return getLocalizedSimonDialogue('simon_taunts');
+         return getLocalizedSimonDialogue('taunts');
     }
     if ((is("reviews_loss") || is("reviews_win")) && stats) {
         const time = stats.time ?? "?";
@@ -1614,8 +1793,8 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
         }
         return `Victory recap: ${hazards}/5 hazards cleared in ${time} seconds, ${books} rule books launched, ${ops} ops redirected. Celebrate, then keep exits clear.`;
     }
-    if (is("reviews_loss")) return pick(SIMULATED_AI.reviews_loss);
-    if (is("reviews_win")) return pick(SIMULATED_AI.reviews_win);
+    if (is("reviews_loss")) return getLocalizedSimonDialogue('reviews_loss');
+    if (is("reviews_win")) return getLocalizedSimonDialogue('reviews_win');
     if (is("hazard") || is("tips")) {
         if(hazardName) return `Hazard "${hazardName}" cleared. Paperwork avoided.`;
         // Prioritize region-specific tips when available
@@ -6644,8 +6823,8 @@ function startYardLevel() {
     GAME.floatingTexts = [];
     // Don't start yard music here - it will start when Simon's safety speech dialog closes
 
-    // Show Simon's yard safety tip
-    const safetyTip = SIMON_YARD_TIPS[Math.floor(Math.random() * SIMON_YARD_TIPS.length)];
+    // Show Simon's yard safety tip (localized)
+    const safetyTip = getLocalizedYardTip();
     showDialog(safetyTip, "Simon", GFX.simonFaceLarge, true);
     GAME.nextState = 'YARD_LEVEL';
 }
