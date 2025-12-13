@@ -4953,6 +4953,103 @@ function generateAssets() {
         ctx.fillRect(3,9,1,2);
     });
 
+    // 5S FLOOR MARKINGS - Amazon warehouse style
+    // Yellow walkway line (horizontal)
+    GFX.floor5sLineH = c(16,16, ctx => {
+        // Base floor
+        ctx.fillStyle = '#3a3f4a';
+        ctx.fillRect(0,0,16,16);
+        // Yellow walkway tape - horizontal
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(0,6,16,4);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(0,7,16,2);
+    });
+
+    // Yellow walkway line (vertical)
+    GFX.floor5sLineV = c(16,16, ctx => {
+        // Base floor
+        ctx.fillStyle = '#3a3f4a';
+        ctx.fillRect(0,0,16,16);
+        // Yellow walkway tape - vertical
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(6,0,4,16);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(7,0,2,16);
+    });
+
+    // Yellow walkway corner (top-left to bottom)
+    GFX.floor5sCornerTL = c(16,16, ctx => {
+        ctx.fillStyle = '#3a3f4a';
+        ctx.fillRect(0,0,16,16);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(6,6,10,4);
+        ctx.fillRect(6,6,4,10);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(7,7,9,2);
+        ctx.fillRect(7,7,2,9);
+    });
+
+    // Yellow walkway corner (top-right to bottom)
+    GFX.floor5sCornerTR = c(16,16, ctx => {
+        ctx.fillStyle = '#3a3f4a';
+        ctx.fillRect(0,0,16,16);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(0,6,10,4);
+        ctx.fillRect(6,6,4,10);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(0,7,9,2);
+        ctx.fillRect(7,7,2,9);
+    });
+
+    // Hazard zone tape (yellow/black diagonal stripes)
+    GFX.floor5sHazard = c(16,16, ctx => {
+        ctx.fillStyle = '#3a3f4a';
+        ctx.fillRect(0,0,16,16);
+        // Yellow/black hazard stripes on edges
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(0,0,16,3);
+        ctx.fillRect(0,13,16,3);
+        // Black stripes
+        ctx.fillStyle = '#1f2937';
+        for (let i = 0; i < 8; i++) {
+            ctx.fillRect(i*4, 0, 2, 3);
+            ctx.fillRect(i*4+2, 13, 2, 3);
+        }
+    });
+
+    // Pedestrian crossing / zebra marking
+    GFX.floor5sZebra = c(16,16, ctx => {
+        ctx.fillStyle = '#3a3f4a';
+        ctx.fillRect(0,0,16,16);
+        // White zebra stripes
+        ctx.fillStyle = '#e5e7eb';
+        ctx.fillRect(0,2,16,2);
+        ctx.fillRect(0,6,16,2);
+        ctx.fillRect(0,10,16,2);
+        ctx.fillRect(0,14,16,2);
+    });
+
+    // Equipment zone (blue marking)
+    GFX.floor5sEquip = c(16,16, ctx => {
+        ctx.fillStyle = '#3a3f4a';
+        ctx.fillRect(0,0,16,16);
+        // Blue equipment zone border
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(1,1,14,14);
+        // Blue corner marks
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(0,0,4,2);
+        ctx.fillRect(0,0,2,4);
+        ctx.fillRect(12,0,4,2);
+        ctx.fillRect(14,0,2,4);
+        ctx.fillRect(0,14,4,2);
+        ctx.fillRect(0,12,2,4);
+        ctx.fillRect(12,14,4,2);
+        ctx.fillRect(14,12,2,4);
+    });
+
     // ENHANCED WAREHOUSE WALL - Amazon orange shelf racking with packages
     GFX.wall = c(16,16, ctx => {
         // Metal shelf frame (orange Amazon-style)
@@ -15151,22 +15248,16 @@ function draw() {
         const glowIntensity = Math.sin(t * 0.08) * 0.3 + 0.7;
         ctx.shadowColor = '#ff9900';
         ctx.shadowBlur = 12 * glowIntensity;
-        ctx.font = '14px "Press Start 2P"';
         const warehouseCode = getWarehouseCode();
-        ctx.fillStyle = '#7c2d12';
-        ctx.fillText(warehouseCode, canvas.width / 2 + 2, 52);
-        ctx.fillStyle = '#ea580c';
-        ctx.fillText(warehouseCode, canvas.width / 2 + 1, 51);
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillText(warehouseCode, canvas.width / 2, 50);
+        crispText(warehouseCode, canvas.width / 2 + 2, 52, '14px monospace', '#7c2d12', 'center');
+        crispText(warehouseCode, canvas.width / 2 + 1, 51, '14px monospace', '#ea580c', 'center');
+        crispText(warehouseCode, canvas.width / 2, 50, '14px monospace', '#fbbf24', 'center');
         ctx.shadowBlur = 0;
 
         // Subtitle
         ctx.shadowColor = '#22d3ee';
         ctx.shadowBlur = 6;
-        ctx.fillStyle = '#22d3ee';
-        ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('DELIVERY STATION', canvas.width / 2, 65);
+        crispText('DELIVERY STATION', canvas.width / 2, 65, '6px monospace', '#22d3ee', 'center');
         ctx.shadowBlur = 0;
 
         // Decorative line
@@ -15176,36 +15267,23 @@ function draw() {
         ctx.fillRect(60, 79, canvas.width - 120, 1);
 
         // Story text with styling
-        ctx.textAlign = 'left';
-        ctx.font = '7px "Press Start 2P"';
+        crispText('Ops Managers obsess over', 30, 100, '7px monospace', '#94a3b8', 'left');
+        crispText('rates.', 180, 100, '7px monospace', '#ef4444', 'left');
 
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText('Ops Managers obsess over', 30, 100);
-        ctx.fillStyle = '#ef4444';
-        ctx.fillText('rates.', 180, 100);
+        crispText('They throw', 30, 120, '7px monospace', '#94a3b8', 'left');
+        crispText('Crazy Requests.', 105, 120, '7px monospace', '#f97316', 'left');
 
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText('They throw', 30, 120);
-        ctx.fillStyle = '#f97316';
-        ctx.fillText('Crazy Requests.', 105, 120);
+        crispText('You must protect', 30, 140, '7px monospace', '#94a3b8', 'left');
+        crispText('Safety.', 155, 140, '7px monospace', '#22c55e', 'left');
 
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText('You must protect', 30, 140);
-        ctx.fillStyle = '#22c55e';
-        ctx.fillText('Safety.', 155, 140);
-
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText('Stop runners.', 30, 160);
-        ctx.fillStyle = '#22d3ee';
-        ctx.fillText('Fix hazards.', 130, 160);
+        crispText('Stop runners.', 30, 160, '7px monospace', '#94a3b8', 'left');
+        crispText('Fix hazards.', 130, 160, '7px monospace', '#22d3ee', 'left');
 
         // Animated prompt
         ctx.textAlign = 'center';
         const blink = Math.sin(t * 0.12) > 0;
         if (blink) {
-            ctx.fillStyle = '#fff';
-            ctx.font = '7px "Press Start 2P"';
-            ctx.fillText('[SPACE TO SKIP]', canvas.width / 2, 195);
+            crispText('[SPACE TO SKIP]', canvas.width / 2, 195, '7px monospace', '#fff', 'center');
         }
 
         ctx.textAlign = 'left';
@@ -16083,31 +16161,6 @@ function draw() {
             ctx.fillText(getLocalizedText('next') + ' \u25B6', panelW - 40, pageY);
         }
 
-        // AI Message area (conversation style)
-        const msgY = panelY + panelH - 50;
-        ctx.fillStyle = 'rgba(26, 26, 46, 0.8)';
-        ctx.fillRect(panelX + 6, msgY, panelW - 12, 30);
-        ctx.strokeStyle = '#ffd700';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(panelX + 6, msgY, panelW - 12, 30);
-
-        // Simon's message
-        if (GAME.shopMessage && GAME.shopMessageTimer > 0) {
-            ctx.fillStyle = '#f0f0ff';
-            ctx.font = '6px monospace';
-            ctx.textAlign = 'left';
-            const msgLines = GAME.shopMessage.split('\n').slice(0, 2);
-            msgLines.forEach((line, i) => {
-                const truncLine = line.length > 42 ? line.substring(0, 42) + '...' : line;
-                ctx.fillText(truncLine, panelX + 10, msgY + 10 + i * 10);
-            });
-        } else {
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '6px monospace';
-            ctx.textAlign = 'left';
-            ctx.fillText(getLocalizedText('select_ppe'), panelX + 10, msgY + 16);
-        }
-
         // Return button (conversation style)
         const returnBtnX = panelW - 50;
         const returnBtnY = panelY + panelH - 18;
@@ -16609,6 +16662,54 @@ function draw() {
                     ctx.drawImage(GFX.floor, dx, dy);
                 }
             }
+        }
+    }
+
+    // Draw 5S floor markings (Amazon warehouse style)
+    // Main horizontal walkways
+    const walkwayY1 = 10; // Upper walkway
+    const walkwayY2 = MAP_H - 8; // Lower walkway
+    for (let x = 3; x < MAP_W - 3; x++) {
+        const dx1 = x * TILE_SIZE - cx;
+        const dy1 = walkwayY1 * TILE_SIZE - cy;
+        const dy2 = walkwayY2 * TILE_SIZE - cy;
+        if (dx1 > -20 && dx1 < 270) {
+            if (dy1 > -20 && dy1 < 250) ctx.drawImage(GFX.floor5sLineH, dx1, dy1);
+            if (dy2 > -20 && dy2 < 250) ctx.drawImage(GFX.floor5sLineH, dx1, dy2);
+        }
+    }
+    // Main vertical walkways (aisles)
+    const walkwayX1 = 6; // Left aisle
+    const walkwayX2 = MAP_W - 6; // Right aisle
+    for (let y = 4; y < MAP_H - 4; y++) {
+        const dx1 = walkwayX1 * TILE_SIZE - cx;
+        const dx2 = walkwayX2 * TILE_SIZE - cx;
+        const dy = y * TILE_SIZE - cy;
+        if (dy > -20 && dy < 250) {
+            if (dx1 > -20 && dx1 < 270) ctx.drawImage(GFX.floor5sLineV, dx1, dy);
+            if (dx2 > -20 && dx2 < 270) ctx.drawImage(GFX.floor5sLineV, dx2, dy);
+        }
+    }
+    // Hazard tape near fire exit door
+    if (GAME.fireExitDoor) {
+        const doorX = GAME.fireExitDoor.x;
+        const doorY = GAME.fireExitDoor.y;
+        for (let i = -2; i <= 2; i++) {
+            const hx = (doorX + i) * TILE_SIZE - cx;
+            const hy = (doorY + 1) * TILE_SIZE - cy;
+            if (hx > -20 && hx < 270 && hy > -20 && hy < 250) {
+                ctx.drawImage(GFX.floor5sHazard, hx, hy);
+            }
+        }
+    }
+    // Equipment zone near PPE vending machine
+    if (GAME.ppeVendingMachine) {
+        const vmX = Math.floor(GAME.ppeVendingMachine.x / TILE_SIZE);
+        const vmY = Math.floor(GAME.ppeVendingMachine.y / TILE_SIZE);
+        const ex = vmX * TILE_SIZE - cx;
+        const ey = (vmY + 1) * TILE_SIZE - cy;
+        if (ex > -20 && ex < 270 && ey > -20 && ey < 250) {
+            ctx.drawImage(GFX.floor5sEquip, ex, ey);
         }
     }
 
