@@ -5744,46 +5744,115 @@ function generateAssets() {
         ctx.fillRect(2,2,2,2);
     });
 
-    // === QUARTERMASTER'S SAFETY CAGE DOOR ===
-    GFX.quartermasterDoor = c(24, 24, ctx => {
-        // Blue metal cage frame
-        ctx.fillStyle = '#1e3a5f';
-        ctx.fillRect(0, 0, 24, 24);
-        ctx.fillStyle = '#2563eb';
-        ctx.fillRect(2, 2, 20, 20);
+    // === QUARTERMASTER'S SAFETY CAGE (Large with NPC) ===
+    GFX.quartermasterDoor = c(48, 48, ctx => {
+        // Outer wall backing (dark steel)
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(0, 0, 48, 48);
 
-        // Wire mesh pattern (cage look)
-        ctx.strokeStyle = '#3b82f6';
-        ctx.lineWidth = 1;
-        for (let i = 4; i < 20; i += 4) {
+        // Steel cage frame
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(2, 2, 44, 44);
+
+        // Inside cage area (slightly lit)
+        ctx.fillStyle = '#1e3a5f';
+        ctx.fillRect(4, 10, 40, 34);
+
+        // NPC (Simon/Quartermaster) - standing inside
+        // Body (blue safety vest)
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(16, 24, 16, 18);
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(18, 26, 12, 14);
+
+        // Reflective strips on vest
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(18, 28, 12, 2);
+        ctx.fillRect(18, 34, 12, 2);
+
+        // Head with hard hat
+        ctx.fillStyle = '#d4a574';
+        ctx.fillRect(20, 16, 8, 8);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(18, 12, 12, 5);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(19, 13, 10, 3);
+
+        // Eyes
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(21, 18, 2, 2);
+        ctx.fillRect(25, 18, 2, 2);
+
+        // Wire mesh cage bars (vertical)
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = 2;
+        for (let i = 8; i < 44; i += 6) {
             ctx.beginPath();
-            ctx.moveTo(i, 2);
-            ctx.lineTo(i, 22);
+            ctx.moveTo(i, 10);
+            ctx.lineTo(i, 44);
             ctx.stroke();
+        }
+        // Horizontal bars
+        for (let i = 16; i < 44; i += 8) {
             ctx.beginPath();
-            ctx.moveTo(2, i);
-            ctx.lineTo(22, i);
+            ctx.moveTo(4, i);
+            ctx.lineTo(44, i);
             ctx.stroke();
         }
 
-        // PPE sign at top
+        // Counter/window at bottom
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(4, 38, 40, 6);
+        ctx.fillStyle = '#64748b';
+        ctx.fillRect(6, 39, 36, 4);
+
+        // Top sign bar
+        ctx.fillStyle = '#1e40af';
+        ctx.fillRect(2, 2, 44, 10);
+
+        // "PPE SHOP" sign with yellow background
         ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(6, 3, 12, 6);
+        ctx.fillRect(6, 3, 36, 8);
         ctx.fillStyle = '#1f2937';
-        ctx.font = '4px monospace';
-        ctx.fillText('PPE', 8, 8);
+        ctx.font = 'bold 6px monospace';
+        ctx.fillText('PPE SHOP', 10, 9);
 
-        // Safety helmet icon
-        ctx.fillStyle = '#fbbf24';
+        // Corner rivets
+        ctx.fillStyle = '#94a3b8';
+        [[4,4],[42,4],[4,42],[42,42]].forEach(([x,y]) => {
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, Math.PI*2);
+            ctx.fill();
+        });
+
+        // Pulsing indicator arrow (pointing down)
+        ctx.fillStyle = '#22c55e';
         ctx.beginPath();
-        ctx.arc(12, 15, 4, Math.PI, 0);
+        ctx.moveTo(24, 46);
+        ctx.lineTo(20, 42);
+        ctx.lineTo(28, 42);
+        ctx.closePath();
         ctx.fill();
-        ctx.fillRect(8, 15, 8, 2);
+    });
 
-        // Border highlight
-        ctx.strokeStyle = '#60a5fa';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(1, 1, 22, 22);
+    // Floating indicator for PPE shop
+    GFX.ppeIndicator = c(32, 16, ctx => {
+        // "UPGRADES" text bubble
+        ctx.fillStyle = '#22c55e';
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 32, 12, 3);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.font = '5px monospace';
+        ctx.fillText('UPGRADES', 2, 8);
+        // Arrow pointing down
+        ctx.fillStyle = '#22c55e';
+        ctx.beginPath();
+        ctx.moveTo(16, 16);
+        ctx.lineTo(12, 12);
+        ctx.lineTo(20, 12);
+        ctx.closePath();
+        ctx.fill();
     });
 
     // Quartermaster portrait (Simon's safety locker persona)
@@ -5929,6 +5998,8 @@ const GAME = {
     regenTimer: 0, // Timer for hydration pouch regen
     shopMessage: '', // AI message in shop
     shopMessageTimer: 0, // Timer for shop message display
+    ppeDialogChoice: 0, // NPC dialogue menu selection (0=Buy, 1=Leave)
+    ppeDialogShown: false, // Whether intro dialogue has been shown this visit
 
     bossTypes: [
         { name: "Labour Inspector", sprite: "boss_inspector", hp: 25, speed: 1.2, attackDelay: 50, title: "The Enforcer", desc: "Checks every corner.", attackName: "Violation Notice", attackPattern: "sweep" },
@@ -6553,9 +6624,19 @@ window.addEventListener('keydown', e => {
     if(e.key==='a'||e.key==='ArrowLeft') KEYS.left=true;
     if(e.key==='d'||e.key==='ArrowRight') KEYS.right=true;
     if(e.code==='Space') { if(!KEYS.action) handleAction(); KEYS.action=true; }
-    // Escape key to exit PPE shop
+    // Escape key to exit PPE dialog/shop
     if(e.key==='Escape') {
-        if (GAME.state === 'PPE_SHOP') {
+        if (GAME.state === 'PPE_DIALOG') {
+            // Exit dialogue and return to game
+            if (GAME.lastPlayerPos) {
+                GAME.player.x = GAME.lastPlayerPos.x;
+                GAME.player.y = GAME.lastPlayerPos.y;
+            }
+            GAME.state = 'PLAY';
+            GAME.nextState = 'PLAY';
+            AudioSys.sfx.select();
+            e.preventDefault();
+        } else if (GAME.state === 'PPE_SHOP') {
             exitPPEShop();
             e.preventDefault();
         }
@@ -7014,6 +7095,27 @@ function handleAction() {
         closeHazardDetailModal();
         return;
     }
+    else if (GAME.state === 'PPE_DIALOG') {
+        // NPC dialogue - select current option
+        AudioSys.sfx.select();
+        if (GAME.ppeDialogChoice === 0) {
+            // "Buy PPE" selected - enter shop
+            GAME.ppeShopIndex = 0;
+            GAME.shopMessage = '';
+            GAME.shopMessageTimer = 0;
+            GAME.state = 'PPE_SHOP';
+            GAME.stateTimer = 0;
+        } else {
+            // "Leave" selected - return to game
+            if (GAME.lastPlayerPos) {
+                GAME.player.x = GAME.lastPlayerPos.x;
+                GAME.player.y = GAME.lastPlayerPos.y;
+            }
+            GAME.state = 'PLAY';
+            GAME.nextState = 'PLAY';
+        }
+        return;
+    }
     else if (GAME.state === 'PPE_SHOP') {
         // Buy selected item
         const item = PPE_ITEMS[GAME.ppeShopIndex];
@@ -7292,12 +7394,25 @@ function generateMap() {
     GAME.fireExitDoor = { x: door.doorX * TILE_SIZE, y: door.doorY * TILE_SIZE }; // Store door position for hidden level
     GAME.activeIssues.push({ x: door.hazardX*TILE_SIZE, y: door.hazardY*TILE_SIZE, data: {name: "Blocked Exit", type: "box"}, fixed: false });
 
-    // === SPAWN QUARTERMASTER'S SAFETY CAGE DOOR ===
-    // Place near the center/start of the warehouse for easy access
-    const qmX = 8; // Near left side but accessible
-    const qmY = 10; // In the main work area
-    GAME.map[qmY][qmX] = 4; // Tile type 4 = Quartermaster Door
-    GAME.quartermasterDoor = { x: qmX * TILE_SIZE, y: qmY * TILE_SIZE };
+    // === SPAWN QUARTERMASTER'S SAFETY CAGE ===
+    // Place against the top wall near player start for high visibility
+    const qmX = 4; // Near left wall
+    const qmY = 2; // Against top outer wall
+    // Mark a 3x3 area for the larger cage (tile type 4)
+    for (let dy = 0; dy < 3; dy++) {
+        for (let dx = 0; dx < 3; dx++) {
+            if (qmY + dy < MAP_H && qmX + dx < MAP_W) {
+                GAME.map[qmY + dy][qmX + dx] = 4;
+            }
+        }
+    }
+    // Store center position of the cage for interaction
+    GAME.quartermasterDoor = {
+        x: (qmX + 1) * TILE_SIZE,
+        y: (qmY + 1) * TILE_SIZE,
+        width: 3,
+        height: 3
+    };
 
     spawnEntity('runner'); spawnEntity('runner');
 
@@ -8248,6 +8363,15 @@ function update() {
         return;
     }
 
+    // PPE Dialog - handle menu selection
+    if (GAME.state === 'PPE_DIALOG') {
+        if ((KEYS.up || KEYS.down) && GAME.ticks % 10 === 0) {
+            GAME.ppeDialogChoice = GAME.ppeDialogChoice === 0 ? 1 : 0;
+            AudioSys.sfx.step();
+        }
+        return;
+    }
+
     // PPE Shop - handle navigation and message timer
     if (GAME.state === 'PPE_SHOP') {
         // Navigate up/down
@@ -8292,7 +8416,7 @@ function update() {
         return;
     }
 
-    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM', 'MECHA_SIMON_SPLASH', 'BEZOS_ESCAPE', 'BEZOS_ESCAPE_MECHA_LINE', 'BEZOS_ESCAPE_JEFF_LINE', 'BEZOS_ESCAPE_DIALOGUE', 'SIMON_FAKE_VICTORY', 'HAZARD_DETAIL_MODAL', 'PPE_SHOP'].includes(GAME.state)) return;
+    if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM', 'MECHA_SIMON_SPLASH', 'BEZOS_ESCAPE', 'BEZOS_ESCAPE_MECHA_LINE', 'BEZOS_ESCAPE_JEFF_LINE', 'BEZOS_ESCAPE_DIALOGUE', 'SIMON_FAKE_VICTORY', 'HAZARD_DETAIL_MODAL', 'PPE_DIALOG', 'PPE_SHOP'].includes(GAME.state)) return;
 
     // Bezos victory screen
     if (GAME.state === 'BEZOS_WIN') {
@@ -9806,14 +9930,13 @@ function tryInteract() {
         return true;
     }
 
-    // Check if player is near Quartermaster's Safety Cage Door
-    if (GAME.quartermasterDoor && Math.hypot(p.x - GAME.quartermasterDoor.x, p.y - GAME.quartermasterDoor.y) < 20) {
+    // Check if player is near Quartermaster's Safety Cage
+    if (GAME.quartermasterDoor && Math.hypot(p.x - GAME.quartermasterDoor.x, p.y - GAME.quartermasterDoor.y) < 32) {
         AudioSys.sfx.text(); // Door interaction sound
         GAME.lastPlayerPos = { x: p.x, y: p.y }; // Save position for return
-        GAME.ppeShopIndex = 0;
-        GAME.shopMessage = '';
-        GAME.shopMessageTimer = 0;
-        GAME.state = 'PPE_SHOP';
+        GAME.ppeDialogChoice = 0; // Reset to first option
+        GAME.ppeDialogShown = false;
+        GAME.state = 'PPE_DIALOG';
         GAME.stateTimer = 0;
         return true;
     }
@@ -10424,8 +10547,8 @@ ${langInst}`;
             }
             GAME.hazardModal.loading = false;
 
-            // Speak the summary
-            speakTTS(`${GAME.hazardModal.title}. ${GAME.hazardModal.summary}`, "Simon");
+            // Speak only the summary including fine (not the full details)
+            speakTTS(`${GAME.hazardModal.summary} Possible fine: ${GAME.hazardModal.penalty}`, "Simon");
         })
         .catch(() => {
             if (GAME.genId !== currentGen || GAME.state !== 'HAZARD_DETAIL_MODAL') return;
@@ -14837,57 +14960,46 @@ function draw() {
             ctx.fillText('FETCHING REGULATION' + dots, canvas.width / 2, canvas.height / 2);
             ctx.textAlign = 'left';
         } else {
-            // Content area with scroll support
-            const contentY = mY + 32;
-            const contentH = mH - 55;
-            const lineHeight = 11;
+            // Improved layout with better readability
+            const contentY = mY + 30;
+            const lineHeight = 12;
 
-            // Hazard name header
-            ctx.fillStyle = '#ef4444';
-            ctx.font = '7px "Press Start 2P"';
-            ctx.fillText('HAZARD:', mX + 10, contentY);
-            ctx.fillStyle = '#fff';
-            ctx.font = '6px monospace';
-            const hazardNameTrunc = modal.hazardName.length > 30 ? modal.hazardName.substring(0, 30) + '...' : modal.hazardName;
-            ctx.fillText(hazardNameTrunc, mX + 70, contentY);
+            // Hazard name - prominent display
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = '8px "Press Start 2P"';
+            const hazardNameTrunc = modal.hazardName.length > 24 ? modal.hazardName.substring(0, 24) + '...' : modal.hazardName;
+            ctx.fillText(hazardNameTrunc, mX + 10, contentY);
 
-            // Region
+            // Region tag
+            ctx.fillStyle = '#1e40af';
+            ctx.fillRect(mX + 10, contentY + 6, 60, 12);
             ctx.fillStyle = '#22d3ee';
             ctx.font = '6px "Press Start 2P"';
-            ctx.fillText('REGION:', mX + 10, contentY + 14);
+            ctx.fillText(modal.regionName, mX + 14, contentY + 14);
+
+            // Regulation box
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(mX + 8, contentY + 22, mW - 16, 22);
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(mX + 8, contentY + 22, mW - 16, 22);
+
+            ctx.fillStyle = '#60a5fa';
+            ctx.font = '7px monospace';
+            const regTrunc = modal.regulation.length > 30 ? modal.regulation.substring(0, 30) + '...' : modal.regulation;
+            ctx.fillText(regTrunc, mX + 12, contentY + 32);
             ctx.fillStyle = '#94a3b8';
             ctx.font = '6px monospace';
-            ctx.fillText(modal.regionName + ' (' + modal.region + ')', mX + 70, contentY + 14);
+            const titleTrunc = modal.title.length > 32 ? modal.title.substring(0, 32) + '...' : modal.title;
+            ctx.fillText(titleTrunc, mX + 12, contentY + 42);
 
-            // Divider
-            ctx.fillStyle = '#fbbf24';
-            ctx.fillRect(mX + 10, contentY + 22, mW - 30, 1);
-
-            // Regulation code
+            // Summary section with larger text
             ctx.fillStyle = '#22d3ee';
             ctx.font = '6px "Press Start 2P"';
-            ctx.fillText('REGULATION:', mX + 10, contentY + 34);
-            ctx.fillStyle = '#fbbf24';
+            ctx.fillText('SUMMARY:', mX + 10, contentY + 58);
+
+            ctx.fillStyle = '#e0e0ff';
             ctx.font = '7px monospace';
-            const regTrunc = modal.regulation.length > 32 ? modal.regulation.substring(0, 32) + '...' : modal.regulation;
-            ctx.fillText(regTrunc, mX + 10, contentY + 46);
-
-            // Title
-            ctx.fillStyle = '#22d3ee';
-            ctx.font = '6px "Press Start 2P"';
-            ctx.fillText('TITLE:', mX + 10, contentY + 62);
-            ctx.fillStyle = '#fff';
-            ctx.font = '6px monospace';
-            const titleTrunc = modal.title.length > 36 ? modal.title.substring(0, 36) + '...' : modal.title;
-            ctx.fillText(titleTrunc, mX + 10, contentY + 74);
-
-            // Summary (with word wrap)
-            ctx.fillStyle = '#22d3ee';
-            ctx.font = '6px "Press Start 2P"';
-            ctx.fillText('DETAILS:', mX + 10, contentY + 90);
-
-            ctx.fillStyle = '#f0f0ff';
-            ctx.font = '6px monospace';
             const wrapTextLines = (text, maxChars) => {
                 const words = text.split(' '); const lines = []; let line = '';
                 words.forEach(word => {
@@ -14898,12 +15010,12 @@ function draw() {
                 if (line) lines.push(line);
                 return lines;
             };
-            const summaryLines = wrapTextLines(modal.summary, 38);
+            const summaryLines = wrapTextLines(modal.summary, 34);
             const maxVisibleLines = 4;
             const scrollOffset = modal.scrollOffset || 0;
             const visibleLines = summaryLines.slice(scrollOffset, scrollOffset + maxVisibleLines);
             visibleLines.forEach((line, i) => {
-                ctx.fillText(line, mX + 10, contentY + 102 + i * lineHeight);
+                ctx.fillText(line, mX + 10, contentY + 70 + i * lineHeight);
             });
 
             // Update max scroll
@@ -14912,23 +15024,31 @@ function draw() {
             // Scroll indicator if needed
             if (summaryLines.length > maxVisibleLines) {
                 ctx.fillStyle = '#fbbf24';
-                ctx.font = '6px "Press Start 2P"';
+                ctx.font = '8px "Press Start 2P"';
                 if (scrollOffset > 0) {
-                    ctx.fillText('\u25B2', mW - 8, contentY + 100); // Up arrow
+                    ctx.fillText('\u25B2', mW, contentY + 70);
                 }
                 if (scrollOffset < modal.maxScroll) {
-                    ctx.fillText('\u25BC', mW - 8, contentY + 130); // Down arrow
+                    ctx.fillText('\u25BC', mW, contentY + 100);
                 }
             }
 
-            // Penalty
-            ctx.fillStyle = '#ef4444';
-            ctx.font = '6px "Press Start 2P"';
-            ctx.fillText('PENALTY:', mX + 10, contentY + 150);
+            // FINE/PENALTY - Prominent red box at bottom
+            const fineY = contentY + 125;
+            ctx.fillStyle = '#7f1d1d';
+            ctx.fillRect(mX + 8, fineY, mW - 16, 28);
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(mX + 8, fineY, mW - 16, 28);
+
+            ctx.fillStyle = '#fff';
+            ctx.font = '7px "Press Start 2P"';
+            ctx.fillText('POSSIBLE FINE:', mX + 14, fineY + 12);
+
             ctx.fillStyle = '#fbbf24';
-            ctx.font = '6px monospace';
-            const penTrunc = modal.penalty.length > 38 ? modal.penalty.substring(0, 38) + '...' : modal.penalty;
-            ctx.fillText(penTrunc, mX + 10, contentY + 162);
+            ctx.font = '8px "Press Start 2P"';
+            const penTrunc = modal.penalty.length > 26 ? modal.penalty.substring(0, 26) + '...' : modal.penalty;
+            ctx.fillText(penTrunc, mX + 14, fineY + 24);
         }
 
         // Footer with controls
@@ -14944,11 +15064,119 @@ function draw() {
 
         ctx.restore(); return;
     }
+    // === QUARTERMASTER NPC DIALOGUE ===
+    if (GAME.state === 'PPE_DIALOG') {
+        const t = GAME.stateTimer;
+        ctx.save();
+
+        // Semi-transparent overlay
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Wire cage background effect
+        ctx.strokeStyle = 'rgba(59, 130, 246, 0.2)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < canvas.width; i += 16) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i, canvas.height);
+            ctx.stroke();
+        }
+        for (let i = 0; i < canvas.height; i += 16) {
+            ctx.beginPath();
+            ctx.moveTo(0, i);
+            ctx.lineTo(canvas.width, i);
+            ctx.stroke();
+        }
+
+        // Main dialog box
+        const boxX = 20, boxY = 40, boxW = canvas.width - 40, boxH = 160;
+        ctx.fillStyle = '#0a1628';
+        ctx.fillRect(boxX, boxY, boxW, boxH);
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(boxX, boxY, boxW, boxH);
+        ctx.strokeStyle = '#1d4ed8';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(boxX + 3, boxY + 3, boxW - 6, boxH - 6);
+
+        // Draw quartermaster portrait
+        if (GFX.quartermaster) {
+            ctx.drawImage(GFX.quartermaster, boxX + 12, boxY + 15);
+        }
+
+        // NPC name tag
+        ctx.fillStyle = '#1e40af';
+        ctx.fillRect(boxX + 10, boxY + 65, 52, 14);
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('SIMON', boxX + 36, boxY + 75);
+        ctx.textAlign = 'left';
+
+        // Dialog text
+        ctx.fillStyle = '#f0f0ff';
+        ctx.font = '7px "Press Start 2P"';
+        ctx.fillText("Welcome to the", boxX + 72, boxY + 25);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText("PPE SHOP!", boxX + 72, boxY + 38);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '6px monospace';
+        ctx.fillText("Fix hazards to earn Safety Points.", boxX + 72, boxY + 54);
+        ctx.fillText("Spend them here on protective", boxX + 72, boxY + 66);
+        ctx.fillText("equipment with permanent buffs!", boxX + 72, boxY + 78);
+
+        // Safety Points display
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText('YOUR SP: ' + GAME.safetyPoints, boxX + 72, boxY + 95);
+
+        // Menu options
+        const menuY = boxY + 115;
+        const options = ['Browse PPE Shop', 'Leave'];
+        options.forEach((opt, i) => {
+            const isSelected = GAME.ppeDialogChoice === i;
+            const optY = menuY + i * 20;
+
+            if (isSelected) {
+                // Selection highlight
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.4)';
+                ctx.fillRect(boxX + 10, optY - 8, boxW - 20, 18);
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(boxX + 10, optY - 8, boxW - 20, 18);
+
+                // Blinking arrow
+                const blink = Math.sin(t * 0.15) > 0;
+                ctx.fillStyle = blink ? '#fbbf24' : '#92400e';
+                ctx.font = '10px monospace';
+                ctx.fillText('\u25B6', boxX + 16, optY + 5);
+            }
+
+            ctx.fillStyle = isSelected ? '#fff' : '#64748b';
+            ctx.font = '7px "Press Start 2P"';
+            ctx.fillText(opt, boxX + 32, optY + 4);
+        });
+
+        // Footer controls
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(boxX + 5, boxY + boxH - 16, boxW - 10, 12);
+        ctx.textAlign = 'center';
+        const blink = Math.sin(t * 0.12) > 0;
+        ctx.fillStyle = blink ? '#fbbf24' : '#64748b';
+        ctx.font = '5px "Press Start 2P"';
+        ctx.fillText('\u25B2\u25BC SELECT | SPACE CONFIRM | ESC LEAVE', canvas.width / 2, boxY + boxH - 8);
+        ctx.textAlign = 'left';
+
+        ctx.restore();
+        return;
+    }
     // === QUARTERMASTER'S SAFETY LOCKER (PPE SHOP) ===
     if (GAME.state === 'PPE_SHOP') {
         const t = GAME.stateTimer;
         const idx = GAME.ppeShopIndex;
-        const itemsPerPage = 5;
+        const itemsPerPage = 4; // Fewer items for better readability
         const pageStart = Math.floor(idx / itemsPerPage) * itemsPerPage;
 
         // Dark warehouse background with blue tint
@@ -15008,11 +15236,12 @@ function draw() {
 
         ctx.textAlign = 'left';
 
-        // Item list area
-        const listY = 50;
-        const itemHeight = 28;
+        // Item list area - improved readability
+        const listY = 48;
+        const itemHeight = 32;
+        const itemsVisible = 4; // Show fewer items but larger
 
-        for (let i = 0; i < itemsPerPage; i++) {
+        for (let i = 0; i < itemsVisible; i++) {
             const itemIdx = pageStart + i;
             if (itemIdx >= PPE_ITEMS.length) break;
 
@@ -15021,52 +15250,79 @@ function draw() {
             const isSelected = itemIdx === idx;
             const isOwned = GAME.ppeUnlocked.includes(item.id);
 
+            // Row background for better separation
+            ctx.fillStyle = i % 2 === 0 ? 'rgba(20, 40, 60, 0.6)' : 'rgba(15, 30, 50, 0.6)';
+            ctx.fillRect(12, y, canvas.width - 24, itemHeight - 2);
+
             // Selection highlight
             if (isSelected) {
-                ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.4)';
                 ctx.fillRect(12, y, canvas.width - 24, itemHeight - 2);
                 ctx.strokeStyle = '#3b82f6';
-                ctx.lineWidth = 1;
+                ctx.lineWidth = 2;
                 ctx.strokeRect(12, y, canvas.width - 24, itemHeight - 2);
 
-                // Selection arrow
-                ctx.fillStyle = '#fbbf24';
-                ctx.font = '8px monospace';
-                ctx.fillText('\u25B6', 15, y + 16);
+                // Selection arrow with animation
+                const arrowPulse = Math.sin(t * 0.15) > 0;
+                ctx.fillStyle = arrowPulse ? '#fbbf24' : '#f59e0b';
+                ctx.font = '10px monospace';
+                ctx.fillText('\u25B6', 16, y + 18);
             }
 
-            // Item name
-            ctx.fillStyle = isOwned ? '#22c55e' : (isSelected ? '#fff' : '#94a3b8');
-            ctx.font = '6px "Press Start 2P"';
-            ctx.fillText(item.name, 28, y + 10);
+            // Item name - larger font
+            ctx.fillStyle = isOwned ? '#22c55e' : (isSelected ? '#fff' : '#c0c0c0');
+            ctx.font = '7px "Press Start 2P"';
+            ctx.fillText(item.name, 30, y + 12);
 
-            // Description
-            ctx.fillStyle = isOwned ? '#86efac' : '#64748b';
-            ctx.font = '6px monospace';
-            ctx.fillText(item.desc, 28, y + 20);
+            // Description/buff - clearer display
+            ctx.fillStyle = isOwned ? '#86efac' : (isSelected ? '#94a3b8' : '#64748b');
+            ctx.font = '8px monospace';
+            ctx.fillText(item.desc, 30, y + 24);
 
-            // Cost or OWNED
+            // Cost or OWNED badge
             ctx.textAlign = 'right';
             if (isOwned) {
+                // Green owned badge
+                ctx.fillStyle = '#166534';
+                ctx.fillRect(canvas.width - 58, y + 6, 42, 16);
+                ctx.strokeStyle = '#22c55e';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(canvas.width - 58, y + 6, 42, 16);
                 ctx.fillStyle = '#22c55e';
                 ctx.font = '6px "Press Start 2P"';
-                ctx.fillText('OWNED', canvas.width - 18, y + 15);
+                ctx.fillText('OWNED', canvas.width - 20, y + 17);
             } else {
                 const canAfford = GAME.safetyPoints >= item.cost;
+                // Cost badge
+                ctx.fillStyle = canAfford ? '#713f12' : '#7f1d1d';
+                ctx.fillRect(canvas.width - 58, y + 6, 42, 16);
+                ctx.strokeStyle = canAfford ? '#fbbf24' : '#ef4444';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(canvas.width - 58, y + 6, 42, 16);
                 ctx.fillStyle = canAfford ? '#fbbf24' : '#ef4444';
-                ctx.font = '6px "Press Start 2P"';
-                ctx.fillText(item.cost + ' SP', canvas.width - 18, y + 15);
+                ctx.font = '7px "Press Start 2P"';
+                ctx.fillText(item.cost, canvas.width - 20, y + 17);
             }
             ctx.textAlign = 'left';
         }
 
-        // Pagination indicator
-        const totalPages = Math.ceil(PPE_ITEMS.length / itemsPerPage);
-        const currentPage = Math.floor(idx / itemsPerPage) + 1;
+        // Pagination indicator - more visible
+        const totalPages = Math.ceil(PPE_ITEMS.length / itemsVisible);
+        const currentPage = Math.floor(idx / itemsVisible) + 1;
         ctx.textAlign = 'center';
         ctx.fillStyle = '#64748b';
-        ctx.font = '5px monospace';
-        ctx.fillText('Page ' + currentPage + '/' + totalPages, canvas.width / 2, listY + itemsPerPage * itemHeight + 5);
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText('Page ' + currentPage + '/' + totalPages, canvas.width / 2, listY + itemsVisible * itemHeight + 6);
+
+        // Page navigation arrows
+        if (currentPage > 1) {
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillText('\u25C0 PREV', 50, listY + itemsVisible * itemHeight + 6);
+        }
+        if (currentPage < totalPages) {
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillText('NEXT \u25B6', canvas.width - 50, listY + itemsVisible * itemHeight + 6);
+        }
 
         // AI Message area (bottom panel)
         const msgY = canvas.height - 50;
@@ -15570,17 +15826,9 @@ function draw() {
                         ctx.fillRect(dx - 2, dy - 2, 20, 20);
                     }
                 }
-                // Quartermaster's Safety Cage Door (tile type 4)
+                // Quartermaster's Safety Cage area (tile type 4) - just floor, cage drawn separately
                 if (t===4) {
                     ctx.drawImage(GFX.floor, dx, dy);
-                    ctx.save();
-                    // Draw the quartermaster door with blue glow
-                    const pulse = Math.sin(GAME.ticks * 0.08) * 0.3 + 0.7;
-                    ctx.shadowColor = '#3b82f6';
-                    ctx.shadowBlur = 6 * pulse;
-                    ctx.drawImage(GFX.quartermasterDoor, dx - 4, dy - 4);
-                    ctx.shadowBlur = 0;
-                    ctx.restore();
                 }
             }
         }
@@ -15620,6 +15868,33 @@ function draw() {
             }
         });
     });
+
+    // === DRAW QUARTERMASTER'S SAFETY CAGE ===
+    if (GAME.quartermasterDoor) {
+        const cageX = GAME.quartermasterDoor.x - TILE_SIZE - cx;
+        const cageY = GAME.quartermasterDoor.y - TILE_SIZE - cy;
+
+        if (cageX > -60 && cageX < 280 && cageY > -60 && cageY < 260) {
+            ctx.save();
+            // Draw cage with pulsing glow effect
+            const pulse = Math.sin(GAME.ticks * 0.06) * 0.4 + 0.6;
+            ctx.shadowColor = '#3b82f6';
+            ctx.shadowBlur = 10 * pulse;
+            ctx.drawImage(GFX.quartermasterDoor, cageX, cageY);
+            ctx.shadowBlur = 0;
+
+            // Draw floating "UPGRADES" indicator above the cage
+            if (GFX.ppeIndicator) {
+                const bobOffset = Math.sin(GAME.ticks * 0.1) * 3;
+                const indicatorX = cageX + 8;
+                const indicatorY = cageY - 18 + bobOffset;
+                ctx.globalAlpha = 0.8 + Math.sin(GAME.ticks * 0.08) * 0.2;
+                ctx.drawImage(GFX.ppeIndicator, indicatorX, indicatorY);
+                ctx.globalAlpha = 1;
+            }
+            ctx.restore();
+        }
+    }
 
     GAME.activeIssues.forEach(h => { if(!h.fixed) { let img = GFX.hazards[h.data.type] || GFX.hazards.box; ctx.drawImage(img, h.x-cx, h.y-cy); } });
 
