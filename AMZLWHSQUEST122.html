@@ -1573,7 +1573,40 @@ const TTSSys = {
     voice: null,
     maleVoice: null,
     femaleVoice: null,
+    // Localized voices for different regions
+    germanMaleVoice: null,
+    germanFemaleVoice: null,
+    dutchMaleVoice: null,
+    dutchFemaleVoice: null,
     voices: [],
+    // Map game region to TTS language code
+    getRegionLang: function() {
+        if (typeof GAME === 'undefined' || !GAME.region) return 'en-US';
+        switch (GAME.region) {
+            case 'DE': return 'de-DE';
+            case 'AT': return 'de-DE'; // Austrian German uses de-DE
+            case 'NL': return 'nl-NL';
+            default: return 'en-US';
+        }
+    },
+    // Get appropriate voice for region and gender
+    getLocalizedVoice: function(gender = "neutral") {
+        const lang = this.getRegionLang();
+        if (lang === 'de-DE') {
+            if (gender === "male" && this.germanMaleVoice) return this.germanMaleVoice;
+            if (gender === "female" && this.germanFemaleVoice) return this.germanFemaleVoice;
+            return this.germanMaleVoice || this.germanFemaleVoice;
+        }
+        if (lang === 'nl-NL') {
+            if (gender === "male" && this.dutchMaleVoice) return this.dutchMaleVoice;
+            if (gender === "female" && this.dutchFemaleVoice) return this.dutchFemaleVoice;
+            return this.dutchMaleVoice || this.dutchFemaleVoice;
+        }
+        // English fallback
+        if (gender === "male" && this.maleVoice) return this.maleVoice;
+        if (gender === "female" && this.femaleVoice) return this.femaleVoice;
+        return this.voice;
+    },
     // Character voice configurations: pitch (0.1-2), rate (0.1-10), volume (0-1), gender preference
     characterVoices: {
         // Main characters - varied voices
@@ -1604,7 +1637,8 @@ const TTSSys = {
     init: function() {
         const loadVoices = () => {
             this.voices = this.synth.getVoices();
-            // Prioritize English voices - force English language
+
+            // English voices (fallback)
             const englishVoices = this.voices.filter(v =>
                 v.lang.startsWith('en') || v.name.includes('English')
             );
@@ -1614,8 +1648,7 @@ const TTSSys = {
                 || englishVoices.find(v => v.lang.startsWith('en'))
                 || this.voices[0];
 
-            // Try to find distinct male and female voices
-            // Male voice: look for male, David, or lower-numbered voices
+            // Try to find distinct male and female English voices
             this.maleVoice = englishVoices.find(v => v.name.toLowerCase().includes('male') && !v.name.toLowerCase().includes('female'))
                 || englishVoices.find(v => v.name.includes('David'))
                 || englishVoices.find(v => v.name.includes('Daniel'))
@@ -1623,13 +1656,54 @@ const TTSSys = {
                 || englishVoices.find(v => v.name.includes('Alex'))
                 || this.voice;
 
-            // Female voice: look for female, Samantha, or higher-pitched voices
             this.femaleVoice = englishVoices.find(v => v.name.toLowerCase().includes('female'))
                 || englishVoices.find(v => v.name.includes('Samantha'))
                 || englishVoices.find(v => v.name.includes('Victoria'))
                 || englishVoices.find(v => v.name.includes('Karen'))
                 || englishVoices.find(v => v.name.includes('Moira'))
                 || this.voice;
+
+            // German voices for DE/AT regions
+            const germanVoices = this.voices.filter(v =>
+                v.lang.startsWith('de') || v.name.includes('German') || v.name.includes('Deutsch')
+            );
+            if (germanVoices.length > 0) {
+                // Prefer Google German, then de-DE voices
+                const defaultGerman = germanVoices.find(v => v.name.includes("Google Deutsch"))
+                    || germanVoices.find(v => v.lang === 'de-DE')
+                    || germanVoices[0];
+
+                this.germanMaleVoice = germanVoices.find(v => v.name.toLowerCase().includes('male') && !v.name.toLowerCase().includes('female'))
+                    || germanVoices.find(v => v.name.includes('Hans'))
+                    || germanVoices.find(v => v.name.includes('Stefan'))
+                    || defaultGerman;
+
+                this.germanFemaleVoice = germanVoices.find(v => v.name.toLowerCase().includes('female'))
+                    || germanVoices.find(v => v.name.includes('Anna'))
+                    || germanVoices.find(v => v.name.includes('Petra'))
+                    || germanVoices.find(v => v.name.includes('Marlene'))
+                    || defaultGerman;
+            }
+
+            // Dutch voices for NL region
+            const dutchVoices = this.voices.filter(v =>
+                v.lang.startsWith('nl') || v.name.includes('Dutch') || v.name.includes('Nederlands')
+            );
+            if (dutchVoices.length > 0) {
+                // Prefer Google Dutch, then nl-NL voices
+                const defaultDutch = dutchVoices.find(v => v.name.includes("Google Nederlands"))
+                    || dutchVoices.find(v => v.lang === 'nl-NL')
+                    || dutchVoices[0];
+
+                this.dutchMaleVoice = dutchVoices.find(v => v.name.toLowerCase().includes('male') && !v.name.toLowerCase().includes('female'))
+                    || dutchVoices.find(v => v.name.includes('Xander'))
+                    || defaultDutch;
+
+                this.dutchFemaleVoice = dutchVoices.find(v => v.name.toLowerCase().includes('female'))
+                    || dutchVoices.find(v => v.name.includes('Ellen'))
+                    || dutchVoices.find(v => v.name.includes('Fleur'))
+                    || defaultDutch;
+            }
         };
         if (this.synth.onvoiceschanged !== undefined) this.synth.onvoiceschanged = loadVoices;
         loadVoices();
@@ -1649,19 +1723,27 @@ const TTSSys = {
         this.synth.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
 
-        // Force English language
-        utterance.lang = 'en-US';
+        // Set language based on game region (de-DE for DE/AT, nl-NL for NL, en-US fallback)
+        const regionLang = this.getRegionLang();
+        utterance.lang = regionLang;
 
         // Apply character-specific voice settings
         const config = this.getVoiceConfig(speakerName);
 
-        // Select appropriate voice based on gender
-        if (config.gender === "male" && this.maleVoice) {
-            utterance.voice = this.maleVoice;
-        } else if (config.gender === "female" && this.femaleVoice) {
-            utterance.voice = this.femaleVoice;
-        } else if (this.voice) {
-            utterance.voice = this.voice;
+        // Try to use localized voice based on region
+        const localizedVoice = this.getLocalizedVoice(config.gender);
+        if (localizedVoice) {
+            utterance.voice = localizedVoice;
+        } else {
+            // Fallback to English voices if no localized voice available
+            utterance.lang = 'en-US';
+            if (config.gender === "male" && this.maleVoice) {
+                utterance.voice = this.maleVoice;
+            } else if (config.gender === "female" && this.femaleVoice) {
+                utterance.voice = this.femaleVoice;
+            } else if (this.voice) {
+                utterance.voice = this.voice;
+            }
         }
 
         utterance.pitch = config.pitch;
@@ -1680,18 +1762,28 @@ const TTSSys = {
     queue: function(text, speakerName = "System") {
         if (!this.synth || !text) return;
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
+
+        // Set language based on game region (de-DE for DE/AT, nl-NL for NL, en-US fallback)
+        const regionLang = this.getRegionLang();
+        utterance.lang = regionLang;
 
         // Apply character-specific voice settings
         const config = this.getVoiceConfig(speakerName);
 
-        // Select appropriate voice based on gender
-        if (config.gender === "male" && this.maleVoice) {
-            utterance.voice = this.maleVoice;
-        } else if (config.gender === "female" && this.femaleVoice) {
-            utterance.voice = this.femaleVoice;
-        } else if (this.voice) {
-            utterance.voice = this.voice;
+        // Try to use localized voice based on region
+        const localizedVoice = this.getLocalizedVoice(config.gender);
+        if (localizedVoice) {
+            utterance.voice = localizedVoice;
+        } else {
+            // Fallback to English voices if no localized voice available
+            utterance.lang = 'en-US';
+            if (config.gender === "male" && this.maleVoice) {
+                utterance.voice = this.maleVoice;
+            } else if (config.gender === "female" && this.femaleVoice) {
+                utterance.voice = this.femaleVoice;
+            } else if (this.voice) {
+                utterance.voice = this.voice;
+            }
         }
 
         utterance.pitch = config.pitch;
