@@ -5744,98 +5744,102 @@ function generateAssets() {
         ctx.fillRect(2,2,2,2);
     });
 
-    // === QUARTERMASTER'S SAFETY CAGE (Large with NPC) ===
+    // === PPE VENDING MACHINE ===
     GFX.quartermasterDoor = c(48, 48, ctx => {
-        // Outer wall backing (dark steel)
-        ctx.fillStyle = '#1a1a2e';
-        ctx.fillRect(0, 0, 48, 48);
-
-        // Steel cage frame
-        ctx.fillStyle = '#334155';
-        ctx.fillRect(2, 2, 44, 44);
-
-        // Inside cage area (slightly lit)
+        // Machine body (dark blue metal)
         ctx.fillStyle = '#1e3a5f';
-        ctx.fillRect(4, 10, 40, 34);
+        ctx.fillRect(4, 2, 40, 44);
 
-        // NPC (Simon/Quartermaster) - standing inside
-        // Body (blue safety vest)
-        ctx.fillStyle = '#2563eb';
-        ctx.fillRect(16, 24, 16, 18);
-        ctx.fillStyle = '#3b82f6';
-        ctx.fillRect(18, 26, 12, 14);
-
-        // Reflective strips on vest
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(18, 28, 12, 2);
-        ctx.fillRect(18, 34, 12, 2);
-
-        // Head with hard hat
-        ctx.fillStyle = '#d4a574';
-        ctx.fillRect(20, 16, 8, 8);
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(18, 12, 12, 5);
-        ctx.fillStyle = '#f59e0b';
-        ctx.fillRect(19, 13, 10, 3);
-
-        // Eyes
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(21, 18, 2, 2);
-        ctx.fillRect(25, 18, 2, 2);
-
-        // Wire mesh cage bars (vertical)
-        ctx.strokeStyle = '#64748b';
+        // Outer frame highlight
+        ctx.strokeStyle = '#3b82f6';
         ctx.lineWidth = 2;
-        for (let i = 8; i < 44; i += 6) {
-            ctx.beginPath();
-            ctx.moveTo(i, 10);
-            ctx.lineTo(i, 44);
-            ctx.stroke();
-        }
-        // Horizontal bars
-        for (let i = 16; i < 44; i += 8) {
-            ctx.beginPath();
-            ctx.moveTo(4, i);
-            ctx.lineTo(44, i);
-            ctx.stroke();
-        }
+        ctx.strokeRect(4, 2, 40, 44);
 
-        // Counter/window at bottom
-        ctx.fillStyle = '#475569';
-        ctx.fillRect(4, 38, 40, 6);
-        ctx.fillStyle = '#64748b';
-        ctx.fillRect(6, 39, 36, 4);
-
-        // Top sign bar
-        ctx.fillStyle = '#1e40af';
-        ctx.fillRect(2, 2, 44, 10);
-
-        // "PPE SHOP" sign with yellow background
+        // Top header bar (yellow safety color)
         ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(6, 3, 36, 8);
+        ctx.fillRect(6, 4, 36, 10);
         ctx.fillStyle = '#1f2937';
-        ctx.font = 'bold 6px monospace';
-        ctx.fillText('PPE SHOP', 10, 9);
+        ctx.font = 'bold 7px monospace';
+        ctx.fillText('PPE', 17, 12);
 
-        // Corner rivets
-        ctx.fillStyle = '#94a3b8';
-        [[4,4],[42,4],[4,42],[42,42]].forEach(([x,y]) => {
-            ctx.beginPath();
-            ctx.arc(x, y, 2, 0, Math.PI*2);
-            ctx.fill();
-        });
+        // Display window (showing PPE items)
+        ctx.fillStyle = '#0a1628';
+        ctx.fillRect(8, 16, 32, 18);
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(8, 16, 32, 18);
 
-        // Pulsing indicator arrow (pointing down)
+        // PPE items in display (mini icons)
+        // Hard hat
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(11, 20, 6, 4);
+        ctx.fillRect(10, 23, 8, 2);
+        // Safety vest
         ctx.fillStyle = '#22c55e';
-        ctx.beginPath();
-        ctx.moveTo(24, 46);
-        ctx.lineTo(20, 42);
-        ctx.lineTo(28, 42);
-        ctx.closePath();
-        ctx.fill();
+        ctx.fillRect(21, 19, 6, 7);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(22, 21, 4, 1);
+        ctx.fillRect(22, 24, 4, 1);
+        // Goggles
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillRect(31, 21, 3, 2);
+        ctx.fillRect(35, 21, 3, 2);
+        ctx.fillStyle = '#0e7490';
+        ctx.fillRect(34, 21, 1, 2);
+
+        // Second row items
+        // Gloves
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(11, 28, 4, 5);
+        ctx.fillRect(15, 30, 2, 3);
+        // Boots
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(21, 28, 6, 5);
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(22, 29, 4, 2);
+        // Ear muffs
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(31, 28, 3, 5);
+        ctx.fillRect(35, 28, 3, 5);
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(34, 29, 1, 3);
+
+        // Control panel area
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(8, 36, 20, 8);
+
+        // Selection buttons (grid)
+        ctx.fillStyle = '#64748b';
+        for (let row = 0; row < 2; row++) {
+            for (let col = 0; col < 4; col++) {
+                ctx.fillRect(10 + col * 5, 37 + row * 3, 3, 2);
+            }
+        }
+
+        // Coin slot
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(30, 36, 8, 8);
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(32, 38, 4, 1);
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(32, 40, 4, 2);
+
+        // Dispensing slot at bottom
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(10, 44, 28, 3);
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(10, 44, 28, 3);
+
+        // Side vents
+        ctx.fillStyle = '#475569';
+        for (let i = 0; i < 3; i++) {
+            ctx.fillRect(5, 20 + i * 6, 2, 4);
+            ctx.fillRect(41, 20 + i * 6, 2, 4);
+        }
     });
 
-    // Floating indicator for PPE shop
+    // Floating indicator for PPE vending machine
     GFX.ppeIndicator = c(32, 16, ctx => {
         // "UPGRADES" text bubble
         ctx.fillStyle = '#22c55e';
@@ -5853,6 +5857,115 @@ function generateAssets() {
         ctx.lineTo(20, 12);
         ctx.closePath();
         ctx.fill();
+    });
+
+    // Large vending machine sprite for dialog popup
+    GFX.vendingMachineLarge = c(80, 100, ctx => {
+        // Machine body
+        ctx.fillStyle = '#1e3a5f';
+        ctx.fillRect(5, 5, 70, 90);
+
+        // Outer frame
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(5, 5, 70, 90);
+
+        // Top header (yellow)
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(10, 8, 60, 14);
+        ctx.fillStyle = '#1f2937';
+        ctx.font = 'bold 10px monospace';
+        ctx.fillText('PPE SHOP', 18, 19);
+
+        // Display window
+        ctx.fillStyle = '#0a1628';
+        ctx.fillRect(12, 26, 56, 40);
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(12, 26, 56, 40);
+
+        // Shelf lines
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(12, 46);
+        ctx.lineTo(68, 46);
+        ctx.stroke();
+
+        // PPE items on shelves (larger)
+        // Top shelf
+        // Hard hat
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(16, 30, 10, 6);
+        ctx.fillRect(14, 35, 14, 3);
+        // Vest
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(34, 29, 10, 12);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(35, 32, 8, 2);
+        ctx.fillRect(35, 37, 8, 2);
+        // Goggles
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillRect(52, 32, 5, 4);
+        ctx.fillRect(58, 32, 5, 4);
+        ctx.fillStyle = '#0e7490';
+        ctx.fillRect(57, 33, 1, 2);
+
+        // Bottom shelf
+        // Gloves
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(16, 50, 8, 10);
+        ctx.fillRect(24, 54, 4, 6);
+        // Boots
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(34, 50, 10, 10);
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(36, 52, 6, 4);
+        // Ear protection
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(52, 50, 5, 10);
+        ctx.fillRect(58, 50, 5, 10);
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(57, 52, 1, 6);
+
+        // Control panel
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(12, 70, 36, 16);
+        ctx.strokeStyle = '#475569';
+        ctx.strokeRect(12, 70, 36, 16);
+
+        // Buttons grid
+        ctx.fillStyle = '#64748b';
+        for (let row = 0; row < 2; row++) {
+            for (let col = 0; col < 5; col++) {
+                ctx.fillRect(15 + col * 7, 73 + row * 6, 5, 4);
+            }
+        }
+
+        // Coin/card slot
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(52, 70, 14, 16);
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(56, 74, 6, 2);
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(56, 78, 6, 4);
+
+        // Dispensing slot
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(15, 88, 50, 6);
+        ctx.strokeStyle = '#475569';
+        ctx.strokeRect(15, 88, 50, 6);
+
+        // Corner screws
+        ctx.fillStyle = '#94a3b8';
+        [[10, 10], [70, 10], [10, 90], [70, 90]].forEach(([x, y]) => {
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(x - 1, y - 1, 2, 2);
+            ctx.fillStyle = '#94a3b8';
+        });
     });
 
     // Quartermaster portrait (Simon's safety locker persona)
@@ -5937,12 +6050,13 @@ const GAME = {
     charIndex: 0,
     // Region-aware system
     region: 'EU',
-    regionList: ['DE', 'AT', 'NL'],
+    regionList: ['DE', 'AT', 'NL', 'MEU'],
     regionIndex: 0,
     regionNames: {
         'DE': 'Germany',
         'AT': 'Austria',
-        'NL': 'Netherlands'
+        'NL': 'Netherlands',
+        'MEU': 'Mid-EU (EN)'
     },
     camera: { x: 0, y: 0 },
     map: [], clutter: [], entities: [], projectiles: [], particles: [], floatingTexts: [],
@@ -9886,6 +10000,7 @@ function getRegionSafetyContext() {
         'DE': 'Cite specific German regulations like DGUV Vorschrift 1, ArbSchG, or BetrSichV. Reference the Berufsgenossenschaft if relevant.',
         'AT': 'Cite specific Austrian regulations like ASchG or BauV. Mention the Arbeitsinspektorat or AUVA if relevant.',
         'NL': 'Cite specific Dutch regulations like Arbowet or the Arbocatalogus. Mention the RI&E or Inspectie SZW if relevant.',
+        'MEU': 'Compare regulations across Germany (DGUV), Austria (ASchG), and Netherlands (Arbowet). Highlight any significant differences between countries.',
         'EU': 'Reference general EU workplace safety directives.'
     };
     return contexts[region] || contexts['EU'];
@@ -9897,7 +10012,8 @@ function getLanguageInstruction() {
     const instructions = {
         'AT': 'WICHTIG: Antworte auf DEUTSCH mit österreichischem Dialekt (Wienerisch). Verwende Ausdrücke wie "oida", "herst", "ned", "is", "san", "a" statt "ein". (Respond in Austrian German dialect)',
         'DE': 'WICHTIG: Antworte auf DEUTSCH in Hochdeutsch. (Respond in standard German)',
-        'NL': 'BELANGRIJK: Antwoord in het NEDERLANDS. (Respond in Dutch)'
+        'NL': 'BELANGRIJK: Antwoord in het NEDERLANDS. (Respond in Dutch)',
+        'MEU': 'Respond in English. This is a multi-country EU perspective covering Germany, Austria, and Netherlands.'
     };
     return instructions[region] || '';
 }
@@ -9908,13 +10024,13 @@ function getRegionName() {
 
 // Get warehouse code based on region (DVI1 for AT, DMU3 for DE, DNL1 for NL)
 function getWarehouseCode() {
-    const codes = { AT: 'DVI1', DE: 'DMU3', NL: 'DNL1' };
+    const codes = { AT: 'DVI1', DE: 'DMU3', NL: 'DNL1', MEU: 'EU-HQ' };
     return codes[GAME.region] || 'DVI1';
 }
 
 // Get country name for warehouse signs
 function getWarehouseCountry() {
-    const countries = { AT: 'AUSTRIA', DE: 'GERMANY', NL: 'NETHERLANDS' };
+    const countries = { AT: 'AUSTRIA', DE: 'GERMANY', NL: 'NETHERLANDS', MEU: 'MID-EU' };
     return countries[GAME.region] || 'AUSTRIA';
 }
 
@@ -9966,7 +10082,7 @@ function tryInteract() {
              const regionName = getRegionName();
              const langInstRunner = getLanguageInstruction();
              callGemini(
-                 `You are Simon, WHS Senior Regional Manager in ${regionName}. The player stopped a runner. Praise with dry humor, then provide ONE specific safety tip using ${GAME.region} standards. ${safetyContext} Max 35 words. ${langInstRunner}`,
+                 `You are Simon, WHS Senior Regional Manager in ${regionName}. The player stopped a runner. Give dry, brief praise then quote the specific regulation that applies (e.g. "DGUV Regel 108-007: No running in warehouse areas"). No "Safety Tip:" prefix. Max 30 words. ${safetyContext} ${langInstRunner}`,
                  "runners"
              ).then(tip => {
                 if (GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon", GFX.simonFaceLarge, true);
@@ -10004,7 +10120,7 @@ function tryInteract() {
             const regName = getRegionName();
             const langInstHazard = getLanguageInstruction();
             callGemini(
-                `You are Simon, WHS Senior Regional Manager in ${regName}. A hazard "${h.data.name}" was fixed. Praise with dry humor, then provide ONE specific, real-world educational safety tip using ${GAME.region} standards. ${safetyCtx} Keep it under 35 words. ${langInstHazard}`,
+                `You are Simon, WHS Senior Regional Manager in ${regName}. A hazard "${h.data.name}" was fixed. Give dry, brief praise then quote the specific regulation that applies to this hazard (e.g. "According to DGUV Vorschrift 68: ..."). No "Safety Tip:" prefix. Max 30 words. ${safetyCtx} ${langInstHazard}`,
                 "hazard",
                 { hazardName: h.data.name }
             ).then(tip => {
@@ -10498,7 +10614,22 @@ function showHazardDetail() {
     GAME.stateTimer = 0;
 
     // Build the AI prompt for regulatory information
-    const prompt = `You are a workplace safety compliance expert. Provide detailed regulatory information for the following warehouse hazard:
+    let prompt;
+    if (hazardRegion === 'MEU') {
+        // Multi-country comparison mode for MEU
+        prompt = `You are a workplace safety compliance expert. Provide a comparative regulatory summary for this warehouse hazard across Germany, Austria, and Netherlands:
+
+Hazard: "${hazardName}" (type: ${hazardType})
+
+Respond with EXACTLY this format:
+REGULATION: Multi-country comparison
+TITLE: ${hazardName} - EU Regulatory Overview
+SUMMARY: Brief comparison of how Germany (DGUV), Austria (ASchG), and Netherlands (Arbowet) handle this hazard. Note any major differences in requirements or approach. Keep it concise (3-4 sentences max).
+PENALTY: Not applicable for comparison
+
+Focus on practical differences that matter for safety. Respond in English.`;
+    } else {
+        prompt = `You are a workplace safety compliance expert. Provide detailed regulatory information for the following warehouse hazard:
 
 Hazard: "${hazardName}" (type: ${hazardType})
 Region: ${regionName} (${hazardRegion})
@@ -10512,6 +10643,7 @@ PENALTY: [Typical fine or penalty for violations in this region]
 ${safetyContext}
 Be specific and cite real regulations. For US, cite OSHA 29 CFR standards. For Germany cite DGUV/ArbSchG. For Austria cite ASchG/AUVA. For Netherlands cite Arbowet/RI&E.
 ${langInst}`;
+    }
 
     const currentGen = GAME.genId;
     const fallbackDetail = getHazardDetail(GAME.currentHazard);
@@ -10547,8 +10679,8 @@ ${langInst}`;
             }
             GAME.hazardModal.loading = false;
 
-            // Speak only the summary including fine (not the full details)
-            speakTTS(`${GAME.hazardModal.summary} Possible fine: ${GAME.hazardModal.penalty}`, "Simon");
+            // Speak only the summary (not the full details or fines)
+            speakTTS(`${GAME.hazardModal.summary}`, "Simon");
         })
         .catch(() => {
             if (GAME.genId !== currentGen || GAME.state !== 'HAZARD_DETAIL_MODAL') return;
@@ -15033,22 +15165,36 @@ function draw() {
                 }
             }
 
-            // FINE/PENALTY - Prominent red box at bottom
+            // FINE/PENALTY - Prominent red box at bottom (skip for MEU comparison mode)
             const fineY = contentY + 125;
-            ctx.fillStyle = '#7f1d1d';
-            ctx.fillRect(mX + 8, fineY, mW - 16, 28);
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(mX + 8, fineY, mW - 16, 28);
+            if (modal.region !== 'MEU') {
+                ctx.fillStyle = '#7f1d1d';
+                ctx.fillRect(mX + 8, fineY, mW - 16, 28);
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(mX + 8, fineY, mW - 16, 28);
 
-            ctx.fillStyle = '#fff';
-            ctx.font = '7px "Press Start 2P"';
-            ctx.fillText('POSSIBLE FINE:', mX + 14, fineY + 12);
+                ctx.fillStyle = '#fff';
+                ctx.font = '7px "Press Start 2P"';
+                ctx.fillText('POSSIBLE FINE:', mX + 14, fineY + 12);
 
-            ctx.fillStyle = '#fbbf24';
-            ctx.font = '8px "Press Start 2P"';
-            const penTrunc = modal.penalty.length > 26 ? modal.penalty.substring(0, 26) + '...' : modal.penalty;
-            ctx.fillText(penTrunc, mX + 14, fineY + 24);
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = '8px "Press Start 2P"';
+                const penTrunc = modal.penalty.length > 26 ? modal.penalty.substring(0, 26) + '...' : modal.penalty;
+                ctx.fillText(penTrunc, mX + 14, fineY + 24);
+            } else {
+                // For MEU mode, show comparison label instead
+                ctx.fillStyle = '#1e40af';
+                ctx.fillRect(mX + 8, fineY, mW - 16, 28);
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(mX + 8, fineY, mW - 16, 28);
+
+                ctx.fillStyle = '#22d3ee';
+                ctx.font = '6px "Press Start 2P"';
+                ctx.fillText('MULTI-COUNTRY', mX + 14, fineY + 12);
+                ctx.fillText('COMPARISON MODE', mX + 14, fineY + 24);
+            }
         }
 
         // Footer with controls
@@ -15064,33 +15210,17 @@ function draw() {
 
         ctx.restore(); return;
     }
-    // === QUARTERMASTER NPC DIALOGUE ===
+    // === PPE VENDING MACHINE DIALOG ===
     if (GAME.state === 'PPE_DIALOG') {
         const t = GAME.stateTimer;
         ctx.save();
 
         // Semi-transparent overlay
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Wire cage background effect
-        ctx.strokeStyle = 'rgba(59, 130, 246, 0.2)';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < canvas.width; i += 16) {
-            ctx.beginPath();
-            ctx.moveTo(i, 0);
-            ctx.lineTo(i, canvas.height);
-            ctx.stroke();
-        }
-        for (let i = 0; i < canvas.height; i += 16) {
-            ctx.beginPath();
-            ctx.moveTo(0, i);
-            ctx.lineTo(canvas.width, i);
-            ctx.stroke();
-        }
-
         // Main dialog box
-        const boxX = 20, boxY = 40, boxW = canvas.width - 40, boxH = 160;
+        const boxX = 10, boxY = 20, boxW = canvas.width - 20, boxH = 200;
         ctx.fillStyle = '#0a1628';
         ctx.fillRect(boxX, boxY, boxW, boxH);
         ctx.strokeStyle = '#3b82f6';
@@ -15100,68 +15230,60 @@ function draw() {
         ctx.lineWidth = 1;
         ctx.strokeRect(boxX + 3, boxY + 3, boxW - 6, boxH - 6);
 
-        // Draw quartermaster portrait
-        if (GFX.quartermaster) {
-            ctx.drawImage(GFX.quartermaster, boxX + 12, boxY + 15);
+        // Draw vending machine sprite
+        if (GFX.vendingMachineLarge) {
+            ctx.drawImage(GFX.vendingMachineLarge, boxX + 12, boxY + 10);
         }
 
-        // NPC name tag
-        ctx.fillStyle = '#1e40af';
-        ctx.fillRect(boxX + 10, boxY + 65, 52, 14);
+        // Title
         ctx.fillStyle = '#fbbf24';
-        ctx.font = '6px "Press Start 2P"';
-        ctx.textAlign = 'center';
-        ctx.fillText('SIMON', boxX + 36, boxY + 75);
-        ctx.textAlign = 'left';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillText("PPE VENDING", boxX + 100, boxY + 25);
+        ctx.fillText("MACHINE", boxX + 112, boxY + 38);
 
-        // Dialog text
-        ctx.fillStyle = '#f0f0ff';
-        ctx.font = '7px "Press Start 2P"';
-        ctx.fillText("Welcome to the", boxX + 72, boxY + 25);
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillText("PPE SHOP!", boxX + 72, boxY + 38);
-
+        // Info text
         ctx.fillStyle = '#94a3b8';
         ctx.font = '6px monospace';
-        ctx.fillText("Fix hazards to earn Safety Points.", boxX + 72, boxY + 54);
-        ctx.fillText("Spend them here on protective", boxX + 72, boxY + 66);
-        ctx.fillText("equipment with permanent buffs!", boxX + 72, boxY + 78);
+        ctx.fillText("Spend Safety Points on", boxX + 100, boxY + 55);
+        ctx.fillText("protective equipment.", boxX + 100, boxY + 67);
+        ctx.fillText("Each item grants a", boxX + 100, boxY + 82);
+        ctx.fillText("permanent gameplay buff!", boxX + 100, boxY + 94);
 
         // Safety Points display
         ctx.fillStyle = '#22d3ee';
-        ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('YOUR SP: ' + GAME.safetyPoints, boxX + 72, boxY + 95);
+        ctx.font = '7px "Press Start 2P"';
+        ctx.fillText('SP: ' + GAME.safetyPoints, boxX + 100, boxY + 115);
 
         // Menu options
-        const menuY = boxY + 115;
-        const options = ['Browse PPE Shop', 'Leave'];
+        const menuY = boxY + 135;
+        const options = ['Select Items', 'Leave'];
         options.forEach((opt, i) => {
             const isSelected = GAME.ppeDialogChoice === i;
-            const optY = menuY + i * 20;
+            const optY = menuY + i * 22;
 
             if (isSelected) {
                 // Selection highlight
                 ctx.fillStyle = 'rgba(59, 130, 246, 0.4)';
-                ctx.fillRect(boxX + 10, optY - 8, boxW - 20, 18);
+                ctx.fillRect(boxX + 95, optY - 8, 130, 18);
                 ctx.strokeStyle = '#3b82f6';
-                ctx.lineWidth = 1;
-                ctx.strokeRect(boxX + 10, optY - 8, boxW - 20, 18);
+                ctx.lineWidth = 2;
+                ctx.strokeRect(boxX + 95, optY - 8, 130, 18);
 
                 // Blinking arrow
                 const blink = Math.sin(t * 0.15) > 0;
                 ctx.fillStyle = blink ? '#fbbf24' : '#92400e';
                 ctx.font = '10px monospace';
-                ctx.fillText('\u25B6', boxX + 16, optY + 5);
+                ctx.fillText('\u25B6', boxX + 100, optY + 5);
             }
 
             ctx.fillStyle = isSelected ? '#fff' : '#64748b';
             ctx.font = '7px "Press Start 2P"';
-            ctx.fillText(opt, boxX + 32, optY + 4);
+            ctx.fillText(opt, boxX + 116, optY + 4);
         });
 
         // Footer controls
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(boxX + 5, boxY + boxH - 16, boxW - 10, 12);
+        ctx.fillRect(boxX + 5, boxY + boxH - 18, boxW - 10, 14);
         ctx.textAlign = 'center';
         const blink = Math.sin(t * 0.12) > 0;
         ctx.fillStyle = blink ? '#fbbf24' : '#64748b';
