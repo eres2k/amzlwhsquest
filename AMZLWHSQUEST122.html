@@ -5810,8 +5810,298 @@ const GAME = {
         { name: "Regional OPS MGR", sprite: "boss_regional", hp: 32, speed: 0.6, attackDelay: 90, title: "The Executive", desc: "Metrics first.", attackName: "KPI Crusher", attackPattern: "orbital" },
         { name: "Avetta Platform", sprite: "boss_avetta", hp: 40, speed: 0.4, attackDelay: 100, title: "Risk Manager", desc: "Judges all.", attackName: "Risk Assessment Beam", attackPattern: "laser" },
         { name: "Jelena \"Jelly\"", sprite: "boss_jelly", hp: 28, speed: 0.9, attackDelay: 65, title: "HR Guardian", desc: "HR legend who never forgets a policy.", attackName: "Write-Up Wave", attackPattern: "wave" }
-    ]
+    ],
+
+    // === AI SAFETY LOCKER - Meta-Progression System ===
+    safetyPoints: 0,
+    unlocks: {}, // Tracks owned PPE items by ID
+    shopSelection: 0, // Currently selected item in shop
+    shopAIText: "", // AI-generated approval text
+    shopAILoading: false, // Whether AI is generating text
+    totalSafetyPoints: 0 // Lifetime points earned
 };
+
+// === PPE ITEMS CONFIGURATION ===
+const PPE_ITEMS = [
+    {
+        id: 'safety_shoes',
+        name: 'S3 Safety Shoes',
+        cost: 500,
+        icon: '👟',
+        description: 'Slip resistance & toe protection',
+        regulation: { DE: 'EN ISO 20345', AT: 'EN ISO 20345', NL: 'EN ISO 20345' },
+        buff: { type: 'speed', value: 1.20, desc: '+20% Movement Speed' },
+        secondary: 'Immunity to puddle slowdowns',
+        visual: 'shoes'
+    },
+    {
+        id: 'hivis_vest',
+        name: 'High-Vis Vest',
+        cost: 1000,
+        icon: '🦺',
+        description: 'High visibility prevents accidents',
+        regulation: { DE: 'EN ISO 20471', AT: 'EN ISO 20471', NL: 'EN ISO 20471' },
+        buff: { type: 'dodge', value: 0.15, desc: '15% Dodge Chance' },
+        secondary: 'Ignore ANY damage source 15% of the time',
+        visual: 'vest'
+    },
+    {
+        id: 'ear_defenders',
+        name: 'Industrial Ear Defenders',
+        cost: 800,
+        icon: '🎧',
+        description: 'Noise protection reduces fatigue',
+        regulation: { DE: 'EN 352-1 (Lärmschutz)', AT: 'EN 352-1 (Lärmschutz)', NL: 'EN 352-1' },
+        buff: { type: 'maxhp', value: 1, desc: '+1 Max HP' },
+        secondary: 'Reduces screen shake by 50%',
+        visual: 'ears'
+    },
+    {
+        id: 'cut_gloves',
+        name: 'Cut-Resistant Gloves',
+        cost: 1500,
+        icon: '🧤',
+        description: 'Hand protection improves handling',
+        regulation: { DE: 'EN 388', AT: 'EN 388', NL: 'EN 388' },
+        buff: { type: 'firerate', value: 0.75, desc: '+25% Fire Rate' },
+        secondary: 'Faster rule book throwing',
+        visual: 'gloves'
+    },
+    {
+        id: 'hard_hat',
+        name: 'Safety Hard Hat',
+        cost: 600,
+        icon: '⛑️',
+        description: 'Head protection from falling objects',
+        regulation: { DE: 'EN 397', AT: 'EN 397', NL: 'EN 397' },
+        buff: { type: 'damage_reduction', value: 0.15, desc: '15% Damage Reduction' },
+        secondary: 'Reduces damage from all sources',
+        visual: 'hardhat'
+    },
+    {
+        id: 'safety_glasses',
+        name: 'Safety Glasses',
+        cost: 400,
+        icon: '🥽',
+        description: 'Eye protection improves awareness',
+        regulation: { DE: 'EN 166', AT: 'EN 166', NL: 'EN 166' },
+        buff: { type: 'visibility', value: 1.5, desc: '+50% Vision Range' },
+        secondary: 'Hazards glow from further away',
+        visual: 'glasses'
+    },
+    {
+        id: 'knee_pads',
+        name: 'Ergonomic Knee Pads',
+        cost: 700,
+        icon: '🦵',
+        description: 'Joint protection for extended shifts',
+        regulation: { DE: 'EN 14404', AT: 'EN 14404', NL: 'EN 14404' },
+        buff: { type: 'iframe', value: 1.25, desc: '+25% Invincibility Time' },
+        secondary: 'Longer recovery after taking damage',
+        visual: 'kneepads'
+    },
+    {
+        id: 'respirator',
+        name: 'FFP2 Respirator',
+        cost: 900,
+        icon: '😷',
+        description: 'Respiratory protection',
+        regulation: { DE: 'EN 149 (Atemschutz)', AT: 'EN 149', NL: 'EN 149' },
+        buff: { type: 'hazard_immunity', value: 1, desc: 'Spill Immunity' },
+        secondary: 'No slowdown from chemical spills',
+        visual: 'mask'
+    },
+    {
+        id: 'reflective_tape',
+        name: 'Reflective Tape Kit',
+        cost: 1200,
+        icon: '✨',
+        description: 'Enhanced visibility in all conditions',
+        regulation: { DE: 'EN ISO 20471 Class 2', AT: 'EN ISO 20471', NL: 'EN ISO 20471' },
+        buff: { type: 'points_multiplier', value: 1.5, desc: '+50% Safety Points' },
+        secondary: 'Earn more points from fixing hazards',
+        visual: 'reflective'
+    },
+    {
+        id: 'steel_toe_boots',
+        name: 'Steel Toe Boots Pro',
+        cost: 2000,
+        icon: '🥾',
+        description: 'Ultimate foot protection',
+        regulation: { DE: 'EN ISO 20345 S3', AT: 'EN ISO 20345 S3', NL: 'EN ISO 20345 S3' },
+        buff: { type: 'stomp', value: 1, desc: 'Ground Stomp Attack' },
+        secondary: 'Press DOWN+SPACE to stun nearby enemies',
+        visual: 'steelboots'
+    }
+];
+
+// === SAVE/LOAD FUNCTIONS ===
+function saveGame() {
+    const saveData = {
+        safetyPoints: GAME.safetyPoints,
+        unlocks: GAME.unlocks,
+        totalSafetyPoints: GAME.totalSafetyPoints,
+        version: 1
+    };
+    try {
+        localStorage.setItem('AMZL_WHS_DATA', JSON.stringify(saveData));
+    } catch (e) {
+        console.warn('Failed to save game:', e);
+    }
+}
+
+function loadGame() {
+    try {
+        const data = localStorage.getItem('AMZL_WHS_DATA');
+        if (data) {
+            const parsed = JSON.parse(data);
+            GAME.safetyPoints = parsed.safetyPoints || 0;
+            GAME.unlocks = parsed.unlocks || {};
+            GAME.totalSafetyPoints = parsed.totalSafetyPoints || 0;
+        }
+    } catch (e) {
+        console.warn('Failed to load game:', e);
+    }
+}
+
+// === AWARD SAFETY POINTS ===
+function awardSafetyPoints(amount, reason) {
+    // Apply reflective tape bonus
+    if (GAME.unlocks['reflective_tape']) {
+        amount = Math.floor(amount * 1.5);
+    }
+    GAME.safetyPoints += amount;
+    GAME.totalSafetyPoints += amount;
+    saveGame();
+    spawnFloatingText(GAME.player.x, GAME.player.y - 20, `+${amount} SP`, '#ffd700');
+}
+
+// === CHECK IF PPE BUFF IS ACTIVE ===
+function hasPPE(itemId) {
+    return GAME.unlocks[itemId] === true;
+}
+
+// === GET PPE BUFF VALUE ===
+function getPPEBuffValue(buffType, defaultValue) {
+    for (const item of PPE_ITEMS) {
+        if (GAME.unlocks[item.id] && item.buff.type === buffType) {
+            return item.buff.value;
+        }
+    }
+    return defaultValue;
+}
+
+// === DRAW PPE OVERLAYS ON PLAYER ===
+function drawPPEOverlays(x, y) {
+    // Safety Shoes - Grey boots at feet
+    if (hasPPE('safety_shoes')) {
+        ctx.fillStyle = '#4a5568';
+        ctx.fillRect(x + 2, y + 13, 4, 3);
+        ctx.fillRect(x + 10, y + 13, 4, 3);
+        ctx.fillStyle = '#718096';
+        ctx.fillRect(x + 3, y + 14, 2, 2);
+        ctx.fillRect(x + 11, y + 14, 2, 2);
+    }
+
+    // Steel Toe Boots Pro - Metallic boots
+    if (hasPPE('steel_toe_boots')) {
+        ctx.fillStyle = '#2d3748';
+        ctx.fillRect(x + 2, y + 12, 4, 4);
+        ctx.fillRect(x + 10, y + 12, 4, 4);
+        ctx.fillStyle = '#a0aec0';
+        ctx.fillRect(x + 2, y + 14, 2, 2);
+        ctx.fillRect(x + 12, y + 14, 2, 2);
+    }
+
+    // High-Vis Vest - Orange/yellow vest overlay
+    if (hasPPE('hivis_vest')) {
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(x + 3, y + 5, 2, 6);
+        ctx.fillRect(x + 11, y + 5, 2, 6);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(x + 5, y + 6, 6, 4);
+        // Reflective strips
+        ctx.fillStyle = '#fef3c7';
+        ctx.fillRect(x + 4, y + 7, 1, 3);
+        ctx.fillRect(x + 11, y + 7, 1, 3);
+    }
+
+    // Industrial Ear Defenders - Blue/red headset
+    if (hasPPE('ear_defenders')) {
+        ctx.fillStyle = '#1e40af';
+        ctx.fillRect(x + 1, y + 2, 3, 4);
+        ctx.fillRect(x + 12, y + 2, 3, 4);
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(x + 2, y + 3, 1, 2);
+        ctx.fillRect(x + 13, y + 3, 1, 2);
+        // Headband
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(x + 4, y, 8, 1);
+    }
+
+    // Cut-Resistant Gloves - Grey/white hands
+    if (hasPPE('cut_gloves')) {
+        ctx.fillStyle = '#9ca3af';
+        ctx.fillRect(x, y + 7, 2, 3);
+        ctx.fillRect(x + 14, y + 7, 2, 3);
+        ctx.fillStyle = '#d1d5db';
+        ctx.fillRect(x + 1, y + 8, 1, 1);
+        ctx.fillRect(x + 14, y + 8, 1, 1);
+    }
+
+    // Safety Hard Hat - Yellow helmet
+    if (hasPPE('hard_hat')) {
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(x + 3, y - 2, 10, 3);
+        ctx.fillRect(x + 5, y + 1, 6, 2);
+        ctx.fillStyle = '#ca8a04';
+        ctx.fillRect(x + 4, y - 1, 8, 1);
+    }
+
+    // Safety Glasses - Clear/blue glasses
+    if (hasPPE('safety_glasses')) {
+        ctx.fillStyle = '#0ea5e9';
+        ctx.fillRect(x + 3, y + 3, 4, 2);
+        ctx.fillRect(x + 9, y + 3, 4, 2);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(x + 4, y + 3, 2, 1);
+        ctx.fillRect(x + 10, y + 3, 2, 1);
+        // Bridge
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(x + 7, y + 3, 2, 1);
+    }
+
+    // FFP2 Respirator - White mask
+    if (hasPPE('respirator')) {
+        ctx.fillStyle = '#e5e7eb';
+        ctx.fillRect(x + 4, y + 6, 8, 4);
+        ctx.fillStyle = '#f3f4f6';
+        ctx.fillRect(x + 5, y + 7, 6, 2);
+        // Straps
+        ctx.fillStyle = '#9ca3af';
+        ctx.fillRect(x + 2, y + 7, 2, 1);
+        ctx.fillRect(x + 12, y + 7, 2, 1);
+    }
+
+    // Reflective Tape Kit - Glowing strips
+    if (hasPPE('reflective_tape')) {
+        const pulse = Math.sin(GAME.ticks * 0.15) * 0.3 + 0.7;
+        ctx.fillStyle = `rgba(255, 255, 200, ${pulse})`;
+        ctx.fillRect(x + 2, y + 4, 1, 8);
+        ctx.fillRect(x + 13, y + 4, 1, 8);
+        ctx.fillRect(x + 5, y + 11, 6, 1);
+    }
+
+    // Knee Pads - Dark pads on legs
+    if (hasPPE('knee_pads')) {
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(x + 3, y + 10, 3, 3);
+        ctx.fillRect(x + 10, y + 10, 3, 3);
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(x + 4, y + 11, 1, 1);
+        ctx.fillRect(x + 11, y + 11, 1, 1);
+    }
+}
 
 const HAZARD_POOL = [
     // === POWERED INDUSTRIAL TRUCKS (PITs) ===
@@ -6036,6 +6326,20 @@ window.addEventListener('keydown', e => {
     if(e.key==='a'||e.key==='ArrowLeft') KEYS.left=true;
     if(e.key==='d'||e.key==='ArrowRight') KEYS.right=true;
     if(e.code==='Space') { if(!KEYS.action) handleAction(); KEYS.action=true; }
+    // 'L' key to open Safety Locker from TITLE, HOWTO, GAMEOVER_SPLASH, or SELECT screens
+    if((e.key==='l'||e.key==='L') && ['TITLE','HOWTO','GAMEOVER_SPLASH','SELECT'].includes(GAME.state)) {
+        GAME.state = 'PPE_SHOP';
+        GAME.shopSelection = 0;
+        GAME.shopAIText = "";
+        GAME.shopAILoading = false;
+        AudioSys.sfx.select();
+    }
+    // Escape key to exit PPE_SHOP
+    if(e.key==='Escape' && GAME.state === 'PPE_SHOP') {
+        GAME.state = 'TITLE';
+        AudioSys.sfx.select();
+        updateMusicForState();
+    }
 });
 window.addEventListener('keyup', e => {
     if(e.key==='w'||e.key==='ArrowUp') KEYS.up=false;
@@ -6528,6 +6832,35 @@ function handleAction() {
     else if (GAME.state === 'GAMEOVER' || GAME.state === 'WIN') {
         document.getElementById('boss-hud').style.display = 'none'; GAME.state = 'TITLE'; updateMusicForState();
     }
+    else if (GAME.state === 'PPE_SHOP') {
+        // Handle PPE shop purchase
+        const item = PPE_ITEMS[GAME.shopSelection];
+        if (item && !GAME.unlocks[item.id] && GAME.safetyPoints >= item.cost) {
+            // Purchase the item
+            GAME.safetyPoints -= item.cost;
+            GAME.unlocks[item.id] = true;
+            saveGame();
+            AudioSys.sfx.fix();
+            spawnFloatingText(canvas.width / 2, canvas.height / 2, 'PURCHASED!', '#22c55e');
+
+            // Get AI approval from Simon (Quartermaster)
+            GAME.shopAILoading = true;
+            const regulation = item.regulation[GAME.region] || item.regulation.DE;
+            callGemini(
+                `You are Simon Unglaube, Safety Manager at Amazon ${getWarehouseCode()}. A coordinator just requisitioned "${item.name}" (${item.description}). Approve this requisition with dry wit, citing regulation ${regulation}. Keep it under 30 words.`,
+                'ppe_approval'
+            ).then(text => {
+                GAME.shopAIText = text;
+                GAME.shopAILoading = false;
+            });
+        } else if (GAME.unlocks[item.id]) {
+            AudioSys.sfx.alert();
+            spawnFloatingText(canvas.width / 2, canvas.height / 2, 'ALREADY OWNED!', '#ff9900');
+        } else if (GAME.safetyPoints < item.cost) {
+            AudioSys.sfx.hurt();
+            spawnFloatingText(canvas.width / 2, canvas.height / 2, 'NOT ENOUGH SP!', '#ff4444');
+        }
+    }
     else if (GAME.state === 'BEZOS_WIN') {
         GAME.state = 'TITLE'; updateMusicForState();
     }
@@ -6547,6 +6880,9 @@ function handleAction() {
 function init() {
     // Initialize cached values for performance
     CachedValues.init(canvas);
+
+    // Load saved progression data
+    loadGame();
 
     generateAssets();
     GAME.state = 'PRESS_START';
@@ -6577,7 +6913,9 @@ function resetGame() {
     // Performance: Reset object pools on game restart
     ObjectPool.reset();
     GAME.activeIssues = []; GAME.clutter = [];
-    GAME.issuesFixed = 0; GAME.lives = stats.lives; GAME.simonHits = 0; GAME.boss = null; GAME.pendingBossIntro = false;
+    // Apply PPE bonus HP (Ear Defenders: +1 Max HP)
+    const bonusHP = hasPPE('ear_defenders') ? 1 : 0;
+    GAME.issuesFixed = 0; GAME.lives = stats.lives + bonusHP; GAME.simonHits = 0; GAME.boss = null; GAME.pendingBossIntro = false;
     GAME.hiddenDoor = null; GAME.yard = null; GAME.mecha = null;
     GAME.nextState = 'PLAY'; GAME.aiResultText = null;
     GAME.startTime = Date.now(); GAME.booksFired = 0; GAME.opsPushed = 0;
@@ -7599,10 +7937,26 @@ function update() {
     }
 
     if (GAME.state === 'TITLE') {
+        // Check for 'L' key to visit locker
         return;
     }
 
     if (GAME.state === 'HOWTO') {
+        return;
+    }
+
+    // PPE Shop navigation
+    if (GAME.state === 'PPE_SHOP') {
+        let changed = false;
+        if (KEYS.up && GAME.ticks % 8 === 0) { GAME.shopSelection--; AudioSys.sfx.step(); changed = true; }
+        if (KEYS.down && GAME.ticks % 8 === 0) { GAME.shopSelection++; AudioSys.sfx.step(); changed = true; }
+        if (changed) {
+            if (GAME.shopSelection < 0) GAME.shopSelection = PPE_ITEMS.length - 1;
+            if (GAME.shopSelection >= PPE_ITEMS.length) GAME.shopSelection = 0;
+            // Clear AI text when changing selection
+            GAME.shopAIText = "";
+            GAME.shopAILoading = false;
+        }
         return;
     }
 
@@ -7704,8 +8058,14 @@ function updatePlayer() {
     // Guard against undefined player state
     if (!p) return;
     if (p.iframe>0) p.iframe--; if (p.cooldown>0) p.cooldown--;
+
+    // Apply PPE speed buff (Safety Shoes: +20% speed)
+    let speedMod = 1.0;
+    if (hasPPE('safety_shoes')) speedMod = 1.20;
+
     let dx=0, dy=0;
-    if (KEYS.up) dy = -p.speed; if (KEYS.down) dy = p.speed; if (KEYS.left) dx = -p.speed; if (KEYS.right) dx = p.speed;
+    const effectiveSpeed = p.speed * speedMod;
+    if (KEYS.up) dy = -effectiveSpeed; if (KEYS.down) dy = effectiveSpeed; if (KEYS.left) dx = -effectiveSpeed; if (KEYS.right) dx = effectiveSpeed;
     if (dx!==0 && dy!==0) { dx *= GAME_CONSTANTS.DIAGONAL_FACTOR; dy *= GAME_CONSTANTS.DIAGONAL_FACTOR; }
     if (dx!==0 || dy!==0) {
         // In Bezos boss mode, no collision detection with walls
@@ -8832,9 +9192,24 @@ function updateProjectiles() {
         const projectileRadius = GAME.selectedChar === 'Roman' ? 6 : 10;
         if ((p.type === 'req') && Math.hypot(p.x-GAME.player.x, p.y-GAME.player.y) < projectileRadius) {
             if (GAME.player.iframe<=0) {
+                // PPE Dodge Chance (High-Vis Vest: 15% dodge)
+                if (hasPPE('hivis_vest') && Math.random() < 0.15) {
+                    spawnFloatingText(GAME.player.x, GAME.player.y - 10, "DODGED!", "#ffd700");
+                    AudioSys.sfx.alert();
+                    GAME.projectiles.splice(i,1);
+                    continue;
+                }
+
                 // Nevena's FORESIGHT ability - longer invincibility frames
-                const iframeBonus = GAME.selectedChar === 'Nevena' ? 180 : 120;
-                GAME.lives--; GAME.player.iframe = iframeBonus; GAME.shake = 10; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
+                let iframeBonus = GAME.selectedChar === 'Nevena' ? 180 : 120;
+                // PPE iframe bonus (Knee Pads: +25% invincibility)
+                if (hasPPE('knee_pads')) iframeBonus = Math.floor(iframeBonus * 1.25);
+
+                // Apply screen shake reduction (Ear Defenders: 50% reduction)
+                let shakeAmount = 10;
+                if (hasPPE('ear_defenders')) shakeAmount = 5;
+
+                GAME.lives--; GAME.player.iframe = iframeBonus; GAME.shake = shakeAmount; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
                 VibrationSystem.onDamage(); // Vibrate on damage
                 if (GAME.lives<=0 && !GAME.gameOverTriggered) triggerGameOver("OVERWHELMED!");
             }
@@ -9063,6 +9438,10 @@ function throwBook() {
     let cooldownMod = 1.0;
     if (GAME.selectedChar === 'Joao') cooldownMod = 0.65; // 35% faster
     else if (GAME.selectedChar === 'Carrie') cooldownMod = 1.3; // 30% slower
+
+    // PPE fire rate buff (Cut-Resistant Gloves: +25% fire rate = 0.75 cooldown)
+    if (hasPPE('cut_gloves')) cooldownMod *= 0.75;
+
     const finalCooldown = Math.floor((attackMeta.cooldown || 120) * cooldownMod);
     p.cooldown = finalCooldown; p.cooldownMax = finalCooldown; GAME.booksFired++;
     const speed = attackMeta.speed || 4;
@@ -9126,6 +9505,7 @@ function tryInteract() {
              e.type = 'assoc'; GAME.issuesFixed++; updateHud(); AudioSys.sfx.fix();
              VibrationSystem.onHazardFixed(); // Vibrate on hazard fix
              spawnFloatingText(e.x, e.y, "Safe!", "#00ff00");
+             awardSafetyPoints(50, 'runner'); // Award Safety Points
 
              if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
 
@@ -9152,6 +9532,7 @@ function tryInteract() {
             VibrationSystem.onHazardFixed(); // Vibrate on hazard fix
             if (h.hiddenDoor && GAME.hiddenDoor) GAME.hiddenDoor.unlocked = true;
             spawnFloatingText(h.x, h.y, "Fixed!", "#00ff00");
+            awardSafetyPoints(50, 'hazard'); // Award Safety Points
 
             if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
 
@@ -9237,6 +9618,7 @@ function winGame() {
     AudioSys.sfx.start(); MusicSys.play('victory'); GAME.nextState = 'CREDITS'; GAME.creditsType = 'normal'; GAME.state = 'WIN_SPLASH'; GAME.splashTimer = 260; GAME.aiResultText = null; GAME.stateTimer = 0;
     stopPortraitAnimation();
     VibrationSystem.onVictory(); // Vibrate on victory
+    awardSafetyPoints(200, 'boss'); // Award Safety Points for boss defeat
     document.getElementById('boss-hud').style.display = 'none'; document.getElementById('dialog-box').style.display = 'none';
     document.getElementById('hud-layer').style.display = 'none';
     const currentGen = GAME.genId; const time = Math.floor((Date.now() - GAME.startTime)/1000);
@@ -10601,6 +10983,7 @@ function drawYardLevel() {
         ctx.globalAlpha = 0.5;
     }
     ctx.drawImage(GFX.chars[GAME.selectedChar], GAME.player.x, GAME.player.y);
+    drawPPEOverlays(GAME.player.x, GAME.player.y); // Draw equipped PPE
     ctx.globalAlpha = 1;
 
     // Goal text
@@ -10853,6 +11236,7 @@ function drawMechaBattle() {
         ctx.globalAlpha = 0.5;
     }
     ctx.drawImage(GFX.chars[GAME.selectedChar], GAME.player.x, GAME.player.y);
+    drawPPEOverlays(GAME.player.x, GAME.player.y); // Draw equipped PPE
     ctx.globalAlpha = 1;
 
     if (m) {
@@ -11804,6 +12188,7 @@ function updateBezosEscape() {
             GAME.state = 'CREDITS';
             GAME.stateTimer = 0;
             GAME.creditsType = 'mecha';
+            awardSafetyPoints(500, 'final_boss'); // Award bonus Safety Points for defeating Mecha Jeff
         }
     }
 }
@@ -13085,10 +13470,213 @@ function drawCredits() {
     }
 }
 
+// === PPE SHOP RENDERING ===
+function drawPPEShop() {
+    const t = GAME.stateTimer;
+
+    // Dark warehouse background
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, '#0a0a18');
+    grad.addColorStop(0.5, '#0f1525');
+    grad.addColorStop(1, '#050510');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Animated particles (safety sparkles)
+    for (let i = 0; i < 15; i++) {
+        const x = (i * 37 + t * 0.15) % canvas.width;
+        const y = (i * 43 + Math.sin(t * 0.02 + i) * 5) % canvas.height;
+        const alpha = 0.15 + Math.sin(t * 0.04 + i) * 0.1;
+        ctx.fillStyle = `rgba(255, 215, 0, ${alpha})`;
+        ctx.fillRect(x, y, 2, 2);
+    }
+
+    // Locker frame
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = 'rgba(15, 20, 35, 0.95)';
+    ctx.fillRect(8, 8, canvas.width - 16, canvas.height - 16);
+    ctx.shadowBlur = 0;
+
+    // Border
+    ctx.strokeStyle = '#ffd700';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+    ctx.strokeStyle = '#92400e';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+    // Title
+    ctx.textAlign = 'center';
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 10;
+    ctx.font = 'bold 12px "Press Start 2P"';
+    ctx.fillStyle = '#ffd700';
+    ctx.fillText('AI SAFETY LOCKER', canvas.width / 2, 28);
+    ctx.shadowBlur = 0;
+
+    // Safety Points display
+    ctx.font = '8px "Press Start 2P"';
+    ctx.fillStyle = '#22d3ee';
+    ctx.fillText(`SAFETY POINTS: ${GAME.safetyPoints}`, canvas.width / 2, 42);
+
+    // Locker icon decoration
+    ctx.font = '16px monospace';
+    ctx.fillText('🔒', 20, 28);
+    ctx.fillText('🛡️', canvas.width - 28, 28);
+
+    // Item list area
+    const listY = 52;
+    const itemHeight = 18;
+    const visibleItems = 6;
+    const scrollOffset = Math.max(0, Math.min(GAME.shopSelection - 2, PPE_ITEMS.length - visibleItems));
+
+    // Draw visible items
+    for (let i = 0; i < Math.min(visibleItems, PPE_ITEMS.length); i++) {
+        const itemIdx = i + scrollOffset;
+        if (itemIdx >= PPE_ITEMS.length) break;
+
+        const item = PPE_ITEMS[itemIdx];
+        const y = listY + i * itemHeight;
+        const isSelected = itemIdx === GAME.shopSelection;
+        const isOwned = GAME.unlocks[item.id];
+        const canAfford = GAME.safetyPoints >= item.cost;
+
+        // Selection highlight
+        if (isSelected) {
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.15)';
+            ctx.fillRect(14, y - 2, canvas.width - 28, itemHeight - 2);
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(14, y - 2, canvas.width - 28, itemHeight - 2);
+
+            // Selection arrows
+            const pulse = Math.sin(t * 0.12) * 2;
+            ctx.fillStyle = '#ffd700';
+            ctx.textAlign = 'left';
+            ctx.font = '8px monospace';
+            ctx.fillText('▶', 16 - pulse, y + 10);
+        }
+
+        ctx.textAlign = 'left';
+
+        // Icon
+        ctx.font = '10px monospace';
+        ctx.fillText(item.icon, 28, y + 11);
+
+        // Name
+        ctx.font = '6px "Press Start 2P"';
+        if (isOwned) {
+            ctx.fillStyle = '#22c55e';
+        } else if (!canAfford) {
+            ctx.fillStyle = '#666';
+        } else {
+            ctx.fillStyle = isSelected ? '#ffffff' : '#aaaaaa';
+        }
+        ctx.fillText(item.name.substring(0, 18), 44, y + 10);
+
+        // Cost/Status
+        ctx.textAlign = 'right';
+        ctx.font = '6px "Press Start 2P"';
+        if (isOwned) {
+            ctx.fillStyle = '#22c55e';
+            ctx.fillText('EQUIPPED', canvas.width - 20, y + 10);
+        } else {
+            ctx.fillStyle = canAfford ? '#ffd700' : '#ff4444';
+            ctx.fillText(`${item.cost} SP`, canvas.width - 20, y + 10);
+        }
+    }
+
+    // Scroll indicator
+    if (PPE_ITEMS.length > visibleItems) {
+        ctx.textAlign = 'center';
+        ctx.font = '6px monospace';
+        ctx.fillStyle = '#666';
+        if (scrollOffset > 0) ctx.fillText('▲', canvas.width / 2, listY - 4);
+        if (scrollOffset < PPE_ITEMS.length - visibleItems) ctx.fillText('▼', canvas.width / 2, listY + visibleItems * itemHeight + 4);
+    }
+
+    // Selected item details panel
+    const detailY = listY + visibleItems * itemHeight + 12;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.fillRect(14, detailY, canvas.width - 28, 52);
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(14, detailY, canvas.width - 28, 52);
+
+    const selectedItem = PPE_ITEMS[GAME.shopSelection];
+    if (selectedItem) {
+        ctx.textAlign = 'left';
+
+        // Item name and icon
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText(`${selectedItem.icon} ${selectedItem.name}`, 20, detailY + 12);
+
+        // Buff description
+        ctx.font = '6px monospace';
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillText(`BUFF: ${selectedItem.buff.desc}`, 20, detailY + 24);
+
+        // Secondary effect
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(`+ ${selectedItem.secondary}`, 20, detailY + 34);
+
+        // Regulation (region-specific)
+        const reg = selectedItem.regulation[GAME.region] || selectedItem.regulation.DE;
+        ctx.fillStyle = '#64748b';
+        ctx.font = '5px monospace';
+        ctx.fillText(`REG: ${reg}`, 20, detailY + 46);
+    }
+
+    // AI Quartermaster response area
+    const aiY = detailY + 58;
+    if (GAME.shopAILoading) {
+        ctx.textAlign = 'center';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillStyle = '#ffd700';
+        const dots = '.'.repeat((Math.floor(t / 15) % 3) + 1);
+        ctx.fillText(`SIMON APPROVING${dots}`, canvas.width / 2, aiY + 8);
+    } else if (GAME.shopAIText) {
+        ctx.textAlign = 'center';
+        ctx.font = '5px monospace';
+        ctx.fillStyle = '#22c55e';
+
+        // Word wrap the AI text
+        const words = GAME.shopAIText.split(' ');
+        let lines = [];
+        let currentLine = '';
+        const maxChars = 50;
+
+        words.forEach(word => {
+            if ((currentLine + ' ' + word).length > maxChars) {
+                lines.push(currentLine.trim());
+                currentLine = word;
+            } else {
+                currentLine += ' ' + word;
+            }
+        });
+        if (currentLine.trim()) lines.push(currentLine.trim());
+
+        lines.slice(0, 2).forEach((line, i) => {
+            ctx.fillText(line, canvas.width / 2, aiY + 6 + i * 10);
+        });
+    }
+
+    // Instructions at bottom
+    ctx.textAlign = 'center';
+    ctx.font = '6px monospace';
+    ctx.fillStyle = '#64748b';
+    ctx.fillText('↑↓ SELECT | SPACE BUY | ESC EXIT', canvas.width / 2, canvas.height - 10);
+
+    ctx.textAlign = 'left';
+}
+
 function draw() {
     if (GAME.state === 'LOSE_SPLASH') { drawSnesSplash(false); return; }
     if (GAME.state === 'WIN_SPLASH') { drawSnesSplash(true); return; }
     if (GAME.state === 'GAMEOVER_SPLASH') { drawGameOverSplash(); return; }
+    if (GAME.state === 'PPE_SHOP') { drawPPEShop(); return; }
 
     ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width, canvas.height);
     let dxShake = 0, dyShake = 0;
@@ -13403,6 +13991,11 @@ function draw() {
             ctx.fillText('[SPACE TO SKIP]', canvas.width / 2, 195);
         }
 
+        // Safety Locker hint with points display
+        ctx.font = '5px monospace';
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText(`[L] SAFETY LOCKER  💰${GAME.safetyPoints} SP`, canvas.width / 2, 208);
+
         ctx.textAlign = 'left';
         ctx.restore(); return;
     }
@@ -13687,10 +14280,16 @@ function draw() {
         // Credits with style
         ctx.fillStyle = '#64748b';
         ctx.font = '7px monospace';
-        ctx.fillText('CREATED BY ERWIN ESENER', canvas.width / 2, 190);
+        ctx.fillText('CREATED BY ERWIN ESENER', canvas.width / 2, 188);
+
+        // Safety Locker hint
+        ctx.font = '5px monospace';
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText(`[L] SAFETY LOCKER  💰${GAME.safetyPoints} SP`, canvas.width / 2, 203);
+
         ctx.fillStyle = '#475569';
-        ctx.font = '6px monospace';
-        ctx.fillText('© 2024 ERWIN ESENER PRODUCTIONS', canvas.width / 2, 220);
+        ctx.font = '5px monospace';
+        ctx.fillText('© 2024 ERWIN ESENER PRODUCTIONS', canvas.width / 2, 218);
 
         ctx.textAlign = 'left';
         ctx.restore(); return;
@@ -14185,6 +14784,7 @@ function draw() {
         const p = GAME.player;
         if (p.iframe % 4 < 2) {
             ctx.drawImage(GFX.chars[GAME.selectedChar], p.x, p.y);
+            drawPPEOverlays(p.x, p.y); // Draw equipped PPE
         }
 
         // Projectiles
@@ -14472,7 +15072,10 @@ function draw() {
             }
             else if (e === GAME.player) {
                 // Player sprite (16x16 with built-in shadow)
-                if (e.iframe%4 < 2) ctx.drawImage(GFX.chars[GAME.selectedChar], dx, dy);
+                if (e.iframe%4 < 2) {
+                    ctx.drawImage(GFX.chars[GAME.selectedChar], dx, dy);
+                    drawPPEOverlays(dx, dy); // Draw equipped PPE
+                }
                 // Cooldown bar for 16x16 sprite
                 if (e.cooldown > 0) {
                     ctx.fillStyle = '#555'; ctx.fillRect(dx, dy-6, 16, 3);
