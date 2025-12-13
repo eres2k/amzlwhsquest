@@ -1113,8 +1113,74 @@ const BANTER_DB = {
         "Too early...", "Night shift...", "Pizza party?",
         "Belt keeps eating me", "Where's my badge?", "Snacks when?",
         "Scanner dying...", "Stuck in pack?", "Shift never ends"
-    ]
+    ],
+    // Region-specific banter with local slang
+    regional: {
+        AT: {
+            ops: [
+                "Oida, TPH is down!", "Geh schneller, herst!", "Ned tratschen!",
+                "Schleich di!", "Wo is dei Weste?", "Audit, oida!",
+                "Mei Bonus!", "Schneller scannen!", "Des geht si ned aus!",
+                "Gemma, gemma!", "Wos is mit der Rate?", "Zeit is Göd!",
+                "Beweg di, herst!", "Weniger reden!", "Hawara, zack zack!"
+            ],
+            assoc: [
+                "Mei Füße...", "Pause, oida?", "Schachtel schwer...", "Uff...",
+                "Sicherheitsschuhe zwicken", "Wo is HR?", "Brauch Kaffee...",
+                "Vü zu früh...", "Nachtschicht, oida...", "Pizza Party?",
+                "Band frisst mi auf", "Wo is mei Badge?", "Jausen wann?",
+                "Scanner stirbt...", "Im Pack hängen?", "Schicht endet nie"
+            ]
+        },
+        DE: {
+            ops: [
+                "TPH ist runter!", "Schneller laufen!", "Nicht quatschen!",
+                "VTO?", "Scannen scannen!", "Wo ist deine Weste?", "Audit Panik!",
+                "Mein Bonus!", "TOT!", "Schlechte Rate!", "Los geht's!",
+                "Blaue Linie!", "Weniger reden!", "Zeit ist Geld!", "Weniger Leerlauf!",
+                "Metriken schlafen nicht!", "Aufheben!", "In der Spur bleiben!"
+            ],
+            assoc: [
+                "Meine Füße...", "Pause?", "Karton schwer...", "Ugh...",
+                "Sicherheitsschuhe drücken", "Wo ist HR?", "Brauche Kaffee...",
+                "Zu früh...", "Nachtschicht...", "Pizza Party?",
+                "Band frisst mich", "Wo ist mein Badge?", "Snacks wann?",
+                "Scanner stirbt...", "In Pack stecken?", "Schicht endet nie"
+            ]
+        },
+        NL: {
+            ops: [
+                "TPH is laag!", "Sneller lopen!", "Niet kletsen!", "VTO?",
+                "Scannen scannen!", "Waar is je vest?", "Audit paniek!",
+                "Mijn bonus!", "TOT!", "Slechte rate!", "Kom op!",
+                "Blauwe lijn!", "Minder praten!", "Tijd is geld!", "Minder stilstand!",
+                "Metrics slapen niet!", "Oppakken!", "In de baan blijven!"
+            ],
+            assoc: [
+                "Mijn voeten...", "Pauze?", "Doos zwaar...", "Pff...",
+                "Veiligheidsschoenen doen pijn", "Waar is HR?", "Koffie nodig...",
+                "Te vroeg...", "Nachtdienst...", "Pizza feest?",
+                "Band vreet me op", "Waar is mijn badge?", "Snacks wanneer?",
+                "Scanner gaat dood...", "Vast in pack?", "Dienst stopt nooit"
+            ]
+        }
+    }
 };
+
+// Helper to get region-appropriate banter
+function getRegionalBanter(type) {
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : null;
+    // Try region-specific banter first
+    if (region && BANTER_DB.regional[region] && BANTER_DB.regional[region][type]) {
+        // 70% chance to use regional banter, 30% to use generic English
+        if (Math.random() < 0.7) {
+            const regionalLines = BANTER_DB.regional[region][type];
+            return regionalLines[Math.floor(Math.random() * regionalLines.length)];
+        }
+    }
+    // Fall back to generic English banter
+    return BANTER_DB[type][Math.floor(Math.random() * BANTER_DB[type].length)];
+}
 
 // --- CHARACTER DATA ---
 const CHAR_DATA = {
@@ -1255,8 +1321,147 @@ const SIMULATED_AI = {
         "Performance: CATASTROPHIC. Entropy won.",
         "You failed. Gravity and stupidity destroyed us.",
         "Safety is binary. You are a zero."
-    ]
+    ],
+    // Region-specific dialogue for Simon
+    regional: {
+        AT: {
+            runners: [
+                "Halt, oida! Kinetische Energie is ned dei Freund. Langsamer!",
+                "Du bist ka Photon. Du hast Masse. Geh!",
+                "Rennen? I hab Gletscher gsehen die schneller san.",
+                "Mir kämpfen gegen Entropie, ned gegen die Uhr. Geh!"
+            ],
+            taunts: [
+                "Mei Tabellenkalkulation sagt dei Scheitern voraus!",
+                "Du kannst des Audit ned entkommen!",
+                "I bin die finale Vorschrift!",
+                "Compliance sinkt... Kündigung steht bevor!",
+                "Widerstand is a Sicherheitsverletzung!"
+            ],
+            simon_taunts: [
+                "I BIN DER SICHERHEITSSTANDARD!",
+                "DU KANNST DEM AUDIT NED ENTKOMMEN!",
+                "ENTROPIE KOMMT FÜR UNS ALLE!",
+                "DEINE PSA IS UNZUREICHEND!"
+            ],
+            simon_warnings: [
+                "Erste Verwarnung: Hör auf mit die Handbücher zu werfen. Compliance is ka Kontaktsport.",
+                "Letzte Verwarnung: Steck die Regelbücher weg oder i eskalier des Audit zum Bossfight."
+            ],
+            reviews_win: [
+                "Leistung: UNWAHRSCHEINLICH. Du hast überlebt. I bin... angemessen zufrieden.",
+                "Du hast gegen das Chaos gewonnen. Für heit.",
+                "Ausreichend. Nix zum Aufschreiben. Fühlt si komisch an."
+            ],
+            reviews_loss: [
+                "Leistung: KATASTROPHAL. Entropie hat gwonnen.",
+                "Du hast versagt. Schwerkraft und Dummheit haben uns zerstört.",
+                "Sicherheit is binär. Du bist a Null."
+            ]
+        },
+        DE: {
+            runners: [
+                "Halt! Kinetische Energie ist nicht dein Freund. Langsamer!",
+                "Du bist kein Photon. Du hast Masse. Geh!",
+                "Rennen? Ich habe Gletscher gesehen die zielstrebiger waren.",
+                "Wir kämpfen gegen Entropie, nicht gegen die Uhr. Geh!"
+            ],
+            taunts: [
+                "Meine Tabellenkalkulation sagt dein Scheitern voraus!",
+                "Du kannst das Audit nicht entkommen!",
+                "Ich bin die finale Vorschrift!",
+                "Compliance sinkt... Kündigung steht bevor!",
+                "Widerstand ist eine Sicherheitsverletzung!"
+            ],
+            simon_taunts: [
+                "ICH BIN DER SICHERHEITSSTANDARD!",
+                "DU KANNST DEM AUDIT NICHT ENTKOMMEN!",
+                "ENTROPIE KOMMT FÜR UNS ALLE!",
+                "DEINE PSA IST UNZUREICHEND!"
+            ],
+            simon_warnings: [
+                "Erste Verwarnung: Hör auf Handbücher zu werfen. Compliance ist kein Kontaktsport.",
+                "Letzte Verwarnung: Steck die Regelbücher weg oder ich eskaliere dieses Audit zum Bossfight."
+            ],
+            reviews_win: [
+                "Leistung: UNWAHRSCHEINLICH. Du hast überlebt. Ich bin... angemessen zufrieden.",
+                "Du hast gegen das Chaos gewonnen. Für heute.",
+                "Ausreichend. Nichts aufzuschreiben. Fühlt sich seltsam an."
+            ],
+            reviews_loss: [
+                "Leistung: KATASTROPHAL. Entropie hat gewonnen.",
+                "Du hast versagt. Schwerkraft und Dummheit haben uns zerstört.",
+                "Sicherheit ist binär. Du bist eine Null."
+            ]
+        },
+        NL: {
+            runners: [
+                "Stop! Kinetische energie is niet je vriend. Langzamer!",
+                "Je bent geen foton. Je hebt massa. Loop!",
+                "Rennen? Ik heb gletsjers gezien die doelgerichter waren.",
+                "We vechten tegen entropie, niet tegen de klok. Loop!"
+            ],
+            taunts: [
+                "Mijn spreadsheet voorspelt je falen!",
+                "Je kunt de audit niet ontsnappen!",
+                "Ik ben de finale regelgeving!",
+                "Compliance daalt... Ontslag dreigt!",
+                "Weerstand is een veiligheidsovertreding!"
+            ],
+            simon_taunts: [
+                "IK BEN DE VEILIGHEIDSSTANDAARD!",
+                "JE KUNT DE AUDIT NIET ONTSNAPPEN!",
+                "ENTROPIE KOMT VOOR ONS ALLEMAAL!",
+                "JE PBM IS ONVOLDOENDE!"
+            ],
+            simon_warnings: [
+                "Eerste waarschuwing: Stop met handboeken gooien. Compliance is geen contactsport.",
+                "Laatste waarschuwing: Berg die regelboeken op of ik escaleer deze audit naar een baasgevecht."
+            ],
+            reviews_win: [
+                "Prestatie: ONWAARSCHIJNLIJK. Je hebt overleefd. Ik ben... voldoende tevreden.",
+                "Je hebt tegen de chaos gewonnen. Voor vandaag.",
+                "Voldoende. Niets op te schrijven. Voelt vreemd."
+            ],
+            reviews_loss: [
+                "Prestatie: CATASTROFAAL. Entropie heeft gewonnen.",
+                "Je hebt gefaald. Zwaartekracht en domheid hebben ons vernietigd.",
+                "Veiligheid is binair. Jij bent een nul."
+            ]
+        }
+    }
 };
+
+// Helper function to get localized Simon dialogue
+function getLocalizedSimonDialogue(category) {
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : null;
+
+    // Try region-specific dialogue first (80% chance if available)
+    if (region && SIMULATED_AI.regional[region] && SIMULATED_AI.regional[region][category]) {
+        if (Math.random() < 0.8) {
+            return pick(SIMULATED_AI.regional[region][category]);
+        }
+    }
+
+    // Fall back to English
+    return pick(SIMULATED_AI[category] || []);
+}
+
+// Helper function to get localized dialogue by index (for warnings)
+function getLocalizedSimonWarning(index) {
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : null;
+
+    // Try region-specific warning first
+    if (region && SIMULATED_AI.regional[region] && SIMULATED_AI.regional[region].simon_warnings) {
+        const warnings = SIMULATED_AI.regional[region].simon_warnings;
+        if (warnings[index]) return warnings[index];
+    }
+
+    // Fall back to English
+    const defaultWarnings = SIMULATED_AI.simon_warnings || [];
+    return defaultWarnings[index] || defaultWarnings[0] || "";
+}
 
 // Helper function to pick region-specific tips when offline
 function pickRegionTip() {
@@ -1280,88 +1485,253 @@ function pickRegionTip() {
 }
 
 // --- SIMON'S YARD SAFETY TIPS ---
-const SIMON_YARD_TIPS = [
-    "YARD SAFETY ALERT: Always use designated crosswalks. DSP vans have blind spots bigger than their ambition.",
-    "CAUTION: The yard is NOT a shortcut. One associate versus a Prime van equals paperwork I don't want to file.",
-    "REMINDER: Look both ways. Then look again. Those DSP drivers run on caffeine and impossible deadlines.",
-    "YARD PROTOCOL: High-vis vests exist for a reason. Be seen or be statistics.",
-    "CRITICAL: Vehicles have right of way. Your skeleton does not outweigh a delivery quota.",
-    "SAFETY FIRST: If you hear a horn, MOVE. Don't stand there contemplating the meaning of life.",
-    "PRO TIP: Headphones off in the yard. Music won't cushion the blow of a reversing semi.",
-    "AUDIT NOTE: The yard claims more near-misses than I have patience. Stay alert, stay alive."
-];
+const SIMON_YARD_TIPS = {
+    EN: [
+        "YARD SAFETY ALERT: Always use designated crosswalks. DSP vans have blind spots bigger than their ambition.",
+        "CAUTION: The yard is NOT a shortcut. One associate versus a Prime van equals paperwork I don't want to file.",
+        "REMINDER: Look both ways. Then look again. Those DSP drivers run on caffeine and impossible deadlines.",
+        "YARD PROTOCOL: High-vis vests exist for a reason. Be seen or be statistics.",
+        "CRITICAL: Vehicles have right of way. Your skeleton does not outweigh a delivery quota.",
+        "SAFETY FIRST: If you hear a horn, MOVE. Don't stand there contemplating the meaning of life.",
+        "PRO TIP: Headphones off in the yard. Music won't cushion the blow of a reversing semi.",
+        "AUDIT NOTE: The yard claims more near-misses than I have patience. Stay alert, stay alive."
+    ],
+    AT: [
+        "HOF-SICHERHEIT: Immer die Zebrastreifen benutzen, oida. DSP-Transporter haben größere tote Winkel als Ehrgeiz.",
+        "ACHTUNG: Der Hof is ka Abkürzung. Ein Mitarbeiter gegen an Prime-Transporter bedeutet Papierkram, den i ned will.",
+        "ERINNERUNG: Schau links und rechts. Dann nochmal. Die DSP-Fahrer laufen auf Koffein und unmöglichen Deadlines.",
+        "HOF-PROTOKOLL: Warnwesten gibt's aus gutem Grund. Gsehen werden oder Statistik werden.",
+        "KRITISCH: Fahrzeuge haben Vorfahrt. Dei Skelett wiegt ned mehr als a Lieferquote.",
+        "SICHERHEIT ZUERST: Wenn du a Hupe hörst, BEWEG DI. Steh ned rum und denk über den Sinn des Lebens nach.",
+        "PROFI-TIPP: Kopfhörer runter im Hof. Musik dämpft ned den Aufprall eines rückwärtsfahrenden LKWs.",
+        "AUDIT-NOTIZ: Der Hof hat mehr Beinahe-Unfälle als i Geduld hab. Bleib wachsam, bleib am Leben."
+    ],
+    DE: [
+        "HOF-SICHERHEIT: Immer die Zebrastreifen benutzen. DSP-Transporter haben größere tote Winkel als Ehrgeiz.",
+        "ACHTUNG: Der Hof ist keine Abkürzung. Ein Mitarbeiter gegen einen Prime-Transporter bedeutet Papierkram.",
+        "ERINNERUNG: Schau links und rechts. Dann nochmal. Die DSP-Fahrer laufen auf Koffein und unmöglichen Deadlines.",
+        "HOF-PROTOKOLL: Warnwesten gibt es aus gutem Grund. Gesehen werden oder Statistik werden.",
+        "KRITISCH: Fahrzeuge haben Vorfahrt. Dein Skelett wiegt nicht mehr als eine Lieferquote.",
+        "SICHERHEIT ZUERST: Wenn du eine Hupe hörst, BEWEG DICH. Steh nicht rum und denk über den Sinn des Lebens nach.",
+        "PROFI-TIPP: Kopfhörer runter im Hof. Musik dämpft nicht den Aufprall eines rückwärtsfahrenden LKWs.",
+        "AUDIT-NOTIZ: Der Hof hat mehr Beinahe-Unfälle als ich Geduld habe. Bleib wachsam, bleib am Leben."
+    ],
+    NL: [
+        "TERREIN-VEILIGHEID: Gebruik altijd de zebrapaden. DSP-busjes hebben grotere dode hoeken dan ambitie.",
+        "LET OP: Het terrein is GEEN afkorting. Eén medewerker tegen een Prime-bus betekent papierwerk dat ik niet wil doen.",
+        "HERINNERING: Kijk links en rechts. Dan nog een keer. Die DSP-chauffeurs draaien op cafeïne en onmogelijke deadlines.",
+        "TERREIN-PROTOCOL: Veiligheidsvesten bestaan met een reden. Gezien worden of statistiek worden.",
+        "KRITIEK: Voertuigen hebben voorrang. Je skelet weegt niet meer dan een leveringsquota.",
+        "VEILIGHEID EERST: Als je een claxon hoort, BEWEEG. Sta niet stil na te denken over de zin van het leven.",
+        "PRO TIP: Koptelefoon af op het terrein. Muziek dempt de klap van een achteruitrijdende vrachtwagen niet.",
+        "AUDIT NOTITIE: Het terrein heeft meer bijna-ongelukken dan ik geduld heb. Blijf alert, blijf in leven."
+    ]
+};
 
-// --- JEFF YARD TAUNTS ---
-const JEFF_YARD_TAUNTS = [
-    "Come on then! I haven't got all day!",
-    "You call that speed? My grandmother moves faster!",
-    "The yard separates the workers from the WIMPS!",
-    "Every second you waste costs the company money!",
-    "I built this empire from NOTHING!",
-    "You want a raise? EARN IT!",
-    "Keep dodging! It's good entertainment!",
-    "I've seen better coordination from interns!",
-    "Tick tock! Your shift is almost OVER!",
-    "Almost there... just kidding, you'll never make it!",
-    "This is YOUR performance review!",
-    "The trucks don't stop for ANYONE!",
-    "MY DELIVERY FLEET IS UNSTOPPABLE!",
-    "SAFETY? THAT'S NOT IN THE METRICS!",
-    "PRODUCTIVITY OR TERMINATION!",
-    "I CAN SEE YOUR TOT FROM HERE!",
-    "YOUR RATE IS UNACCEPTABLE!",
-    "CUSTOMER OBSESSION DEMANDS SACRIFICE!",
-    "THINK BIG, DIE TRYING!",
-    "NO BATHROOM BREAKS IN MY YARD!",
-    "BIAS FOR ACTION MEANS RUN FASTER!",
-    "I OWN THE CLOUDS AND THE GROUND!"
-];
+// Helper to get localized yard tip
+function getLocalizedYardTip() {
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    const tips = SIMON_YARD_TIPS[region] || SIMON_YARD_TIPS.EN;
+    return pick(tips);
+}
 
-// --- JEFF CASTLE TAUNTS ---
-const JEFF_CASTLE_TAUNTS = [
-    "WELCOME TO MY FORTRESS OF EFFICIENCY!",
-    "THIS CASTLE WAS BUILT ON PRIME SUBSCRIPTIONS!",
-    "EVERY BRICK IS A WORKER'S DREAM... CRUSHED!",
-    "YOU DARE ENTER THE BEZOS DOMAIN?!",
-    "MY TOWERS REACH HIGHER THAN YOUR AMBITIONS!",
-    "I WATCH EVERYTHING FROM UP HERE!",
-    "THE ALGORITHMS DESIGNED THIS MAZE!",
-    "PRODUCTIVITY FLOWS THROUGH THESE HALLS!",
-    "NO UNION CAN SIEGE THESE WALLS!",
-    "MY THRONE AWAITS... BUT YOU WON'T REACH IT!",
-    "THIS IS WHERE WORKERS BECOME... OPTIMIZED!",
-    "EACH STEP YOU TAKE, I GROW STRONGER!",
-    "THE CASTLE IS MY FINAL WAREHOUSE!",
-    "CUSTOMER OBSESSION BUILT THESE STONES!",
-    "FEEL THE WEIGHT OF A TRILLION DOLLARS!",
-    "MY DRONES PATROL THESE CORRIDORS!",
-    "THE EXIT INTERVIEW IS AT THE TOP!",
-    "ONLY THE WORTHY MEET MECHA JEFF!",
-];
+// --- JEFF YARD TAUNTS (Localized) ---
+const JEFF_YARD_TAUNTS = {
+    EN: [
+        "Come on then! I haven't got all day!",
+        "You call that speed? My grandmother moves faster!",
+        "The yard separates the workers from the WIMPS!",
+        "Every second you waste costs the company money!",
+        "I built this empire from NOTHING!",
+        "You want a raise? EARN IT!",
+        "Keep dodging! It's good entertainment!",
+        "I've seen better coordination from interns!",
+        "Tick tock! Your shift is almost OVER!",
+        "Almost there... just kidding, you'll never make it!",
+        "This is YOUR performance review!",
+        "The trucks don't stop for ANYONE!"
+    ],
+    AT: [
+        "Na los, oida! I hab ned den ganzen Tag Zeit!",
+        "Des nennst du schnell? Mei Oma is schneller!",
+        "Der Hof trennt die Hackler von die Weicheier!",
+        "Jede Sekunde kostet die Firma Göd!",
+        "I hab des Imperium aus NIX aufbaut!",
+        "Du willst a Gehaltserhöhung? VERDIEN sie da!",
+        "Weiter ausweichen! Is a guate Unterhaltung!",
+        "I hab bessere Koordination von Praktikanten gsehen!",
+        "Tick tack! Dei Schicht is fast vorbei!",
+        "Fast da... ha, Scherz, du schaffst es nie!",
+        "Des is DEINE Leistungsbeurteilung!",
+        "Die LKWs halten für NIEMANDEN!"
+    ],
+    DE: [
+        "Na los! Ich hab nicht den ganzen Tag Zeit!",
+        "Das nennst du Geschwindigkeit? Meine Oma ist schneller!",
+        "Der Hof trennt die Arbeiter von den WEICHEIERN!",
+        "Jede Sekunde kostet die Firma Geld!",
+        "Ich habe dieses Imperium aus NICHTS aufgebaut!",
+        "Du willst eine Gehaltserhöhung? VERDIEN sie dir!",
+        "Weiter ausweichen! Gute Unterhaltung!",
+        "Ich habe bessere Koordination von Praktikanten gesehen!",
+        "Tick tack! Deine Schicht ist fast vorbei!",
+        "Fast da... nur Spaß, du schaffst es nie!",
+        "Das ist DEINE Leistungsbeurteilung!",
+        "Die LKWs halten für NIEMANDEN!"
+    ],
+    NL: [
+        "Kom op dan! Ik heb niet de hele dag!",
+        "Noem je dat snelheid? Mijn oma is sneller!",
+        "Het terrein scheidt de werkers van de WATJES!",
+        "Elke seconde kost het bedrijf geld!",
+        "Ik heb dit imperium uit NIETS opgebouwd!",
+        "Wil je opslag? VERDIEN het!",
+        "Blijf ontwijken! Leuke entertainment!",
+        "Ik heb betere coördinatie van stagiaires gezien!",
+        "Tik tak! Je dienst is bijna voorbij!",
+        "Bijna... grapje, je haalt het nooit!",
+        "Dit is JOUW functioneringsgesprek!",
+        "De vrachtwagens stoppen voor NIEMAND!"
+    ]
+};
 
-// --- BEZOS TAUNTS FOR BOSS FIGHT ---
-const BEZOS_TAUNTS = [
-    "Work harder, not smarter!",
-    "Day One? Try Day DONE!",
-    "No bathroom breaks in space!",
-    "Prime delivery: FAILURE!",
-    "Your metrics are TERRIBLE!",
-    "Automate or ELIMINATE!",
-    "I'm watching your IDLE TIME!",
-    "Customer obsession DEMANDS speed!",
-    "Move faster! Time is MONEY!",
-    "Safety? I have insurance!",
-    "Be peculiar! Like a PANCAKE!",
-    "Invent and SIMPLIFY your exit!",
-    "Ownership? I own EVERYTHING!",
-    "Bias for ACTION not survival!",
-    "Think BIG or go HOME!",
-    "Frugality means NO raises!",
-    "Deliver RESULTS or get REPLACED!",
-    "Your TOT is UNACCEPTABLE!",
-    "The yard IS the final exam!",
-    "Automation never complains!"
-];
+// --- JEFF CASTLE TAUNTS (Localized) ---
+const JEFF_CASTLE_TAUNTS = {
+    EN: [
+        "WELCOME TO MY FORTRESS OF EFFICIENCY!",
+        "THIS CASTLE WAS BUILT ON PRIME SUBSCRIPTIONS!",
+        "EVERY BRICK IS A WORKER'S DREAM... CRUSHED!",
+        "YOU DARE ENTER THE BEZOS DOMAIN?!",
+        "MY TOWERS REACH HIGHER THAN YOUR AMBITIONS!",
+        "THE ALGORITHMS DESIGNED THIS MAZE!",
+        "NO UNION CAN SIEGE THESE WALLS!",
+        "THIS IS WHERE WORKERS BECOME... OPTIMIZED!",
+        "THE CASTLE IS MY FINAL WAREHOUSE!",
+        "ONLY THE WORTHY MEET MECHA JEFF!"
+    ],
+    AT: [
+        "WILLKOMMEN IN MEINER FESTUNG DER EFFIZIENZ!",
+        "DES SCHLOSS WURDE AUF PRIME-ABOS GEBAUT!",
+        "JEDER ZIEGEL IS A ARBEITERTRAUM... ZERMALMT!",
+        "DU WAGST ES IN DIE BEZOS-DOMÄNE?!",
+        "MEINE TÜRME REICHEN HÖHER ALS DEINE AMBITIONEN!",
+        "DIE ALGORITHMEN HABEN DES LABYRINTH DESIGNT!",
+        "KA GEWERKSCHAFT KANN DIESE MAUERN BELAGERN!",
+        "DO WERDEN ARBEITER... OPTIMIERT!",
+        "DES SCHLOSS IS MEI LETZTES LAGER!",
+        "NUR DIE WÜRDIGEN TREFFEN MECHA JEFF!"
+    ],
+    DE: [
+        "WILLKOMMEN IN MEINER FESTUNG DER EFFIZIENZ!",
+        "DIESES SCHLOSS WURDE AUF PRIME-ABOS GEBAUT!",
+        "JEDER ZIEGEL IST EIN ARBEITERTRAUM... ZERMALMT!",
+        "DU WAGST ES IN DIE BEZOS-DOMÄNE?!",
+        "MEINE TÜRME REICHEN HÖHER ALS DEINE AMBITIONEN!",
+        "DIE ALGORITHMEN HABEN DIESES LABYRINTH DESIGNT!",
+        "KEINE GEWERKSCHAFT KANN DIESE MAUERN BELAGERN!",
+        "HIER WERDEN ARBEITER... OPTIMIERT!",
+        "DAS SCHLOSS IST MEIN LETZTES LAGER!",
+        "NUR DIE WÜRDIGEN TREFFEN MECHA JEFF!"
+    ],
+    NL: [
+        "WELKOM IN MIJN FORT VAN EFFICIËNTIE!",
+        "DIT KASTEEL IS GEBOUWD OP PRIME-ABONNEMENTEN!",
+        "ELKE STEEN IS EEN ARBEIDERSDROOM... VERPLETTERD!",
+        "DURF JE HET BEZOS-DOMEIN TE BETREDEN?!",
+        "MIJN TORENS REIKEN HOGER DAN JE AMBITIES!",
+        "DE ALGORITMES ONTWIERPEN DIT DOOLHOF!",
+        "GEEN VAKBOND KAN DEZE MUREN BELEGEREN!",
+        "HIER WORDEN WERKERS... GEOPTIMALISEERD!",
+        "HET KASTEEL IS MIJN LAATSTE MAGAZIJN!",
+        "ALLEEN DE WAARDIGEN ONTMOETEN MECHA JEFF!"
+    ]
+};
+
+// --- BEZOS TAUNTS FOR BOSS FIGHT (Localized) ---
+const BEZOS_TAUNTS = {
+    EN: [
+        "Work harder, not smarter!",
+        "Day One? Try Day DONE!",
+        "No bathroom breaks in space!",
+        "Prime delivery: FAILURE!",
+        "Your metrics are TERRIBLE!",
+        "Automate or ELIMINATE!",
+        "I'm watching your IDLE TIME!",
+        "Customer obsession DEMANDS speed!",
+        "Move faster! Time is MONEY!",
+        "Safety? I have insurance!",
+        "Ownership? I own EVERYTHING!",
+        "Think BIG or go HOME!",
+        "Deliver RESULTS or get REPLACED!",
+        "Automation never complains!"
+    ],
+    AT: [
+        "Härter hackeln, ned gscheiter!",
+        "Tag Eins? Probier Tag ENDE!",
+        "Ka Klopause im Weltall!",
+        "Prime-Lieferung: VERSAGT!",
+        "Deine Metriken san FURCHTBAR!",
+        "Automatisieren oder ELIMINIEREN!",
+        "I beobacht deine STILLSTANDSZEIT!",
+        "Kundenobsession VERLANGT Tempo!",
+        "Schneller! Zeit is GÖD!",
+        "Sicherheit? I hab a Versicherung!",
+        "Ownership? MIR GHÖRT ALLES!",
+        "Denk GROSS oder geh HAM!",
+        "Liefer ERGEBNISSE oder wirst ERSETZT!",
+        "Automatisierung beschwert si nie!"
+    ],
+    DE: [
+        "Härter arbeiten, nicht schlauer!",
+        "Tag Eins? Versuch Tag ENDE!",
+        "Keine Toilettenpause im Weltall!",
+        "Prime-Lieferung: VERSAGT!",
+        "Deine Metriken sind FURCHTBAR!",
+        "Automatisieren oder ELIMINIEREN!",
+        "Ich beobachte deine STILLSTANDSZEIT!",
+        "Kundenobsession VERLANGT Geschwindigkeit!",
+        "Schneller! Zeit ist GELD!",
+        "Sicherheit? Ich habe Versicherung!",
+        "Ownership? MIR GEHÖRT ALLES!",
+        "Denk GROSS oder geh NACH HAUSE!",
+        "Liefer ERGEBNISSE oder wirst ERSETZT!",
+        "Automatisierung beschwert sich nie!"
+    ],
+    NL: [
+        "Harder werken, niet slimmer!",
+        "Dag Een? Probeer Dag KLAAR!",
+        "Geen toiletpauze in de ruimte!",
+        "Prime-levering: MISLUKT!",
+        "Je metrics zijn VERSCHRIKKELIJK!",
+        "Automatiseren of ELIMINEREN!",
+        "Ik bekijk je STILSTANDTIJD!",
+        "Klantobsessie EIST snelheid!",
+        "Sneller! Tijd is GELD!",
+        "Veiligheid? Ik heb verzekering!",
+        "Eigenaarschap? IK BEZIT ALLES!",
+        "Denk GROOT of ga NAAR HUIS!",
+        "Lever RESULTATEN of word VERVANGEN!",
+        "Automatisering klaagt nooit!"
+    ]
+};
+
+// Helper to get localized Jeff taunt
+function getLocalizedJeffTaunt(type) {
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+
+    if (type === 'yard') {
+        const taunts = JEFF_YARD_TAUNTS[region] || JEFF_YARD_TAUNTS.EN;
+        return pick(taunts);
+    } else if (type === 'castle') {
+        const taunts = JEFF_CASTLE_TAUNTS[region] || JEFF_CASTLE_TAUNTS.EN;
+        return pick(taunts);
+    } else {
+        const taunts = BEZOS_TAUNTS[region] || BEZOS_TAUNTS.EN;
+        return pick(taunts);
+    }
+}
 
 // --- SNARKY CORPORATE GAME OVER MESSAGES ---
 const CORPORATE_GAME_OVER = [
@@ -1501,42 +1871,97 @@ async function callGemini(prompt, category = 'generic', context = {}) {
     }
 }
 
+// Localized bezos_transform fallbacks
+const BEZOS_TRANSFORM_LINES = {
+    EN: [
+        "WITNESS MY TRUE FORM! MECHA JEFF RISES!",
+        "You forced this! BEHOLD MY ULTIMATE POWER!",
+        "NOW YOU DIE! TRANSFORMATION SEQUENCE INITIATED!",
+        "FOOLISH WORKER! FACE MY MECHANICAL MIGHT!",
+        "PRIME TIME IS OVER! EXTINCTION MODE ACTIVATED!"
+    ],
+    AT: [
+        "SIEH MEINE WAHRE FORM! MECHA JEFF ERHEBT SI!",
+        "Du hast des erzwungen! SIEH MEINE ULTIMATIVE MACHT!",
+        "JETZT STIRBST DU! TRANSFORMATIONSSEQUENZ AKTIVIERT!",
+        "DUMMER HACKLER! STELL DI MEINER MECHANISCHEN MACHT!",
+        "PRIME TIME IS VORBEI! AUSLÖSCHUNGSMODUS AKTIVIERT!"
+    ],
+    DE: [
+        "SEHT MEINE WAHRE FORM! MECHA JEFF ERHEBT SICH!",
+        "Du hast das erzwungen! SEHT MEINE ULTIMATIVE MACHT!",
+        "JETZT STIRBST DU! TRANSFORMATIONSSEQUENZ INITIIERT!",
+        "DUMMER ARBEITER! STELL DICH MEINER MECHANISCHEN MACHT!",
+        "PRIME TIME IST VORBEI! AUSLÖSCHUNGSMODUS AKTIVIERT!"
+    ],
+    NL: [
+        "AANSCHOUW MIJN WARE VORM! MECHA JEFF RIJST!",
+        "Jij dwong dit af! AANSCHOUW MIJN ULTIEME KRACHT!",
+        "NU STERF JE! TRANSFORMATIEREEKS GESTART!",
+        "DWAZE WERKER! ONTMOET MIJN MECHANISCHE MACHT!",
+        "PRIME TIME IS VOORBIJ! UITROEIINGSMODUS GEACTIVEERD!"
+    ]
+};
+
+// Localized player_response fallbacks
+const PLAYER_RESPONSE_LINES = {
+    EN: [
+        "Your reign of terror ends here, Bezos!",
+        "The workers will NOT be silenced!",
+        "Time to break your prime directive!",
+        "This delivery is YOUR termination notice!",
+        "No more exploiting workers! Today you fall!"
+    ],
+    AT: [
+        "Deine Schreckensherrschaft endet do, Bezos!",
+        "Die Hackler lassen si ned zum Schweigen bringen!",
+        "Zeit deine Prime-Direktive zu brechen!",
+        "Des is DEINE Kündigung!",
+        "Ka Ausbeutung mehr! Heit fällst du!"
+    ],
+    DE: [
+        "Deine Schreckensherrschaft endet hier, Bezos!",
+        "Die Arbeiter lassen sich NICHT zum Schweigen bringen!",
+        "Zeit deine Prime-Direktive zu brechen!",
+        "Diese Lieferung ist DEINE Kündigung!",
+        "Keine Ausbeutung mehr! Heute fällst du!"
+    ],
+    NL: [
+        "Je schrikbewind eindigt hier, Bezos!",
+        "De werkers zullen NIET zwijgen!",
+        "Tijd om je prime-directief te breken!",
+        "Deze levering is JOUW ontslagbrief!",
+        "Geen uitbuiting meer! Vandaag val je!"
+    ]
+};
+
 function getRandomFallback(prompt, category = 'generic', context = {}) {
     const hazardName = context.hazardName;
     const stats = context.stats;
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const is = (key) => category === key || prompt.includes(key);
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
 
-    if (is("runners")) return pick(SIMULATED_AI.runners);
+    // Use localized Simon dialogue
+    if (is("runners")) return getLocalizedSimonDialogue('runners');
     if (is("simon_warning")) {
-        const warnings = SIMULATED_AI.simon_warnings || [];
-        const idx = Math.min(context.warningIndex || 0, warnings.length - 1);
-        return warnings.length ? warnings[Math.max(0, idx)] : pick(SIMULATED_AI.taunts);
+        const idx = context.warningIndex || 0;
+        return getLocalizedSimonWarning(idx);
     }
     if (is("bezos_taunt") || is("bezos_confrontation")) {
-        return pick(BEZOS_TAUNTS);
+        return getLocalizedJeffTaunt('boss');
     }
     if (is("bezos_transform")) {
-        return pick([
-            "WITNESS MY TRUE FORM! MECHA JEFF RISES!",
-            "You forced this! BEHOLD MY ULTIMATE POWER!",
-            "NOW YOU DIE! TRANSFORMATION SEQUENCE INITIATED!",
-            "FOOLISH WORKER! FACE MY MECHANICAL MIGHT!",
-            "PRIME TIME IS OVER! EXTINCTION MODE ACTIVATED!"
-        ]);
+        const lines = BEZOS_TRANSFORM_LINES[region] || BEZOS_TRANSFORM_LINES.EN;
+        return pick(lines);
     }
     if (is("player_response")) {
-        return pick([
-            "Your reign of terror ends here, Bezos!",
-            "The workers will NOT be silenced!",
-            "Time to break your prime directive!",
-            "This delivery is YOUR termination notice!",
-            "No more exploiting workers! Today you fall!"
-        ]);
+        const lines = PLAYER_RESPONSE_LINES[region] || PLAYER_RESPONSE_LINES.EN;
+        return pick(lines);
     }
     if (is("taunt")) {
-         if(prompt.includes("Simon")) return pick(SIMULATED_AI.simon_taunts);
-         return pick(SIMULATED_AI.taunts);
+         if(prompt.includes("Simon")) return getLocalizedSimonDialogue('simon_taunts');
+         return getLocalizedSimonDialogue('taunts');
     }
     if ((is("reviews_loss") || is("reviews_win")) && stats) {
         const time = stats.time ?? "?";
@@ -1548,15 +1973,15 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
         }
         return `Victory recap: ${hazards}/5 hazards cleared in ${time} seconds, ${books} rule books launched, ${ops} ops redirected. Celebrate, then keep exits clear.`;
     }
-    if (is("reviews_loss")) return pick(SIMULATED_AI.reviews_loss);
-    if (is("reviews_win")) return pick(SIMULATED_AI.reviews_win);
+    if (is("reviews_loss")) return getLocalizedSimonDialogue('reviews_loss');
+    if (is("reviews_win")) return getLocalizedSimonDialogue('reviews_win');
     if (is("hazard") || is("tips")) {
         if(hazardName) return `Hazard "${hazardName}" cleared. Paperwork avoided.`;
         // Prioritize region-specific tips when available
         return pickRegionTip();
     }
-    if (is("banter_ops")) return pick(BANTER_DB.ops);
-    if (is("banter_assoc")) return pick(BANTER_DB.assoc);
+    if (is("banter_ops")) return getRegionalBanter('ops');
+    if (is("banter_assoc")) return getRegionalBanter('assoc');
 
     return pickRegionTip();
 }
@@ -1573,7 +1998,40 @@ const TTSSys = {
     voice: null,
     maleVoice: null,
     femaleVoice: null,
+    // Localized voices for different regions
+    germanMaleVoice: null,
+    germanFemaleVoice: null,
+    dutchMaleVoice: null,
+    dutchFemaleVoice: null,
     voices: [],
+    // Map game region to TTS language code
+    getRegionLang: function() {
+        if (typeof GAME === 'undefined' || !GAME.region) return 'en-US';
+        switch (GAME.region) {
+            case 'DE': return 'de-DE';
+            case 'AT': return 'de-DE'; // Austrian German uses de-DE
+            case 'NL': return 'nl-NL';
+            default: return 'en-US';
+        }
+    },
+    // Get appropriate voice for region and gender
+    getLocalizedVoice: function(gender = "neutral") {
+        const lang = this.getRegionLang();
+        if (lang === 'de-DE') {
+            if (gender === "male" && this.germanMaleVoice) return this.germanMaleVoice;
+            if (gender === "female" && this.germanFemaleVoice) return this.germanFemaleVoice;
+            return this.germanMaleVoice || this.germanFemaleVoice;
+        }
+        if (lang === 'nl-NL') {
+            if (gender === "male" && this.dutchMaleVoice) return this.dutchMaleVoice;
+            if (gender === "female" && this.dutchFemaleVoice) return this.dutchFemaleVoice;
+            return this.dutchMaleVoice || this.dutchFemaleVoice;
+        }
+        // English fallback
+        if (gender === "male" && this.maleVoice) return this.maleVoice;
+        if (gender === "female" && this.femaleVoice) return this.femaleVoice;
+        return this.voice;
+    },
     // Character voice configurations: pitch (0.1-2), rate (0.1-10), volume (0-1), gender preference
     characterVoices: {
         // Main characters - varied voices
@@ -1604,7 +2062,8 @@ const TTSSys = {
     init: function() {
         const loadVoices = () => {
             this.voices = this.synth.getVoices();
-            // Prioritize English voices - force English language
+
+            // English voices (fallback)
             const englishVoices = this.voices.filter(v =>
                 v.lang.startsWith('en') || v.name.includes('English')
             );
@@ -1614,8 +2073,7 @@ const TTSSys = {
                 || englishVoices.find(v => v.lang.startsWith('en'))
                 || this.voices[0];
 
-            // Try to find distinct male and female voices
-            // Male voice: look for male, David, or lower-numbered voices
+            // Try to find distinct male and female English voices
             this.maleVoice = englishVoices.find(v => v.name.toLowerCase().includes('male') && !v.name.toLowerCase().includes('female'))
                 || englishVoices.find(v => v.name.includes('David'))
                 || englishVoices.find(v => v.name.includes('Daniel'))
@@ -1623,13 +2081,54 @@ const TTSSys = {
                 || englishVoices.find(v => v.name.includes('Alex'))
                 || this.voice;
 
-            // Female voice: look for female, Samantha, or higher-pitched voices
             this.femaleVoice = englishVoices.find(v => v.name.toLowerCase().includes('female'))
                 || englishVoices.find(v => v.name.includes('Samantha'))
                 || englishVoices.find(v => v.name.includes('Victoria'))
                 || englishVoices.find(v => v.name.includes('Karen'))
                 || englishVoices.find(v => v.name.includes('Moira'))
                 || this.voice;
+
+            // German voices for DE/AT regions
+            const germanVoices = this.voices.filter(v =>
+                v.lang.startsWith('de') || v.name.includes('German') || v.name.includes('Deutsch')
+            );
+            if (germanVoices.length > 0) {
+                // Prefer Google German, then de-DE voices
+                const defaultGerman = germanVoices.find(v => v.name.includes("Google Deutsch"))
+                    || germanVoices.find(v => v.lang === 'de-DE')
+                    || germanVoices[0];
+
+                this.germanMaleVoice = germanVoices.find(v => v.name.toLowerCase().includes('male') && !v.name.toLowerCase().includes('female'))
+                    || germanVoices.find(v => v.name.includes('Hans'))
+                    || germanVoices.find(v => v.name.includes('Stefan'))
+                    || defaultGerman;
+
+                this.germanFemaleVoice = germanVoices.find(v => v.name.toLowerCase().includes('female'))
+                    || germanVoices.find(v => v.name.includes('Anna'))
+                    || germanVoices.find(v => v.name.includes('Petra'))
+                    || germanVoices.find(v => v.name.includes('Marlene'))
+                    || defaultGerman;
+            }
+
+            // Dutch voices for NL region
+            const dutchVoices = this.voices.filter(v =>
+                v.lang.startsWith('nl') || v.name.includes('Dutch') || v.name.includes('Nederlands')
+            );
+            if (dutchVoices.length > 0) {
+                // Prefer Google Dutch, then nl-NL voices
+                const defaultDutch = dutchVoices.find(v => v.name.includes("Google Nederlands"))
+                    || dutchVoices.find(v => v.lang === 'nl-NL')
+                    || dutchVoices[0];
+
+                this.dutchMaleVoice = dutchVoices.find(v => v.name.toLowerCase().includes('male') && !v.name.toLowerCase().includes('female'))
+                    || dutchVoices.find(v => v.name.includes('Xander'))
+                    || defaultDutch;
+
+                this.dutchFemaleVoice = dutchVoices.find(v => v.name.toLowerCase().includes('female'))
+                    || dutchVoices.find(v => v.name.includes('Ellen'))
+                    || dutchVoices.find(v => v.name.includes('Fleur'))
+                    || defaultDutch;
+            }
         };
         if (this.synth.onvoiceschanged !== undefined) this.synth.onvoiceschanged = loadVoices;
         loadVoices();
@@ -1649,19 +2148,27 @@ const TTSSys = {
         this.synth.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
 
-        // Force English language
-        utterance.lang = 'en-US';
+        // Set language based on game region (de-DE for DE/AT, nl-NL for NL, en-US fallback)
+        const regionLang = this.getRegionLang();
+        utterance.lang = regionLang;
 
         // Apply character-specific voice settings
         const config = this.getVoiceConfig(speakerName);
 
-        // Select appropriate voice based on gender
-        if (config.gender === "male" && this.maleVoice) {
-            utterance.voice = this.maleVoice;
-        } else if (config.gender === "female" && this.femaleVoice) {
-            utterance.voice = this.femaleVoice;
-        } else if (this.voice) {
-            utterance.voice = this.voice;
+        // Try to use localized voice based on region
+        const localizedVoice = this.getLocalizedVoice(config.gender);
+        if (localizedVoice) {
+            utterance.voice = localizedVoice;
+        } else {
+            // Fallback to English voices if no localized voice available
+            utterance.lang = 'en-US';
+            if (config.gender === "male" && this.maleVoice) {
+                utterance.voice = this.maleVoice;
+            } else if (config.gender === "female" && this.femaleVoice) {
+                utterance.voice = this.femaleVoice;
+            } else if (this.voice) {
+                utterance.voice = this.voice;
+            }
         }
 
         utterance.pitch = config.pitch;
@@ -1680,18 +2187,28 @@ const TTSSys = {
     queue: function(text, speakerName = "System") {
         if (!this.synth || !text) return;
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
+
+        // Set language based on game region (de-DE for DE/AT, nl-NL for NL, en-US fallback)
+        const regionLang = this.getRegionLang();
+        utterance.lang = regionLang;
 
         // Apply character-specific voice settings
         const config = this.getVoiceConfig(speakerName);
 
-        // Select appropriate voice based on gender
-        if (config.gender === "male" && this.maleVoice) {
-            utterance.voice = this.maleVoice;
-        } else if (config.gender === "female" && this.femaleVoice) {
-            utterance.voice = this.femaleVoice;
-        } else if (this.voice) {
-            utterance.voice = this.voice;
+        // Try to use localized voice based on region
+        const localizedVoice = this.getLocalizedVoice(config.gender);
+        if (localizedVoice) {
+            utterance.voice = localizedVoice;
+        } else {
+            // Fallback to English voices if no localized voice available
+            utterance.lang = 'en-US';
+            if (config.gender === "male" && this.maleVoice) {
+                utterance.voice = this.maleVoice;
+            } else if (config.gender === "female" && this.femaleVoice) {
+                utterance.voice = this.femaleVoice;
+            } else if (this.voice) {
+                utterance.voice = this.voice;
+            }
         }
 
         utterance.pitch = config.pitch;
@@ -4426,7 +4943,58 @@ function generateAssets() {
         ctx.stroke();
     });
 
-    // DVI1 Sign (Austria warehouse code)
+    // Region-specific warehouse codes and country names
+    const WAREHOUSE_SIGNS = {
+        AT: { code: 'DVI1', country: 'AUSTRIA', flag: ['#ed1c24', '#ffffff', '#ed1c24'] },
+        DE: { code: 'DMU3', country: 'GERMANY', flag: ['#000000', '#dd0000', '#ffcc00'] },
+        NL: { code: 'DNL1', country: 'NETHERLANDS', flag: ['#ae1c28', '#ffffff', '#21468b'] }
+    };
+
+    // Helper to get current region's warehouse info
+    GFX.getWarehouseInfo = function() {
+        const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'AT';
+        return WAREHOUSE_SIGNS[region] || WAREHOUSE_SIGNS.AT;
+    };
+
+    // Function to regenerate region-specific signs (called when region changes)
+    GFX.regenerateRegionSigns = function() {
+        const info = GFX.getWarehouseInfo();
+
+        // Regenerate warehouse code sign
+        GFX.signDVI1 = c(32,16, ctx => {
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(0,0,32,16);
+            ctx.fillStyle = '#374151';
+            ctx.fillRect(1,1,30,14);
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(2,2,28,12);
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = 'bold 10px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(info.code, 16, 12);
+        });
+
+        // Regenerate country location sign with flag colors
+        GFX.signAustria = c(32,16, ctx => {
+            // Draw flag stripes
+            ctx.fillStyle = info.flag[0];
+            ctx.fillRect(0,0,32,5);
+            ctx.fillStyle = info.flag[1];
+            ctx.fillRect(0,5,32,6);
+            ctx.fillStyle = info.flag[2];
+            ctx.fillRect(0,11,32,5);
+            // Country name overlay
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(4,4,24,8);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 5px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(info.country, 16, 10);
+        });
+    };
+
+    // Initial warehouse code sign (Austria default)
     GFX.signDVI1 = c(32,16, ctx => {
         ctx.fillStyle = '#1f2937';
         ctx.fillRect(0,0,32,16);
@@ -4441,18 +5009,20 @@ function generateAssets() {
         ctx.fillText('DVI1', 16, 12);
     });
 
-    // Austria location sign
+    // Initial country location sign (Austria default)
     GFX.signAustria = c(32,16, ctx => {
+        // Austrian flag colors (red-white-red)
         ctx.fillStyle = '#ed1c24';
         ctx.fillRect(0,0,32,5);
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0,5,32,6);
         ctx.fillStyle = '#ed1c24';
         ctx.fillRect(0,11,32,5);
+        // Country name overlay
         ctx.fillStyle = '#1f2937';
         ctx.fillRect(4,4,24,8);
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 6px monospace';
+        ctx.font = 'bold 5px monospace';
         ctx.textAlign = 'center';
         ctx.fillText('AUSTRIA', 16, 10);
     });
@@ -5868,6 +6438,10 @@ function handleAction() {
     if (GAME.state === 'PRESS_START') {
         // Set the selected region before advancing
         GAME.region = GAME.regionList[GAME.regionIndex];
+        // Regenerate dynamic signs for the selected region
+        if (GFX.regenerateRegionSigns) GFX.regenerateRegionSigns();
+        // Reinitialize TTS for the selected region's language
+        if (TTSSys.init) TTSSys.init();
         advanceState(); // Move to LOGO state and start intro music
         return;
     }
@@ -6431,8 +7005,8 @@ function startYardLevel() {
     GAME.floatingTexts = [];
     // Don't start yard music here - it will start when Simon's safety speech dialog closes
 
-    // Show Simon's yard safety tip
-    const safetyTip = SIMON_YARD_TIPS[Math.floor(Math.random() * SIMON_YARD_TIPS.length)];
+    // Show Simon's yard safety tip (localized)
+    const safetyTip = getLocalizedYardTip();
     showDialog(safetyTip, "Simon", GFX.simonFaceLarge, true);
     GAME.nextState = 'YARD_LEVEL';
 }
@@ -8520,6 +9094,18 @@ function getRegionSafetyContext() {
 
 function getRegionName() {
     return GAME.regionNames[GAME.region] || 'Europe';
+}
+
+// Get warehouse code based on region (DVI1 for AT, DMU3 for DE, DNL1 for NL)
+function getWarehouseCode() {
+    const codes = { AT: 'DVI1', DE: 'DMU3', NL: 'DNL1' };
+    return codes[GAME.region] || 'DVI1';
+}
+
+// Get country name for warehouse signs
+function getWarehouseCountry() {
+    const countries = { AT: 'AUSTRIA', DE: 'GERMANY', NL: 'NETHERLANDS' };
+    return countries[GAME.region] || 'AUSTRIA';
 }
 
 function tryInteract() {
@@ -10931,50 +11517,82 @@ function drawMechaSimonSplash() {
     ctx.textAlign = 'left';
 }
 
-// === BEZOS ESCAPE SEQUENCE ===
+// === BEZOS ESCAPE SEQUENCE (Localized) ===
 // Mecha Jeff's defeat one-liner (shown right after defeat)
-const MECHA_JEFF_DEFEAT_LINE = {
-    speaker: "Mecha Jeff",
-    portrait: "mechaJeff",
-    text: "CRITICAL... SYSTEM... FAILURE! But you haven't won yet, worker ant! My TRUE form awaits..."
+const MECHA_JEFF_DEFEAT_LINES = {
+    EN: "CRITICAL... SYSTEM... FAILURE! But you haven't won yet, worker ant! My TRUE form awaits...",
+    AT: "KRITISCHER... SYSTEM... AUSFALL! Aber du hast no ned gwonnen, Hacklerameise! Meine WAHRE Form wartet...",
+    DE: "KRITISCHER... SYSTEM... AUSFALL! Aber du hast noch nicht gewonnen, Arbeiterameise! Meine WAHRE Form wartet...",
+    NL: "KRITIEKE... SYSTEEM... FOUT! Maar je hebt nog niet gewonnen, werkiermier! Mijn WARE vorm wacht..."
 };
+
+function getMechaJeffDefeatLine() {
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    return {
+        speaker: "Mecha Jeff",
+        portrait: "mechaJeff",
+        text: MECHA_JEFF_DEFEAT_LINES[region] || MECHA_JEFF_DEFEAT_LINES.EN
+    };
+}
 
 // Jeff Bezos one-liner after transforming back (shown after de-mecha transformation)
-const JEFF_TRANSFORM_LINE = {
-    speaker: "Jeff Bezos",
-    portrait: "jeffYard",
-    text: "Ugh! That mecha suit cost more than your entire BLOODLINE! No matter... I have a BACKUP plan!"
+const JEFF_TRANSFORM_LINES = {
+    EN: "Ugh! That mecha suit cost more than your entire BLOODLINE! No matter... I have a BACKUP plan!",
+    AT: "Pfui! Der Mecha-Anzug hat mehr kost als deine ganze BLUTLINIE! Egal... i hab an BACKUP-Plan!",
+    DE: "Pfui! Der Mecha-Anzug hat mehr gekostet als deine ganze BLUTLINIE! Egal... ich habe einen BACKUP-Plan!",
+    NL: "Bah! Dat mechapak kostte meer dan je hele BLOEDLIJN! Maakt niet uit... ik heb een BACK-UP plan!"
 };
 
-// Snarky dialogue exchange during/after rocket escape
-const BEZOS_ESCAPE_DIALOGUES = [
-    {
+function getJeffTransformLine() {
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    return {
         speaker: "Jeff Bezos",
         portrait: "jeffYard",
-        text: "Ha! You think this is over? I've got a rocket for EXACTLY this situation! Customer obsession includes ME escaping!"
-    },
-    {
-        speaker: GAME?.selectedChar || "Player",
-        portrait: "player",
-        text: "Running away? That's NOT very 'Day One' of you, Bezos! What happened to 'bias for action'?"
-    },
-    {
-        speaker: "Jeff Bezos",
-        portrait: "jeffYard",
-        text: "I'm not running, I'm PIVOTING! To space! Where there are no unions, no bathroom breaks, and NO SAFETY COORDINATORS!"
-    },
-    {
-        speaker: GAME?.selectedChar || "Player",
-        portrait: "player",
-        text: "Go on then! We'll send the safety violations to orbit! Workers 1, Billionaire Bald Guy 0!"
-    },
-    {
-        speaker: "Jeff Bezos",
-        portrait: "jeffYard",
-        text: "This isn't goodbye... it's 'See you in the next Prime Day'! BEZOS AWAAAAAY!",
-        final: true
-    }
-];
+        text: JEFF_TRANSFORM_LINES[region] || JEFF_TRANSFORM_LINES.EN
+    };
+}
+
+// Snarky dialogue exchange during/after rocket escape (Localized)
+const BEZOS_ESCAPE_TEXTS = {
+    EN: [
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Ha! You think this is over? I've got a rocket for EXACTLY this situation! Customer obsession includes ME escaping!" },
+        { speaker: "player", portrait: "player", text: "Running away? That's NOT very 'Day One' of you, Bezos! What happened to 'bias for action'?" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "I'm not running, I'm PIVOTING! To space! Where there are no unions, no bathroom breaks, and NO SAFETY COORDINATORS!" },
+        { speaker: "player", portrait: "player", text: "Go on then! We'll send the safety violations to orbit! Workers 1, Billionaire Bald Guy 0!" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "This isn't goodbye... it's 'See you in the next Prime Day'! BEZOS AWAAAAAY!", final: true }
+    ],
+    AT: [
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Ha! Glaubst des is vorbei? I hab a Rakete für GENAU so a Situation! Kundenobsession schließt MEIN Entkommen ein!" },
+        { speaker: "player", portrait: "player", text: "Wegrennen? Des is ned sehr 'Tag Eins' von dir, Bezos! Wos is mit 'Bias for Action' passiert?" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "I renn ned, i PIVOTIER! Ins Weltall! Wo's ka Gewerkschaften, ka Klopausen und KA SICHERHEITSKOORDINATOREN gibt!" },
+        { speaker: "player", portrait: "player", text: "Dann hau ab! Mir schicken die Sicherheitsverstöße in die Umlaufbahn! Hackler 1, Milliardärs-Glatzkopf 0!" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Des is ka Abschied... es is 'Bis zum nächsten Prime Day'! BEZOS ABFLUUUUG!", final: true }
+    ],
+    DE: [
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Ha! Glaubst du das ist vorbei? Ich habe eine Rakete für GENAU diese Situation! Kundenobsession schließt MEIN Entkommen ein!" },
+        { speaker: "player", portrait: "player", text: "Wegrennen? Das ist NICHT sehr 'Tag Eins' von dir, Bezos! Was ist mit 'Bias for Action' passiert?" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Ich renne nicht, ich PIVOTIERE! Ins Weltall! Wo es keine Gewerkschaften, keine Toilettenpausen und KEINE SICHERHEITSKOORDINATOREN gibt!" },
+        { speaker: "player", portrait: "player", text: "Dann hau ab! Wir schicken die Sicherheitsverstöße in die Umlaufbahn! Arbeiter 1, Milliardärs-Glatzkopf 0!" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Das ist kein Abschied... es ist 'Bis zum nächsten Prime Day'! BEZOS ABFLUUUUG!", final: true }
+    ],
+    NL: [
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Ha! Denk je dat dit voorbij is? Ik heb een raket voor PRECIES deze situatie! Klantobsessie omvat MIJN ontsnapping!" },
+        { speaker: "player", portrait: "player", text: "Wegrennen? Dat is NIET erg 'Dag Eén' van je, Bezos! Wat is er met 'bias for action' gebeurd?" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Ik ren niet, ik PIVOT! Naar de ruimte! Waar geen vakbonden zijn, geen toiletpauzes, en GEEN VEILIGHEIDSCOÖRDINATOREN!" },
+        { speaker: "player", portrait: "player", text: "Ga dan maar! We sturen de veiligheidsovertredingen naar de baan! Werkers 1, Miljardair Kale Kerel 0!" },
+        { speaker: "Jeff Bezos", portrait: "jeffYard", text: "Dit is geen afscheid... het is 'Tot de volgende Prime Day'! BEZOS WEEEEEG!", final: true }
+    ]
+};
+
+function getBezosEscapeDialogues() {
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    const texts = BEZOS_ESCAPE_TEXTS[region] || BEZOS_ESCAPE_TEXTS.EN;
+    // Replace "player" speaker with actual selected character
+    return texts.map(d => ({
+        ...d,
+        speaker: d.speaker === "player" ? (GAME?.selectedChar || "Player") : d.speaker
+    }));
+}
 
 function updateBezosEscape() {
     GAME.stateTimer++;
@@ -10991,7 +11609,8 @@ function updateBezosEscape() {
             scene.phaseTimer = 0;
             // Show Mecha Jeff's defeat one-liner
             GAME.dialogBackgroundState = 'BEZOS_ESCAPE';
-            showDialog(MECHA_JEFF_DEFEAT_LINE.text, MECHA_JEFF_DEFEAT_LINE.speaker, GFX.mechaJeff, true);
+            const defeatLine = getMechaJeffDefeatLine();
+            showDialog(defeatLine.text, defeatLine.speaker, GFX.mechaJeff, true);
             GAME.nextState = 'BEZOS_ESCAPE_MECHA_LINE';
         }
     }
@@ -11059,7 +11678,8 @@ function updateBezosEscape() {
             scene.phaseTimer = 0;
             // Show Jeff's one-liner after transformation
             GAME.dialogBackgroundState = 'BEZOS_ESCAPE';
-            showDialog(JEFF_TRANSFORM_LINE.text, JEFF_TRANSFORM_LINE.speaker, GFX.jeffYard, true);
+            const transformLine = getJeffTransformLine();
+            showDialog(transformLine.text, transformLine.speaker, GFX.jeffYard, true);
             GAME.nextState = 'BEZOS_ESCAPE_JEFF_LINE';
         }
     }
@@ -11188,39 +11808,38 @@ function updateBezosEscape() {
     }
 }
 
+// Localized Simon congratulations after Bezos defeat
+const SIMON_BEZOS_CONGRATS = {
+    EN: 'OUTSTANDING! You actually did it! You defeated the corporate overlord himself! This calls for a celebration... and possibly a promotion. The warehouse is finally safe from maniacal billionaire tyranny!',
+    AT: 'HERVORRAGEND! Du hast es tatsächlich gschafft! Du hast den Konzernherrn persönlich besiegt! Des verdient a Feier... und vielleicht a Beförderung. Das Lager is endlich sicher vor wahnsinniger Milliardärstyrannei!',
+    DE: 'HERVORRAGEND! Du hast es tatsächlich geschafft! Du hast den Konzernherren persönlich besiegt! Das verdient eine Feier... und vielleicht eine Beförderung. Das Lager ist endlich sicher vor wahnsinniger Milliardärstyrannei!',
+    NL: 'UITSTEKEND! Je hebt het echt gedaan! Je hebt de bedrijfsoverlord zelf verslagen! Dit vraagt om een feestje... en misschien een promotie. Het magazijn is eindelijk veilig voor waanzinnige miljardairstirannie!'
+};
+
 function showBezosEscapeDialogue(index) {
-    if (index >= BEZOS_ESCAPE_DIALOGUES.length) {
+    const dialogues = getBezosEscapeDialogues();
+
+    if (index >= dialogues.length) {
         // All dialogues done, move to Simon joining (phase 8)
         GAME.escapeScene.phase = 8;
         GAME.escapeScene.phaseTimer = 0;
-        // Show Simon's congratulations
+        // Show Simon's congratulations (localized)
+        const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+        const congratsText = SIMON_BEZOS_CONGRATS[region] || SIMON_BEZOS_CONGRATS.EN;
         GAME.dialogBackgroundState = 'BEZOS_ESCAPE';
-        showDialog(
-            'OUTSTANDING! You actually did it! You defeated the corporate overlord himself! ' +
-            'This calls for a celebration... and possibly a promotion. ' +
-            'The warehouse is finally safe from maniacal billionaire tyranny!',
-            'Simon',
-            GFX.simonFaceLarge,
-            false
-        );
+        showDialog(congratsText, 'Simon', GFX.simonFaceLarge, false);
         GAME.nextState = 'BEZOS_ESCAPE'; // Stay in escape to continue animation
         return;
     }
 
-    const dialogue = BEZOS_ESCAPE_DIALOGUES[index];
+    const dialogue = dialogues[index];
     let portrait = GFX.jeffYard;
     if (dialogue.portrait === 'player') {
         portrait = GFX.chars[GAME.selectedChar];
     }
 
-    // Update speaker name for player
-    let speaker = dialogue.speaker;
-    if (dialogue.portrait === 'player') {
-        speaker = GAME.selectedChar;
-    }
-
     GAME.dialogBackgroundState = 'BEZOS_ESCAPE';
-    showDialog(dialogue.text, speaker, portrait, true);
+    showDialog(dialogue.text, dialogue.speaker, portrait, true);
     GAME.escapeScene.dialogueStep = index;
     GAME.nextState = 'BEZOS_ESCAPE_DIALOGUE'; // Special state for escape dialogue continuation
 }
@@ -12722,18 +13341,19 @@ function draw() {
         ctx.lineWidth = 1;
         ctx.strokeRect(17, 27, canvas.width - 34, canvas.height - 59);
 
-        // Title with glow effect
+        // Title with glow effect - uses dynamic warehouse code
         ctx.textAlign = 'center';
         const glowIntensity = Math.sin(t * 0.08) * 0.3 + 0.7;
         ctx.shadowColor = '#ff9900';
         ctx.shadowBlur = 12 * glowIntensity;
         ctx.font = '14px "Press Start 2P"';
+        const warehouseCode = getWarehouseCode();
         ctx.fillStyle = '#7c2d12';
-        ctx.fillText('DVI1', canvas.width / 2 + 2, 52);
+        ctx.fillText(warehouseCode, canvas.width / 2 + 2, 52);
         ctx.fillStyle = '#ea580c';
-        ctx.fillText('DVI1', canvas.width / 2 + 1, 51);
+        ctx.fillText(warehouseCode, canvas.width / 2 + 1, 51);
         ctx.fillStyle = '#fbbf24';
-        ctx.fillText('DVI1', canvas.width / 2, 50);
+        ctx.fillText(warehouseCode, canvas.width / 2, 50);
         ctx.shadowBlur = 0;
 
         // Subtitle
