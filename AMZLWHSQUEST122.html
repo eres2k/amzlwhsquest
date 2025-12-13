@@ -7264,7 +7264,7 @@ function handleAction() {
                 const returnedCount = GAME.ppeUnlocked.length;
                 GAME.ppeUnlocked = [];
                 AudioSys.sfx.fix();
-                spawnFloatingText(canvas.width / 2, canvas.height / 2, "+" + totalRefund + " SP!", "#22c55e");
+                spawnFloatingText(canvas.width / 2, canvas.height / 2, "+" + totalRefund + " " + getLocalizedText('sp_short') + "!", "#22c55e");
 
                 // Call AI for witty return comment
                 const regionName = getRegionName();
@@ -8367,7 +8367,7 @@ function updateYardPowerUps() {
                 GAME.playerPowerUp = 'speed';
                 GAME.powerUpTimer = 300; // 5 seconds
                 p.speed = getCharStats(GAME.selectedChar).speed * 1.5;
-                spawnFloatingText(p.x, p.y - 16, "SPEED BOOST!", "#22d3ee");
+                spawnFloatingText(p.x, p.y - 16, getLocalizedText('speed_boost'), "#22d3ee");
             } else if (pu.type === 'shield') {
                 GAME.playerPowerUp = 'shield';
                 GAME.powerUpTimer = 180; // 3 seconds
@@ -10091,41 +10091,256 @@ function hasPPEBuff(buffType) {
     return getPPEBuffValue(buffType) > 0;
 }
 
-// === LOCALIZED SHOP MESSAGES ===
-function getShopMessage(key) {
-    const messages = {
-        'already_owned': {
-            'EN': 'Already equipped! This PPE is in your loadout.',
-            'DE': 'Bereits ausgerüstet! Diese PSA ist in deiner Ausrüstung.',
-            'AT': 'Schon drinn! Die PSA hast scho in deiner Ausrüstung, oida.',
-            'NL': 'Al uitgerust! Deze PBM zit in je uitrusting.'
-        },
-        'insufficient_points': {
-            'EN': 'Insufficient Safety Points! Fix more hazards.',
-            'DE': 'Nicht genug Sicherheitspunkte! Behebe mehr Gefahren.',
-            'AT': 'Ned genug Sicherheitspunkte! Fix mehr Gefahren, herst.',
-            'NL': 'Onvoldoende Veiligheidspunten! Los meer gevaren op.'
-        },
-        'no_items_to_return': {
-            'EN': 'No PPE to return! Your locker is empty.',
-            'DE': 'Keine PSA zum Zurückgeben! Dein Spind ist leer.',
-            'AT': 'Nix zum Zurückgeben! Dein Spind is leer, oida.',
-            'NL': 'Geen PBM om terug te geven! Je kluisje is leeg.'
-        },
-        'select_ppe': {
-            'EN': 'Select PPE to view safety regulations...',
-            'DE': 'PSA auswählen für Sicherheitsvorschriften...',
-            'AT': 'PSA auswählen für Sicherheitsvorschriften...',
-            'NL': 'Selecteer PBM voor veiligheidsvoorschriften...'
-        }
-    };
+// === LOCALIZED UI TEXT SYSTEM ===
+const UI_TEXT = {
+    // Shop messages
+    'already_owned': {
+        'EN': 'Already equipped! This PPE is in your loadout.',
+        'DE': 'Bereits ausgerüstet! Diese PSA ist in deiner Ausrüstung.',
+        'AT': 'Schon drinn! Die PSA hast scho in deiner Ausrüstung, oida.',
+        'NL': 'Al uitgerust! Deze PBM zit in je uitrusting.'
+    },
+    'insufficient_points': {
+        'EN': 'Insufficient Safety Points! Fix more hazards.',
+        'DE': 'Nicht genug Sicherheitspunkte! Behebe mehr Gefahren.',
+        'AT': 'Ned genug Sicherheitspunkte! Fix mehr Gefahren, herst.',
+        'NL': 'Onvoldoende Veiligheidspunten! Los meer gevaren op.'
+    },
+    'no_items_to_return': {
+        'EN': 'No PPE to return! Your locker is empty.',
+        'DE': 'Keine PSA zum Zurückgeben! Dein Spind ist leer.',
+        'AT': 'Nix zum Zurückgeben! Dein Spind is leer, oida.',
+        'NL': 'Geen PBM om terug te geven! Je kluisje is leeg.'
+    },
+    'select_ppe': {
+        'EN': 'Select PPE to view safety regulations...',
+        'DE': 'PSA auswählen für Sicherheitsvorschriften...',
+        'AT': 'PSA auswählen für Sicherheitsvorschriften...',
+        'NL': 'Selecteer PBM voor veiligheidsvoorschriften...'
+    },
+    // PPE Vending Machine
+    'ppe_vending': {
+        'EN': 'PPE VENDING',
+        'DE': 'PSA-AUTOMAT',
+        'AT': 'PSA-AUTOMAT',
+        'NL': 'PBM AUTOMAAT'
+    },
+    'ppe_machine': {
+        'EN': 'MACHINE',
+        'DE': 'MASCHINE',
+        'AT': 'MASCHINE',
+        'NL': 'MACHINE'
+    },
+    'spend_safety_points': {
+        'EN': 'Spend Safety Points on',
+        'DE': 'Sicherheitspunkte ausgeben für',
+        'AT': 'Sicherheitspunkte ausgeben für',
+        'NL': 'Besteed Veiligheidspunten aan'
+    },
+    'protective_equipment': {
+        'EN': 'protective equipment.',
+        'DE': 'Schutzausrüstung.',
+        'AT': 'Schutzausrüstung.',
+        'NL': 'beschermingsmiddelen.'
+    },
+    'each_item_grants': {
+        'EN': 'Each item grants a',
+        'DE': 'Jedes Teil gibt dir',
+        'AT': 'Jedes Teil gibt dir',
+        'NL': 'Elk item geeft een'
+    },
+    'permanent_buff': {
+        'EN': 'permanent gameplay buff!',
+        'DE': 'einen permanenten Bonus!',
+        'AT': 'an permanenten Bonus!',
+        'NL': 'permanente gameplay bonus!'
+    },
+    'select_items': {
+        'EN': 'Select Items',
+        'DE': 'Auswählen',
+        'AT': 'Auswählen',
+        'NL': 'Selecteren'
+    },
+    'leave': {
+        'EN': 'Leave',
+        'DE': 'Verlassen',
+        'AT': 'Verlassen',
+        'NL': 'Verlaten'
+    },
+    // Safety Locker
+    'safety_locker': {
+        'EN': 'SAFETY LOCKER',
+        'DE': 'SICHERHEITSSPIND',
+        'AT': 'SICHERHEITSSPIND',
+        'NL': 'VEILIGHEIDSKLUISJE'
+    },
+    'safety_points': {
+        'EN': 'SAFETY POINTS',
+        'DE': 'SICHERHEITSPUNKTE',
+        'AT': 'SICHERHEITSPUNKTE',
+        'NL': 'VEILIGHEIDSPUNTEN'
+    },
+    'sp_short': {
+        'EN': 'SP',
+        'DE': 'SP',
+        'AT': 'SP',
+        'NL': 'VP'
+    },
+    'owned': {
+        'EN': 'OWNED',
+        'DE': 'BESITZT',
+        'AT': 'BESITZT',
+        'NL': 'BEZIT'
+    },
+    'page': {
+        'EN': 'Page',
+        'DE': 'Seite',
+        'AT': 'Seite',
+        'NL': 'Pagina'
+    },
+    'prev': {
+        'EN': 'PREV',
+        'DE': 'ZURÜCK',
+        'AT': 'ZURÜCK',
+        'NL': 'VORIGE'
+    },
+    'next': {
+        'EN': 'NEXT',
+        'DE': 'WEITER',
+        'AT': 'WEITER',
+        'NL': 'VOLG'
+    },
+    // Character selection
+    'select_coordinator': {
+        'EN': 'SELECT COORDINATOR',
+        'DE': 'KOORDINATOR WÄHLEN',
+        'AT': 'KOORDINATOR WÄHLEN',
+        'NL': 'KIES COÖRDINATOR'
+    },
+    // Performance review
+    'performance_review': {
+        'EN': 'SIMON - PERFORMANCE REVIEW',
+        'DE': 'SIMON - LEISTUNGSBEURTEILUNG',
+        'AT': 'SIMON - LEISTUNGSBEURTEILUNG',
+        'NL': 'SIMON - PRESTATIEBEOORDELING'
+    },
+    'exit_interview': {
+        'EN': 'SIMON - EXIT INTERVIEW',
+        'DE': 'SIMON - AUSTRITTSGESPRÄCH',
+        'AT': 'SIMON - AUSTRITTSGESPRÄCH',
+        'NL': 'SIMON - EXITGESPREK'
+    },
+    // Floating text
+    'safe': {
+        'EN': 'Safe!',
+        'DE': 'Sicher!',
+        'AT': 'Sicher!',
+        'NL': 'Veilig!'
+    },
+    // Controls
+    'controls_select_confirm_leave': {
+        'EN': '▲▼ SELECT | SPACE CONFIRM | ESC LEAVE',
+        'DE': '▲▼ WÄHLEN | LEERTASTE OK | ESC VERLASSEN',
+        'AT': '▲▼ WÄHLEN | LEERTASTE OK | ESC VERLASSEN',
+        'NL': '▲▼ KIEZEN | SPATIE OK | ESC VERLATEN'
+    },
+    'controls_select_buy_exit': {
+        'EN': '▲▼ SELECT | SPACE BUY | ESC EXIT',
+        'DE': '▲▼ WÄHLEN | LEERTASTE KAUFEN | ESC ZURÜCK',
+        'AT': '▲▼ WÄHLEN | LEERTASTE KAUFEN | ESC ZURÜCK',
+        'NL': '▲▼ KIEZEN | SPATIE KOPEN | ESC TERUG'
+    },
+    'controls_scroll_close': {
+        'EN': '▲▼ SCROLL | SPACE/DOWN CLOSE',
+        'DE': '▲▼ SCROLLEN | LEERTASTE/UNTEN SCHLIEßEN',
+        'AT': '▲▼ SCROLLEN | LEERTASTE/UNTEN SCHLIEßEN',
+        'NL': '▲▼ SCROLLEN | SPATIE/OMLAAG SLUITEN'
+    },
+    // Compliance detail
+    'regulation': {
+        'EN': 'REGULATION',
+        'DE': 'VORSCHRIFT',
+        'AT': 'VORSCHRIFT',
+        'NL': 'VOORSCHRIFT'
+    },
+    'loading': {
+        'EN': 'LOADING...',
+        'DE': 'LÄDT...',
+        'AT': 'LÄDT...',
+        'NL': 'LADEN...'
+    },
+    'hazard': {
+        'EN': 'HAZARD',
+        'DE': 'GEFAHR',
+        'AT': 'GEFAHR',
+        'NL': 'GEVAAR'
+    },
+    'multi_country': {
+        'EN': 'MULTI-COUNTRY',
+        'DE': 'LÄNDERVERGLEICH',
+        'AT': 'LÄNDERVERGLEICH',
+        'NL': 'MEERDERE LANDEN'
+    },
+    'comparison_mode': {
+        'EN': 'COMPARISON MODE',
+        'DE': 'VERGLEICHSMODUS',
+        'AT': 'VERGLEICHSMODUS',
+        'NL': 'VERGELIJKINGSMODUS'
+    },
+    'items_short': {
+        'EN': 'ITM',
+        'DE': 'STK',
+        'AT': 'STK',
+        'NL': 'STK'
+    },
+    'empty': {
+        'EN': 'EMPTY',
+        'DE': 'LEER',
+        'AT': 'LEER',
+        'NL': 'LEEG'
+    },
+    'fixed': {
+        'EN': 'Fixed!',
+        'DE': 'Behoben!',
+        'AT': 'Behoben!',
+        'NL': 'Opgelost!'
+    },
+    'speed_boost': {
+        'EN': 'SPEED BOOST!',
+        'DE': 'TEMPO-BOOST!',
+        'AT': 'TEMPO-BOOST!',
+        'NL': 'SNELHEIDSBOOST!'
+    },
+    'calculating_score': {
+        'EN': 'CALCULATING SAFETY SCORE...',
+        'DE': 'BERECHNE SICHERHEITSPUNKTE...',
+        'AT': 'BERECHNE SICHERHEITSPUNKTE...',
+        'NL': 'VEILIGHEIDSSCORE BEREKENEN...'
+    },
+    'preparing_exit': {
+        'EN': 'PREPARING EXIT INTERVIEW...',
+        'DE': 'AUSTRITTSGESPRÄCH VORBEREITEN...',
+        'AT': 'AUSTRITTSGESPRÄCH VORBEREITEN...',
+        'NL': 'EXITGESPREK VOORBEREIDEN...'
+    },
+    'arrows_browse': {
+        'EN': '< ARROWS TO BROWSE > | SPACE TO START',
+        'DE': '< PFEILE AUSWÄHLEN > | LEERTASTE START',
+        'AT': '< PFEILE AUSWÄHLEN > | LEERTASTE START',
+        'NL': '< PIJLEN BLADEREN > | SPATIE STARTEN'
+    }
+};
 
+function getLocalizedText(key) {
     const region = GAME.region;
-    // Map regions to language codes
     const langMap = { 'DE': 'DE', 'AT': 'AT', 'NL': 'NL', 'MEU': 'EN' };
     const lang = langMap[region] || 'EN';
+    return (UI_TEXT[key] && UI_TEXT[key][lang]) || (UI_TEXT[key] && UI_TEXT[key]['EN']) || key;
+}
 
-    return (messages[key] && messages[key][lang]) || messages[key]['EN'] || key;
+// Backward compatibility wrapper
+function getShopMessage(key) {
+    return getLocalizedText(key);
 }
 
 // Helper function to get region-specific safety context for AI prompts
@@ -10201,8 +10416,8 @@ function tryInteract() {
              // Award safety points for stopping runner (75-125 SP)
              const runnerPoints = 75 + Math.floor(Math.random() * 50);
              GAME.safetyPoints += runnerPoints;
-             spawnFloatingText(e.x, e.y - 16, "+" + runnerPoints + " SP", "#22d3ee");
-             spawnFloatingText(e.x, e.y, "Safe!", "#00ff00");
+             spawnFloatingText(e.x, e.y - 16, "+" + runnerPoints + " " + getLocalizedText('sp_short'), "#22d3ee");
+             spawnFloatingText(e.x, e.y, getLocalizedText('safe'), "#00ff00");
              saveGameProgress(); // Auto-save progress
 
              if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
@@ -10236,8 +10451,8 @@ function tryInteract() {
             // Award safety points (100-200 based on hazard type)
             const pointsAwarded = 100 + Math.floor(Math.random() * 100);
             GAME.safetyPoints += pointsAwarded;
-            spawnFloatingText(h.x, h.y - 16, "+" + pointsAwarded + " SP", "#22d3ee");
-            spawnFloatingText(h.x, h.y, "Fixed!", "#00ff00");
+            spawnFloatingText(h.x, h.y - 16, "+" + pointsAwarded + " " + getLocalizedText('sp_short'), "#22d3ee");
+            spawnFloatingText(h.x, h.y, getLocalizedText('fixed'), "#00ff00");
             saveGameProgress(); // Auto-save progress
 
             if (GAME.issuesFixed >= 5) { queueVisitorSplash(); }
@@ -10569,8 +10784,9 @@ function closeIntroDialog() {
         const charData = CHAR_DATA[GAME.selectedChar] || {};
         const personality = charData.backstory || "a dedicated WHS coordinator";
 
-        // Generate player's enthusiastic response
-        callGemini(`You are ${GAME.selectedChar}, ${personality}. Simon just explained your mission: find 5 safety hazards and dodge ops interruptions. Respond enthusiastically that you'll do your best not to disappoint him. Keep it short, in-character, and determined. Max 25 words.`, "player_response").then(text => {
+        // Generate player's enthusiastic response (localized)
+        const langInstPlayer = getLanguageInstruction();
+        callGemini(`You are ${GAME.selectedChar}, ${personality}. Simon just explained your mission: find 5 safety hazards and dodge ops interruptions. Respond enthusiastically that you'll do your best not to disappoint him. Keep it short, in-character, and determined. Max 25 words. ${langInstPlayer}`, "player_response").then(text => {
             if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
                 let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
                 showIntroDialog(finalText, GAME.selectedChar, true);
@@ -10608,7 +10824,7 @@ function showPerformanceEvalIntroDialog(text, isWin) {
     const pCtx = port.getContext('2d');
 
     window.style.display = 'block';
-    nameEl.innerText = isWin ? "SIMON - PERFORMANCE REVIEW" : "SIMON - EXIT INTERVIEW";
+    nameEl.innerText = isWin ? getLocalizedText('performance_review') : getLocalizedText('exit_interview');
     textContent.innerText = "";
 
     // Hide badge for intro window (name already shown in dedicated element)
@@ -11083,8 +11299,9 @@ function closeDialog() {
         const charData = CHAR_DATA[GAME.selectedChar] || {};
         const personality = charData.backstory || "a dedicated WHS coordinator";
 
-        // Generate player's enthusiastic response
-        callGemini(`You are ${GAME.selectedChar}, ${personality}. Simon just explained your mission: find 5 safety hazards and dodge ops interruptions. Respond enthusiastically that you'll do your best not to disappoint him. Keep it short, in-character, and determined. Max 25 words.`, "player_response").then(text => {
+        // Generate player's enthusiastic response (localized)
+        const langInstPlayer2 = getLanguageInstruction();
+        callGemini(`You are ${GAME.selectedChar}, ${personality}. Simon just explained your mission: find 5 safety hazards and dodge ops interruptions. Respond enthusiastically that you'll do your best not to disappoint him. Keep it short, in-character, and determined. Max 25 words. ${langInstPlayer2}`, "player_response").then(text => {
             if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
                 let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
                 showIntroDialog(finalText, GAME.selectedChar, true);
@@ -11286,7 +11503,7 @@ function drawSnesSplash(isWin) {
 
     ctx.font = '11px monospace';
     ctx.fillStyle = '#fef9c3';
-    const sub = isWin ? 'CALCULATING SAFETY SCORE...' : 'PREPARING EXIT INTERVIEW...';
+    const sub = isWin ? getLocalizedText('calculating_score') : getLocalizedText('preparing_exit');
     ctx.fillText(sub, canvas.width/2, canvas.height/2 + 55);
     ctx.textAlign = 'start';
 }
@@ -15226,67 +15443,67 @@ function draw() {
 
         // Header bar (red like safety warning)
         ctx.fillStyle = '#7f1d1d';
-        ctx.fillRect(mX + 5, mY + 5, mW - 10, 20);
+        ctx.fillRect(mX + 5, mY + 5, mW - 10, 24);
         ctx.fillStyle = '#dc2626';
-        ctx.fillRect(mX + 6, mY + 6, mW - 12, 18);
+        ctx.fillRect(mX + 6, mY + 6, mW - 12, 22);
 
-        // Title
+        // Title (larger, localized)
         ctx.textAlign = 'center';
         ctx.fillStyle = '#fff';
-        ctx.font = '8px "Press Start 2P"';
-        ctx.fillText('SAFETY AUDIT REPORT', canvas.width / 2, mY + 18);
+        ctx.font = '10px "Press Start 2P"';
+        ctx.fillText(getLocalizedText('regulation'), canvas.width / 2, mY + 22);
 
         ctx.textAlign = 'left';
 
         if (modal.loading) {
-            // Loading animation
+            // Loading animation (larger font)
             ctx.textAlign = 'center';
             ctx.fillStyle = '#fbbf24';
-            ctx.font = '8px "Press Start 2P"';
+            ctx.font = '10px "Press Start 2P"';
             const dots = '.'.repeat((Math.floor(t / 20) % 4));
-            ctx.fillText('FETCHING REGULATION' + dots, canvas.width / 2, canvas.height / 2);
+            ctx.fillText(getLocalizedText('loading').replace('...', '') + dots, canvas.width / 2, canvas.height / 2);
             ctx.textAlign = 'left';
         } else {
-            // Improved layout with better readability
-            const contentY = mY + 30;
-            const lineHeight = 12;
+            // Improved layout with larger, more readable text
+            const contentY = mY + 36;
+            const lineHeight = 16;
 
-            // Hazard name - prominent display
+            // Hazard name - prominent display (larger font)
             ctx.fillStyle = '#fbbf24';
-            ctx.font = '8px "Press Start 2P"';
-            const hazardNameTrunc = modal.hazardName.length > 24 ? modal.hazardName.substring(0, 24) + '...' : modal.hazardName;
+            ctx.font = '10px "Press Start 2P"';
+            const hazardNameTrunc = modal.hazardName.length > 20 ? modal.hazardName.substring(0, 20) + '...' : modal.hazardName;
             ctx.fillText(hazardNameTrunc, mX + 10, contentY);
 
-            // Region tag
+            // Region tag (larger)
             ctx.fillStyle = '#1e40af';
-            ctx.fillRect(mX + 10, contentY + 6, 60, 12);
+            ctx.fillRect(mX + 10, contentY + 8, 75, 16);
             ctx.fillStyle = '#22d3ee';
-            ctx.font = '6px "Press Start 2P"';
-            ctx.fillText(modal.regionName, mX + 14, contentY + 14);
+            ctx.font = '8px "Press Start 2P"';
+            ctx.fillText(modal.regionName, mX + 14, contentY + 19);
 
-            // Regulation box
+            // Regulation box (larger)
             ctx.fillStyle = '#1a1a2e';
-            ctx.fillRect(mX + 8, contentY + 22, mW - 16, 22);
+            ctx.fillRect(mX + 8, contentY + 30, mW - 16, 28);
             ctx.strokeStyle = '#3b82f6';
             ctx.lineWidth = 1;
-            ctx.strokeRect(mX + 8, contentY + 22, mW - 16, 22);
+            ctx.strokeRect(mX + 8, contentY + 30, mW - 16, 28);
 
             ctx.fillStyle = '#60a5fa';
-            ctx.font = '7px monospace';
-            const regTrunc = modal.regulation.length > 30 ? modal.regulation.substring(0, 30) + '...' : modal.regulation;
-            ctx.fillText(regTrunc, mX + 12, contentY + 32);
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '6px monospace';
-            const titleTrunc = modal.title.length > 32 ? modal.title.substring(0, 32) + '...' : modal.title;
-            ctx.fillText(titleTrunc, mX + 12, contentY + 42);
+            ctx.font = '9px "Press Start 2P"';
+            const regTrunc = modal.regulation.length > 26 ? modal.regulation.substring(0, 26) + '...' : modal.regulation;
+            ctx.fillText(regTrunc, mX + 12, contentY + 42);
+            ctx.fillStyle = '#c0d0e8';
+            ctx.font = '8px "Press Start 2P"';
+            const titleTrunc = modal.title.length > 28 ? modal.title.substring(0, 28) + '...' : modal.title;
+            ctx.fillText(titleTrunc, mX + 12, contentY + 54);
 
             // Summary section with larger text
             ctx.fillStyle = '#22d3ee';
-            ctx.font = '6px "Press Start 2P"';
-            ctx.fillText('SUMMARY:', mX + 10, contentY + 58);
+            ctx.font = '8px "Press Start 2P"';
+            ctx.fillText('SUMMARY:', mX + 10, contentY + 74);
 
             ctx.fillStyle = '#e0e0ff';
-            ctx.font = '7px monospace';
+            ctx.font = '9px "Press Start 2P"';
             const wrapTextLines = (text, maxChars) => {
                 const words = text.split(' '); const lines = []; let line = '';
                 words.forEach(word => {
@@ -15297,70 +15514,55 @@ function draw() {
                 if (line) lines.push(line);
                 return lines;
             };
-            const summaryLines = wrapTextLines(modal.summary, 34);
-            const maxVisibleLines = 4;
+            const summaryLines = wrapTextLines(modal.summary, 28);
+            const maxVisibleLines = 5;
             const scrollOffset = modal.scrollOffset || 0;
             const visibleLines = summaryLines.slice(scrollOffset, scrollOffset + maxVisibleLines);
             visibleLines.forEach((line, i) => {
-                ctx.fillText(line, mX + 10, contentY + 70 + i * lineHeight);
+                ctx.fillText(line, mX + 10, contentY + 90 + i * lineHeight);
             });
 
             // Update max scroll
             modal.maxScroll = Math.max(0, summaryLines.length - maxVisibleLines);
 
-            // Scroll indicator if needed
+            // Scroll indicator if needed (larger)
             if (summaryLines.length > maxVisibleLines) {
                 ctx.fillStyle = '#fbbf24';
-                ctx.font = '8px "Press Start 2P"';
+                ctx.font = '10px "Press Start 2P"';
                 if (scrollOffset > 0) {
-                    ctx.fillText('\u25B2', mW, contentY + 70);
+                    ctx.fillText('\u25B2', mW - 5, contentY + 90);
                 }
                 if (scrollOffset < modal.maxScroll) {
-                    ctx.fillText('\u25BC', mW, contentY + 100);
+                    ctx.fillText('\u25BC', mW - 5, contentY + 90 + (maxVisibleLines - 1) * lineHeight);
                 }
             }
 
-            // FINE/PENALTY - Prominent red box at bottom (skip for MEU comparison mode)
-            const fineY = contentY + 125;
-            if (modal.region !== 'MEU') {
-                ctx.fillStyle = '#7f1d1d';
-                ctx.fillRect(mX + 8, fineY, mW - 16, 28);
-                ctx.strokeStyle = '#ef4444';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(mX + 8, fineY, mW - 16, 28);
-
-                ctx.fillStyle = '#fff';
-                ctx.font = '7px "Press Start 2P"';
-                ctx.fillText('POSSIBLE FINE:', mX + 14, fineY + 12);
-
-                ctx.fillStyle = '#fbbf24';
-                ctx.font = '8px "Press Start 2P"';
-                const penTrunc = modal.penalty.length > 26 ? modal.penalty.substring(0, 26) + '...' : modal.penalty;
-                ctx.fillText(penTrunc, mX + 14, fineY + 24);
-            } else {
-                // For MEU mode, show comparison label instead
+            // For MEU mode, show comparison label at bottom
+            if (modal.region === 'MEU') {
+                const meuY = contentY + 90 + maxVisibleLines * lineHeight + 5;
                 ctx.fillStyle = '#1e40af';
-                ctx.fillRect(mX + 8, fineY, mW - 16, 28);
+                ctx.fillRect(mX + 8, meuY, mW - 16, 24);
                 ctx.strokeStyle = '#3b82f6';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(mX + 8, fineY, mW - 16, 28);
+                ctx.strokeRect(mX + 8, meuY, mW - 16, 24);
 
                 ctx.fillStyle = '#22d3ee';
-                ctx.font = '6px "Press Start 2P"';
-                ctx.fillText('MULTI-COUNTRY', mX + 14, fineY + 12);
-                ctx.fillText('COMPARISON MODE', mX + 14, fineY + 24);
+                ctx.font = '8px "Press Start 2P"';
+                ctx.textAlign = 'center';
+                ctx.fillText(getLocalizedText('multi_country') + ' - ' + getLocalizedText('comparison_mode'), canvas.width / 2, meuY + 16);
+                ctx.textAlign = 'left';
             }
         }
 
-        // Footer with controls
+        // Footer with controls (larger, localized)
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(mX + 5, mY + mH - 18, mW - 10, 13);
+        ctx.fillRect(mX + 5, mY + mH - 22, mW - 10, 17);
 
         ctx.textAlign = 'center';
         const blink = Math.sin(t * 0.12) > 0;
         ctx.fillStyle = blink ? '#fbbf24' : '#92400e';
-        ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('\u25B2\u25BC SCROLL | SPACE/DOWN CLOSE', canvas.width / 2, mY + mH - 9);
+        ctx.font = '7px "Press Start 2P"';
+        ctx.fillText(getLocalizedText('controls_scroll_close'), canvas.width / 2, mY + mH - 10);
         ctx.textAlign = 'left';
 
         ctx.restore(); return;
@@ -15390,60 +15592,61 @@ function draw() {
             ctx.drawImage(GFX.vendingMachineLarge, boxX + 12, boxY + 10);
         }
 
-        // Title
+        // Title (localized, larger font)
         ctx.fillStyle = '#fbbf24';
+        ctx.font = '10px "Press Start 2P"';
+        ctx.fillText(getLocalizedText('ppe_vending'), boxX + 100, boxY + 28);
+        ctx.font = '9px "Press Start 2P"';
+        ctx.fillText(getLocalizedText('ppe_machine'), boxX + 110, boxY + 44);
+
+        // Info text (localized, larger font)
+        ctx.fillStyle = '#c0d0e8';
         ctx.font = '8px "Press Start 2P"';
-        ctx.fillText("PPE VENDING", boxX + 100, boxY + 25);
-        ctx.fillText("MACHINE", boxX + 112, boxY + 38);
+        ctx.fillText(getLocalizedText('spend_safety_points'), boxX + 100, boxY + 62);
+        ctx.fillText(getLocalizedText('protective_equipment'), boxX + 100, boxY + 76);
+        ctx.fillText(getLocalizedText('each_item_grants'), boxX + 100, boxY + 93);
+        ctx.fillText(getLocalizedText('permanent_buff'), boxX + 100, boxY + 107);
 
-        // Info text
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '6px monospace';
-        ctx.fillText("Spend Safety Points on", boxX + 100, boxY + 55);
-        ctx.fillText("protective equipment.", boxX + 100, boxY + 67);
-        ctx.fillText("Each item grants a", boxX + 100, boxY + 82);
-        ctx.fillText("permanent gameplay buff!", boxX + 100, boxY + 94);
-
-        // Safety Points display
+        // Safety Points display (larger font)
         ctx.fillStyle = '#22d3ee';
-        ctx.font = '7px "Press Start 2P"';
-        ctx.fillText('SP: ' + GAME.safetyPoints, boxX + 100, boxY + 115);
+        ctx.font = '9px "Press Start 2P"';
+        ctx.fillText(getLocalizedText('sp_short') + ': ' + GAME.safetyPoints, boxX + 100, boxY + 125);
 
-        // Menu options
-        const menuY = boxY + 135;
-        const options = ['Select Items', 'Leave'];
-        options.forEach((opt, i) => {
+        // Menu options (localized)
+        const menuY = boxY + 145;
+        const localizedOptions = [getLocalizedText('select_items'), getLocalizedText('leave')];
+        localizedOptions.forEach((opt, i) => {
             const isSelected = GAME.ppeDialogChoice === i;
-            const optY = menuY + i * 22;
+            const optY = menuY + i * 24;
 
             if (isSelected) {
                 // Selection highlight
                 ctx.fillStyle = 'rgba(59, 130, 246, 0.4)';
-                ctx.fillRect(boxX + 95, optY - 8, 130, 18);
+                ctx.fillRect(boxX + 95, optY - 10, 140, 22);
                 ctx.strokeStyle = '#3b82f6';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(boxX + 95, optY - 8, 130, 18);
+                ctx.strokeRect(boxX + 95, optY - 10, 140, 22);
 
                 // Blinking arrow
                 const blink = Math.sin(t * 0.15) > 0;
                 ctx.fillStyle = blink ? '#fbbf24' : '#92400e';
-                ctx.font = '10px monospace';
-                ctx.fillText('\u25B6', boxX + 100, optY + 5);
+                ctx.font = '12px monospace';
+                ctx.fillText('\u25B6', boxX + 100, optY + 6);
             }
 
             ctx.fillStyle = isSelected ? '#fff' : '#64748b';
-            ctx.font = '7px "Press Start 2P"';
-            ctx.fillText(opt, boxX + 116, optY + 4);
+            ctx.font = '9px "Press Start 2P"';
+            ctx.fillText(opt, boxX + 118, optY + 5);
         });
 
-        // Footer controls
+        // Footer controls (localized, slightly larger)
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(boxX + 5, boxY + boxH - 18, boxW - 10, 14);
+        ctx.fillRect(boxX + 5, boxY + boxH - 20, boxW - 10, 16);
         ctx.textAlign = 'center';
         const blink = Math.sin(t * 0.12) > 0;
         ctx.fillStyle = blink ? '#fbbf24' : '#64748b';
-        ctx.font = '5px "Press Start 2P"';
-        ctx.fillText('\u25B2\u25BC SELECT | SPACE CONFIRM | ESC LEAVE', canvas.width / 2, boxY + boxH - 8);
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText(getLocalizedText('controls_select_confirm_leave'), canvas.width / 2, boxY + boxH - 8);
         ctx.textAlign = 'left';
 
         ctx.restore();
@@ -15494,28 +15697,28 @@ function draw() {
 
         // Header bar
         ctx.fillStyle = '#1e3a5f';
-        ctx.fillRect(10, 10, canvas.width - 20, 22);
+        ctx.fillRect(10, 10, canvas.width - 20, 26);
 
-        // Title
+        // Title (localized, larger font)
         ctx.textAlign = 'center';
         const glowPulse = Math.sin(t * 0.08) * 0.3 + 0.7;
         ctx.shadowColor = '#3b82f6';
         ctx.shadowBlur = 8 * glowPulse;
         ctx.fillStyle = '#fbbf24';
-        ctx.font = '8px "Press Start 2P"';
-        ctx.fillText("SAFETY LOCKER", canvas.width / 2, 24);
+        ctx.font = '10px "Press Start 2P"';
+        ctx.fillText(getLocalizedText('safety_locker'), canvas.width / 2, 26);
         ctx.shadowBlur = 0;
 
-        // Safety Points display
+        // Safety Points display (larger font)
         ctx.fillStyle = '#22d3ee';
-        ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('SAFETY POINTS: ' + GAME.safetyPoints, canvas.width / 2, 40);
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillText(getLocalizedText('safety_points') + ': ' + GAME.safetyPoints, canvas.width / 2, 44);
 
         ctx.textAlign = 'left';
 
-        // Item list area - improved readability
-        const listY = 48;
-        const itemHeight = 32;
+        // Item list area - improved readability with larger fonts
+        const listY = 52;
+        const itemHeight = 36;
         const itemsVisible = 4; // Show fewer items but larger
 
         for (let i = 0; i < itemsVisible; i++) {
@@ -15562,7 +15765,7 @@ function draw() {
                 ctx.fillText('\u25B6', 16, y + 18);
             }
 
-            // Item name - style based on type
+            // Item name - style based on type (larger font)
             if (isAction) {
                 ctx.fillStyle = isSelected ? '#e879f9' : '#c084fc';
             } else if (isPremium) {
@@ -15570,10 +15773,10 @@ function draw() {
             } else {
                 ctx.fillStyle = isOwned ? '#22c55e' : (isSelected ? '#fff' : '#c0c0c0');
             }
-            ctx.font = '7px "Press Start 2P"';
-            ctx.fillText(item.name, 30, y + 12);
+            ctx.font = '9px "Press Start 2P"';
+            ctx.fillText(item.name, 32, y + 14);
 
-            // Description/buff - clearer display
+            // Description/buff - clearer display (larger font)
             if (isAction) {
                 ctx.fillStyle = isSelected ? '#f0abfc' : '#a855f7';
             } else if (isPremium) {
@@ -15581,102 +15784,102 @@ function draw() {
             } else {
                 ctx.fillStyle = isOwned ? '#86efac' : (isSelected ? '#94a3b8' : '#64748b');
             }
-            ctx.font = '8px monospace';
-            ctx.fillText(item.desc, 30, y + 24);
+            ctx.font = '9px "Press Start 2P"';
+            ctx.fillText(item.desc, 32, y + 28);
 
-            // Cost or OWNED badge (or ACTION badge for Return All)
+            // Cost or OWNED badge (or ACTION badge for Return All) - localized, larger font
             ctx.textAlign = 'right';
             if (isAction) {
                 // Action badge - show count of items to return
                 const returnCount = GAME.ppeUnlocked.length;
                 ctx.fillStyle = returnCount > 0 ? '#581c87' : '#3f3f46';
-                ctx.fillRect(canvas.width - 58, y + 6, 42, 16);
+                ctx.fillRect(canvas.width - 62, y + 8, 48, 20);
                 ctx.strokeStyle = returnCount > 0 ? '#a855f7' : '#71717a';
                 ctx.lineWidth = 1;
-                ctx.strokeRect(canvas.width - 58, y + 6, 42, 16);
+                ctx.strokeRect(canvas.width - 62, y + 8, 48, 20);
                 ctx.fillStyle = returnCount > 0 ? '#e879f9' : '#a1a1aa';
-                ctx.font = '6px "Press Start 2P"';
-                ctx.fillText(returnCount > 0 ? returnCount + ' ITM' : 'EMPTY', canvas.width - 20, y + 17);
+                ctx.font = '8px "Press Start 2P"';
+                ctx.fillText(returnCount > 0 ? returnCount + ' ' + getLocalizedText('items_short') : getLocalizedText('empty'), canvas.width - 18, y + 22);
             } else if (isOwned) {
-                // Green owned badge
+                // Green owned badge (localized)
                 ctx.fillStyle = '#166534';
-                ctx.fillRect(canvas.width - 58, y + 6, 42, 16);
+                ctx.fillRect(canvas.width - 62, y + 8, 48, 20);
                 ctx.strokeStyle = '#22c55e';
                 ctx.lineWidth = 1;
-                ctx.strokeRect(canvas.width - 58, y + 6, 42, 16);
+                ctx.strokeRect(canvas.width - 62, y + 8, 48, 20);
                 ctx.fillStyle = '#22c55e';
-                ctx.font = '6px "Press Start 2P"';
-                ctx.fillText('OWNED', canvas.width - 20, y + 17);
+                ctx.font = '8px "Press Start 2P"';
+                ctx.fillText(getLocalizedText('owned'), canvas.width - 18, y + 22);
             } else {
                 const canAfford = GAME.safetyPoints >= item.cost;
                 // Cost badge - gold for premium
                 if (isPremium) {
                     ctx.fillStyle = canAfford ? '#78350f' : '#7f1d1d';
-                    ctx.fillRect(canvas.width - 58, y + 6, 42, 16);
+                    ctx.fillRect(canvas.width - 62, y + 8, 48, 20);
                     ctx.strokeStyle = canAfford ? '#fbbf24' : '#ef4444';
                 } else {
                     ctx.fillStyle = canAfford ? '#713f12' : '#7f1d1d';
-                    ctx.fillRect(canvas.width - 58, y + 6, 42, 16);
+                    ctx.fillRect(canvas.width - 62, y + 8, 48, 20);
                     ctx.strokeStyle = canAfford ? '#fbbf24' : '#ef4444';
                 }
                 ctx.lineWidth = 1;
-                ctx.strokeRect(canvas.width - 58, y + 6, 42, 16);
+                ctx.strokeRect(canvas.width - 62, y + 8, 48, 20);
                 ctx.fillStyle = canAfford ? '#fbbf24' : '#ef4444';
-                ctx.font = '7px "Press Start 2P"';
-                ctx.fillText(item.cost, canvas.width - 20, y + 17);
+                ctx.font = '9px "Press Start 2P"';
+                ctx.fillText(item.cost, canvas.width - 18, y + 22);
             }
             ctx.textAlign = 'left';
         }
 
-        // Pagination indicator - more visible
+        // Pagination indicator - localized, larger font
         const totalPages = Math.ceil(PPE_ITEMS.length / itemsVisible);
         const currentPage = Math.floor(idx / itemsVisible) + 1;
         ctx.textAlign = 'center';
-        ctx.fillStyle = '#64748b';
-        ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('Page ' + currentPage + '/' + totalPages, canvas.width / 2, listY + itemsVisible * itemHeight + 6);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillText(getLocalizedText('page') + ' ' + currentPage + '/' + totalPages, canvas.width / 2, listY + itemsVisible * itemHeight + 10);
 
-        // Page navigation arrows
+        // Page navigation arrows (localized)
         if (currentPage > 1) {
             ctx.fillStyle = '#fbbf24';
-            ctx.fillText('\u25C0 PREV', 50, listY + itemsVisible * itemHeight + 6);
+            ctx.fillText('\u25C0 ' + getLocalizedText('prev'), 55, listY + itemsVisible * itemHeight + 10);
         }
         if (currentPage < totalPages) {
             ctx.fillStyle = '#fbbf24';
-            ctx.fillText('NEXT \u25B6', canvas.width - 50, listY + itemsVisible * itemHeight + 6);
+            ctx.fillText(getLocalizedText('next') + ' \u25B6', canvas.width - 55, listY + itemsVisible * itemHeight + 10);
         }
 
-        // AI Message area (bottom panel)
-        const msgY = canvas.height - 50;
+        // AI Message area (bottom panel) - larger font
+        const msgY = canvas.height - 55;
         ctx.fillStyle = 'rgba(30, 58, 95, 0.8)';
-        ctx.fillRect(12, msgY, canvas.width - 24, 32);
+        ctx.fillRect(12, msgY, canvas.width - 24, 36);
         ctx.strokeStyle = '#3b82f6';
-        ctx.strokeRect(12, msgY, canvas.width - 24, 32);
+        ctx.strokeRect(12, msgY, canvas.width - 24, 36);
 
-        // Simon's Quartermaster message
+        // Simon's Quartermaster message (larger font)
         if (GAME.shopMessage && GAME.shopMessageTimer > 0) {
             ctx.fillStyle = '#f0f0ff';
-            ctx.font = '5px monospace';
+            ctx.font = '7px "Press Start 2P"';
             const msgLines = GAME.shopMessage.split('\n').slice(0, 2);
             msgLines.forEach((line, i) => {
-                const truncLine = line.length > 45 ? line.substring(0, 45) + '...' : line;
-                ctx.fillText(truncLine, 16, msgY + 10 + i * 10);
+                const truncLine = line.length > 38 ? line.substring(0, 38) + '...' : line;
+                ctx.fillText(truncLine, 16, msgY + 12 + i * 14);
             });
         } else {
-            ctx.fillStyle = '#64748b';
-            ctx.font = '5px monospace';
-            ctx.fillText(getShopMessage('select_ppe'), 16, msgY + 16);
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '7px "Press Start 2P"';
+            ctx.fillText(getLocalizedText('select_ppe'), 16, msgY + 20);
         }
 
-        // Controls footer
+        // Controls footer (localized, larger font)
         ctx.fillStyle = '#1e293b';
-        ctx.fillRect(10, canvas.height - 18, canvas.width - 20, 10);
+        ctx.fillRect(10, canvas.height - 20, canvas.width - 20, 14);
 
         ctx.textAlign = 'center';
         const blink = Math.sin(t * 0.12) > 0;
         ctx.fillStyle = blink ? '#fbbf24' : '#64748b';
-        ctx.font = '5px "Press Start 2P"';
-        ctx.fillText('\u25B2\u25BC SELECT | SPACE BUY | ESC EXIT', canvas.width / 2, canvas.height - 11);
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText(getLocalizedText('controls_select_buy_exit'), canvas.width / 2, canvas.height - 10);
 
         ctx.textAlign = 'left';
         ctx.restore(); return;
@@ -15723,12 +15926,12 @@ function draw() {
         ctx.shadowBlur = 8;
         ctx.fillStyle = '#fbbf24';
         ctx.font = '11px "Press Start 2P"';
-        ctx.fillText("SELECT COORDINATOR", frameX + frameW / 2, frameY + 18);
+        ctx.fillText(getLocalizedText('select_coordinator'), frameX + frameW / 2, frameY + 18);
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = '#64748b';
         ctx.font = '7px monospace';
-        ctx.fillText("< ARROWS TO BROWSE > | SPACE TO START", frameX + frameW / 2, frameY + 30);
+        ctx.fillText(getLocalizedText('arrows_browse'), frameX + frameW / 2, frameY + 30);
 
         let name = GAME.charList[GAME.charIndex]; let data = CHAR_DATA[name];
         const portraitX = frameX + 18, portraitY = frameY + 46;
