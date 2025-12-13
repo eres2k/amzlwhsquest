@@ -15874,72 +15874,64 @@ function draw() {
         ctx.restore();
         return;
     }
-    // === QUARTERMASTER'S SAFETY LOCKER (PPE SHOP) ===
+    // === QUARTERMASTER'S SAFETY LOCKER (PPE SHOP - Conversation Style) ===
     if (GAME.state === 'PPE_SHOP') {
         const t = GAME.stateTimer;
         const idx = GAME.ppeShopIndex;
-        const itemsPerPage = 4; // Fewer items for better readability
+        const itemsPerPage = 4;
         const pageStart = Math.floor(idx / itemsPerPage) * itemsPerPage;
 
-        // Dark warehouse background with blue tint
-        const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        grad.addColorStop(0, '#0a1628');
-        grad.addColorStop(0.5, '#0c1e3a');
-        grad.addColorStop(1, '#0a1628');
-        ctx.fillStyle = grad;
+        // Semi-transparent overlay
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Wire mesh cage overlay effect
-        ctx.strokeStyle = 'rgba(59, 130, 246, 0.15)';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < canvas.width; i += 12) {
-            ctx.beginPath();
-            ctx.moveTo(i, 0);
-            ctx.lineTo(i, canvas.height);
-            ctx.stroke();
-        }
-        for (let i = 0; i < canvas.height; i += 12) {
-            ctx.beginPath();
-            ctx.moveTo(0, i);
-            ctx.lineTo(canvas.width, i);
-            ctx.stroke();
-        }
+        // Main panel (Conversation style)
+        const panelX = 6, panelY = 4, panelW = canvas.width - 12, panelH = canvas.height - 8;
 
-        // Main panel
-        ctx.fillStyle = 'rgba(10, 20, 40, 0.95)';
-        ctx.fillRect(8, 8, canvas.width - 16, canvas.height - 16);
+        // Main panel background (gradient feel)
+        ctx.fillStyle = '#0a1628';
+        ctx.fillRect(panelX, panelY, panelW, panelH);
 
-        // Border (safety blue)
-        ctx.strokeStyle = '#3b82f6';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
-        ctx.strokeStyle = '#1d4ed8';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+        // Inner gradient effect
+        const gradient = ctx.createLinearGradient(panelX, panelY, panelX, panelY + panelH);
+        gradient.addColorStop(0, 'rgba(10, 22, 40, 0.95)');
+        gradient.addColorStop(1, 'rgba(6, 16, 32, 0.98)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(panelX + 2, panelY + 2, panelW - 4, panelH - 4);
 
-        // Header bar
-        ctx.fillStyle = '#1e3a5f';
-        ctx.fillRect(10, 10, canvas.width - 20, 22);
+        // Gold border (conversation style)
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(panelX, panelY, panelW, panelH);
 
-        // Title (localized, HUD-matching 8px font)
-        ctx.textAlign = 'center';
-        const glowPulse = Math.sin(t * 0.08) * 0.3 + 0.7;
-        ctx.shadowColor = '#3b82f6';
-        ctx.shadowBlur = 8 * glowPulse;
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = '8px "Press Start 2P"';
-        ctx.fillText(getLocalizedText('safety_locker'), canvas.width / 2, 24);
+        // Outer glow effect
+        ctx.shadowColor = 'rgba(255, 215, 0, 0.4)';
+        ctx.shadowBlur = 15;
+        ctx.strokeRect(panelX, panelY, panelW, panelH);
         ctx.shadowBlur = 0;
+
+        // Header bar (golden themed)
+        ctx.fillStyle = 'rgba(120, 80, 20, 0.6)';
+        ctx.fillRect(panelX + 4, panelY + 4, panelW - 8, 24);
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(panelX + 4, panelY + 4, panelW - 8, 24);
+
+        // Title (conversation style)
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffd700';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillText(getLocalizedText('safety_locker'), canvas.width / 2, panelY + 18);
 
         // Safety Points display
         ctx.fillStyle = '#22d3ee';
         ctx.font = '8px "Press Start 2P"';
-        ctx.fillText(getLocalizedText('safety_points') + ': ' + GAME.safetyPoints, canvas.width / 2, 38);
+        ctx.fillText(getLocalizedText('safety_points') + ': ' + GAME.safetyPoints, canvas.width / 2, panelY + 36);
 
         ctx.textAlign = 'left';
 
         // Item list area
-        const listY = 44;
+        const listY = panelY + 44;
         const itemHeight = 32;
         const itemsVisible = 4;
 
@@ -15951,54 +15943,50 @@ function draw() {
             const y = listY + i * itemHeight;
             const isSelected = itemIdx === idx;
             const isOwned = GAME.ppeUnlocked.includes(item.id);
-            const isAction = item.isAction; // Special action item (Return All)
-            const isPremium = item.cost >= 5000 && !isAction; // Premium tier items
+            const isAction = item.isAction;
+            const isPremium = item.cost >= 5000 && !isAction;
 
-            // Row background for better separation
+            // Row background (conversation style colors)
             if (isAction) {
-                // Return All PPE - purple/magenta action style
-                ctx.fillStyle = isSelected ? 'rgba(168, 85, 247, 0.4)' : 'rgba(88, 28, 135, 0.6)';
+                ctx.fillStyle = isSelected ? 'rgba(168, 85, 247, 0.4)' : 'rgba(88, 28, 135, 0.5)';
             } else if (isPremium) {
-                // Premium items - golden background
-                ctx.fillStyle = isSelected ? 'rgba(251, 191, 36, 0.3)' : 'rgba(120, 80, 20, 0.4)';
+                ctx.fillStyle = isSelected ? 'rgba(255, 215, 0, 0.3)' : 'rgba(120, 80, 20, 0.4)';
             } else {
-                ctx.fillStyle = i % 2 === 0 ? 'rgba(20, 40, 60, 0.6)' : 'rgba(15, 30, 50, 0.6)';
+                ctx.fillStyle = isSelected ? 'rgba(255, 215, 0, 0.15)' : (i % 2 === 0 ? 'rgba(20, 40, 60, 0.5)' : 'rgba(15, 30, 50, 0.5)');
             }
-            ctx.fillRect(12, y, canvas.width - 24, itemHeight - 2);
+            ctx.fillRect(panelX + 6, y, panelW - 12, itemHeight - 2);
 
-            // Selection highlight
+            // Selection highlight (gold themed)
             if (isSelected) {
                 if (isAction) {
-                    ctx.strokeStyle = '#a855f7'; // Purple for action
+                    ctx.strokeStyle = '#a855f7';
                 } else if (isPremium) {
-                    ctx.strokeStyle = '#fbbf24'; // Gold for premium
+                    ctx.strokeStyle = '#ffd700';
                 } else {
-                    ctx.strokeStyle = '#3b82f6'; // Blue for normal
+                    ctx.strokeStyle = '#ffd700';
                 }
-                ctx.fillStyle = isAction ? 'rgba(168, 85, 247, 0.4)' : (isPremium ? 'rgba(251, 191, 36, 0.3)' : 'rgba(59, 130, 246, 0.4)');
-                ctx.fillRect(12, y, canvas.width - 24, itemHeight - 2);
                 ctx.lineWidth = 2;
-                ctx.strokeRect(12, y, canvas.width - 24, itemHeight - 2);
+                ctx.strokeRect(panelX + 6, y, panelW - 12, itemHeight - 2);
 
-                // Selection arrow with animation
+                // Selection arrow
                 const arrowPulse = Math.sin(t * 0.15) > 0;
-                ctx.fillStyle = arrowPulse ? (isAction ? '#e879f9' : (isPremium ? '#fcd34d' : '#fbbf24')) : '#f59e0b';
+                ctx.fillStyle = arrowPulse ? '#ffd700' : '#92400e';
                 ctx.font = '10px monospace';
-                ctx.fillText('\u25B6', 16, y + 18);
+                ctx.fillText('\u25B6', panelX + 10, y + 18);
             }
 
-            // Item name - style based on type (HUD-matching 8px font)
+            // Item name (conversation style colors)
             if (isAction) {
                 ctx.fillStyle = isSelected ? '#e879f9' : '#c084fc';
             } else if (isPremium) {
-                ctx.fillStyle = isOwned ? '#22c55e' : (isSelected ? '#fcd34d' : '#fbbf24');
+                ctx.fillStyle = isOwned ? '#22c55e' : (isSelected ? '#ffd700' : '#fbbf24');
             } else {
-                ctx.fillStyle = isOwned ? '#22c55e' : (isSelected ? '#fff' : '#c0c0c0');
+                ctx.fillStyle = isOwned ? '#22c55e' : (isSelected ? '#fff' : '#f0f0ff');
             }
             ctx.font = '8px "Press Start 2P"';
-            ctx.fillText(item.name, 30, y + 12);
+            ctx.fillText(item.name, panelX + 26, y + 12);
 
-            // Description/buff (HUD-matching 8px font)
+            // Description
             if (isAction) {
                 ctx.fillStyle = isSelected ? '#f0abfc' : '#a855f7';
             } else if (isPremium) {
@@ -16007,118 +15995,112 @@ function draw() {
                 ctx.fillStyle = isOwned ? '#86efac' : (isSelected ? '#94a3b8' : '#64748b');
             }
             ctx.font = '8px "Press Start 2P"';
-            ctx.fillText(item.desc, 30, y + 24);
+            ctx.fillText(item.desc, panelX + 26, y + 24);
 
-            // Cost or OWNED badge (or ACTION badge for Return All) - localized (HUD-matching 8px font)
+            // Cost or OWNED badge
             ctx.textAlign = 'right';
             if (isAction) {
-                // Action badge - show count of items to return
                 const returnCount = GAME.ppeUnlocked.length;
                 ctx.fillStyle = returnCount > 0 ? '#581c87' : '#3f3f46';
-                ctx.fillRect(canvas.width - 58, y + 6, 42, 16);
+                ctx.fillRect(panelW - 46, y + 6, 42, 16);
                 ctx.strokeStyle = returnCount > 0 ? '#a855f7' : '#71717a';
                 ctx.lineWidth = 1;
-                ctx.strokeRect(canvas.width - 58, y + 6, 42, 16);
+                ctx.strokeRect(panelW - 46, y + 6, 42, 16);
                 ctx.fillStyle = returnCount > 0 ? '#e879f9' : '#a1a1aa';
                 ctx.font = '8px "Press Start 2P"';
-                ctx.fillText(returnCount > 0 ? returnCount + ' ' + getLocalizedText('items_short') : getLocalizedText('empty'), canvas.width - 20, y + 17);
+                ctx.fillText(returnCount > 0 ? returnCount + ' ' + getLocalizedText('items_short') : getLocalizedText('empty'), panelW - 8, y + 17);
             } else if (isOwned) {
-                // Green owned badge (localized)
                 ctx.fillStyle = '#166534';
-                ctx.fillRect(canvas.width - 58, y + 6, 42, 16);
+                ctx.fillRect(panelW - 46, y + 6, 42, 16);
                 ctx.strokeStyle = '#22c55e';
                 ctx.lineWidth = 1;
-                ctx.strokeRect(canvas.width - 58, y + 6, 42, 16);
+                ctx.strokeRect(panelW - 46, y + 6, 42, 16);
                 ctx.fillStyle = '#22c55e';
                 ctx.font = '8px "Press Start 2P"';
-                ctx.fillText(getLocalizedText('owned'), canvas.width - 20, y + 17);
+                ctx.fillText(getLocalizedText('owned'), panelW - 8, y + 17);
             } else {
                 const canAfford = GAME.safetyPoints >= item.cost;
-                // Cost badge - gold for premium
-                if (isPremium) {
-                    ctx.fillStyle = canAfford ? '#78350f' : '#7f1d1d';
-                    ctx.fillRect(canvas.width - 58, y + 6, 42, 16);
-                    ctx.strokeStyle = canAfford ? '#fbbf24' : '#ef4444';
-                } else {
-                    ctx.fillStyle = canAfford ? '#713f12' : '#7f1d1d';
-                    ctx.fillRect(canvas.width - 58, y + 6, 42, 16);
-                    ctx.strokeStyle = canAfford ? '#fbbf24' : '#ef4444';
-                }
+                ctx.fillStyle = canAfford ? (isPremium ? '#78350f' : '#713f12') : '#7f1d1d';
+                ctx.fillRect(panelW - 46, y + 6, 42, 16);
+                ctx.strokeStyle = canAfford ? '#ffd700' : '#ef4444';
                 ctx.lineWidth = 1;
-                ctx.strokeRect(canvas.width - 58, y + 6, 42, 16);
-                ctx.fillStyle = canAfford ? '#fbbf24' : '#ef4444';
+                ctx.strokeRect(panelW - 46, y + 6, 42, 16);
+                ctx.fillStyle = canAfford ? '#ffd700' : '#ef4444';
                 ctx.font = '8px "Press Start 2P"';
-                ctx.fillText(item.cost, canvas.width - 20, y + 17);
+                ctx.fillText(item.cost, panelW - 8, y + 17);
             }
             ctx.textAlign = 'left';
         }
 
-        // Pagination indicator - localized (HUD-matching 8px font)
+        // Pagination indicator
         const totalPages = Math.ceil(PPE_ITEMS.length / itemsVisible);
         const currentPage = Math.floor(idx / itemsVisible) + 1;
         ctx.textAlign = 'center';
-        ctx.fillStyle = '#64748b';
-        ctx.font = '8px "Press Start 2P"';
-        ctx.fillText(getLocalizedText('page') + ' ' + currentPage + '/' + totalPages, canvas.width / 2, listY + itemsVisible * itemHeight + 6);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '7px "Press Start 2P"';
+        const pageY = listY + itemsVisible * itemHeight + 6;
 
-        // Page navigation arrows (localized)
         if (currentPage > 1) {
-            ctx.fillStyle = '#fbbf24';
-            ctx.fillText('\u25C0 ' + getLocalizedText('prev'), 50, listY + itemsVisible * itemHeight + 6);
+            ctx.fillStyle = '#ffd700';
+            ctx.fillText('\u25C0 ' + getLocalizedText('prev'), panelX + 50, pageY);
         }
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(getLocalizedText('page') + ' ' + currentPage + '/' + totalPages, canvas.width / 2, pageY);
         if (currentPage < totalPages) {
-            ctx.fillStyle = '#fbbf24';
-            ctx.fillText(getLocalizedText('next') + ' \u25B6', canvas.width - 50, listY + itemsVisible * itemHeight + 6);
+            ctx.fillStyle = '#ffd700';
+            ctx.fillText(getLocalizedText('next') + ' \u25B6', panelW - 40, pageY);
         }
 
-        // AI Message area (bottom panel) - fixed positioning
-        const msgY = canvas.height - 50;
-        ctx.fillStyle = 'rgba(30, 58, 95, 0.8)';
-        ctx.fillRect(12, msgY, canvas.width - 24, 32);
-        ctx.strokeStyle = '#3b82f6';
-        ctx.strokeRect(12, msgY, canvas.width - 24, 32);
+        // AI Message area (conversation style)
+        const msgY = panelY + panelH - 50;
+        ctx.fillStyle = 'rgba(26, 26, 46, 0.8)';
+        ctx.fillRect(panelX + 6, msgY, panelW - 12, 30);
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(panelX + 6, msgY, panelW - 12, 30);
 
-        // Simon's Quartermaster message (HUD-matching 8px font)
+        // Simon's message
         if (GAME.shopMessage && GAME.shopMessageTimer > 0) {
             ctx.fillStyle = '#f0f0ff';
             ctx.font = '6px "Press Start 2P"';
+            ctx.textAlign = 'left';
             const msgLines = GAME.shopMessage.split('\n').slice(0, 2);
             msgLines.forEach((line, i) => {
-                const truncLine = line.length > 45 ? line.substring(0, 45) + '...' : line;
-                ctx.fillText(truncLine, 16, msgY + 10 + i * 10);
+                const truncLine = line.length > 42 ? line.substring(0, 42) + '...' : line;
+                ctx.fillText(truncLine, panelX + 10, msgY + 10 + i * 10);
             });
         } else {
-            ctx.fillStyle = '#64748b';
+            ctx.fillStyle = '#94a3b8';
             ctx.font = '6px "Press Start 2P"';
-            ctx.fillText(getLocalizedText('select_ppe'), 16, msgY + 16);
+            ctx.textAlign = 'left';
+            ctx.fillText(getLocalizedText('select_ppe'), panelX + 10, msgY + 16);
         }
 
-        // Return button for mobile (tappable area stored for touch detection)
-        const returnBtnX = canvas.width - 55;
-        const returnBtnY = canvas.height - 22;
-        const returnBtnW = 45;
-        const returnBtnH = 16;
+        // Return button (conversation style)
+        const returnBtnX = panelW - 50;
+        const returnBtnY = panelY + panelH - 18;
+        const returnBtnW = 48;
+        const returnBtnH = 14;
         GAME.ppeReturnButton = { x: returnBtnX, y: returnBtnY, w: returnBtnW, h: returnBtnH };
 
-        // Draw return button
         ctx.fillStyle = '#7f1d1d';
         ctx.fillRect(returnBtnX, returnBtnY, returnBtnW, returnBtnH);
         ctx.strokeStyle = '#ef4444';
         ctx.lineWidth = 1;
         ctx.strokeRect(returnBtnX, returnBtnY, returnBtnW, returnBtnH);
         ctx.fillStyle = '#fff';
-        ctx.font = '8px "Press Start 2P"';
+        ctx.font = '7px "Press Start 2P"';
         ctx.textAlign = 'center';
-        ctx.fillText(getLocalizedText('leave'), returnBtnX + returnBtnW / 2, returnBtnY + 11);
+        ctx.fillText(getLocalizedText('leave'), returnBtnX + returnBtnW / 2, returnBtnY + 10);
 
-        // Controls footer (localized)
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(10, canvas.height - 18, canvas.width - 75, 10);
+        // Controls footer (conversation style)
+        ctx.fillStyle = 'rgba(31, 41, 55, 0.9)';
+        ctx.fillRect(panelX + 4, panelY + panelH - 18, panelW - 60, 14);
 
         const blink = Math.sin(t * 0.12) > 0;
-        ctx.fillStyle = blink ? '#fbbf24' : '#64748b';
+        ctx.fillStyle = blink ? '#ffd700' : '#64748b';
         ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('\u25B2\u25BC | SPACE', 70, canvas.height - 11);
+        ctx.fillText('\u25B2\u25BC | SPACE', panelX + 60, panelY + panelH - 9);
 
         ctx.textAlign = 'left';
         ctx.restore(); return;
