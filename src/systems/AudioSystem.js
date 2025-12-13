@@ -80,22 +80,32 @@ export class AudioSystem {
             this.playTone(100, 'sawtooth', 1.0, 0.3);
             setTimeout(() => this.playTone(80, 'sawtooth', 1.0, 0.3), 200);
         },
-        pop: () => this.playTone(1200, 'sine', 0.05, 0.1)
+        pop: () => this.playTone(1200, 'sine', 0.05, 0.1),
+        // Zelda-style secret discovery tune - ascending arpeggio
+        secret: () => {
+            const notes = [392, 440, 494, 523, 587, 659, 698, 784]; // G4-G5 scale
+            notes.forEach((freq, i) => {
+                setTimeout(() => this.playTone(freq, 'sine', 0.15, 0.12), i * 60);
+            });
+        }
     };
 }
 
 export class MusicSystem {
     constructor() {
         this.tracks = {
-            title: new Audio('Pixel Reverie.mp3'),
-            menu: new Audio('Game Over But Not Really.mp3'),
-            ingame: new Audio('Pixel Warehouse Crawl.mp3'),
-            boss: new Audio('Pixel Panic.mp3'),
-            victory: new Audio('Pixel Victory.mp3'),
-            mechaJeff: new Audio('Mecha Jeff Bezos Showdown.mp3'),
-            megaSimon: new Audio('Mega Simon MEU WHS Regional Manager.mp3'),
-            credits: new Audio('Game Over Symphony.mp3'),
-            snesBoss: new Audio('SNES BOSS FIGHT MUSIC.mp3')
+            title: new Audio('music/title-screen.mp3'),
+            intro: new Audio('music/title-eeproductions.mp3'),
+            menu: new Audio('music/game-over.mp3'),
+            ingame: new Audio('music/level-gameplay.mp3'),
+            yard: new Audio('music/level-yard.mp3'),
+            boss: new Audio('music/boss-battle.mp3'),
+            victory: new Audio('music/victory.mp3'),
+            mechaJeff: new Audio('music/boss-mecha-jeff.mp3'),
+            megaSimon: new Audio('music/boss-mega-simon.mp3'),
+            credits: new Audio('music/credits.mp3'),
+            snesBoss: new Audio('music/boss-snes-theme.mp3'),
+            enraged: new Audio('music/boss-enraged.mp3')
         };
         this.currentName = null;
         this.currentRate = 1;
@@ -107,6 +117,10 @@ export class MusicSystem {
             a.volume = AUDIO_CONFIG.MUSIC_VOLUME;
             a.preload = 'auto';
         });
+        // Don't loop the intro track - it's timed to match the logo animation
+        if (this.tracks.intro) {
+            this.tracks.intro.loop = false;
+        }
     }
 
     play(name, rate = 1) {

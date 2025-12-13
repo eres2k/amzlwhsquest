@@ -22,6 +22,10 @@ export class Player {
         this.characterName = characterName;
         this.attackData = attackData;
 
+        // Last movement direction for projectile targeting
+        this.lastDX = 1;
+        this.lastDY = 0;
+
         // Special ability flags
         this.ability = this.getAbility(characterName);
     }
@@ -64,12 +68,35 @@ export class Player {
                 this.x = newX;
                 this.y = newY;
 
+                // Track last movement direction for projectile targeting
+                this.lastDX = dx;
+                this.lastDY = dy;
+
                 // Update direction
                 if (dx > 0) this.dir = 1;
                 else if (dx < 0) this.dir = -1;
                 else if (dy > 0) this.dir = 0;
                 else if (dy < 0) this.dir = 2;
             }
+        }
+    }
+
+    draw(ctx, assets) {
+        // Flash when invincible
+        if (this.iframe > 0 && Math.floor(this.iframe / 5) % 2 === 0) {
+            return; // Skip drawing (blink effect)
+        }
+
+        // Draw player
+        if (assets && assets.player) {
+            ctx.drawImage(assets.player, this.x - 8, this.y - 8);
+        } else {
+            // Fallback: draw a simple rectangle
+            ctx.fillStyle = '#22c55e';
+            ctx.fillRect(this.x - 6, this.y - 6, 12, 12);
+            // Draw face
+            ctx.fillStyle = '#c4956a';
+            ctx.fillRect(this.x - 4, this.y - 8, 8, 6);
         }
     }
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="AMZL WHS Coordinator Quest - A retro-style warehouse safety adventure game">
-    <title>AMZL WHS Coordinator Quest</title>
+    <title>AMZL WHS Coordinator Quest - Modular</title>
 
     <!-- Stylesheet -->
     <link rel="stylesheet" href="css/game.css">
@@ -17,116 +17,168 @@
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
 </head>
 <body>
+
+<div id="game-container">
     <div id="game-wrapper">
-        <canvas id="game-canvas" width="256" height="224"></canvas>
-
-        <!-- CRT Effect Overlay -->
+        <div id="ai-status">AI Status: Init</div>
+        <canvas id="gameCanvas" width="256" height="224"></canvas>
         <div id="crt-overlay"></div>
-
-        <!-- Vignette Effect -->
         <div id="vignette"></div>
 
-        <!-- UI Overlay -->
         <div id="ui-overlay">
-            <!-- Dialog Box -->
+            <div id="slogan-display"></div>
+
+            <div class="hud-text" id="hud-layer" style="display:none;">
+                <div style="color:#ff4444; margin-bottom:5px;">LIFE <span id="life-val">❤️❤️❤️❤️❤️</span></div>
+                <div style="color:#44ff44;">HAZARDS: <span id="score-val">0/5</span></div>
+                <div style="color:#22d3ee; margin-top:3px; font-size:8px;">SP: <span id="sp-val">0</span></div>
+                <div style="color:#66aaff; margin-top:3px; font-size:8px;">REGION: <span id="region-val">EU</span></div>
+            </div>
+
+            <div id="boss-hud">
+                <div class="boss-name" id="boss-name-el">BOSS NAME</div>
+                <div class="boss-bar-bg"><div class="boss-bar-fill" id="boss-health-el"></div></div>
+            </div>
+
             <div id="dialog-box">
-                <div id="portrait"></div>
-                <div id="text-content">
-                    <div class="gemini-badge">Gemini AI</div>
-                    <div id="tts-loading">
-                        <span>Loading Voice</span>
-                        <div id="tts-loading-bar">
-                            <div id="tts-loading-fill"></div>
-                        </div>
-                    </div>
-                    <div id="dialog-text"></div>
-                    <div id="press-space-hint">Press SPACE to continue</div>
+                <canvas id="portrait" width="48" height="48"></canvas>
+                <div style="display:flex; flex-direction:column; width:100%;">
+                    <div id="gemini-badge" class="gemini-badge"></div>
+                    <div id="text-content"></div>
+                    <div id="press-space-hint">▼ TAP / SPACE</div>
+                </div>
+            </div>
+
+            <!-- INTRO CONVERSATION CENTERED PORTRAIT WINDOW -->
+            <div id="intro-portrait-window">
+                <div id="intro-portrait-frame">
+                    <canvas id="intro-portrait" width="96" height="96"></canvas>
+                    <div id="intro-speaker-name"></div>
+                </div>
+                <div id="intro-dialog-content">
+                    <div id="intro-gemini-badge" class="gemini-badge"></div>
+                    <div id="intro-text-content"></div>
+                    <div id="intro-press-space-hint">▼ TAP / SPACE</div>
                 </div>
             </div>
         </div>
-
-        <!-- HUD -->
-        <div class="hud-text" style="display: none;">
-            <div>LIVES: <span id="hud-lives">5</span></div>
-            <div>FIXED: <span id="hud-fixed">0</span>/5</div>
-        </div>
-
-        <!-- Boss HUD -->
-        <div id="boss-hud">
-            <div class="boss-name" id="boss-name">BOSS NAME</div>
-            <div class="boss-bar-bg">
-                <div class="boss-bar-fill" id="boss-bar-fill" style="width: 100%;"></div>
-            </div>
-        </div>
-
-        <!-- AI Status (hidden) -->
-        <div id="ai-status">AI Status: Init</div>
     </div>
 
-    <!-- Game Initialization -->
-    <script type="module">
-        import { Game } from './src/core/Game.js';
+    <!-- MOBILE CONTROLS -->
+    <div id="mobile-controls">
+        <div class="dpad-container">
+            <div id="dpad-up" class="dpad-btn">▲</div>
+            <div id="dpad-left" class="dpad-btn">◀</div>
+            <div class="dpad-center"></div>
+            <div id="dpad-right" class="dpad-btn">▶</div>
+            <div id="dpad-down" class="dpad-btn">▼</div>
+            <!-- Gyro indicator overlays the dpad -->
+            <div id="gyro-indicator">
+                <div class="gyro-dot"></div>
+            </div>
+        </div>
+        <!-- Control mode toggle button in middle -->
+        <div id="control-mode-toggle">
+            <span class="mode-icon">🎮</span>
+            <span class="mode-label">DPAD</span>
+        </div>
+        <div class="action-container">
+            <div id="action-btn">A</div>
+            <div id="auto-shoot-indicator">AUTO-FIRE</div>
+        </div>
+    </div>
+</div>
 
-        // Wait for DOM to be ready
-        window.addEventListener('DOMContentLoaded', async () => {
-            console.log('[Main] DOM loaded, initializing game...');
+<!-- Game Initialization -->
+<script type="module">
+    import { Game } from './src/core/Game.js';
+    import { AudioSystem, MusicSystem } from './src/systems/AudioSystem.js';
+    import { TTSSystem } from './src/systems/TTSSystem.js';
+    import { InputSystem } from './src/systems/InputSystem.js';
 
-            // Get canvas
-            const canvas = document.getElementById('game-canvas');
+    // Wait for DOM to be ready
+    window.addEventListener('DOMContentLoaded', async () => {
+        console.log('[Main] DOM loaded, initializing modular game...');
 
-            if (!canvas) {
-                console.error('[Main] Canvas element not found!');
-                return;
-            }
+        // Get canvas
+        const canvas = document.getElementById('gameCanvas');
 
-            // Create game instance
-            window.game = new Game(canvas);
-
-            // Initialize game
-            const success = await window.game.init();
-
-            if (success) {
-                console.log('[Main] Game initialized successfully');
-
-                // Start game
-                window.game.start();
-
-                console.log('[Main] Game started');
-            } else {
-                console.error('[Main] Game initialization failed');
-
-                // Show error message
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = '#ff0000';
-                ctx.font = '16px "Press Start 2P"';
-                ctx.textAlign = 'center';
-                ctx.fillText('INITIALIZATION FAILED', canvas.width / 2, canvas.height / 2);
-                ctx.font = '10px monospace';
-                ctx.fillText('Check console for details', canvas.width / 2, canvas.height / 2 + 20);
-            }
-        });
-
-        // Expose game instance for debugging
-        console.log('[Main] Game will be available as window.game');
-
-        // Service worker registration (for PWA)
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('[Main] Service Worker registered'))
-                .catch(err => console.warn('[Main] Service Worker registration failed:', err));
+        if (!canvas) {
+            console.error('[Main] Canvas element not found!');
+            return;
         }
-    </script>
 
-    <!-- Debug Info -->
-    <script>
-        console.log('%c🎮 AMZL WHS COORDINATOR QUEST', 'font-size: 16px; font-weight: bold; color: #ffd700;');
-        console.log('%cPhase 2: Modular Architecture', 'font-size: 12px; color: #00ffff;');
-        console.log('%c- Asset Generator (Procedural sprites)', 'color: #22c55e;');
-        console.log('%c- Map Generator (Room-based layouts)', 'color: #22c55e;');
-        console.log('%c- State Machine (OOP state management)', 'color: #22c55e;');
-        console.log('%c- Renderer System (Modular rendering)', 'color: #22c55e;');
-        console.log('%c- Main Loop (Fixed timestep)', 'color: #22c55e;');
-        console.log('%c\nPress F3 to toggle debug mode', 'color: #ff9900;');
-    </script>
+        // Initialize systems
+        const audioSystem = new AudioSystem();
+        const musicSystem = new MusicSystem();
+        const ttsSystem = new TTSSystem();
+        const inputSystem = new InputSystem();
+
+        audioSystem.init();
+        musicSystem.init();
+        ttsSystem.init();
+
+        // Expose systems globally for debugging and access from other modules
+        window.audioSystem = audioSystem;
+        window.musicSystem = musicSystem;
+        window.ttsSystem = ttsSystem;
+        window.inputSystem = inputSystem;
+
+        // Create game instance
+        window.game = new Game(canvas);
+        window.GAME = window.game; // Alias for compatibility
+
+        // Initialize game
+        const success = await window.game.init();
+
+        if (success) {
+            console.log('[Main] Game initialized successfully');
+
+            // Initialize input system with game's action handler
+            inputSystem.init(() => {
+                if (window.game && window.game.handleAction) {
+                    window.game.handleAction();
+                }
+            });
+
+            // Start game
+            window.game.start();
+
+            console.log('[Main] Game started');
+        } else {
+            console.error('[Main] Game initialization failed');
+
+            // Show error message
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ff0000';
+            ctx.font = '16px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText('INITIALIZATION FAILED', canvas.width / 2, canvas.height / 2);
+            ctx.font = '10px monospace';
+            ctx.fillText('Check console for details', canvas.width / 2, canvas.height / 2 + 20);
+        }
+    });
+
+    // Expose game instance for debugging
+    console.log('[Main] Game will be available as window.game');
+
+    // Service worker registration (for PWA)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('[Main] Service Worker registered'))
+            .catch(err => console.warn('[Main] Service Worker registration failed:', err));
+    }
+</script>
+
+<!-- Debug Info -->
+<script>
+    console.log('%c🎮 AMZL WHS COORDINATOR QUEST', 'font-size: 16px; font-weight: bold; color: #ffd700;');
+    console.log('%cModular Architecture Version', 'font-size: 12px; color: #00ffff;');
+    console.log('%c- Separated CSS/JS/HTML', 'color: #22c55e;');
+    console.log('%c- ES6 Modules', 'color: #22c55e;');
+    console.log('%c- System-based Architecture', 'color: #22c55e;');
+    console.log('%c- Data-driven Design', 'color: #22c55e;');
+    console.log('%c\nPress F3 to toggle debug mode', 'color: #ff9900;');
+</script>
 </body>
 </html>

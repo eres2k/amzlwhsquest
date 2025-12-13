@@ -1,5 +1,6 @@
 /**
  * Banter Database - NPC dialogue and taunts
+ * Contains ops manager and associate banter with regional variants
  */
 
 export const BANTER_DB = {
@@ -16,139 +17,96 @@ export const BANTER_DB = {
         "Too early...", "Night shift...", "Pizza party?",
         "Belt keeps eating me", "Where's my badge?", "Snacks when?",
         "Scanner dying...", "Stuck in pack?", "Shift never ends"
-    ]
+    ],
+    // Region-specific banter with local slang
+    regional: {
+        AT: {
+            ops: [
+                "Oida, TPH is down!", "Geh schneller, herst!", "Ned tratschen!",
+                "Schleich di!", "Wo is dei Weste?", "Audit, oida!",
+                "Mei Bonus!", "Schneller scannen!", "Des geht si ned aus!",
+                "Gemma, gemma!", "Wos is mit der Rate?", "Zeit is Göd!",
+                "Beweg di, herst!", "Weniger reden!", "Hawara, zack zack!"
+            ],
+            assoc: [
+                "Mei Füße...", "Pause, oida?", "Schachtel schwer...", "Uff...",
+                "Sicherheitsschuhe zwicken", "Wo is HR?", "Brauch Kaffee...",
+                "Vü zu früh...", "Nachtschicht, oida...", "Pizza Party?",
+                "Band frisst mi auf", "Wo is mei Badge?", "Jausen wann?",
+                "Scanner stirbt...", "Im Pack hängen?", "Schicht endet nie"
+            ]
+        },
+        DE: {
+            ops: [
+                "TPH ist runter!", "Schneller laufen!", "Nicht quatschen!",
+                "VTO?", "Scannen scannen!", "Wo ist deine Weste?", "Audit Panik!",
+                "Mein Bonus!", "TOT!", "Schlechte Rate!", "Los geht's!",
+                "Blaue Linie!", "Weniger reden!", "Zeit ist Geld!", "Weniger Leerlauf!",
+                "Metriken schlafen nicht!", "Aufheben!", "In der Spur bleiben!"
+            ],
+            assoc: [
+                "Meine Füße...", "Pause?", "Karton schwer...", "Ugh...",
+                "Sicherheitsschuhe drücken", "Wo ist HR?", "Brauche Kaffee...",
+                "Zu früh...", "Nachtschicht...", "Pizza Party?",
+                "Band frisst mich", "Wo ist mein Badge?", "Snacks wann?",
+                "Scanner stirbt...", "In Pack stecken?", "Schicht endet nie"
+            ]
+        },
+        NL: {
+            ops: [
+                "TPH is laag!", "Sneller lopen!", "Niet kletsen!", "VTO?",
+                "Scannen scannen!", "Waar is je vest?", "Audit paniek!",
+                "Mijn bonus!", "TOT!", "Slechte rate!", "Kom op!",
+                "Blauwe lijn!", "Minder praten!", "Tijd is geld!", "Minder stilstand!",
+                "Metrics slapen niet!", "Oppakken!", "In de baan blijven!"
+            ],
+            assoc: [
+                "Mijn voeten...", "Pauze?", "Doos zwaar...", "Pff...",
+                "Veiligheidsschoenen doen pijn", "Waar is HR?", "Koffie nodig...",
+                "Te vroeg...", "Nachtdienst...", "Pizza feest?",
+                "Band vreet me op", "Waar is mijn badge?", "Snacks wanneer?",
+                "Scanner gaat dood...", "Vast in pack?", "Dienst stopt nooit"
+            ]
+        }
+    }
 };
 
-export const SIMON_YARD_TIPS = [
-    "YARD SAFETY ALERT: Always use designated crosswalks. DSP vans have blind spots bigger than their ambition.",
-    "CAUTION: The yard is NOT a shortcut. One associate versus a Prime van equals paperwork I don't want to file.",
-    "REMINDER: Look both ways. Then look again. Those DSP drivers run on caffeine and impossible deadlines.",
-    "YARD PROTOCOL: High-vis vests exist for a reason. Be seen or be statistics.",
-    "CRITICAL: Vehicles have right of way. Your skeleton does not outweigh a delivery quota.",
-    "SAFETY FIRST: If you hear a horn, MOVE. Don't stand there contemplating the meaning of life.",
-    "PRO TIP: Headphones off in the yard. Music won't cushion the blow of a reversing semi.",
-    "AUDIT NOTE: The yard claims more near-misses than I have patience. Stay alert, stay alive."
-];
+/**
+ * Get region-appropriate banter
+ * @param {string} type - Type of banter ('ops' or 'assoc')
+ * @param {string} region - Region code (EN, AT, DE, NL) - optional, uses game region if not specified
+ * @returns {string} Random banter line
+ */
+export function getRegionalBanter(type, region = null) {
+    const gameRegion = region || (typeof window !== 'undefined' && window.GAME?.region) || 'EN';
 
-export const JEFF_YARD_TAUNTS = [
-    "Come on then! I haven't got all day!",
-    "You call that speed? My grandmother moves faster!",
-    "The yard separates the workers from the WIMPS!",
-    "Every second you waste costs the company money!",
-    "I built this empire from NOTHING!",
-    "You want a raise? EARN IT!",
-    "Keep dodging! It's good entertainment!",
-    "I've seen better coordination from interns!",
-    "Tick tock! Your shift is almost OVER!",
-    "Almost there... just kidding, you'll never make it!",
-    "This is YOUR performance review!",
-    "The trucks don't stop for ANYONE!",
-    "MY DELIVERY FLEET IS UNSTOPPABLE!",
-    "SAFETY? THAT'S NOT IN THE METRICS!",
-    "PRODUCTIVITY OR TERMINATION!",
-    "I CAN SEE YOUR TOT FROM HERE!",
-    "YOUR RATE IS UNACCEPTABLE!",
-    "CUSTOMER OBSESSION DEMANDS SACRIFICE!",
-    "THINK BIG, DIE TRYING!",
-    "NO BATHROOM BREAKS IN MY YARD!",
-    "BIAS FOR ACTION MEANS RUN FASTER!",
-    "I OWN THE CLOUDS AND THE GROUND!"
-];
+    // Try region-specific banter first
+    if (gameRegion !== 'EN' && BANTER_DB.regional[gameRegion]?.[type]) {
+        // 70% chance to use regional banter, 30% to use generic English
+        if (Math.random() < 0.7) {
+            const regionalLines = BANTER_DB.regional[gameRegion][type];
+            return regionalLines[Math.floor(Math.random() * regionalLines.length)];
+        }
+    }
 
-export const JEFF_CASTLE_TAUNTS = [
-    "WELCOME TO MY FORTRESS OF EFFICIENCY!",
-    "THIS CASTLE WAS BUILT ON PRIME SUBSCRIPTIONS!",
-    "EVERY BRICK IS A WORKER'S DREAM... CRUSHED!",
-    "YOU DARE ENTER THE BEZOS DOMAIN?!",
-    "MY TOWERS REACH HIGHER THAN YOUR AMBITIONS!",
-    "I WATCH EVERYTHING FROM UP HERE!",
-    "THE ALGORITHMS DESIGNED THIS MAZE!",
-    "PRODUCTIVITY FLOWS THROUGH THESE HALLS!",
-    "NO UNION CAN SIEGE THESE WALLS!",
-    "MY THRONE AWAITS... BUT YOU WON'T REACH IT!",
-    "THIS IS WHERE WORKERS BECOME... OPTIMIZED!",
-    "EACH STEP YOU TAKE, I GROW STRONGER!",
-    "THE CASTLE IS MY FINAL WAREHOUSE!",
-    "CUSTOMER OBSESSION BUILT THESE STONES!",
-    "FEEL THE WEIGHT OF A TRILLION DOLLARS!",
-    "MY DRONES PATROL THESE CORRIDORS!",
-    "THE EXIT INTERVIEW IS AT THE TOP!",
-    "ONLY THE WORTHY MEET MECHA JEFF!",
-];
+    // Fall back to generic English banter
+    return BANTER_DB[type][Math.floor(Math.random() * BANTER_DB[type].length)];
+}
 
-export const BEZOS_TAUNTS = [
-    "Work harder, not smarter!",
-    "Day One? Try Day DONE!",
-    "No bathroom breaks in space!",
-    "Prime delivery: FAILURE!",
-    "Your metrics are TERRIBLE!",
-    "Automate or ELIMINATE!",
-    "I'm watching your IDLE TIME!",
-    "Customer obsession DEMANDS speed!",
-    "Move faster! Time is MONEY!",
-    "Safety? I have insurance!",
-    "Be peculiar! Like a PANCAKE!",
-    "Invent and SIMPLIFY your exit!",
-    "Ownership? I own EVERYTHING!",
-    "Bias for ACTION not survival!",
-    "Think BIG or go HOME!",
-    "Frugality means NO raises!",
-    "Deliver RESULTS or get REPLACED!",
-    "Your TOT is UNACCEPTABLE!",
-    "The yard IS the final exam!",
-    "Automation never complains!"
-];
+/**
+ * Get ops manager banter
+ * @param {string} region - Region code (EN, AT, DE, NL) - optional
+ * @returns {string} Random ops banter
+ */
+export function getOpsBanter(region = null) {
+    return getRegionalBanter('ops', region);
+}
 
-export const CORPORATE_GAME_OVER = [
-    "Your employment has been optimized out of existence.",
-    "Thank you for your contribution to our quarterly injury statistics.",
-    "Your position has been automated. Have a nice day.",
-    "Performance review: Below expectations. Way below.",
-    "Security will escort your badge to recycling.",
-    "Your final paycheck will be mailed... eventually.",
-    "Customer obsession doesn't include your safety, apparently.",
-    "Think of this as a permanent growth opportunity elsewhere.",
-    "Your metrics suggest a career in literally anything else.",
-    "Day One mentality? More like Final Day reality.",
-    "HR has prepared your exit interview. It's just a door.",
-    "Your TOT just became permanent. Time Off: Total.",
-    "Ownership principle achieved: You now own nothing.",
-    "Congratulations! You've been promoted to customer.",
-    "Your bias for action led to this inaction. Forever.",
-    "Frugality win: We saved money on your benefits.",
-    "Deliver results? You delivered... disappointment.",
-    "Invent and simplify: Inventing a new career, simplified exit."
-];
-
-export const CHARACTER_DEFEAT_LINES = {
-    "Carrie": [
-        "My labels... all crooked now...",
-        "The 5S system... failed me... or I failed it...",
-        "Even my precision couldn't save me from this mess.",
-        "Sort, Set, Shine, Standardize... Surrender."
-    ],
-    "Nevena": [
-        "The Oracle did not foresee this outcome...",
-        "My clipboard... it predicted everything except my defeat.",
-        "Documentation complete: Status - Terminated.",
-        "Even my emergency Palatschinken couldn't save me."
-    ],
-    "Joao": [
-        "My warnings... nobody heard them in time...",
-        "The Siren goes silent... forever...",
-        "All that espresso... wasted...",
-        "I couldn't shout loud enough to stop this."
-    ],
-    "Roman": [
-        "Even ghosts can be eliminated...",
-        "I vanished one too many times...",
-        "The audit trail... ends here...",
-        "Should have stayed invisible longer."
-    ],
-    "Erwin": [
-        "My Tesla... my beautiful Tesla...",
-        "One life wasn't enough...",
-        "Drifted right into disaster...",
-        "The Manager has been managed... out."
-    ]
-};
+/**
+ * Get associate banter
+ * @param {string} region - Region code (EN, AT, DE, NL) - optional
+ * @returns {string} Random associate banter
+ */
+export function getAssocBanter(region = null) {
+    return getRegionalBanter('assoc', region);
+}
