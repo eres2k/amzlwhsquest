@@ -12411,17 +12411,237 @@ function draw() {
 
         ctx.restore(); return;
     }
-    if (GAME.state === 'INTRO') { 
-        ctx.fillStyle='#eab308'; ctx.fillText("THE WAREHOUSE...", 20, 60); ctx.fillStyle='#fff';
-        ctx.fillText("Ops Managers obsess over rates.", 20, 90); ctx.fillText("They throw Crazy Requests.", 20, 110);
-        ctx.fillText("You must protect Safety.", 20, 130); ctx.fillText("Stop runners. Fix hazards.", 20, 150);
-        ctx.fillStyle='#888'; ctx.fillText("[SPACE TO SKIP]", 80, 200); ctx.restore(); return; 
+    if (GAME.state === 'INTRO') {
+        const t = GAME.stateTimer;
+
+        // Premium animated background
+        const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        grad.addColorStop(0, '#050510');
+        grad.addColorStop(0.3, '#0a1525');
+        grad.addColorStop(0.6, '#0f172a');
+        grad.addColorStop(1, '#0a0a18');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Animated particles (floating packages)
+        for (let i = 0; i < 15; i++) {
+            const x = (i * 41 + t * 0.2) % canvas.width;
+            const y = (i * 53 + Math.sin(t * 0.02 + i) * 5) % canvas.height;
+            const alpha = 0.2 + Math.sin(t * 0.05 + i) * 0.15;
+            ctx.fillStyle = `rgba(251, 191, 36, ${alpha})`;
+            ctx.fillRect(x, y, 3, 3);
+        }
+
+        // Animated grid lines
+        const offset = (t * 0.8) % 32;
+        for (let i = -1; i < 16; i++) {
+            const y = i * 16 + offset;
+            ctx.strokeStyle = `rgba(34, 211, 238, ${0.08 + (y / canvas.height) * 0.1})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+        }
+
+        // Panel background with glow
+        ctx.shadowColor = '#ff9900';
+        ctx.shadowBlur = 15;
+        ctx.fillStyle = 'rgba(10, 10, 20, 0.85)';
+        ctx.fillRect(15, 25, canvas.width - 30, canvas.height - 55);
+        ctx.shadowBlur = 0;
+
+        // Panel border
+        ctx.strokeStyle = '#ff9900';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(15, 25, canvas.width - 30, canvas.height - 55);
+        ctx.strokeStyle = '#7c2d12';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(17, 27, canvas.width - 34, canvas.height - 59);
+
+        // Title with glow effect
+        ctx.textAlign = 'center';
+        const glowIntensity = Math.sin(t * 0.08) * 0.3 + 0.7;
+        ctx.shadowColor = '#ff9900';
+        ctx.shadowBlur = 12 * glowIntensity;
+        ctx.font = '14px "Press Start 2P"';
+        ctx.fillStyle = '#7c2d12';
+        ctx.fillText('DVI1', canvas.width / 2 + 2, 52);
+        ctx.fillStyle = '#ea580c';
+        ctx.fillText('DVI1', canvas.width / 2 + 1, 51);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText('DVI1', canvas.width / 2, 50);
+        ctx.shadowBlur = 0;
+
+        // Subtitle
+        ctx.shadowColor = '#22d3ee';
+        ctx.shadowBlur = 6;
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText('DELIVERY STATION', canvas.width / 2, 65);
+        ctx.shadowBlur = 0;
+
+        // Decorative line
+        ctx.fillStyle = '#ff9900';
+        ctx.fillRect(40, 75, canvas.width - 80, 2);
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillRect(60, 79, canvas.width - 120, 1);
+
+        // Story text with styling
+        ctx.textAlign = 'left';
+        ctx.font = '7px "Press Start 2P"';
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('Ops Managers obsess over', 30, 100);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillText('rates.', 180, 100);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('They throw', 30, 120);
+        ctx.fillStyle = '#f97316';
+        ctx.fillText('Crazy Requests.', 105, 120);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('You must protect', 30, 140);
+        ctx.fillStyle = '#22c55e';
+        ctx.fillText('Safety.', 155, 140);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('Stop runners.', 30, 160);
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillText('Fix hazards.', 130, 160);
+
+        // Animated prompt
+        ctx.textAlign = 'center';
+        const blink = Math.sin(t * 0.12) > 0;
+        if (blink) {
+            ctx.fillStyle = '#fff';
+            ctx.font = '7px "Press Start 2P"';
+            ctx.fillText('[SPACE TO SKIP]', canvas.width / 2, 195);
+        }
+
+        ctx.textAlign = 'left';
+        ctx.restore(); return;
     }
     if (GAME.state === 'STORY') {
-        ctx.fillStyle='#eab308'; ctx.font='10px monospace'; ctx.fillText("MISSION BRIEFING", 20, 40); ctx.fillStyle='#fff';
-        ctx.fillText("Simon Unglaube asks you to:", 20, 70); ctx.fillText("- Do the safety audit", 20, 90);
-        ctx.fillText("- Dodge crazy Ops requests", 20, 110); ctx.fillText("- Push back with rules", 20, 130);
-        ctx.fillText("- Deal with 'visitors'", 20, 150); ctx.fillStyle='#888'; ctx.fillText("[PRESS SPACE]", 80, 200); ctx.restore(); return;
+        const t = GAME.stateTimer;
+
+        // Premium animated background
+        const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        grad.addColorStop(0, '#050510');
+        grad.addColorStop(0.3, '#0a1525');
+        grad.addColorStop(0.6, '#0f172a');
+        grad.addColorStop(1, '#0a0a18');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Animated stars
+        for (let i = 0; i < 20; i++) {
+            const x = (i * 37 + t * 0.15) % canvas.width;
+            const y = (i * 47) % canvas.height;
+            const twinkle = Math.sin(t * 0.08 + i * 0.5) * 0.4 + 0.5;
+            ctx.fillStyle = `rgba(255, 255, 255, ${twinkle * 0.5})`;
+            ctx.fillRect(x, y, 1, 1);
+        }
+
+        // Animated vertical grid lines (data stream effect)
+        for (let i = 0; i < 17; i++) {
+            const x = i * 16;
+            const animOffset = (t * 0.5 + i * 10) % 30;
+            ctx.strokeStyle = `rgba(34, 211, 238, ${0.05 + Math.sin(t * 0.03 + i) * 0.03})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+        }
+
+        // Panel background with blue glow
+        ctx.shadowColor = '#3b82f6';
+        ctx.shadowBlur = 15;
+        ctx.fillStyle = 'rgba(10, 15, 30, 0.9)';
+        ctx.fillRect(15, 20, canvas.width - 30, canvas.height - 45);
+        ctx.shadowBlur = 0;
+
+        // Panel border (blue theme for mission)
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(15, 20, canvas.width - 30, canvas.height - 45);
+        ctx.strokeStyle = '#1d4ed8';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(17, 22, canvas.width - 34, canvas.height - 49);
+
+        // Title with glow effect
+        ctx.textAlign = 'center';
+        const glowIntensity = Math.sin(t * 0.08) * 0.3 + 0.7;
+        ctx.shadowColor = '#3b82f6';
+        ctx.shadowBlur = 12 * glowIntensity;
+        ctx.font = '10px "Press Start 2P"';
+        ctx.fillStyle = '#1d4ed8';
+        ctx.fillText('MISSION BRIEFING', canvas.width / 2 + 1, 42);
+        ctx.fillStyle = '#60a5fa';
+        ctx.fillText('MISSION BRIEFING', canvas.width / 2, 41);
+        ctx.shadowBlur = 0;
+
+        // Decorative lines
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(35, 52, canvas.width - 70, 2);
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillRect(50, 56, canvas.width - 100, 1);
+
+        // Simon icon area (small box)
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+        ctx.fillRect(20, 68, 30, 30);
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(20, 68, 30, 30);
+
+        // "S" for Simon
+        ctx.fillStyle = '#60a5fa';
+        ctx.font = '12px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('S', 35, 88);
+
+        // Mission text
+        ctx.textAlign = 'left';
+        ctx.font = '7px "Press Start 2P"';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('Simon asks you to:', 58, 83);
+
+        // Mission objectives with bullet styling
+        ctx.font = '7px "Press Start 2P"';
+
+        ctx.fillStyle = '#22c55e';
+        ctx.fillText('>', 25, 115);
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText('Do the safety audit', 38, 115);
+
+        ctx.fillStyle = '#f97316';
+        ctx.fillText('>', 25, 133);
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText('Dodge crazy Ops requests', 38, 133);
+
+        ctx.fillStyle = '#a855f7';
+        ctx.fillText('>', 25, 151);
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText('Push back with rules', 38, 151);
+
+        ctx.fillStyle = '#ef4444';
+        ctx.fillText('>', 25, 169);
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText('Deal with "visitors"', 38, 169);
+
+        // Animated prompt
+        ctx.textAlign = 'center';
+        const blink = Math.sin(t * 0.12) > 0;
+        if (blink) {
+            ctx.fillStyle = '#fff';
+            ctx.font = '7px "Press Start 2P"';
+            ctx.fillText('[PRESS SPACE]', canvas.width / 2, 198);
+        }
+
+        ctx.textAlign = 'left';
+        ctx.restore(); return;
     }
     if (GAME.state === 'TITLE') {
         const t = GAME.stateTimer;
@@ -12540,64 +12760,114 @@ function draw() {
     }
     if (GAME.state === 'HOWTO') {
         const t = GAME.stateTimer;
-        // Background gradient
+
+        // Premium animated background
         const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        grad.addColorStop(0, '#0a1525');
-        grad.addColorStop(1, '#0f172a');
+        grad.addColorStop(0, '#050510');
+        grad.addColorStop(0.3, '#0a1525');
+        grad.addColorStop(0.6, '#0f172a');
+        grad.addColorStop(1, '#0a0a18');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Panel background
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.fillRect(10, 10, canvas.width - 20, canvas.height - 20);
+        // Animated particles
+        for (let i = 0; i < 12; i++) {
+            const x = (i * 43 + t * 0.25) % canvas.width;
+            const y = (i * 37 + Math.sin(t * 0.015 + i) * 8) % canvas.height;
+            const alpha = 0.15 + Math.sin(t * 0.04 + i) * 0.1;
+            ctx.fillStyle = `rgba(34, 211, 238, ${alpha})`;
+            ctx.fillRect(x, y, 2, 2);
+        }
+
+        // Animated grid lines
+        const offset = (t * 0.6) % 32;
+        for (let i = -1; i < 16; i++) {
+            const y = i * 16 + offset;
+            ctx.strokeStyle = `rgba(251, 191, 36, ${0.05 + (y / canvas.height) * 0.08})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+        }
+
+        // Panel background with gold glow
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 12;
+        ctx.fillStyle = 'rgba(10, 10, 20, 0.9)';
+        ctx.fillRect(12, 12, canvas.width - 24, canvas.height - 28);
+        ctx.shadowBlur = 0;
+
+        // Panel border (double border effect)
         ctx.strokeStyle = '#fbbf24';
         ctx.lineWidth = 2;
-        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+        ctx.strokeRect(12, 12, canvas.width - 24, canvas.height - 28);
+        ctx.strokeStyle = '#92400e';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 32);
 
-        // Title with glow
+        // Title with glow effect
         ctx.textAlign = 'center';
+        const glowIntensity = Math.sin(t * 0.08) * 0.3 + 0.7;
         ctx.shadowColor = '#fbbf24';
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 12 * glowIntensity;
+        ctx.font = '11px "Press Start 2P"';
+        ctx.fillStyle = '#92400e';
+        ctx.fillText('HOW TO PLAY', canvas.width / 2 + 1, 31);
         ctx.fillStyle = '#fbbf24';
-        ctx.font = '12px "Press Start 2P"';
         ctx.fillText('HOW TO PLAY', canvas.width / 2, 30);
         ctx.shadowBlur = 0;
 
-        ctx.textAlign = 'left';
-        ctx.font = '8px "Press Start 2P"';
-
-        // Controls section
-        ctx.fillStyle = '#22d3ee';
-        ctx.fillText('WASD / ARROWS', 25, 52);
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '7px monospace';
-        ctx.fillText('Navigate the warehouse floor', 25, 64);
-
-        ctx.fillStyle = '#22d3ee';
-        ctx.font = '8px "Press Start 2P"';
-        ctx.fillText('SPACE', 25, 82);
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '7px monospace';
-        ctx.fillText('Interact with hazards / Attack', 25, 94);
-
-        // Goal section
-        ctx.fillStyle = '#ef4444';
-        ctx.font = '8px "Press Start 2P"';
-        ctx.fillText('YOUR MISSION:', 25, 115);
+        // Decorative line under title
         ctx.fillStyle = '#fbbf24';
-        ctx.font = '7px monospace';
-        ctx.fillText('1. Find and fix 5 safety hazards', 25, 128);
-        ctx.fillText('2. Dodge crazy Ops requests!', 25, 140);
-        ctx.fillText('3. Defeat the surprise visitor', 25, 152);
-
-        // Tips section
+        ctx.fillRect(30, 38, canvas.width - 60, 2);
         ctx.fillStyle = '#22d3ee';
-        ctx.font = '8px "Press Start 2P"';
-        ctx.fillText('TIPS:', 25, 175);
+        ctx.fillRect(45, 42, canvas.width - 90, 1);
+
+        ctx.textAlign = 'left';
+
+        // CONTROLS section header
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = '7px "Press Start 2P"';
+        ctx.fillText('CONTROLS', 20, 58);
+
+        // Control key boxes
+        ctx.fillStyle = 'rgba(34, 211, 238, 0.15)';
+        ctx.fillRect(20, 64, 55, 16);
+        ctx.strokeStyle = '#22d3ee';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(20, 64, 55, 16);
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText('W A S D', 25, 75);
+
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '7px monospace';
-        ctx.fillText('- Collect packages for power-ups', 25, 188);
-        ctx.fillText('- Fire books to push back enemies', 25, 200);
+        ctx.font = '6px monospace';
+        ctx.fillText('Move around', 80, 75);
+
+        ctx.fillStyle = 'rgba(34, 211, 238, 0.15)';
+        ctx.fillRect(20, 84, 55, 16);
+        ctx.strokeStyle = '#22d3ee';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(20, 84, 55, 16);
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText('SPACE', 27, 95);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '6px monospace';
+        ctx.fillText('Attack / Interact', 80, 95);
+
+        // TIPS section
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = '7px "Press Start 2P"';
+        ctx.fillText('TIPS', 20, 118);
+
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '6px monospace';
+        ctx.fillText('> Walk into hazards to fix them', 25, 135);
+        ctx.fillText('> Fire books to push back enemies', 25, 150);
+        ctx.fillText('> Watch your lives counter!', 25, 165);
 
         // Animated prompt
         ctx.textAlign = 'center';
