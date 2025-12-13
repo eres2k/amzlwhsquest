@@ -119,6 +119,7 @@
 
         #text-content {
             flex-grow: 1; font-size: 13px; line-height: 1.7; color: #f0f0ff;
+            font-family: 'Press Start 2P', monospace;
             text-shadow: 2px 2px 4px #000, 0 0 10px rgba(255, 255, 255, 0.1);
             white-space: pre-wrap;
         }
@@ -16952,7 +16953,15 @@ function loop() {
     draw();
     requestAnimationFrame(loop);
 }
-init();
+
+// Wait for fonts to load before starting the game
+// This ensures Press Start 2P is available for canvas rendering
+document.fonts.ready.then(() => {
+    // Double-check the Press Start 2P font is loaded
+    document.fonts.load('12px "Press Start 2P"').then(() => {
+        init();
+    });
+});
 </script>
 </body>
 </html>
