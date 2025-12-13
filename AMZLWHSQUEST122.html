@@ -1980,6 +1980,10 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
         // Prioritize region-specific tips when available
         return pickRegionTip();
     }
+    if (is("hazard_regulation")) {
+        // Return a formatted fallback that will trigger static details usage
+        return "FALLBACK_USE_STATIC";
+    }
     if (is("banter_ops")) return getRegionalBanter('ops');
     if (is("banter_assoc")) return getRegionalBanter('assoc');
 
@@ -10034,34 +10038,96 @@ function showHazardDialog(text, speaker, portrait, isAI = false, hazard = null) 
     if (speaker) speakTTS(text.replace(/\n/g, ' '), speaker);
 }
 
-// Show hazard regulatory detail information
+// Show hazard regulatory detail information (uses Gemini AI with static fallback)
 function showHazardDetail() {
     if (!GAME.currentHazard) return;
-
-    const detail = getHazardDetail(GAME.currentHazard);
-    if (!detail) return;
 
     AudioSys.sfx.select();
     GAME.showingHazardDetail = true;
     GAME.hasHazardDetail = false; // Disable further UP presses
 
-    // Format the detail text
-    const detailText = `[${detail.regulation}]\n${detail.title}\n\n${detail.detail}\n\nPenalty: ${detail.penalty}`;
-
-    // Update dialog content with detail
-    GAME.dialogText = detailText;
-    GAME.dialogVisible = "";
-
-    // Update badge to show REGULATION
+    // Update badge to show we're fetching regulation
     const badge = document.getElementById('gemini-badge');
     badge.innerHTML = "REGULATION";
     badge.style.display = 'block';
 
-    // Clear text content for typewriter effect
-    document.getElementById('text-content').innerText = "";
-
-    // Stop TTS and speak the detail
+    // Show processing state while fetching from AI
+    document.getElementById('text-content').innerHTML = "<span class='loading-dots'>FETCHING REGULATION</span>";
+    GAME.dialogText = "";
+    GAME.dialogVisible = "";
     cancelTTS();
+
+    const hazardName = GAME.currentHazard.data.name;
+    const hazardType = GAME.currentHazard.data.type;
+    const hazardRegion = GAME.currentHazard.data.region || GAME.region || 'US';
+    const regionName = getRegionName();
+    const safetyContext = getRegionSafetyContext();
+    const langInst = getLanguageInstruction();
+
+    // Build the AI prompt for regulatory information
+    const prompt = `You are a workplace safety compliance expert. Provide detailed regulatory information for the following warehouse hazard:
+
+Hazard: "${hazardName}" (type: ${hazardType})
+Region: ${regionName} (${hazardRegion})
+
+Respond with EXACTLY this format (fill in the details):
+REGULATION: [Specific regulation code/citation for this region]
+TITLE: [Official title of the regulation]
+SUMMARY: [2-3 sentences explaining why this is a hazard and what the regulation requires]
+PENALTY: [Typical fine or penalty for violations in this region]
+
+${safetyContext}
+Be specific and cite real regulations. For US, cite OSHA 29 CFR standards. For Germany cite DGUV/ArbSchG. For Austria cite ASchG/AUVA. For Netherlands cite Arbowet/RI&E.
+${langInst}`;
+
+    const currentGen = GAME.genId;
+    const fallbackDetail = getHazardDetail(GAME.currentHazard);
+
+    // Call Gemini AI for regulatory information
+    callGemini(prompt, "hazard_regulation", { hazardName, hazardType, region: hazardRegion })
+        .then(response => {
+            if (GAME.genId !== currentGen || !GAME.showingHazardDetail) return;
+
+            let detailText;
+
+            // Check if we got a valid AI response (not fallback, and has proper format)
+            if (response && response !== "FALLBACK_USE_STATIC" &&
+                response.includes('REGULATION:') && response.length > 50) {
+                // Use AI response - clean up formatting
+                detailText = response
+                    .replace(/^REGULATION:\s*/im, '[')
+                    .replace(/\nTITLE:\s*/im, ']\n')
+                    .replace(/\nSUMMARY:\s*/im, '\n\n')
+                    .replace(/\nPENALTY:\s*/im, '\n\nPenalty: ')
+                    .trim();
+            } else if (fallbackDetail) {
+                // Fallback to static details
+                detailText = `[${fallbackDetail.regulation}]\n${fallbackDetail.title}\n\n${fallbackDetail.detail}\n\nPenalty: ${fallbackDetail.penalty}`;
+            } else {
+                detailText = "[General Safety Standards]\nWorkplace Safety\n\nThis hazard poses risks to worker safety. Follow established safety procedures and report concerns to your supervisor.\n\nPenalty: Varies by jurisdiction";
+            }
+
+            displayHazardDetailText(detailText);
+        })
+        .catch(() => {
+            if (GAME.genId !== currentGen || !GAME.showingHazardDetail) return;
+
+            // Fallback to static details on error
+            let detailText;
+            if (fallbackDetail) {
+                detailText = `[${fallbackDetail.regulation}]\n${fallbackDetail.title}\n\n${fallbackDetail.detail}\n\nPenalty: ${fallbackDetail.penalty}`;
+            } else {
+                detailText = "[General Safety Standards]\nWorkplace Safety\n\nThis hazard poses risks to worker safety. Follow established safety procedures and report concerns to your supervisor.\n\nPenalty: Varies by jurisdiction";
+            }
+            displayHazardDetailText(detailText);
+        });
+}
+
+// Helper to display the hazard detail text with typewriter effect
+function displayHazardDetailText(detailText) {
+    GAME.dialogText = detailText;
+    GAME.dialogVisible = "";
+    document.getElementById('text-content').innerText = "";
     speakTTS(detailText.replace(/\n/g, ' ').replace(/\[|\]/g, ''), "Simon");
 }
 
