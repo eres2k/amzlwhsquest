@@ -6598,8 +6598,9 @@ function resetGame() {
     showIntroThinking("Simon");
     GAME.nextState = 'INTRO_DIALOGUE_CONTINUE'; // Custom state for dialogue sequence
 
-    // Generate Simon's greeting with objective overview
-    callGemini(`You are Simon, WHS Senior Regional Manager for Amazon MEU. Give ${GAME.selectedChar} a brief welcome with your signature dry wit, then explain their shift objective: find and fix 5 safety hazards while dodging ops manager interruptions. Keep it concise and witty. Max 45 words.`, "intro").then(text => {
+    // Generate Simon's greeting with objective overview (localized)
+    const langInst = getLanguageInstruction();
+    callGemini(`You are Simon, WHS Senior Regional Manager for Amazon MEU. Give ${GAME.selectedChar} a brief welcome with your signature dry wit, then explain their shift objective: find and fix 5 safety hazards while dodging ops manager interruptions. Keep it concise and witty. Max 45 words. ${langInst}`, "intro").then(text => {
         if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
              let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
              // Remove speaker name prefix if AI included it
@@ -8502,7 +8503,8 @@ function updateBoss() {
     if (b.tauntThresholds && b.tauntThresholds.length > 0 && hpPct < b.tauntThresholds[0]) {
          b.tauntThresholds.shift();
          const currentGen = GAME.genId;
-         let prompt = b.name === "SIMON" ? "Simon final warning. Max 25 words." : `Taunt from boss ${b.name}. Max 25 words.`;
+         const langInstTaunt = getLanguageInstruction();
+         let prompt = b.name === "SIMON" ? `Simon final warning. Max 25 words. ${langInstTaunt}` : `Taunt from boss ${b.name}. Max 25 words. ${langInstTaunt}`;
 
          // Use appropriate portrait face (48x48) for dialog
          let portrait = b.isMecha ? GFX.bossFaces.mechaMegaSimon :
@@ -8901,7 +8903,8 @@ function updateProjectiles() {
                          // --- CHANGED: REMOVED HARDCODED FALLBACK DISPLAY. SHOW LOADING. ---
                          showThinking("Simon", GFX.simonFaceLarge);
 
-                         callGemini(`You are Simon. Deliver a ${warningIndex === 0 ? "first" : "final"} warning to the coordinator who keeps throwing rule books at you. Keep it sharp, under 24 words.`, "simon_warning", { warningIndex }).then(text => {
+                         const langInstWarn = getLanguageInstruction();
+                         callGemini(`You are Simon. Deliver a ${warningIndex === 0 ? "first" : "final"} warning to the coordinator who keeps throwing rule books at you. Keep it sharp, under 24 words. ${langInstWarn}`, "simon_warning", { warningIndex }).then(text => {
                              if (GAME.genId === currentGen && GAME.state === 'DIALOG') {
                                   showDialog(text, "Simon", GFX.simonFaceLarge, true);
                              }
@@ -9092,6 +9095,17 @@ function getRegionSafetyContext() {
     return contexts[region] || contexts['EU'];
 }
 
+// Helper function to get language instruction for AI prompts based on region
+function getLanguageInstruction() {
+    const region = GAME.region;
+    const instructions = {
+        'AT': 'WICHTIG: Antworte auf DEUTSCH mit österreichischem Dialekt (Wienerisch). Verwende Ausdrücke wie "oida", "herst", "ned", "is", "san", "a" statt "ein". (Respond in Austrian German dialect)',
+        'DE': 'WICHTIG: Antworte auf DEUTSCH in Hochdeutsch. (Respond in standard German)',
+        'NL': 'BELANGRIJK: Antwoord in het NEDERLANDS. (Respond in Dutch)'
+    };
+    return instructions[region] || '';
+}
+
 function getRegionName() {
     return GAME.regionNames[GAME.region] || 'Europe';
 }
@@ -9137,8 +9151,9 @@ function tryInteract() {
 
              const safetyContext = getRegionSafetyContext();
              const regionName = getRegionName();
+             const langInstRunner = getLanguageInstruction();
              callGemini(
-                 `You are Simon, WHS Senior Regional Manager in ${regionName}. The player stopped a runner. Praise with dry humor, then provide ONE specific safety tip using ${GAME.region} standards. ${safetyContext} Max 35 words.`,
+                 `You are Simon, WHS Senior Regional Manager in ${regionName}. The player stopped a runner. Praise with dry humor, then provide ONE specific safety tip using ${GAME.region} standards. ${safetyContext} Max 35 words. ${langInstRunner}`,
                  "runners"
              ).then(tip => {
                 if (GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon", GFX.simonFaceLarge, true);
@@ -9163,8 +9178,9 @@ function tryInteract() {
 
             const safetyCtx = getRegionSafetyContext();
             const regName = getRegionName();
+            const langInstHazard = getLanguageInstruction();
             callGemini(
-                `You are Simon, WHS Senior Regional Manager in ${regName}. A hazard "${h.data.name}" was fixed. Praise with dry humor, then provide ONE specific, real-world educational safety tip using ${GAME.region} standards. ${safetyCtx} Keep it under 35 words.`,
+                `You are Simon, WHS Senior Regional Manager in ${regName}. A hazard "${h.data.name}" was fixed. Praise with dry humor, then provide ONE specific, real-world educational safety tip using ${GAME.region} standards. ${safetyCtx} Keep it under 35 words. ${langInstHazard}`,
                 "hazard",
                 { hazardName: h.data.name }
             ).then(tip => {
@@ -9217,17 +9233,18 @@ function triggerGameOver(reason) {
     MusicSys.play('menu'); // Game Over But Not Really track
 
     const time = Math.floor((Date.now() - GAME.startTime)/1000); const currentGen = GAME.genId;
+    const langInstLoss = getLanguageInstruction();
     if (reason === "FIRED!") { GAME.aiResultText = "Terminated for unsafe behavior."; }
     else if (GAME.mechaSimonDefeat) {
         // Special Mecha Mega Simon performance review
         const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
-        callGemini(`You are MECHA MEGA SIMON, the ultimate WHS authority. You just transformed into your unstoppable mecha form and defeated the coordinator. Deliver a terrifying mechanical performance review explaining how your transformation made you invincible and how no human could ever hope to defeat pure safety compliance given form. Mention that this defeat will be permanently recorded on their performance review that will be delivered to your ultimate form - MECHA MEGA SIMON. Remind them that Mega Simon's transformation was triggered by their futile resistance. Max 70 words.`, "reviews_loss", { stats }).then(review => {
+        callGemini(`You are MECHA MEGA SIMON, the ultimate WHS authority. You just transformed into your unstoppable mecha form and defeated the coordinator. Deliver a terrifying mechanical performance review explaining how your transformation made you invincible and how no human could ever hope to defeat pure safety compliance given form. Mention that this defeat will be permanently recorded on their performance review that will be delivered to your ultimate form - MECHA MEGA SIMON. Remind them that Mega Simon's transformation was triggered by their futile resistance. Max 70 words. ${langInstLoss}`, "reviews_loss", { stats }).then(review => {
              if (GAME.genId === currentGen) { GAME.aiResultText = review; }
         });
     }
     else {
         const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
-        callGemini(`You are Simon, WHS Senior Regional Manager. Coordinator failed after ${time} seconds with ${GAME.issuesFixed}/5 hazards fixed, ${GAME.booksFired} rule books thrown, ${GAME.opsPushed} ops pushed. Deliver a scathing yet funny performance review that weaves those stats into a safety lesson. Threaten that their failure will be permanently documented and sent to upper management for review. Max 55 words.`, "reviews_loss", { stats }).then(review => {
+        callGemini(`You are Simon, WHS Senior Regional Manager. Coordinator failed after ${time} seconds with ${GAME.issuesFixed}/5 hazards fixed, ${GAME.booksFired} rule books thrown, ${GAME.opsPushed} ops pushed. Deliver a scathing yet funny performance review that weaves those stats into a safety lesson. Threaten that their failure will be permanently documented and sent to upper management for review. Max 55 words. ${langInstLoss}`, "reviews_loss", { stats }).then(review => {
              if (GAME.genId === currentGen) { GAME.aiResultText = review; }
         });
     }
@@ -9241,7 +9258,8 @@ function winGame() {
     document.getElementById('hud-layer').style.display = 'none';
     const currentGen = GAME.genId; const time = Math.floor((Date.now() - GAME.startTime)/1000);
     const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
-    callGemini(`You are Simon, WHS Senior Regional Manager. Coordinator won in ${time} seconds clearing ${GAME.issuesFixed}/5 hazards, tossing ${GAME.booksFired} rule books, redirecting ${GAME.opsPushed} ops. Give warm but witty praise plus one practical safety takeaway using those stats. Max 55 words.`, "reviews_win", { stats }).then(praise => {
+    const langInstWin = getLanguageInstruction();
+    callGemini(`You are Simon, WHS Senior Regional Manager. Coordinator won in ${time} seconds clearing ${GAME.issuesFixed}/5 hazards, tossing ${GAME.booksFired} rule books, redirecting ${GAME.opsPushed} ops. Give warm but witty praise plus one practical safety takeaway using those stats. Max 55 words. ${langInstWin}`, "reviews_win", { stats }).then(praise => {
         if (GAME.genId === currentGen) GAME.aiResultText = praise;
     });
 }
