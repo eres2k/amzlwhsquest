@@ -2107,7 +2107,7 @@ const WAREHOUSE_EVENTS = {
     },
     FIRE_DRILL: {
         id: 'FIRE_DRILL',
-        duration: 480, // 8 seconds
+        duration: 600, // 10 seconds
         warning: {
             EN: "FIRE DRILL",
             AT: "FEUERALARM",
@@ -2115,15 +2115,15 @@ const WAREHOUSE_EVENTS = {
             NL: "BRANDOEFENING"
         },
         subtitle: {
-            EN: "Everyone freeze!",
-            AT: "Alle stehen bleiben!",
-            DE: "Alle stehen bleiben!",
-            NL: "Iedereen bevriezen!"
+            EN: "Evacuate! OPS are watching!",
+            AT: "Evakuieren! OPS beobachten!",
+            DE: "Evakuieren! OPS beobachten!",
+            NL: "Evacueren! OPS kijken toe!"
         }
     },
     PRIME_DAY: {
         id: 'PRIME_DAY',
-        duration: 840, // 14 seconds
+        duration: 900, // 15 seconds
         warning: {
             EN: "PRIME DAY CHAOS",
             AT: "PRIME DAY CHAOS",
@@ -2131,10 +2131,10 @@ const WAREHOUSE_EVENTS = {
             NL: "PRIME DAY CHAOS"
         },
         subtitle: {
-            EN: "Maximum package volume!",
-            AT: "Maximales Paketaufkommen!",
-            DE: "Maximales Paketaufkommen!",
-            NL: "Maximaal pakketvolume!"
+            EN: "Dodge the package storm!",
+            AT: "Weiche dem Paketsturm aus!",
+            DE: "Weiche dem Paketsturm aus!",
+            NL: "Ontwijken de pakketstorm!"
         }
     }
 };
@@ -2147,10 +2147,15 @@ function getLocalizedEventText(event, field) {
 
 // Initialize random warehouse event for this game
 function initWarehouseEvent() {
+    queueNextWarehouseEvent(true); // true = first event
+}
+
+// Queue the next warehouse event
+function queueNextWarehouseEvent(isFirst = false) {
     const eventKeys = Object.keys(WAREHOUSE_EVENTS);
     const selectedEvent = WAREHOUSE_EVENTS[eventKeys[Math.floor(Math.random() * eventKeys.length)]];
 
-    // Random trigger time between 30-90 seconds into the game (1800-5400 frames)
+    // Random trigger time between 30-90 seconds (1800-5400 frames)
     const triggerTime = 1800 + Math.floor(Math.random() * 3600);
 
     GAME.warehouseEvent = {
@@ -2162,7 +2167,8 @@ function initWarehouseEvent() {
         warningTimer: 0,
         warningPhase: 0, // 0 = not shown, 1 = showing, 2 = done
         gembaOps: [], // For OPS_GEMBA event
-        originalOpsStats: null // For TPH_RUSH event
+        originalOpsStats: null, // For TPH_RUSH event
+        primeDayPackages: [] // For PRIME_DAY event
     };
 }
 
@@ -2249,24 +2255,59 @@ function startEventEffects(eventType) {
             break;
 
         case 'FIRE_DRILL':
-            // Freeze all entities
+            // Fire drill: OPS become hyper-vigilant, spawn extra patrol OPS
             GAME.fireDrillActive = true;
             GAME.shake = 15;
+            // Spawn 4 extra aggressive OPS that patrol quickly
+            for (let i = 0; i < 4; i++) {
+                const side = i % 4;
+                let fx, fy;
+                if (side === 0) { fx = 50; fy = 50 + i * 60; }
+                else if (side === 1) { fx = MAP_W * TILE_SIZE - 50; fy = 50 + i * 60; }
+                else if (side === 2) { fx = 50 + i * 80; fy = 50; }
+                else { fx = 50 + i * 80; fy = MAP_H * TILE_SIZE - 50; }
+                GAME.entities.push({
+                    type: 'ops',
+                    x: fx, y: fy, w: 16, h: 16,
+                    fireDrillOps: true,
+                    hp: 2
+                });
+            }
+            // Make existing OPS more aggressive (tracked by flag)
+            GAME.entities.forEach(e => {
+                if (e.type === 'ops' && !e.fireDrillOps) {
+                    e.fireDrillAggro = true;
+                }
+            });
             break;
 
         case 'PRIME_DAY':
-            // Spawn extra runners and make everything more chaotic
-            for (let i = 0; i < 4; i++) {
+            // Prime Day chaos: Many runners, falling packages, OPS everywhere
+            GAME.primeDayActive = true;
+            // Spawn 8 runners
+            for (let i = 0; i < 8; i++) {
                 const rx = 50 + Math.random() * (MAP_W * TILE_SIZE - 100);
                 const ry = 50 + Math.random() * (MAP_H * TILE_SIZE - 100);
                 GAME.entities.push({
                     type: 'runner',
                     x: rx, y: ry, w: 16, h: 16,
-                    vx: (Math.random() - 0.5) * 4,
-                    vy: (Math.random() - 0.5) * 4,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: (Math.random() - 0.5) * 5,
                     primeDay: true
                 });
             }
+            // Spawn 3 extra OPS
+            for (let i = 0; i < 3; i++) {
+                const ox = 100 + Math.random() * (MAP_W * TILE_SIZE - 200);
+                const oy = 100 + Math.random() * (MAP_H * TILE_SIZE - 200);
+                GAME.entities.push({
+                    type: 'ops',
+                    x: ox, y: oy, w: 16, h: 16,
+                    primeDay: true,
+                    hp: 1
+                });
+            }
+            GAME.shake = 10;
             break;
     }
 }
@@ -2301,16 +2342,59 @@ function updateEventEffects(eventType) {
             break;
 
         case 'FIRE_DRILL':
-            // Alarm flash effect
-            if (GAME.warehouseEvent.timer % 30 === 0) {
+            // Alarm sounds and OPS shoot more frequently
+            if (GAME.warehouseEvent.timer % 45 === 0) {
                 AudioSys.sfx.alert();
             }
+            // Fire drill OPS actively chase player
+            GAME.entities.forEach(e => {
+                if (e.fireDrillOps || e.fireDrillAggro) {
+                    const d = Math.hypot(GAME.player.x - e.x, GAME.player.y - e.y);
+                    if (d < 150) {
+                        // Chase faster during fire drill
+                        if (GAME.player.x > e.x) e.x += 0.6; else e.x -= 0.6;
+                        if (GAME.player.y > e.y) e.y += 0.6; else e.y -= 0.6;
+                        // Shoot more often
+                        if (d < 100 && Math.random() < 0.02) {
+                            const angle = Math.atan2(GAME.player.y - e.y, GAME.player.x - e.x);
+                            GAME.projectiles.push({ type: 'req', x: e.x, y: e.y, vx: Math.cos(angle)*2.5, vy: Math.sin(angle)*2.5, life: 80 });
+                        }
+                    }
+                }
+            });
             break;
 
         case 'PRIME_DAY':
-            // Extra chaos - occasional screen shake
-            if (Math.random() < 0.05) {
-                GAME.shake = Math.max(GAME.shake, 3);
+            // Continuous chaos - screen shake, spawn projectiles, runners respawn
+            if (Math.random() < 0.08) {
+                GAME.shake = Math.max(GAME.shake, 4);
+            }
+            // Spawn falling package projectiles targeting player area
+            if (GAME.warehouseEvent.timer % 40 === 0) {
+                const targetX = GAME.player.x + (Math.random() - 0.5) * 80;
+                const targetY = GAME.player.y + (Math.random() - 0.5) * 80;
+                GAME.projectiles.push({
+                    type: 'req',
+                    x: targetX,
+                    y: targetY - 100,
+                    vx: 0,
+                    vy: 2.5,
+                    life: 60,
+                    primePackage: true
+                });
+            }
+            // Respawn runners if too few
+            const primeDayRunners = GAME.entities.filter(e => e.primeDay && e.type === 'runner').length;
+            if (primeDayRunners < 4 && Math.random() < 0.02) {
+                const rx = 50 + Math.random() * (MAP_W * TILE_SIZE - 100);
+                const ry = 50 + Math.random() * (MAP_H * TILE_SIZE - 100);
+                GAME.entities.push({
+                    type: 'runner',
+                    x: rx, y: ry, w: 16, h: 16,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: (Math.random() - 0.5) * 5,
+                    primeDay: true
+                });
             }
             break;
     }
@@ -2340,16 +2424,22 @@ function endEventEffects(eventType) {
 
         case 'FIRE_DRILL':
             GAME.fireDrillActive = false;
+            // Remove fire drill OPS
+            GAME.entities = GAME.entities.filter(e => !e.fireDrillOps);
             break;
 
         case 'PRIME_DAY':
-            // Remove prime day runners
+            // Remove prime day runners and packages
             GAME.entities = GAME.entities.filter(e => !e.primeDay);
+            GAME.primeDayActive = false;
             break;
     }
 
     // Show "Event Over" floating text
     spawnFloatingText(GAME.player.x, GAME.player.y - 30, "EVENT OVER", "#22c55e");
+
+    // Queue next event after a short delay
+    queueNextWarehouseEvent();
 }
 
 function getRandomFallback(prompt, category = 'generic', context = {}) {
@@ -16209,8 +16299,8 @@ function draw() {
                 return lines;
             };
 
-            // Full summary text - wrap at 38 chars to fit 80% width with 7px font
-            const summaryLines = wrapTextLines(modal.summary, 38);
+            // Full summary text - wrap at 48 chars per line
+            const summaryLines = wrapTextLines(modal.summary, 48);
             const lineHeight = 11;
             const maxVisibleLines = 8;
             const scrollOffset = modal.scrollOffset || 0;
@@ -17456,23 +17546,24 @@ function draw() {
         ctx.restore();
     }
 
-    // === WAREHOUSE EVENT: Active Event Indicator ===
+    // === WAREHOUSE EVENT: Active Event Indicator (bottom center) ===
     if (GAME.warehouseEvent && GAME.warehouseEvent.active && GAME.state === 'PLAY') {
         const ev = GAME.warehouseEvent;
         const remaining = Math.ceil((ev.type.duration - ev.timer) / 60);
 
         ctx.save();
         ctx.font = '6px "Press Start 2P"';
-        ctx.textAlign = 'right';
+        ctx.textAlign = 'center';
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
 
         const eventName = getLocalizedEventText(ev.type, 'warning');
         const timerText = `${eventName}: ${remaining}s`;
 
-        ctx.strokeText(timerText, canvas.width - 5, 20);
+        // Draw at bottom center, above the footer area
+        ctx.strokeText(timerText, canvas.width / 2, canvas.height - 8);
         ctx.fillStyle = '#ff9900';
-        ctx.fillText(timerText, canvas.width - 5, 20);
+        ctx.fillText(timerText, canvas.width / 2, canvas.height - 8);
 
         ctx.textAlign = 'left';
         ctx.restore();
