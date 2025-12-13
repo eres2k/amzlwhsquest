@@ -62,7 +62,17 @@
             50% { background-position: 100% 50%; }
         }
 
-        canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            -webkit-font-smoothing: none;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeSpeed;
+            font-smooth: never;
+        }
 
         #crt-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -1995,6 +2005,67 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
+// Crisp pixel text rendering helper - draws text without anti-aliasing
+// Uses offscreen canvas technique for sharp, pixelated text
+const crispText = (function() {
+    const offscreen = document.createElement('canvas');
+    const offCtx = offscreen.getContext('2d');
+    const scale = 2; // Render at 2x then scale down
+
+    return function(text, x, y, font, color, align) {
+        // Parse font size from font string (e.g., "8px monospace" -> 8)
+        const sizeMatch = font.match(/(\d+)px/);
+        if (!sizeMatch) {
+            // Fallback to regular text
+            ctx.font = font;
+            ctx.fillStyle = color;
+            ctx.textAlign = align || 'left';
+            ctx.fillText(text, x, y);
+            return;
+        }
+
+        const fontSize = parseInt(sizeMatch[1]);
+        const scaledFont = font.replace(/(\d+)px/, (fontSize * scale) + 'px');
+
+        // Measure text width
+        offCtx.font = scaledFont;
+        const metrics = offCtx.measureText(text);
+        const textWidth = Math.ceil(metrics.width);
+        const textHeight = fontSize * scale * 1.5;
+
+        // Resize offscreen canvas
+        offscreen.width = textWidth + 4;
+        offscreen.height = textHeight + 4;
+
+        // Draw text on offscreen canvas
+        offCtx.font = scaledFont;
+        offCtx.fillStyle = color;
+        offCtx.textBaseline = 'top';
+        offCtx.textAlign = 'left';
+        offCtx.fillText(text, 0, 0);
+
+        // Calculate draw position based on alignment
+        let drawX = Math.round(x);
+        const drawY = Math.round(y - fontSize);
+        const finalWidth = offscreen.width / scale;
+        const finalHeight = offscreen.height / scale;
+
+        if (align === 'center') {
+            drawX = Math.round(x - finalWidth / 2);
+        } else if (align === 'right') {
+            drawX = Math.round(x - finalWidth);
+        }
+
+        // Draw scaled down with no smoothing
+        const prevSmoothing = ctx.imageSmoothingEnabled;
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(offscreen, 0, 0, offscreen.width, offscreen.height,
+                      drawX, drawY, finalWidth, finalHeight);
+        ctx.imageSmoothingEnabled = prevSmoothing;
+    };
+})();
+
 const TILE_SIZE = 16;
 const MAP_W = 60;
 const MAP_H = 40;
@@ -15628,11 +15699,7 @@ function draw() {
         }
 
         // Speaker name under portrait
-        ctx.fillStyle = '#ffd700';
-        ctx.font = '8px "Press Start 2P"';
-        ctx.textAlign = 'center';
-        ctx.fillText('SIMON', portraitX + portraitSize / 2, portraitY + portraitSize + 12);
-        ctx.textAlign = 'left';
+        crispText('SIMON', portraitX + portraitSize / 2, portraitY + portraitSize + 12, '8px monospace', '#ffd700', 'center');
 
         // Content area (to the right of portrait)
         const contentX = portraitX + portraitSize + 12;
@@ -15641,25 +15708,19 @@ function draw() {
 
         if (modal.loading) {
             // Loading animation (conversation style)
-            ctx.fillStyle = '#f0f0ff';
-            ctx.font = '10px "Press Start 2P"';
             const dots = '.'.repeat((Math.floor(t / 20) % 4));
-            ctx.fillText(getLocalizedText('loading').replace('...', '') + dots, contentX, contentY + 30);
+            crispText(getLocalizedText('loading').replace('...', '') + dots, contentX, contentY + 30, '10px monospace', '#f0f0ff', 'left');
         } else {
             // Hazard name header (golden, prominent)
-            ctx.fillStyle = '#ffd700';
-            ctx.font = '9px "Press Start 2P"';
             const hazardNameTrunc = modal.hazardName.length > 22 ? modal.hazardName.substring(0, 22) + '..' : modal.hazardName;
-            ctx.fillText(hazardNameTrunc, contentX, contentY + 4);
+            crispText(hazardNameTrunc, contentX, contentY + 4, '9px monospace', '#ffd700', 'left');
 
             // Region badge
             const regionBadgeX = contentX;
             const regionBadgeY = contentY + 10;
             ctx.fillStyle = '#1e40af';
             ctx.fillRect(regionBadgeX, regionBadgeY, 55, 11);
-            ctx.fillStyle = '#22d3ee';
-            ctx.font = '7px "Press Start 2P"';
-            ctx.fillText(modal.regionName, regionBadgeX + 3, regionBadgeY + 8);
+            crispText(modal.regionName, regionBadgeX + 3, regionBadgeY + 8, '7px monospace', '#22d3ee', 'left');
 
             // Regulation citation box
             const regBoxY = contentY + 26;
@@ -15669,19 +15730,13 @@ function draw() {
             ctx.lineWidth = 1;
             ctx.strokeRect(contentX - 2, regBoxY, contentW + 4, 22);
 
-            ctx.fillStyle = '#60a5fa';
-            ctx.font = '7px "Press Start 2P"';
             const regTrunc = modal.regulation.length > 28 ? modal.regulation.substring(0, 28) + '..' : modal.regulation;
-            ctx.fillText(regTrunc, contentX + 2, regBoxY + 9);
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '6px "Press Start 2P"';
+            crispText(regTrunc, contentX + 2, regBoxY + 9, '7px monospace', '#60a5fa', 'left');
             const titleTrunc = modal.title.length > 32 ? modal.title.substring(0, 32) + '..' : modal.title;
-            ctx.fillText(titleTrunc, contentX + 2, regBoxY + 18);
+            crispText(titleTrunc, contentX + 2, regBoxY + 18, '6px monospace', '#94a3b8', 'left');
 
             // Summary section (conversation text style)
             const summaryY = regBoxY + 30;
-            ctx.fillStyle = '#f0f0ff';
-            ctx.font = '7px "Press Start 2P"';
 
             const wrapTextLines = (text, maxChars) => {
                 const words = text.split(' '); const lines = []; let line = '';
@@ -15701,7 +15756,7 @@ function draw() {
             const lineHeight = 11;
 
             visibleLines.forEach((line, i) => {
-                ctx.fillText(line, contentX, summaryY + i * lineHeight);
+                crispText(line, contentX, summaryY + i * lineHeight, '7px monospace', '#f0f0ff', 'left');
             });
 
             // Update max scroll
@@ -15709,13 +15764,11 @@ function draw() {
 
             // Scroll indicators (right side)
             if (summaryLines.length > maxVisibleLines) {
-                ctx.fillStyle = '#ffd700';
-                ctx.font = '10px "Press Start 2P"';
                 if (scrollOffset > 0) {
-                    ctx.fillText('\u25B2', mW - 8, summaryY + 5);
+                    crispText('\u25B2', mW - 8, summaryY + 5, '10px monospace', '#ffd700', 'left');
                 }
                 if (scrollOffset < modal.maxScroll) {
-                    ctx.fillText('\u25BC', mW - 8, summaryY + 55);
+                    crispText('\u25BC', mW - 8, summaryY + 55, '10px monospace', '#ffd700', 'left');
                 }
             }
 
@@ -15728,11 +15781,7 @@ function draw() {
                 ctx.lineWidth = 1;
                 ctx.strokeRect(contentX - 2, meuY, contentW + 4, 14);
 
-                ctx.fillStyle = '#22d3ee';
-                ctx.font = '6px "Press Start 2P"';
-                ctx.textAlign = 'center';
-                ctx.fillText(getLocalizedText('multi_country'), contentX + contentW / 2, meuY + 10);
-                ctx.textAlign = 'left';
+                crispText(getLocalizedText('multi_country'), contentX + contentW / 2, meuY + 10, '6px monospace', '#22d3ee', 'center');
             }
         }
 
@@ -15740,11 +15789,9 @@ function draw() {
         ctx.fillStyle = 'rgba(31, 41, 55, 0.9)';
         ctx.fillRect(mX + 4, mY + mH - 16, mW - 8, 12);
 
-        ctx.textAlign = 'center';
         const blink = Math.sin(t * 0.12) > 0;
-        ctx.fillStyle = blink ? '#ffd700' : '#92400e';
-        ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('\u25B2\u25BC ' + getLocalizedText('scroll') + ' | ' + getLocalizedText('close_short'), canvas.width / 2, mY + mH - 7);
+        const footerColor = blink ? '#ffd700' : '#92400e';
+        crispText('\u25B2\u25BC ' + getLocalizedText('scroll') + ' | ' + getLocalizedText('close_short'), canvas.width / 2, mY + mH - 7, '6px monospace', footerColor, 'center');
         ctx.textAlign = 'left';
 
         ctx.restore(); return;
@@ -15801,35 +15848,24 @@ function draw() {
         }
 
         // Label under portrait
-        ctx.fillStyle = '#ffd700';
-        ctx.font = '6px "Press Start 2P"';
-        ctx.textAlign = 'center';
-        ctx.fillText('PPE VENDOR', portraitX + portraitSize / 2, portraitY + portraitSize + 10);
-        ctx.textAlign = 'left';
+        crispText('PPE VENDOR', portraitX + portraitSize / 2, portraitY + portraitSize + 10, '6px monospace', '#ffd700', 'center');
 
         // Content area (to the right of vending machine)
         const contentX = portraitX + portraitSize + 14;
         const contentY = boxY + 16;
 
         // Title (golden, conversation style)
-        ctx.fillStyle = '#ffd700';
-        ctx.font = '9px "Press Start 2P"';
-        ctx.fillText(getLocalizedText('ppe_vending'), contentX, contentY + 4);
-        ctx.fillText(getLocalizedText('ppe_machine'), contentX + 10, contentY + 18);
+        crispText(getLocalizedText('ppe_vending'), contentX, contentY + 4, '9px monospace', '#ffd700', 'left');
+        crispText(getLocalizedText('ppe_machine'), contentX + 10, contentY + 18, '9px monospace', '#ffd700', 'left');
 
         // Info text (conversation style with #f0f0ff)
-        ctx.fillStyle = '#f0f0ff';
-        ctx.font = '7px "Press Start 2P"';
-        ctx.fillText(getLocalizedText('spend_safety_points'), contentX, contentY + 36);
-        ctx.fillText(getLocalizedText('protective_equipment'), contentX, contentY + 48);
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText(getLocalizedText('each_item_grants'), contentX, contentY + 62);
-        ctx.fillText(getLocalizedText('permanent_buff'), contentX, contentY + 74);
+        crispText(getLocalizedText('spend_safety_points'), contentX, contentY + 36, '7px monospace', '#f0f0ff', 'left');
+        crispText(getLocalizedText('protective_equipment'), contentX, contentY + 48, '7px monospace', '#f0f0ff', 'left');
+        crispText(getLocalizedText('each_item_grants'), contentX, contentY + 62, '7px monospace', '#94a3b8', 'left');
+        crispText(getLocalizedText('permanent_buff'), contentX, contentY + 74, '7px monospace', '#94a3b8', 'left');
 
         // Safety Points display (highlighted)
-        ctx.fillStyle = '#22d3ee';
-        ctx.font = '8px "Press Start 2P"';
-        ctx.fillText(getLocalizedText('sp_short') + ': ' + GAME.safetyPoints, contentX, contentY + 92);
+        crispText(getLocalizedText('sp_short') + ': ' + GAME.safetyPoints, contentX, contentY + 92, '8px monospace', '#22d3ee', 'left');
 
         // Menu options (conversation style)
         const menuY = boxY + 125;
@@ -15848,14 +15884,12 @@ function draw() {
 
                 // Blinking arrow
                 const blink = Math.sin(t * 0.15) > 0;
-                ctx.fillStyle = blink ? '#ffd700' : '#92400e';
-                ctx.font = '10px monospace';
-                ctx.fillText('\u25B6', contentX, optY + 5);
+                const arrowColor = blink ? '#ffd700' : '#92400e';
+                crispText('\u25B6', contentX, optY + 5, '10px monospace', arrowColor, 'left');
             }
 
-            ctx.fillStyle = isSelected ? '#fff' : '#64748b';
-            ctx.font = '8px "Press Start 2P"';
-            ctx.fillText(opt, contentX + 16, optY + 4);
+            const optColor = isSelected ? '#fff' : '#64748b';
+            crispText(opt, contentX + 16, optY + 4, '8px monospace', optColor, 'left');
 
             // Store button coordinates for touch detection
             if (!GAME.ppeDialogButtons) GAME.ppeDialogButtons = [];
@@ -15865,12 +15899,9 @@ function draw() {
         // Footer controls (conversation style)
         ctx.fillStyle = 'rgba(31, 41, 55, 0.9)';
         ctx.fillRect(boxX + 4, boxY + boxH - 16, boxW - 8, 12);
-        ctx.textAlign = 'center';
         const blink = Math.sin(t * 0.12) > 0;
-        ctx.fillStyle = blink ? '#ffd700' : '#64748b';
-        ctx.font = '6px "Press Start 2P"';
-        ctx.fillText(getLocalizedText('controls_select_confirm_leave'), canvas.width / 2, boxY + boxH - 7);
-        ctx.textAlign = 'left';
+        const footerColor = blink ? '#ffd700' : '#64748b';
+        crispText(getLocalizedText('controls_select_confirm_leave'), canvas.width / 2, boxY + boxH - 7, '6px monospace', footerColor, 'center');
 
         ctx.restore();
         return;
@@ -15921,12 +15952,12 @@ function draw() {
         // Title (conversation style)
         ctx.textAlign = 'center';
         ctx.fillStyle = '#ffd700';
-        ctx.font = '8px "Press Start 2P"';
+        ctx.font = '8px monospace';
         ctx.fillText(getLocalizedText('safety_locker'), canvas.width / 2, panelY + 18);
 
         // Safety Points display
         ctx.fillStyle = '#22d3ee';
-        ctx.font = '8px "Press Start 2P"';
+        ctx.font = '8px monospace';
         ctx.fillText(getLocalizedText('safety_points') + ': ' + GAME.safetyPoints, canvas.width / 2, panelY + 36);
 
         ctx.textAlign = 'left';
@@ -15984,7 +16015,7 @@ function draw() {
             } else {
                 ctx.fillStyle = isOwned ? '#22c55e' : (isSelected ? '#fff' : '#f0f0ff');
             }
-            ctx.font = '8px "Press Start 2P"';
+            ctx.font = '8px monospace';
             ctx.fillText(item.name, panelX + 26, y + 12);
 
             // Description
@@ -15995,7 +16026,7 @@ function draw() {
             } else {
                 ctx.fillStyle = isOwned ? '#86efac' : (isSelected ? '#94a3b8' : '#64748b');
             }
-            ctx.font = '8px "Press Start 2P"';
+            ctx.font = '8px monospace';
             ctx.fillText(item.desc, panelX + 26, y + 24);
 
             // Cost or OWNED badge
@@ -16008,7 +16039,7 @@ function draw() {
                 ctx.lineWidth = 1;
                 ctx.strokeRect(panelW - 46, y + 6, 42, 16);
                 ctx.fillStyle = returnCount > 0 ? '#e879f9' : '#a1a1aa';
-                ctx.font = '8px "Press Start 2P"';
+                ctx.font = '8px monospace';
                 ctx.fillText(returnCount > 0 ? returnCount + ' ' + getLocalizedText('items_short') : getLocalizedText('empty'), panelW - 8, y + 17);
             } else if (isOwned) {
                 ctx.fillStyle = '#166534';
@@ -16017,7 +16048,7 @@ function draw() {
                 ctx.lineWidth = 1;
                 ctx.strokeRect(panelW - 46, y + 6, 42, 16);
                 ctx.fillStyle = '#22c55e';
-                ctx.font = '8px "Press Start 2P"';
+                ctx.font = '8px monospace';
                 ctx.fillText(getLocalizedText('owned'), panelW - 8, y + 17);
             } else {
                 const canAfford = GAME.safetyPoints >= item.cost;
@@ -16027,7 +16058,7 @@ function draw() {
                 ctx.lineWidth = 1;
                 ctx.strokeRect(panelW - 46, y + 6, 42, 16);
                 ctx.fillStyle = canAfford ? '#ffd700' : '#ef4444';
-                ctx.font = '8px "Press Start 2P"';
+                ctx.font = '8px monospace';
                 ctx.fillText(item.cost, panelW - 8, y + 17);
             }
             ctx.textAlign = 'left';
@@ -16038,7 +16069,7 @@ function draw() {
         const currentPage = Math.floor(idx / itemsVisible) + 1;
         ctx.textAlign = 'center';
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '7px "Press Start 2P"';
+        ctx.font = '7px monospace';
         const pageY = listY + itemsVisible * itemHeight + 6;
 
         if (currentPage > 1) {
@@ -16063,7 +16094,7 @@ function draw() {
         // Simon's message
         if (GAME.shopMessage && GAME.shopMessageTimer > 0) {
             ctx.fillStyle = '#f0f0ff';
-            ctx.font = '6px "Press Start 2P"';
+            ctx.font = '6px monospace';
             ctx.textAlign = 'left';
             const msgLines = GAME.shopMessage.split('\n').slice(0, 2);
             msgLines.forEach((line, i) => {
@@ -16072,7 +16103,7 @@ function draw() {
             });
         } else {
             ctx.fillStyle = '#94a3b8';
-            ctx.font = '6px "Press Start 2P"';
+            ctx.font = '6px monospace';
             ctx.textAlign = 'left';
             ctx.fillText(getLocalizedText('select_ppe'), panelX + 10, msgY + 16);
         }
@@ -16090,7 +16121,7 @@ function draw() {
         ctx.lineWidth = 1;
         ctx.strokeRect(returnBtnX, returnBtnY, returnBtnW, returnBtnH);
         ctx.fillStyle = '#fff';
-        ctx.font = '7px "Press Start 2P"';
+        ctx.font = '7px monospace';
         ctx.textAlign = 'center';
         ctx.fillText(getLocalizedText('leave'), returnBtnX + returnBtnW / 2, returnBtnY + 10);
 
@@ -16100,7 +16131,7 @@ function draw() {
 
         const blink = Math.sin(t * 0.12) > 0;
         ctx.fillStyle = blink ? '#ffd700' : '#64748b';
-        ctx.font = '6px "Press Start 2P"';
+        ctx.font = '6px monospace';
         ctx.fillText('\u25B2\u25BC | SPACE', panelX + 60, panelY + panelH - 9);
 
         ctx.textAlign = 'left';
