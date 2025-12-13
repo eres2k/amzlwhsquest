@@ -934,6 +934,7 @@
             <div class="hud-text" id="hud-layer" style="display:none;">
                 <div style="color:#ff4444; margin-bottom:5px;">LIFE <span id="life-val">❤️❤️❤️❤️❤️</span></div>
                 <div style="color:#44ff44;">HAZARDS: <span id="score-val">0/5</span></div>
+                <div style="color:#66aaff; margin-top:5px; font-size:8px;">REGION: <span id="region-val">EU</span></div>
             </div>
         
             <div id="boss-hud">
@@ -1193,7 +1194,34 @@ const SIMULATED_AI = {
         "Debris? Chaos on the floor leads to chaos in the soul. Clean it.",
         "Trip hazard? Gravity does not care about your excuses.",
         "Unstable stack? Newton is rolling in his grave. Fix it.",
-        "Fire equipment blocked? Do you plan to fight fire with optimism?"
+        "Fire equipment blocked? Do you plan to fight fire with optimism?",
+        // === GERMANY (DE) Educational Tips ===
+        "[DE] DGUV V1 §15: Employees must support all OSH measures.",
+        "[DE] Fluchtwegbreite: Main escape routes must be min 1.20m wide.",
+        "[DE] ArbSchG §5: Employers must assess workplace hazards.",
+        "[DE] BetrSichV: All work equipment requires regular inspection.",
+        "[DE] DGUV V3: Electrical equipment needs annual safety testing.",
+        "[DE] ASR A2.3: Emergency routes must be clearly marked.",
+        "[DE] Gefährdungsbeurteilung: Risk assessment is mandatory.",
+        "[DE] ArbStättV: Workplaces must meet minimum safety standards.",
+        // === AUSTRIA (AT) Educational Tips ===
+        "[AT] ASchG §15: Employers are obligated to evaluate all risks.",
+        "[AT] BauV: Construction sites require safety coordinators.",
+        "[AT] Arbeitsinspektorat enforces workplace safety laws.",
+        "[AT] ASchG §4: Every workplace needs a safety representative.",
+        "[AT] AUVA provides accident insurance and prevention services.",
+        "[AT] PSA-V: Personal protective equipment must be provided.",
+        "[AT] Arbeitsplatzevaluierung is required for all workplaces.",
+        "[AT] ASchG §12: Workers have the right to refuse unsafe work.",
+        // === NETHERLANDS (NL) Educational Tips ===
+        "[NL] RI&E: Every company must have a Risk Inventory & Evaluation.",
+        "[NL] Arbowet Art 3: Employers must minimize workload pressure.",
+        "[NL] Preventiemedewerker: Companies need prevention officers.",
+        "[NL] BHV: Emergency response teams are mandatory in NL.",
+        "[NL] Arbocatalogus: Sector-specific safety guidelines apply.",
+        "[NL] Inspectie SZW enforces Dutch occupational safety laws.",
+        "[NL] Plan van Aanpak: Action plans must follow RI&E findings.",
+        "[NL] Arbowet Art 8: Workers must receive safety instruction."
     ],
     runners: [
         "Halt! Kinetic energy is not your friend. Slow down.",
@@ -1229,6 +1257,27 @@ const SIMULATED_AI = {
         "Safety is binary. You are a zero."
     ]
 };
+
+// Helper function to pick region-specific tips when offline
+function pickRegionTip() {
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+    // Get current region (may not be set during early load)
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EU';
+
+    // Filter tips for current region (tips start with [DE], [AT], or [NL])
+    const regionPrefix = `[${region}]`;
+    const regionTips = SIMULATED_AI.tips.filter(tip => tip.startsWith(regionPrefix));
+    const genericTips = SIMULATED_AI.tips.filter(tip => !tip.startsWith('['));
+
+    // 60% chance to show region-specific tip if available
+    if (regionTips.length > 0 && Math.random() < 0.6) {
+        return pick(regionTips);
+    }
+
+    // Otherwise return a generic tip
+    return pick(genericTips.length > 0 ? genericTips : SIMULATED_AI.tips);
+}
 
 // --- SIMON'S YARD SAFETY TIPS ---
 const SIMON_YARD_TIPS = [
@@ -1503,12 +1552,13 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
     if (is("reviews_win")) return pick(SIMULATED_AI.reviews_win);
     if (is("hazard") || is("tips")) {
         if(hazardName) return `Hazard "${hazardName}" cleared. Paperwork avoided.`;
-        return pick(SIMULATED_AI.tips);
+        // Prioritize region-specific tips when available
+        return pickRegionTip();
     }
     if (is("banter_ops")) return pick(BANTER_DB.ops);
     if (is("banter_assoc")) return pick(BANTER_DB.assoc);
 
-    return pick(SIMULATED_AI.tips);
+    return pickRegionTip();
 }
 
 const canvas = document.getElementById('gameCanvas');
@@ -5129,6 +5179,15 @@ const GAME = {
     selectedChar: "Carrie",
     charList: ["Carrie", "Nevena", "Joao", "Roman", "Erwin"],
     charIndex: 0,
+    // Region-aware system
+    region: 'EU',
+    regionList: ['DE', 'AT', 'NL'],
+    regionIndex: 0,
+    regionNames: {
+        'DE': 'Germany',
+        'AT': 'Austria',
+        'NL': 'Netherlands'
+    },
     camera: { x: 0, y: 0 },
     map: [], clutter: [], entities: [], projectiles: [], particles: [], floatingTexts: [],
     activeIssues: [],
@@ -5291,6 +5350,42 @@ const HAZARD_POOL = [
     { name: "Incident Near-Miss Unreported", type: "compliance" },
     { name: "OSHA Log Update Pending", type: "compliance" },
     { name: "Lockout Tagout Forgotten", type: "compliance" },
+
+    // === GERMANY (DE) - DGUV & ArbSchG Regulations ===
+    { name: "Blocked Fluchtweg (Escape Route)", type: "door", region: "DE" },
+    { name: "Missing DGUV V3 Sticker", type: "battery", region: "DE" },
+    { name: "Unsecured Pallet (Ladungssicherung)", type: "tall_pallet", region: "DE" },
+    { name: "Fehlende Gefährdungsbeurteilung", type: "compliance", region: "DE" },
+    { name: "Sicherheitsbeauftragter Absent", type: "npc", region: "DE" },
+    { name: "No Betriebsanweisung Posted", type: "compliance", region: "DE" },
+    { name: "BetrSichV Violation Notice", type: "compliance", region: "DE" },
+    { name: "Missing Erste-Hilfe-Kasten", type: "facility", region: "DE" },
+    { name: "Expired Prüfplakette on Forklift", type: "forklift", region: "DE" },
+    { name: "Feuerlöscher Access Blocked", type: "door", region: "DE" },
+
+    // === AUSTRIA (AT) - ASchG & BauV Regulations ===
+    { name: "Unchecked PSA (PPE)", type: "compliance", region: "AT" },
+    { name: "Missing Evaluierung (Risk Assessment)", type: "compliance", region: "AT" },
+    { name: "SVP Not Informed", type: "npc", region: "AT" },
+    { name: "Arbeitsinspektorat Warning Ignored", type: "compliance", region: "AT" },
+    { name: "Fehlende Arbeitsplatzevaluierung", type: "compliance", region: "AT" },
+    { name: "AUVA Checklist Incomplete", type: "compliance", region: "AT" },
+    { name: "Sicherheitsfachkraft Missing", type: "npc", region: "AT" },
+    { name: "Missing Brandschutzbeauftragter", type: "npc", region: "AT" },
+    { name: "Arbeitsmittelverordnung Violation", type: "facility", region: "AT" },
+    { name: "Notausgang Sign Obscured", type: "door", region: "AT" },
+
+    // === NETHERLANDS (NL) - Arbowet & RI&E Regulations ===
+    { name: "Missing RI&E Assessment", type: "compliance", region: "NL" },
+    { name: "Blocked Nooduitgang", type: "door", region: "NL" },
+    { name: "Prevention Officer Absent", type: "npc", region: "NL" },
+    { name: "Preventiemedewerker Not Trained", type: "npc", region: "NL" },
+    { name: "Arbocatalogus Not Followed", type: "compliance", region: "NL" },
+    { name: "Arbodeskundige Report Overdue", type: "compliance", region: "NL" },
+    { name: "BHV Team Understaffed", type: "npc", region: "NL" },
+    { name: "Missing Plan van Aanpak", type: "compliance", region: "NL" },
+    { name: "Werkplekinspectie Skipped", type: "compliance", region: "NL" },
+    { name: "Veiligheidskundige Advice Ignored", type: "compliance", region: "NL" },
 ];
 
 function shuffleArray(arr) {
@@ -5302,8 +5397,27 @@ function shuffleArray(arr) {
 }
 
 function pickRandomHazards(count) {
-    const picks = shuffleArray([...HAZARD_POOL]);
-    return picks.slice(0, Math.min(count, picks.length));
+    const region = GAME.region;
+
+    // Separate generic hazards (no region) from region-specific ones
+    const genericHazards = HAZARD_POOL.filter(h => !h.region);
+    const regionHazards = HAZARD_POOL.filter(h => h.region === region);
+
+    // Prioritize region-specific hazards: include at least 2 regional hazards if available
+    const regionCount = Math.min(2, regionHazards.length, count);
+    const genericCount = count - regionCount;
+
+    const shuffledRegional = shuffleArray([...regionHazards]);
+    const shuffledGeneric = shuffleArray([...genericHazards]);
+
+    // Combine regional and generic hazards
+    const combined = [
+        ...shuffledRegional.slice(0, regionCount),
+        ...shuffledGeneric.slice(0, genericCount)
+    ];
+
+    // Shuffle the final selection so regional hazards aren't always first
+    return shuffleArray(combined);
 }
 
 function randomDoorPlacement() {
@@ -5752,7 +5866,8 @@ function handleAction() {
 
     // Force intro music to start on first user interaction (bypass autoplay restrictions)
     if (GAME.state === 'PRESS_START') {
-        // First interaction - allows audio to play
+        // Set the selected region before advancing
+        GAME.region = GAME.regionList[GAME.regionIndex];
         advanceState(); // Move to LOGO state and start intro music
         return;
     }
@@ -6171,6 +6286,35 @@ function showMechaSimonSplash() {
     AudioSys.sfx.bossIntro();
 }
 
+// Region-specific boss name localizations
+function localizeBossName(originalName, region) {
+    const localizations = {
+        'DE': {
+            'Labour Inspector': 'Gewerbeaufsicht',
+            'Compliance Auditor': 'Berufsgenossenschaft',
+            'Regional OPS MGR': 'Regionaler Betriebsleiter',
+            'Avetta Platform': 'Avetta Risikoprüfer'
+        },
+        'AT': {
+            'Labour Inspector': 'Arbeitsinspektorat',
+            'Compliance Auditor': 'AUVA Prüfer',
+            'Regional OPS MGR': 'Regionale Betriebsleitung'
+        },
+        'NL': {
+            'Labour Inspector': 'Inspectie SZW',
+            'Compliance Auditor': 'Arbo-adviseur',
+            'Regional OPS MGR': 'Regiomanager Operaties',
+            'Avetta Platform': 'RI&E Controleur'
+        }
+    };
+
+    const regionMap = localizations[region];
+    if (regionMap && regionMap[originalName]) {
+        return regionMap[originalName];
+    }
+    return originalName;
+}
+
 function initBossEncounter() {
     GAME.state = 'BOSS_INTRO';
     GAME.stateTimer = 0;
@@ -6178,7 +6322,11 @@ function initBossEncounter() {
     GAME.nextState = 'BOSS';
     AudioSys.sfx.bossIntro();
     const bossData = GAME.bossTypes[Math.floor(Math.random() * GAME.bossTypes.length)];
-    GAME.boss = { ...bossData, x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, w: 32, h: 32, maxHp: bossData.hp, timer: 0, tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25], lowHealthAttackTriggered: false };
+
+    // Localize boss name based on selected region
+    const localizedName = localizeBossName(bossData.name, GAME.region);
+
+    GAME.boss = { ...bossData, name: localizedName, originalName: bossData.name, x: MAP_W * TILE_SIZE / 2, y: MAP_H * TILE_SIZE / 2, w: 32, h: 32, maxHp: bossData.hp, timer: 0, tauntsTriggered: [], tauntThresholds: [0.75, 0.5, 0.25], lowHealthAttackTriggered: false };
     GAME.entities = []; GAME.projectiles = [];
     document.getElementById('boss-name-el').innerText = GAME.boss.name;
     document.getElementById('boss-hud').style.display = 'block';
@@ -6863,6 +7011,18 @@ function update() {
     }
 
     if (GAME.state === 'LOGO' && GAME.stateTimer > 420) advanceState();
+
+    // Region selection navigation in PRESS_START screen (up/down)
+    if (GAME.state === 'PRESS_START') {
+        let changed = false;
+        if (KEYS.up && GAME.ticks % 10 === 0) { GAME.regionIndex--; AudioSys.sfx.step(); changed = true; }
+        if (KEYS.down && GAME.ticks % 10 === 0) { GAME.regionIndex++; AudioSys.sfx.step(); changed = true; }
+        if (changed) {
+            if (GAME.regionIndex < 0) GAME.regionIndex = GAME.regionList.length - 1;
+            if (GAME.regionIndex >= GAME.regionList.length) GAME.regionIndex = 0;
+        }
+        return;
+    }
 
     if (GAME.state === 'TITLE') {
         return;
@@ -8346,6 +8506,22 @@ function throwBook() {
     GAME.projectiles.push({ type:'attack', owner: GAME.selectedChar, sprite: attackMeta.sprite, color: attackMeta.color, x:p.x+8, y:p.y+8, vx, vy, life:attackMeta.life || 40, text: attackMeta.text }); AudioSys.sfx.throw();
 }
 
+// Helper function to get region-specific safety context for AI prompts
+function getRegionSafetyContext() {
+    const region = GAME.region;
+    const contexts = {
+        'DE': 'Cite specific German regulations like DGUV Vorschrift 1, ArbSchG, or BetrSichV. Reference the Berufsgenossenschaft if relevant.',
+        'AT': 'Cite specific Austrian regulations like ASchG or BauV. Mention the Arbeitsinspektorat or AUVA if relevant.',
+        'NL': 'Cite specific Dutch regulations like Arbowet or the Arbocatalogus. Mention the RI&E or Inspectie SZW if relevant.',
+        'EU': 'Reference general EU workplace safety directives.'
+    };
+    return contexts[region] || contexts['EU'];
+}
+
+function getRegionName() {
+    return GAME.regionNames[GAME.region] || 'Europe';
+}
+
 function tryInteract() {
     const p = GAME.player;
 
@@ -8373,8 +8549,10 @@ function tryInteract() {
              // --- CHANGED: Show thinking state immediately for responsiveness ---
              showThinking("Simon Unglaube", GFX.simonFaceLarge);
 
+             const safetyContext = getRegionSafetyContext();
+             const regionName = getRegionName();
              callGemini(
-                 "You are Simon Unglaube, WHS Senior Regional Manager. The player stopped a runner. Praise the player with dry, professional humor and add a witty safety reminder about slowing down. Max 22 words.",
+                 `You are Simon Unglaube, WHS Senior Regional Manager in ${regionName}. The player stopped a runner. Praise with dry humor, then provide ONE specific safety tip using ${GAME.region} standards. ${safetyContext} Max 35 words.`,
                  "runners"
              ).then(tip => {
                 if (GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon Unglaube", GFX.simonFaceLarge, true);
@@ -8397,8 +8575,10 @@ function tryInteract() {
             // --- CHANGED: Show thinking state immediately ---
             showThinking("Simon Unglaube", GFX.simonFaceLarge);
 
+            const safetyCtx = getRegionSafetyContext();
+            const regName = getRegionName();
             callGemini(
-                `You are Simon Unglaube, WHS Senior Regional Manager. A hazard "${h.data.name}" was fixed. Praise the player with dry, professional humor and share one specific safety tip tied to that hazard. Max 32 words.`,
+                `You are Simon Unglaube, WHS Senior Regional Manager in ${regName}. A hazard "${h.data.name}" was fixed. Praise with dry humor, then provide ONE specific, real-world educational safety tip using ${GAME.region} standards. ${safetyCtx} Keep it under 35 words.`,
                 "hazard",
                 { hazardName: h.data.name }
             ).then(tip => {
@@ -8488,7 +8668,13 @@ function checkCol(x, y) {
     return GAME.map[ty][tx] !== 0;
 }
 
-function updateHud() { document.getElementById('life-val').innerText = "❤️".repeat(Math.max(0, GAME.lives)); document.getElementById('score-val').innerText = GAME.issuesFixed + "/5"; }
+function updateHud() {
+    document.getElementById('life-val').innerText = "❤️".repeat(Math.max(0, GAME.lives));
+    document.getElementById('score-val').innerText = GAME.issuesFixed + "/5";
+    // Update region indicator
+    const regionEl = document.getElementById('region-val');
+    if (regionEl) regionEl.innerText = GAME.region;
+}
 
 // Helper function to start portrait talking animation
 function startPortraitAnimation(basePortrait, talkingPortrait) {
@@ -12291,30 +12477,107 @@ function draw() {
     ctx.save(); ctx.translate(dxShake, dyShake);
 
     if (GAME.state === 'PRESS_START') {
-        // Black screen with pulsing "PRESS SPACEBAR" prompt
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Starfield background (subtle)
-        for(let i = 0; i < 20; i++) {
-            let seed = i * 123.456;
+        // Animated starfield background
+        for (let i = 0; i < 30; i++) {
+            let seed = i * 234.567;
             let x = ((seed * 9301 + 49297) % 233280) / 910;
             let y = ((seed * 1234 + 8765) % 233280) / 1040;
-            let brightness = Math.sin(GAME.stateTimer * 0.05 + i) * 0.2 + 0.3;
-            ctx.fillStyle = `rgba(255,255,255,${brightness})`;
-            ctx.fillRect(x, y, 1, 1);
+            let speed = (i % 3) + 1;
+            let starY = (y + GAME.stateTimer * speed * 0.15) % 224;
+            let brightness = Math.sin(GAME.stateTimer * 0.06 + i) * 0.25 + 0.4;
+            ctx.fillStyle = `rgba(100, 180, 255, ${brightness})`;
+            ctx.fillRect(x, starY, 1, 1);
         }
 
-        // Pulsing text
-        const pulse = 0.4 + Math.abs(Math.sin(GAME.stateTimer * 0.05)) * 0.6;
-        ctx.textAlign = 'center';
-        ctx.font = '12px monospace';
-        ctx.fillStyle = `rgba(255, 215, 0, ${pulse})`;
-        ctx.fillText('PRESS SPACEBAR', canvas.width/2, canvas.height/2);
+        // Background gradient glow
+        let hue = (GAME.stateTimer * 0.3) % 360;
+        let gradient = ctx.createRadialGradient(128, 100, 0, 128, 100, 100);
+        gradient.addColorStop(0, `hsla(${hue}, 50%, 20%, 0.25)`);
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.font = '8px monospace';
+        ctx.textAlign = 'center';
+
+        // Region selection title
+        ctx.font = 'bold 10px monospace';
+        ctx.fillStyle = '#88ccff';
+        ctx.fillText('SELECT YOUR REGION', canvas.width / 2, 35);
+
+        // Region options
+        const regions = GAME.regionList;
+        const startY = 55;
+        const spacing = 28;
+
+        regions.forEach((region, idx) => {
+            const y = startY + idx * spacing;
+            const isSelected = idx === GAME.regionIndex;
+
+            // Selection highlight
+            if (isSelected) {
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.12)';
+                ctx.fillRect(45, y - 10, canvas.width - 90, 22);
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(45, y - 10, canvas.width - 90, 22);
+
+                // Animated arrows
+                const arrowPulse = Math.sin(GAME.stateTimer * 0.12) * 2;
+                ctx.fillStyle = '#ffd700';
+                ctx.font = '10px monospace';
+                ctx.fillText('▶', 35 - arrowPulse, y + 3);
+                ctx.fillText('◀', canvas.width - 35 + arrowPulse, y + 3);
+            }
+
+            // Flag colors
+            const flagColors = {
+                'DE': ['#000000', '#dd0000', '#ffcc00'],
+                'AT': ['#ed2939', '#ffffff', '#ed2939'],
+                'NL': ['#ae1c28', '#ffffff', '#21468b']
+            };
+            const colors = flagColors[region];
+            const flagX = canvas.width / 2 - 70;
+            colors.forEach((color, ci) => {
+                ctx.fillStyle = color;
+                ctx.fillRect(flagX, y - 4 + ci * 4, 14, 4);
+            });
+
+            // Region code and name
+            ctx.font = isSelected ? 'bold 10px monospace' : '9px monospace';
+            ctx.fillStyle = isSelected ? '#ffd700' : '#888888';
+            ctx.fillText(region, canvas.width / 2 - 35, y + 4);
+
+            ctx.font = isSelected ? '9px monospace' : '8px monospace';
+            ctx.fillStyle = isSelected ? '#ffffff' : '#666666';
+            ctx.fillText(GAME.regionNames[region], canvas.width / 2 + 25, y + 4);
+        });
+
+        // Divider line
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
+        ctx.beginPath();
+        ctx.moveTo(60, 145);
+        ctx.lineTo(canvas.width - 60, 145);
+        ctx.stroke();
+
+        // Pulsing "PRESS SPACEBAR" text
+        const pulse = 0.5 + Math.abs(Math.sin(GAME.stateTimer * 0.06)) * 0.5;
+        ctx.font = 'bold 11px monospace';
+        ctx.fillStyle = `rgba(255, 215, 0, ${pulse})`;
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 8;
+        ctx.fillText('PRESS SPACEBAR', canvas.width / 2, 165);
+        ctx.shadowBlur = 0;
+
+        ctx.font = '7px monospace';
         ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        ctx.fillText('(Audio will be enabled)', canvas.width/2, canvas.height/2 + 20);
+        ctx.fillText('↑↓ Select Region | SPACE to Start', canvas.width / 2, 180);
+
+        ctx.font = '6px monospace';
+        ctx.fillStyle = 'rgba(136, 204, 255, 0.6)';
+        ctx.fillText('Learn real safety regulations!', canvas.width / 2, 195);
 
         ctx.textAlign = 'start';
         ctx.restore();
@@ -12589,47 +12852,101 @@ function draw() {
         ctx.fillStyle = '#22d3ee';
         ctx.fillRect(50, 56, canvas.width - 100, 1);
 
-        // Simon icon area (small box)
-        ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
-        ctx.fillRect(20, 68, 30, 30);
-        ctx.strokeStyle = '#3b82f6';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(20, 68, 30, 30);
+        // Amazon-style badge for Simon
+        const badgeX = 20, badgeY = 62, badgeW = 50, badgeH = 70;
 
-        // "S" for Simon
-        ctx.fillStyle = '#60a5fa';
-        ctx.font = '12px "Press Start 2P"';
+        // Badge outer border (orange/amber like Amazon badge)
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+
+        // Badge inner background (blue like Amazon badge)
+        ctx.fillStyle = '#1e3a5f';
+        ctx.fillRect(badgeX + 3, badgeY + 3, badgeW - 6, badgeH - 6);
+
+        // "WHS" header on badge
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = 'bold 7px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('S', 35, 88);
+        ctx.fillText('WHS', badgeX + badgeW / 2, badgeY + 12);
+
+        // Portrait area (white background)
+        const portraitX = badgeX + 10, portraitY = badgeY + 16, portraitSize = 30;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(portraitX, portraitY, portraitSize, portraitSize);
+
+        // Draw Simon's portrait if available
+        if (GFX.simonFace) {
+            ctx.save();
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(GFX.simonFace, portraitX + 2, portraitY + 2, portraitSize - 4, portraitSize - 4);
+            ctx.restore();
+        } else {
+            // Fallback: draw a simple face placeholder
+            ctx.fillStyle = '#d4a574';
+            ctx.fillRect(portraitX + 8, portraitY + 6, 14, 18);
+            ctx.fillStyle = '#333';
+            ctx.fillRect(portraitX + 10, portraitY + 10, 3, 3);
+            ctx.fillRect(portraitX + 17, portraitY + 10, 3, 3);
+            ctx.fillRect(portraitX + 12, portraitY + 18, 6, 2);
+        }
+
+        // "Simon" name on badge
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 5px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Simon', badgeX + badgeW / 2, badgeY + 54);
+
+        // Title on badge
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '4px monospace';
+        ctx.fillText('Snr. Regional Mgr', badgeX + badgeW / 2, badgeY + 62);
+
+        // Barcode effect at bottom
+        ctx.fillStyle = '#000';
+        for (let i = 0; i < 12; i++) {
+            const barW = (i % 3 === 0) ? 2 : 1;
+            ctx.fillRect(badgeX + 10 + i * 3, badgeY + badgeH - 8, barW, 5);
+        }
+
+        // Badge lanyard hole
+        ctx.fillStyle = '#1e3a5f';
+        ctx.beginPath();
+        ctx.arc(badgeX + badgeW / 2, badgeY - 2, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#0a1525';
+        ctx.beginPath();
+        ctx.arc(badgeX + badgeW / 2, badgeY - 2, 2, 0, Math.PI * 2);
+        ctx.fill();
 
         // Mission text
         ctx.textAlign = 'left';
         ctx.font = '7px "Press Start 2P"';
         ctx.fillStyle = '#94a3b8';
-        ctx.fillText('Simon asks you to:', 58, 83);
+        ctx.fillText('Simon asks you to:', 78, 95);
 
-        // Mission objectives with bullet styling
-        ctx.font = '7px "Press Start 2P"';
+        // Mission objectives with bullet styling (positioned right of badge)
+        ctx.font = '6px "Press Start 2P"';
+        const objX = 78;
 
         ctx.fillStyle = '#22c55e';
-        ctx.fillText('>', 25, 115);
+        ctx.fillText('>', objX, 110);
         ctx.fillStyle = '#e2e8f0';
-        ctx.fillText('Do the safety audit', 38, 115);
+        ctx.fillText('Do the safety audit', objX + 10, 110);
 
         ctx.fillStyle = '#f97316';
-        ctx.fillText('>', 25, 133);
+        ctx.fillText('>', objX, 124);
         ctx.fillStyle = '#e2e8f0';
-        ctx.fillText('Dodge crazy Ops requests', 38, 133);
+        ctx.fillText('Dodge Ops requests', objX + 10, 124);
 
         ctx.fillStyle = '#a855f7';
-        ctx.fillText('>', 25, 151);
+        ctx.fillText('>', objX, 138);
         ctx.fillStyle = '#e2e8f0';
-        ctx.fillText('Push back with rules', 38, 151);
+        ctx.fillText('Push back with rules', objX + 10, 138);
 
         ctx.fillStyle = '#ef4444';
-        ctx.fillText('>', 25, 169);
+        ctx.fillText('>', objX, 152);
         ctx.fillStyle = '#e2e8f0';
-        ctx.fillText('Deal with "visitors"', 38, 169);
+        ctx.fillText('Deal with "visitors"', objX + 10, 152);
 
         // Animated prompt
         ctx.textAlign = 'center';
