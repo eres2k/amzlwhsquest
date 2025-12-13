@@ -1528,7 +1528,7 @@ const TTSSys = {
     characterVoices: {
         // Main characters - varied voices
         "Simon": { pitch: 0.8, rate: 0.88, volume: 1.0, gender: "male", desc: "Authoritative manager" },
-        "Simon Unglaube": { pitch: 0.8, rate: 0.88, volume: 1.0, gender: "male", desc: "Authoritative manager" },
+        "Simon": { pitch: 0.8, rate: 0.88, volume: 1.0, gender: "male", desc: "Authoritative manager" },
         "Carrie": { pitch: 1.3, rate: 1.05, volume: 0.95, gender: "female", desc: "Energetic, precise" },
         "Nevena": { pitch: 1.15, rate: 0.95, volume: 0.9, gender: "female", desc: "Calm, oracle-like" },
         "Joao": { pitch: 0.85, rate: 1.2, volume: 1.0, gender: "male", desc: "Loud, siren-like" },
@@ -2604,9 +2604,9 @@ function generateAssets() {
         "Joao": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFaces["Joao"],0,0,48,48,0,0,96,96); }),
         "Roman": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFaces["Roman"],0,0,48,48,0,0,96,96); }),
         "Erwin": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFaces["Erwin"],0,0,48,48,0,0,96,96); }),
-        "Simon Unglaube": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceLarge,0,0,48,48,0,0,96,96); }),
-        "Simon Unglaube Happy": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceHappy,0,0,48,48,0,0,96,96); }),
-        "Simon Unglaube Disappointed": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceDisappointed,0,0,48,48,0,0,96,96); }),
+        "Simon": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceLarge,0,0,48,48,0,0,96,96); }),
+        "Simon Happy": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceHappy,0,0,48,48,0,0,96,96); }),
+        "Simon Disappointed": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceDisappointed,0,0,48,48,0,0,96,96); }),
         "Jeff Bezos": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.jeffFace,0,0,48,48,0,0,96,96); })
     };
 
@@ -2616,7 +2616,7 @@ function generateAssets() {
         "Joao": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFacesTalking["Joao"],0,0,48,48,0,0,96,96); }),
         "Roman": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFacesTalking["Roman"],0,0,48,48,0,0,96,96); }),
         "Erwin": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.charFacesTalking["Erwin"],0,0,48,48,0,0,96,96); }),
-        "Simon Unglaube": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceTalking,0,0,48,48,0,0,96,96); }),
+        "Simon": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.simonFaceTalking,0,0,48,48,0,0,96,96); }),
         "Jeff Bezos": c(96,96, ctx => { ctx.imageSmoothingEnabled=false; ctx.drawImage(GFX.jeffFaceTalking,0,0,48,48,0,0,96,96); })
     };
 
@@ -3729,23 +3729,31 @@ function generateAssets() {
 
     GFX.clutter = { cart: c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(2,6,12,8); ctx.fillStyle = '#8b4513'; ctx.fillRect(4,4,8,6); }), coffee: c(8,8, ctx => { ctx.fillStyle='#fff'; ctx.fillRect(2,2,4,5); }), paper: c(8,8, ctx => { ctx.fillStyle='#eee'; ctx.fillRect(1,3,6,4); }), tape: c(8,8, ctx => { ctx.fillStyle='#d97706'; ctx.beginPath(); ctx.arc(4,4,3,0,Math.PI*2); ctx.fill(); }) };
    GFX.hazards = {
-    // --- Liquids / Spills (Amazon yellow warning) ---
+    // --- Liquids / Spills (wet floor hazard - UTR slip risk) ---
     spill: c(16,16, ctx => {
-        // Shadow
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.beginPath(); ctx.ellipse(8,11,7,4,0,0,Math.PI*2); ctx.fill();
-        // Dark base
-        ctx.fillStyle = '#b91c1c';
-        ctx.beginPath(); ctx.ellipse(8,10,6,4,0,0,Math.PI*2); ctx.fill();
-        // Main puddle (red hazmat)
-        ctx.fillStyle = '#dc2626';
-        ctx.beginPath(); ctx.ellipse(8,9,5,3,0,0,Math.PI*2); ctx.fill();
-        // Highlight
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath(); ctx.ellipse(6,8,2,1.5,0,0,Math.PI*2); ctx.fill();
-        // Warning reflection
-        ctx.fillStyle = '#fecaca';
-        ctx.fillRect(9,9,2,1);
+        // Warehouse floor base
+        ctx.fillStyle = '#4b5563';
+        ctx.fillRect(0,8,16,8);
+        // Puddle shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(8,12,6,3,0,0,Math.PI*2); ctx.fill();
+        // Main puddle (water/liquid)
+        ctx.fillStyle = '#3b82f6';
+        ctx.beginPath(); ctx.ellipse(8,11,5,2.5,0,0,Math.PI*2); ctx.fill();
+        // Puddle highlight (reflection)
+        ctx.fillStyle = '#93c5fd';
+        ctx.beginPath(); ctx.ellipse(6,10,2,1,0,0,Math.PI*2); ctx.fill();
+        // Wet floor warning cone (mini)
+        ctx.fillStyle = '#f97316';
+        ctx.beginPath();
+        ctx.moveTo(2,14); ctx.lineTo(5,14); ctx.lineTo(3.5,8); ctx.closePath();
+        ctx.fill();
+        // Cone stripes
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(3,10,1,1); ctx.fillRect(3,12,1,1);
+        // Drip trail
+        ctx.fillStyle = '#60a5fa';
+        ctx.fillRect(12,9,2,1); ctx.fillRect(14,10,1,2);
     }),
 
     // --- Amazon Box ---
@@ -3798,28 +3806,43 @@ function generateAssets() {
         ctx.fillRect(7,7,2,1);
     }),
 
-    // --- Tall pallet stacks ---
+    // --- Tall pallet stacks (UTR stacking hazard - leaning/unstable) ---
     tall_pallet: c(16,16, ctx => {
-        // Shadow
+        // Shadow (extended for leaning stack)
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(4,14,10,2);
-        // Main stack (Amazon orange)
-        ctx.fillStyle = '#c2410c';
-        ctx.fillRect(3,1,10,13);
-        // Box layers
-        ctx.fillStyle = '#ea580c';
-        ctx.fillRect(4,2,8,3);
-        ctx.fillRect(4,6,8,3);
-        ctx.fillRect(4,10,8,3);
-        // Tape highlights
-        ctx.fillStyle = '#0284c7';
-        ctx.fillRect(5,3,2,1); ctx.fillRect(9,3,2,1);
-        ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1);
+        ctx.fillRect(3,14,12,2);
         // Pallet base (wood)
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(2,13,12,3);
         ctx.fillStyle = '#92400e';
-        ctx.fillRect(2,13,12,2);
-        ctx.fillStyle = '#a16207';
         ctx.fillRect(3,13,2,2); ctx.fillRect(7,13,2,2); ctx.fillRect(11,13,2,2);
+        // Bottom box layer (stable)
+        ctx.fillStyle = '#c2410c';
+        ctx.fillRect(3,9,10,4);
+        ctx.fillStyle = '#ea580c';
+        ctx.fillRect(4,10,8,2);
+        // Middle box layer (slightly shifted)
+        ctx.fillStyle = '#c2410c';
+        ctx.fillRect(4,5,10,4);
+        ctx.fillStyle = '#ea580c';
+        ctx.fillRect(5,6,8,2);
+        // Top box (leaning dangerously!)
+        ctx.save();
+        ctx.translate(9,3);
+        ctx.rotate(0.2);
+        ctx.fillStyle = '#c2410c';
+        ctx.fillRect(-4,-2,8,4);
+        ctx.fillStyle = '#ea580c';
+        ctx.fillRect(-3,-1,6,2);
+        ctx.restore();
+        // Tape on boxes
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(6,10,4,1); ctx.fillRect(7,6,4,1);
+        // Warning - too tall indicator
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(0,0,2,4);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0,1,1,2);
     }),
 
     // --- Debris / broken pallets ---
@@ -3844,31 +3867,42 @@ function generateAssets() {
         ctx.fillRect(1,4,3,3);
     }),
 
-    // --- Conveyor / chute (Amazon FC style) ---
+    // --- Conveyor / chute (Amazon FC jam hazard) ---
     conveyor: c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(2,12,13,3);
+        ctx.fillRect(1,13,14,3);
         // Frame (industrial gray)
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(1,5,14,8);
-        // Belt surface
+        ctx.fillRect(0,6,16,8);
+        // Belt surface (stopped/jammed)
         ctx.fillStyle = '#374151';
-        ctx.fillRect(2,6,12,6);
-        // Belt segments
+        ctx.fillRect(1,7,14,6);
+        // Belt rollers
+        ctx.fillStyle = '#6b7280';
+        ctx.fillRect(2,7,2,5); ctx.fillRect(6,7,2,5); ctx.fillRect(10,7,2,5); ctx.fillRect(14,7,1,5);
+        // Side rails
         ctx.fillStyle = '#4b5563';
-        ctx.fillRect(3,7,2,4); ctx.fillRect(7,7,2,4); ctx.fillRect(11,7,2,4);
-        // Rollers
-        ctx.fillStyle = '#9ca3af';
-        ctx.fillRect(2,5,3,1); ctx.fillRect(11,5,3,1);
-        // Jammed package (Amazon brown)
+        ctx.fillRect(0,5,16,2); ctx.fillRect(0,12,16,2);
+        // Jammed packages pile-up!
         ctx.fillStyle = '#92400e';
-        ctx.fillRect(5,3,6,4);
+        ctx.fillRect(3,2,5,5); // Bottom package
+        ctx.fillRect(7,1,5,4); // Tilted package on top
         ctx.fillStyle = '#a16207';
-        ctx.fillRect(6,4,4,2);
-        // Warning light
+        ctx.fillRect(4,3,3,3); ctx.fillRect(8,2,3,2);
+        // Package tape
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(5,4,1,2); ctx.fillRect(9,2,1,1);
+        // E-STOP button (red) - should be pressed!
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath(); ctx.arc(14,3,2,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(13,2,2,1);
+        // Warning light (blinking)
         ctx.fillStyle = '#ef4444';
-        ctx.fillRect(1,4,2,2);
+        ctx.fillRect(0,2,2,3);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(0,3,1,1);
     }),
 
     // --- Scanner Battery / charging station ---
@@ -3894,30 +3928,41 @@ function generateAssets() {
         ctx.fillRect(7,11,2,1);
     }),
 
-    // --- Extension Cord / scanner cord ---
+    // --- Extension Cord / scanner cord (UTR trip hazard) ---
     cord: c(16,16, ctx => {
+        // Floor with walkway marking
+        ctx.fillStyle = '#4b5563';
+        ctx.fillRect(0,10,16,6);
+        // Pedestrian walkway line being crossed by cord
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(0,11,16,1);
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.beginPath(); ctx.ellipse(8,13,6,2,0,0,Math.PI*2); ctx.fill();
-        // Coiled yellow cable
+        ctx.beginPath(); ctx.ellipse(8,13,5,1.5,0,0,Math.PI*2); ctx.fill();
+        // Cord crossing walkway (bright yellow - trip hazard!)
         ctx.strokeStyle = '#eab308';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(2,4);
-        ctx.bezierCurveTo(5,10,8,2,11,8);
-        ctx.bezierCurveTo(13,12,15,6,14,10);
+        ctx.moveTo(1,3);
+        ctx.bezierCurveTo(4,8,7,5,10,10);
+        ctx.bezierCurveTo(12,14,14,12,15,14);
         ctx.stroke();
-        // Cable highlight
+        // Cord highlight
         ctx.strokeStyle = '#fbbf24';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(3,3); ctx.bezierCurveTo(6,8,9,2,12,6);
+        ctx.moveTo(2,2); ctx.bezierCurveTo(5,6,8,4,11,8);
         ctx.stroke();
-        // Plug
+        // Scanner/device attached
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(12,8,3,4);
-        ctx.fillStyle = '#9ca3af';
-        ctx.fillRect(13,12,1,2);
+        ctx.fillRect(0,1,4,4);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(1,2,2,2);
+        // Warning tape (should be used!)
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(13,8,2,1);
+        ctx.fillStyle = '#111';
+        ctx.fillRect(14,8,1,1);
     }),
 
     // --- Amazon Tote / bin ---
@@ -3986,29 +4031,42 @@ function generateAssets() {
         ctx.fillRect(3,13,2,2); ctx.fillRect(11,13,2,2);
     }),
 
-    // --- Flat cart / Amazon blue cart ---
+    // --- Flat cart / Amazon blue cart (UTR pathway obstruction) ---
     cart: c(16,16, ctx => {
+        // Floor with walkway (being blocked!)
+        ctx.fillStyle = '#4b5563';
+        ctx.fillRect(0,12,16,4);
+        // Pedestrian walkway line (obstructed)
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(0,13,5,1); ctx.fillRect(12,13,4,1);
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(3,13,11,3);
-        // Platform (Amazon blue)
+        ctx.fillRect(2,12,12,3);
+        // Cart platform (Amazon blue) - blocking path!
         ctx.fillStyle = '#1e40af';
-        ctx.fillRect(2,9,12,4);
+        ctx.fillRect(1,7,13,5);
         ctx.fillStyle = '#3b82f6';
-        ctx.fillRect(2,8,12,2);
-        // Handle frame
+        ctx.fillRect(2,8,11,3);
+        // Overloaded packages on cart (unstable!)
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(3,3,4,4); ctx.fillRect(8,4,4,3);
+        ctx.fillStyle = '#a16207';
+        ctx.fillRect(4,4,2,2); ctx.fillRect(9,5,2,1);
+        // Leaning package (about to fall)
+        ctx.save();
+        ctx.translate(11,2);
+        ctx.rotate(0.3);
+        ctx.fillStyle = '#c2410c';
+        ctx.fillRect(-2,-2,4,3);
+        ctx.restore();
+        // Handle
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(3,3,2,6);
-        ctx.fillRect(3,3,9,2);
-        ctx.fillRect(11,3,2,3);
-        // Grip
-        ctx.fillStyle = '#f97316';
-        ctx.fillRect(4,3,7,1);
-        // Wheels
+        ctx.fillRect(1,5,2,3);
+        // Wheels (one locked, causing obstruction)
         ctx.fillStyle = '#111';
-        ctx.fillRect(3,12,3,3); ctx.fillRect(10,12,3,3);
-        ctx.fillStyle = '#374151';
-        ctx.fillRect(4,13,1,1); ctx.fillRect(11,13,1,1);
+        ctx.fillRect(2,11,3,3); ctx.fillRect(10,11,3,3);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(2,11,1,1); // Locked wheel indicator
     }),
 
     // --- Fire door / emergency exit ---
@@ -4039,27 +4097,37 @@ function generateAssets() {
         ctx.fill();
     }),
 
-    // --- Loading dock ---
+    // --- Loading dock (UTR dock safety hazard) ---
     dock: c(16,16, ctx => {
-        // Shadow/pit
-        ctx.fillStyle = '#020617';
-        ctx.fillRect(1,8,14,7);
-        // Dock plate
-        ctx.fillStyle = '#374151';
-        ctx.fillRect(2,9,12,5);
-        // Diamond plate texture
+        // Warehouse floor
         ctx.fillStyle = '#4b5563';
-        ctx.fillRect(3,10,2,1); ctx.fillRect(6,10,2,1); ctx.fillRect(9,10,2,1); ctx.fillRect(12,10,2,1);
-        ctx.fillRect(4,12,2,1); ctx.fillRect(7,12,2,1); ctx.fillRect(10,12,2,1);
-        // Yellow safety edge
+        ctx.fillRect(0,0,16,8);
+        // Dangerous gap/pit (fall hazard!)
+        ctx.fillStyle = '#020617';
+        ctx.fillRect(0,8,16,8);
+        // Trailer edge visible
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(0,14,16,2);
+        // Unsecured dock plate (tilted - hazard!)
+        ctx.fillStyle = '#6b7280';
+        ctx.save();
+        ctx.translate(8,10);
+        ctx.rotate(0.15);
+        ctx.fillRect(-6,-1,12,3);
+        ctx.restore();
+        // Diamond plate texture
+        ctx.fillStyle = '#9ca3af';
+        ctx.fillRect(3,9,2,1); ctx.fillRect(7,9,2,1); ctx.fillRect(11,9,2,1);
+        // Yellow/black safety edge (dock edge warning)
         ctx.fillStyle = '#eab308';
-        ctx.fillRect(2,8,12,2);
-        // Warning stripes
+        ctx.fillRect(0,6,16,2);
         ctx.fillStyle = '#111';
-        ctx.fillRect(4,8,2,2); ctx.fillRect(8,8,2,2); ctx.fillRect(12,8,2,2);
-        // Edge bumper
-        ctx.fillStyle = '#f97316';
-        ctx.fillRect(1,6,3,2); ctx.fillRect(12,6,3,2);
+        ctx.fillRect(2,6,2,2); ctx.fillRect(6,6,2,2); ctx.fillRect(10,6,2,2); ctx.fillRect(14,6,2,2);
+        // Missing wheel chock indicator
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(0,14,3,2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(1,15,1,1);
     }),
 
     // --- Facility hazard / bollard ---
@@ -4084,66 +4152,81 @@ function generateAssets() {
         ctx.fillRect(6,5,4,1);
     }),
 
-    // --- Unsafe worker behavior ---
+    // --- Unsafe worker behavior (UTR violation - distracted pedestrian) ---
     npc: c(16,16, ctx => {
+        // PIT lane markings on ground (worker is crossing unsafely!)
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(0,12,16,4);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(0,13,3,1); ctx.fillRect(6,13,3,1); ctx.fillRect(12,13,3,1);
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.25)';
-        ctx.beginPath(); ctx.ellipse(8,15,5,2,0,0,Math.PI*2); ctx.fill();
-        // Head
+        ctx.beginPath(); ctx.ellipse(8,12,4,1.5,0,0,Math.PI*2); ctx.fill();
+        // Hard hat (safety yellow)
         ctx.fillStyle = '#facc15';
-        ctx.beginPath();
-        ctx.arc(8,4,3,0,Math.PI*2);
-        ctx.fill();
-        // Body (Amazon hi-vis vest)
-        ctx.fillStyle = '#ca8a04';
-        ctx.fillRect(5,7,6,7);
-        ctx.fillStyle = '#eab308';
-        ctx.fillRect(6,8,4,5);
-        // Hi-vis reflective stripes
+        ctx.beginPath(); ctx.arc(8,3,3,Math.PI,0); ctx.fill();
+        ctx.fillRect(5,2,6,2);
+        // Head/face
+        ctx.fillStyle = '#fcd34d';
+        ctx.beginPath(); ctx.arc(8,4,2,0,Math.PI*2); ctx.fill();
+        // Body (Amazon hi-vis safety vest)
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(5,6,6,6);
+        // Hi-vis reflective X pattern
         ctx.fillStyle = '#fef08a';
-        ctx.fillRect(5,8,6,1); ctx.fillRect(5,11,6,1);
-        // Phone in hand (distracted!)
+        ctx.fillRect(5,7,6,1); ctx.fillRect(5,10,6,1);
+        ctx.fillRect(6,7,1,4); ctx.fillRect(9,7,1,4);
+        // Phone in hand (distracted walking - UTR violation!)
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(11,6,3,5);
+        ctx.fillRect(11,5,3,5);
         ctx.fillStyle = '#60a5fa';
-        ctx.fillRect(12,7,1,3);
-        // Legs
+        ctx.fillRect(12,6,1,3);
+        // Warning icon on phone (notification)
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(13,5,1,1);
+        // Legs (walking into PIT lane)
         ctx.fillStyle = '#1e3a8a';
-        ctx.fillRect(6,13,2,2); ctx.fillRect(8,13,2,2);
+        ctx.fillRect(6,11,2,2); ctx.fillRect(8,11,2,2);
     }),
 
     // --- PIT Forklift ---
     forklift: c(16,16, ctx => {
-        // Shadow
-        ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(5,13,10,3);
-        // Main body (Amazon orange)
-        ctx.fillStyle = '#c2410c';
-        ctx.fillRect(3,7,8,6);
+        // Speed lines (motion blur) - UTR violation!
+        ctx.fillStyle = 'rgba(255,100,0,0.4)';
+        ctx.fillRect(0,6,3,1); ctx.fillRect(0,9,2,1); ctx.fillRect(0,12,3,1);
+        // Shadow (motion blur)
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.fillRect(4,14,11,2);
+        // Main body (bright orange PIT)
         ctx.fillStyle = '#ea580c';
-        ctx.fillRect(4,8,6,4);
-        // Cabin/cage
-        ctx.fillStyle = '#1f2937';
-        ctx.fillRect(3,4,7,4);
-        ctx.fillStyle = '#374151';
-        ctx.fillRect(4,5,5,2);
-        // Windshield
-        ctx.fillStyle = '#0c4a6e';
-        ctx.fillRect(5,5,3,2);
-        // Mast
-        ctx.fillStyle = '#374151';
-        ctx.fillRect(10,2,2,11);
-        ctx.fillStyle = '#4b5563';
-        ctx.fillRect(11,3,1,9);
-        // Forks
-        ctx.fillStyle = '#eab308';
-        ctx.fillRect(11,11,4,1); ctx.fillRect(11,13,4,1);
-        // Wheels
-        ctx.fillStyle = '#111';
-        ctx.fillRect(3,12,3,3); ctx.fillRect(7,12,3,3);
-        // Warning light
+        ctx.fillRect(4,6,8,7);
         ctx.fillStyle = '#f97316';
-        ctx.fillRect(5,4,2,1);
+        ctx.fillRect(5,7,6,5);
+        // Overhead guard/cage
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(4,3,7,4);
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(5,4,5,2);
+        // Operator silhouette
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath(); ctx.arc(7,5,2,0,Math.PI*2); ctx.fill();
+        // Mast with load
+        ctx.fillStyle = '#4b5563';
+        ctx.fillRect(11,1,2,12);
+        // Raised forks with box (dangerous!)
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(12,3,3,1); ctx.fillRect(12,5,3,1);
+        // Box on forks (blocking view - UTR hazard)
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(12,1,3,3);
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(13,2,1,1);
+        // Wheels (spinning fast)
+        ctx.fillStyle = '#111';
+        ctx.fillRect(4,12,3,3); ctx.fillRect(8,12,3,3);
+        // Flashing warning beacon
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(6,3,2,1);
     }),
 
     // --- DSP Van / yard hazard ---
@@ -4202,30 +4285,41 @@ function generateAssets() {
         ctx.fillRect(6,10,4,2);
     }),
 
-    // --- Box cutter / safety blade ---
+    // --- Box cutter / safety blade (UTR cut hazard - blade exposed) ---
     blade: c(16,16, ctx => {
+        // Work surface/table
+        ctx.fillStyle = '#4b5563';
+        ctx.fillRect(0,10,16,6);
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.fillRect(4,12,10,3);
-        // Handle (safety orange)
+        ctx.fillRect(3,11,11,3);
+        // Handle (safety orange - high visibility)
         ctx.fillStyle = '#ea580c';
-        ctx.fillRect(2,7,9,4);
+        ctx.fillRect(1,6,9,4);
         ctx.fillStyle = '#f97316';
-        ctx.fillRect(3,8,7,2);
+        ctx.fillRect(2,7,7,2);
         // Grip ridges
         ctx.fillStyle = '#c2410c';
-        ctx.fillRect(4,8,1,2); ctx.fillRect(6,8,1,2); ctx.fillRect(8,8,1,2);
-        // Blade (exposed!)
-        ctx.fillStyle = '#d4d4d8';
-        ctx.fillRect(10,8,4,2);
-        ctx.fillStyle = '#a1a1aa';
-        ctx.fillRect(11,8,3,1);
-        // Blade edge (sharp!)
+        ctx.fillRect(3,7,1,2); ctx.fillRect(5,7,1,2); ctx.fillRect(7,7,1,2);
+        // Blade fully extended (dangerous!)
         ctx.fillStyle = '#e4e4e7';
-        ctx.fillRect(13,8,1,2);
-        // Guard tab
-        ctx.fillStyle = '#1f2937';
-        ctx.fillRect(10,7,1,4);
+        ctx.fillRect(9,6,5,3);
+        ctx.fillStyle = '#d4d4d8';
+        ctx.fillRect(10,7,4,1);
+        // Sharp blade edge (gleaming)
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(13,6,1,3);
+        // Blood drop (minor cut hazard indicator)
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath(); ctx.arc(14,10,1,0,Math.PI*2); ctx.fill();
+        // Safety lock NOT engaged (red indicator)
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(2,5,2,1);
+        // Cut cardboard nearby
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(0,3,5,3);
+        ctx.fillStyle = '#a16207';
+        ctx.fillRect(1,4,3,1);
     }),
 
     // --- Pallet Jack / Manual Pump Truck ---
@@ -5345,7 +5439,7 @@ function pickRandomFloorTile() {
 }
 
 // --- INPUT ---
-const KEYS = { up: false, down: false, left: false, right: false, action: false };
+const KEYS = { up: false, down: false, left: false, right: false, action: false, upStrength: 0, downStrength: 0, leftStrength: 0, rightStrength: 0 };
 window.addEventListener('keydown', e => {
     if(e.key==='w'||e.key==='ArrowUp') KEYS.up=true;
     if(e.key==='s'||e.key==='ArrowDown') KEYS.down=true;
@@ -5484,26 +5578,41 @@ const GyroControlSystem = {
         const relativeGamma = this.currentGamma - this.baseGamma;
         const relativeBeta = this.currentBeta - this.baseBeta;
 
-        // Clear all keys first
+        // Clear all keys and analog values first
         KEYS.up = false;
         KEYS.down = false;
         KEYS.left = false;
         KEYS.right = false;
+        KEYS.upStrength = 0;
+        KEYS.downStrength = 0;
+        KEYS.leftStrength = 0;
+        KEYS.rightStrength = 0;
 
-        // Apply movement based on tilt (with deadzone)
+        // Calculate analog strength (0-1) based on tilt beyond deadzone
+        const maxTilt = this.sensitivity; // Full speed at sensitivity degrees
+
+        // Apply analog movement based on tilt (with deadzone)
         if (Math.abs(relativeGamma) > this.deadzone) {
-            if (relativeGamma < -this.deadzone) {
+            const tiltAmount = Math.abs(relativeGamma) - this.deadzone;
+            const strength = Math.min(1, tiltAmount / (maxTilt - this.deadzone));
+            if (relativeGamma < 0) {
                 KEYS.left = true;
-            } else if (relativeGamma > this.deadzone) {
+                KEYS.leftStrength = strength;
+            } else {
                 KEYS.right = true;
+                KEYS.rightStrength = strength;
             }
         }
 
         if (Math.abs(relativeBeta) > this.deadzone) {
-            if (relativeBeta < -this.deadzone) {
+            const tiltAmount = Math.abs(relativeBeta) - this.deadzone;
+            const strength = Math.min(1, tiltAmount / (maxTilt - this.deadzone));
+            if (relativeBeta < 0) {
                 KEYS.up = true;
-            } else if (relativeBeta > this.deadzone) {
+                KEYS.upStrength = strength;
+            } else {
                 KEYS.down = true;
+                KEYS.downStrength = strength;
             }
         }
     },
@@ -5906,16 +6015,16 @@ function resetGame() {
     const currentGen = GAME.genId;
 
     // Show Simon's thinking state in INTRO WINDOW while AI generates greeting
-    showIntroThinking("Simon Unglaube");
+    showIntroThinking("Simon");
     GAME.nextState = 'INTRO_DIALOGUE_CONTINUE'; // Custom state for dialogue sequence
 
     // Generate Simon's greeting with objective overview
-    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager for Amazon MEU. Give ${GAME.selectedChar} a brief welcome with your signature dry wit, then explain their shift objective: find and fix 5 safety hazards while dodging ops manager interruptions. Keep it concise and witty. Max 45 words.`, "intro").then(text => {
+    callGemini(`You are Simon, WHS Senior Regional Manager for Amazon MEU. Give ${GAME.selectedChar} a brief welcome with your signature dry wit, then explain their shift objective: find and fix 5 safety hazards while dodging ops manager interruptions. Keep it concise and witty. Max 45 words.`, "intro").then(text => {
         if (GAME.state === 'DIALOG' && GAME.genId === currentGen) {
              let finalText = text.replace(/\[.*?\]/g, GAME.selectedChar);
              // Remove speaker name prefix if AI included it
-             finalText = finalText.replace(/^SIMON UNGLAUBE:?\s*/i, '').replace(/^Simon Unglaube:?\s*/i, '');
-             showIntroDialog(finalText, "Simon Unglaube", true);
+             finalText = finalText.replace(/^SIMON UNGLAUBE:?\s*/i, '').replace(/^Simon:?\s*/i, '');
+             showIntroDialog(finalText, "Simon", true);
         }
     });
 }
@@ -6285,7 +6394,7 @@ function startYardLevel() {
 
     // Show Simon's yard safety tip
     const safetyTip = SIMON_YARD_TIPS[Math.floor(Math.random() * SIMON_YARD_TIPS.length)];
-    showDialog(safetyTip, "Simon Unglaube", GFX.simonFaceLarge, true);
+    showDialog(safetyTip, "Simon", GFX.simonFaceLarge, true);
     GAME.nextState = 'YARD_LEVEL';
 }
 
@@ -6971,7 +7080,15 @@ function updatePlayer() {
     if (!p) return;
     if (p.iframe>0) p.iframe--; if (p.cooldown>0) p.cooldown--;
     let dx=0, dy=0;
-    if (KEYS.up) dy = -p.speed; if (KEYS.down) dy = p.speed; if (KEYS.left) dx = -p.speed; if (KEYS.right) dx = p.speed;
+    // Use analog values for gyro, digital for keyboard/dpad
+    if (GyroControlSystem.enabled) {
+        if (KEYS.up) dy = -p.speed * KEYS.upStrength;
+        if (KEYS.down) dy = p.speed * KEYS.downStrength;
+        if (KEYS.left) dx = -p.speed * KEYS.leftStrength;
+        if (KEYS.right) dx = p.speed * KEYS.rightStrength;
+    } else {
+        if (KEYS.up) dy = -p.speed; if (KEYS.down) dy = p.speed; if (KEYS.left) dx = -p.speed; if (KEYS.right) dx = p.speed;
+    }
     if (dx!==0 && dy!==0) { dx *= GAME_CONSTANTS.DIAGONAL_FACTOR; dy *= GAME_CONSTANTS.DIAGONAL_FACTOR; }
     if (dx!==0 || dy!==0) {
         // In Bezos boss mode, no collision detection with walls
@@ -7057,7 +7174,15 @@ function updateYardLevel() {
     }
 
     let dx = 0, dy = 0;
-    if (KEYS.up) dy = -y.speed; if (KEYS.down) dy = y.speed; if (KEYS.left) dx = -y.speed; if (KEYS.right) dx = y.speed;
+    // Use analog values for gyro, digital for keyboard/dpad
+    if (GyroControlSystem.enabled) {
+        if (KEYS.up) dy = -y.speed * KEYS.upStrength;
+        if (KEYS.down) dy = y.speed * KEYS.downStrength;
+        if (KEYS.left) dx = -y.speed * KEYS.leftStrength;
+        if (KEYS.right) dx = y.speed * KEYS.rightStrength;
+    } else {
+        if (KEYS.up) dy = -y.speed; if (KEYS.down) dy = y.speed; if (KEYS.left) dx = -y.speed; if (KEYS.right) dx = y.speed;
+    }
     if (dx!==0 && dy!==0) { dx *= GAME_CONSTANTS.DIAGONAL_FACTOR; dy *= GAME_CONSTANTS.DIAGONAL_FACTOR; }
 
     // Check for static hazard slowdown (puddles slow you down) - only in yard section
@@ -7328,7 +7453,15 @@ function updateMechaBattle() {
 
     // Player movement
     let dx = 0, dy = 0;
-    if (KEYS.up) dy = -p.speed; if (KEYS.down) dy = p.speed; if (KEYS.left) dx = -p.speed; if (KEYS.right) dx = p.speed;
+    // Use analog values for gyro, digital for keyboard/dpad
+    if (GyroControlSystem.enabled) {
+        if (KEYS.up) dy = -p.speed * KEYS.upStrength;
+        if (KEYS.down) dy = p.speed * KEYS.downStrength;
+        if (KEYS.left) dx = -p.speed * KEYS.leftStrength;
+        if (KEYS.right) dx = p.speed * KEYS.rightStrength;
+    } else {
+        if (KEYS.up) dy = -p.speed; if (KEYS.down) dy = p.speed; if (KEYS.left) dx = -p.speed; if (KEYS.right) dx = p.speed;
+    }
     if (dx!==0 && dy!==0) { dx *= GAME_CONSTANTS.DIAGONAL_FACTOR; dy *= GAME_CONSTANTS.DIAGONAL_FACTOR; }
     p.x = Math.max(4, Math.min(canvas.width - 20, p.x + dx));
     p.y = Math.max(40, Math.min(canvas.height - 20, p.y + dy));
@@ -7768,7 +7901,7 @@ function updateBoss() {
     if (b.tauntThresholds && b.tauntThresholds.length > 0 && hpPct < b.tauntThresholds[0]) {
          b.tauntThresholds.shift();
          const currentGen = GAME.genId;
-         let prompt = b.name === "SIMON UNGLAUBE" ? "Simon Unglaube final warning. Max 25 words." : `Taunt from boss ${b.name}. Max 25 words.`;
+         let prompt = b.name === "SIMON UNGLAUBE" ? "Simon final warning. Max 25 words." : `Taunt from boss ${b.name}. Max 25 words.`;
 
          // Use appropriate portrait face (48x48) for dialog
          let portrait = b.isMecha ? GFX.bossFaces.mechaMegaSimon :
@@ -8165,11 +8298,11 @@ function updateProjectiles() {
                          GAME.nextState = 'PLAY';
 
                          // --- CHANGED: REMOVED HARDCODED FALLBACK DISPLAY. SHOW LOADING. ---
-                         showThinking("Simon Unglaube", GFX.simonFaceLarge);
+                         showThinking("Simon", GFX.simonFaceLarge);
 
-                         callGemini(`You are Simon Unglaube. Deliver a ${warningIndex === 0 ? "first" : "final"} warning to the coordinator who keeps throwing rule books at you. Keep it sharp, under 24 words.`, "simon_warning", { warningIndex }).then(text => {
+                         callGemini(`You are Simon. Deliver a ${warningIndex === 0 ? "first" : "final"} warning to the coordinator who keeps throwing rule books at you. Keep it sharp, under 24 words.`, "simon_warning", { warningIndex }).then(text => {
                              if (GAME.genId === currentGen && GAME.state === 'DIALOG') {
-                                  showDialog(text, "Simon Unglaube", GFX.simonFaceLarge, true);
+                                  showDialog(text, "Simon", GFX.simonFaceLarge, true);
                              }
                          });
                      }
@@ -8371,13 +8504,13 @@ function tryInteract() {
              const currentGen = GAME.genId;
 
              // --- CHANGED: Show thinking state immediately for responsiveness ---
-             showThinking("Simon Unglaube", GFX.simonFaceLarge);
+             showThinking("Simon", GFX.simonFaceLarge);
 
              callGemini(
-                 "You are Simon Unglaube, WHS Senior Regional Manager. The player stopped a runner. Praise the player with dry, professional humor and add a witty safety reminder about slowing down. Max 22 words.",
+                 "You are Simon, WHS Senior Regional Manager. The player stopped a runner. Praise the player with dry, professional humor and add a witty safety reminder about slowing down. Max 22 words.",
                  "runners"
              ).then(tip => {
-                if (GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon Unglaube", GFX.simonFaceLarge, true);
+                if (GAME.genId === currentGen) showDialog(`Fixed: Runner!\n${tip}`, "Simon", GFX.simonFaceLarge, true);
              });
              return true;
         }
@@ -8395,14 +8528,14 @@ function tryInteract() {
             const currentGen = GAME.genId;
 
             // --- CHANGED: Show thinking state immediately ---
-            showThinking("Simon Unglaube", GFX.simonFaceLarge);
+            showThinking("Simon", GFX.simonFaceLarge);
 
             callGemini(
-                `You are Simon Unglaube, WHS Senior Regional Manager. A hazard "${h.data.name}" was fixed. Praise the player with dry, professional humor and share one specific safety tip tied to that hazard. Max 32 words.`,
+                `You are Simon, WHS Senior Regional Manager. A hazard "${h.data.name}" was fixed. Praise the player with dry, professional humor and share one specific safety tip tied to that hazard. Max 32 words.`,
                 "hazard",
                 { hazardName: h.data.name }
             ).then(tip => {
-                if (GAME.genId === currentGen) showDialog(`Fixed: ${h.data.name}!\n${tip}`, "Simon Unglaube", GFX.simonFaceLarge, true);
+                if (GAME.genId === currentGen) showDialog(`Fixed: ${h.data.name}!\n${tip}`, "Simon", GFX.simonFaceLarge, true);
             });
             return true;
         }
@@ -8461,7 +8594,7 @@ function triggerGameOver(reason) {
     }
     else {
         const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
-        callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator failed after ${time} seconds with ${GAME.issuesFixed}/5 hazards fixed, ${GAME.booksFired} rule books thrown, ${GAME.opsPushed} ops pushed. Deliver a scathing yet funny performance review that weaves those stats into a safety lesson. Threaten that their failure will be permanently documented and sent to upper management for review. Max 55 words.`, "reviews_loss", { stats }).then(review => {
+        callGemini(`You are Simon, WHS Senior Regional Manager. Coordinator failed after ${time} seconds with ${GAME.issuesFixed}/5 hazards fixed, ${GAME.booksFired} rule books thrown, ${GAME.opsPushed} ops pushed. Deliver a scathing yet funny performance review that weaves those stats into a safety lesson. Threaten that their failure will be permanently documented and sent to upper management for review. Max 55 words.`, "reviews_loss", { stats }).then(review => {
              if (GAME.genId === currentGen) { GAME.aiResultText = review; }
         });
     }
@@ -8475,7 +8608,7 @@ function winGame() {
     document.getElementById('hud-layer').style.display = 'none';
     const currentGen = GAME.genId; const time = Math.floor((Date.now() - GAME.startTime)/1000);
     const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
-    callGemini(`You are Simon Unglaube, WHS Senior Regional Manager. Coordinator won in ${time} seconds clearing ${GAME.issuesFixed}/5 hazards, tossing ${GAME.booksFired} rule books, redirecting ${GAME.opsPushed} ops. Give warm but witty praise plus one practical safety takeaway using those stats. Max 55 words.`, "reviews_win", { stats }).then(praise => {
+    callGemini(`You are Simon, WHS Senior Regional Manager. Coordinator won in ${time} seconds clearing ${GAME.issuesFixed}/5 hazards, tossing ${GAME.booksFired} rule books, redirecting ${GAME.opsPushed} ops. Give warm but witty praise plus one practical safety takeaway using those stats. Max 55 words.`, "reviews_win", { stats }).then(praise => {
         if (GAME.genId === currentGen) GAME.aiResultText = praise;
     });
 }
@@ -8753,14 +8886,14 @@ function showPerformanceEvalIntroDialog(text, isWin) {
 
     // Draw appropriate portrait (happy for win, disappointed for loss)
     pCtx.fillStyle = '#000'; pCtx.fillRect(0,0,96,96);
-    const portraitKey = isWin ? "Simon Unglaube Happy" : "Simon Unglaube Disappointed";
+    const portraitKey = isWin ? "Simon Happy" : "Simon Disappointed";
     const portrait = GFX.introPortraits[portraitKey];
     if (portrait) {
         pCtx.drawImage(portrait, 0, 0);
     }
 
     AudioSys.sfx.text();
-    speakTTS(text.replace(/\n/g, ' '), "Simon Unglaube");
+    speakTTS(text.replace(/\n/g, ' '), "Simon");
 }
 
 function showDialog(text, speaker, portrait, isAI = false) {
@@ -8785,7 +8918,7 @@ function showDialog(text, speaker, portrait, isAI = false) {
 
         // Start talking animation if we have a talking variant
         let talkingPortrait = null;
-        if (speaker === "Simon Unglaube") {
+        if (speaker === "Simon") {
             talkingPortrait = GFX.simonFaceTalking;
         } else if (GFX.charFacesTalking[speaker]) {
             talkingPortrait = GFX.charFacesTalking[speaker];
@@ -11013,7 +11146,7 @@ function showBezosEscapeDialogue(index) {
             'OUTSTANDING! You actually did it! You defeated the corporate overlord himself! ' +
             'This calls for a celebration... and possibly a promotion. ' +
             'The warehouse is finally safe from maniacal billionaire tyranny!',
-            'Simon Unglaube',
+            'Simon',
             GFX.simonFaceLarge,
             false
         );
@@ -12419,7 +12552,7 @@ function draw() {
     }
     if (GAME.state === 'STORY') {
         ctx.fillStyle='#eab308'; ctx.font='10px monospace'; ctx.fillText("MISSION BRIEFING", 20, 40); ctx.fillStyle='#fff';
-        ctx.fillText("Simon Unglaube asks you to:", 20, 70); ctx.fillText("- Do the safety audit", 20, 90);
+        ctx.fillText("Simon asks you to:", 20, 70); ctx.fillText("- Do the safety audit", 20, 90);
         ctx.fillText("- Dodge crazy Ops requests", 20, 110); ctx.fillText("- Push back with rules", 20, 130);
         ctx.fillText("- Deal with 'visitors'", 20, 150); ctx.fillStyle='#888'; ctx.fillText("[PRESS SPACE]", 80, 200); ctx.restore(); return;
     }
