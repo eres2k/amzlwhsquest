@@ -555,6 +555,86 @@
             .tab-btn { font-size: 0.5rem; padding: 10px 12px; }
             .modal-title { font-size: 1rem; }
         }
+
+        /* --- LEADERBOARD STYLES --- */
+        .leaderboard-container {
+            overflow-x: auto;
+        }
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+        }
+        .leaderboard-table th {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            color: var(--gold-accent);
+            font-family: 'Press Start 2P';
+            font-size: 0.6rem;
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 2px solid var(--neon-cyan);
+            white-space: nowrap;
+        }
+        .leaderboard-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #334155;
+            color: #e2e8f0;
+        }
+        .leaderboard-table tr:hover td {
+            background: rgba(34, 211, 238, 0.1);
+        }
+        .leaderboard-table .rank-col {
+            width: 50px;
+            text-align: center;
+            font-family: 'Press Start 2P';
+            font-size: 0.8rem;
+        }
+        .leaderboard-table .rank-1 { color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
+        .leaderboard-table .rank-2 { color: #94a3b8; text-shadow: 0 0 8px rgba(148, 163, 184, 0.5); }
+        .leaderboard-table .rank-3 { color: #cd7f32; text-shadow: 0 0 8px rgba(205, 127, 50, 0.5); }
+        .leaderboard-table .name-col {
+            font-family: 'Press Start 2P';
+            font-size: 0.7rem;
+            color: var(--neon-cyan);
+        }
+        .leaderboard-table .score-col {
+            font-family: 'Press Start 2P';
+            font-size: 0.8rem;
+            color: var(--neon-green);
+            text-align: right;
+        }
+        .leaderboard-table .char-col {
+            font-size: 0.9rem;
+        }
+        .leaderboard-table .time-col {
+            color: #94a3b8;
+            text-align: right;
+        }
+        .leaderboard-table .boss-col {
+            color: #f87171;
+            font-size: 0.9rem;
+        }
+        .leaderboard-loading {
+            text-align: center;
+            color: var(--neon-cyan);
+            padding: 30px;
+            font-size: 1.2rem;
+        }
+        .leaderboard-empty {
+            text-align: center;
+            color: #64748b;
+            padding: 30px;
+            font-style: italic;
+        }
+        @media (max-width: 600px) {
+            .leaderboard-table { font-size: 0.9rem; }
+            .leaderboard-table th { font-size: 0.5rem; padding: 8px 4px; }
+            .leaderboard-table td { padding: 8px 4px; }
+            .leaderboard-table .rank-col { font-size: 0.6rem; }
+            .leaderboard-table .name-col { font-size: 0.6rem; }
+            .leaderboard-table .score-col { font-size: 0.6rem; }
+        }
     </style>
 </head>
 <body class="crt-turn-on">
@@ -746,6 +826,17 @@
                         <button class="ai-btn" onclick="translateSpeak()" id="btn-translate">TRANSLATE</button>
                         <div class="ai-output" id="out-translate" style="color: #00ffff; border-color: #00ffff;">// WAITING FOR INPUT...</div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LEADERBOARD SECTION -->
+        <section>
+            <h2>> HALL OF FAME</h2>
+            <p>The <strong>TOP 10</strong> WHS Coordinators who survived the warehouse and defeated the bosses. Will your name be next?</p>
+            <div class="leaderboard-container">
+                <div id="leaderboard-content" class="leaderboard-loading">
+                    ACCESSING MAINFRAME<span class="loading-dots"></span>
                 </div>
             </div>
         </section>
@@ -1428,6 +1519,65 @@
 
     fetchAnnouncement();
     renderPortraits();
+
+    // --- 8. LEADERBOARD SYSTEM ---
+    async function fetchLeaderboard() {
+        const container = document.getElementById('leaderboard-content');
+        try {
+            const res = await fetch('/.netlify/functions/highscores');
+            if (!res.ok) throw new Error('Failed to fetch');
+            const data = await res.json();
+
+            if (!data.success || !data.highscores || data.highscores.length === 0) {
+                container.innerHTML = '<div class="leaderboard-empty">NO RECORDS YET. BE THE FIRST TO COMPLETE THE QUEST!</div>';
+                return;
+            }
+
+            let html = `<table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>NAME</th>
+                        <th>CHARACTER</th>
+                        <th>BOSS DEFEATED</th>
+                        <th>TIME</th>
+                        <th style="text-align:right;">SCORE</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            data.highscores.forEach((entry, idx) => {
+                const rank = idx + 1;
+                const rankClass = rank <= 3 ? `rank-${rank}` : '';
+                const mins = Math.floor(entry.time / 60);
+                const secs = entry.time % 60;
+                const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+                html += `<tr>
+                    <td class="rank-col ${rankClass}">${rank}</td>
+                    <td class="name-col">${escapeHtml(entry.name)}</td>
+                    <td class="char-col">${escapeHtml(entry.character)}</td>
+                    <td class="boss-col">${escapeHtml(entry.bossDefeated)}</td>
+                    <td class="time-col">${timeStr}</td>
+                    <td class="score-col">${entry.score.toLocaleString()}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch (err) {
+            console.error('Leaderboard fetch error:', err);
+            container.innerHTML = '<div class="leaderboard-empty">LEADERBOARD OFFLINE. PLAY THE GAME TO BE FIRST!</div>';
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    fetchLeaderboard();
 </script>
 
 <!-- MANUAL MODAL -->

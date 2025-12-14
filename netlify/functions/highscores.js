@@ -14,6 +14,20 @@ const HIGHSCORE_STORE_NAME = "amzl-whs-highscores";
 const HIGHSCORE_KEY = "leaderboard";
 const MAX_HIGHSCORES = 10;
 
+// Default highscores to populate an empty leaderboard
+const DEFAULT_HIGHSCORES = [
+    { name: "ERWIN", character: "Roman", bossDefeated: "Mecha Jeff", time: 185, score: 12450, date: 1702500000000, region: "EU" },
+    { name: "JELLY", character: "Nevena", bossDefeated: "Mecha Jeff", time: 210, score: 11800, date: 1702400000000, region: "EU" },
+    { name: "CHLOE", character: "Carrie", bossDefeated: "Mecha Jeff", time: 245, score: 10950, date: 1702300000000, region: "EU" },
+    { name: "MARCO", character: "Joao", bossDefeated: "Regional OPS MGR", time: 165, score: 8200, date: 1702200000000, region: "EU" },
+    { name: "SASHA", character: "Erwin", bossDefeated: "Jelena \"Jelly\"", time: 180, score: 7650, date: 1702100000000, region: "EU" },
+    { name: "FELIX", character: "Roman", bossDefeated: "Avetta Platform", time: 155, score: 7100, date: 1702000000000, region: "EU" },
+    { name: "NINA", character: "Carrie", bossDefeated: "Sebastian Sprigade", time: 140, score: 6850, date: 1701900000000, region: "EU" },
+    { name: "VLAD", character: "Joao", bossDefeated: "Compliance Auditor", time: 130, score: 6400, date: 1701800000000, region: "EU" },
+    { name: "MAYA", character: "Nevena", bossDefeated: "Labour Inspector", time: 120, score: 5950, date: 1701700000000, region: "EU" },
+    { name: "AXEL", character: "Erwin", bossDefeated: "Labour Inspector", time: 145, score: 5500, date: 1701600000000, region: "EU" }
+];
+
 // Validate player name (max 5 chars, alphanumeric and some special chars)
 function validateName(name) {
     if (!name || typeof name !== 'string') return false;
@@ -98,7 +112,12 @@ exports.handler = async (event, context) => {
         if (event.httpMethod === "GET") {
             try {
                 const data = await store.get(HIGHSCORE_KEY, { type: "json" });
-                const highscores = data || [];
+                let highscores = data || [];
+
+                // If no highscores exist, return the default set
+                if (highscores.length === 0) {
+                    highscores = DEFAULT_HIGHSCORES;
+                }
 
                 return {
                     statusCode: 200,
@@ -109,13 +128,13 @@ exports.handler = async (event, context) => {
                     })
                 };
             } catch (e) {
-                // No highscores yet
+                // No highscores yet - return defaults
                 return {
                     statusCode: 200,
                     headers,
                     body: JSON.stringify({
                         success: true,
-                        highscores: []
+                        highscores: DEFAULT_HIGHSCORES
                     })
                 };
             }
@@ -165,13 +184,18 @@ exports.handler = async (event, context) => {
             // Add timestamp
             entry.date = Date.now();
 
-            // Get existing highscores
+            // Get existing highscores (start with defaults if empty)
             let highscores = [];
             try {
                 const data = await store.get(HIGHSCORE_KEY, { type: "json" });
                 highscores = data || [];
+                // If store is empty, start with defaults so players compete with them
+                if (highscores.length === 0) {
+                    highscores = [...DEFAULT_HIGHSCORES];
+                }
             } catch (e) {
-                highscores = [];
+                // No store yet - start with defaults
+                highscores = [...DEFAULT_HIGHSCORES];
             }
 
             // Add new entry and sort
