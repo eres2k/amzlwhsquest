@@ -23,7 +23,7 @@ const DEFAULT_HIGHSCORES = [
     { name: "AUDIT", character: "Nevena", bossDefeated: "Jelena \"Jelly\"", time: 168, score: 4800, date: 1733700000000, region: "EU" },
     { name: "5SGOD", character: "Carrie", bossDefeated: "Regional OPS MGR", time: 145, score: 4500, date: 1733600000000, region: "EU" },
     { name: "SAFE1", character: "Roman", bossDefeated: "Avetta Platform", time: 132, score: 4200, date: 1733500000000, region: "EU" },
-    { name: "DVI-1", character: "Erwin", bossDefeated: "Sebastian Sprigade", time: 128, score: 3900, date: 1733400000000, region: "EU" },
+    { name: "DVI-1", character: "Erwin", bossDefeated: "Sebastian S.", time: 128, score: 3900, date: 1733400000000, region: "EU" },
     { name: "OSHA", character: "Nevena", bossDefeated: "Compliance Auditor", time: 115, score: 3600, date: 1733300000000, region: "EU" },
     { name: "ANDON", character: "Joao", bossDefeated: "Labour Inspector", time: 105, score: 3000, date: 1733200000000, region: "EU" }
 ];
@@ -46,7 +46,7 @@ function validateScore(entry) {
     const validChars = ["Carrie", "Nevena", "Joao", "Roman", "Erwin"];
     if (!validChars.includes(entry.character)) return false;
 
-    const validBosses = ["Labour Inspector", "Compliance Auditor", "Sebastian Sprigade",
+    const validBosses = ["Labour Inspector", "Compliance Auditor", "Sebastian S.",
                         "Regional OPS MGR", "Avetta Platform", "Jelena \"Jelly\"", "Mecha Jeff"];
     if (!validBosses.includes(entry.bossDefeated)) return false;
 
@@ -240,7 +240,8 @@ exports.handler = async (event, context) => {
         let saved = false;
         if (storeAvailable && store) {
             try {
-                await store.set(HIGHSCORE_KEY, JSON.stringify(highscores));
+                // Use setJSON to properly store JSON data (not double-encoded)
+                await store.setJSON(HIGHSCORE_KEY, highscores);
                 saved = true;
             } catch (e) {
                 console.log("Could not save to store:", e.message);

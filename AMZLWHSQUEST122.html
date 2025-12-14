@@ -1203,7 +1203,7 @@ const CHAR_DATA = {
         backstory: "Precision hawk who spots crooked tape from 50 meters and breathes calm into chaotic clusters.",
         attack: "Label Maker Burst",
         speed: 1.5,
-        lives: 5,
+        lives: 3,
         ability: "PRECISION FOCUS",
         abilityDesc: "2x damage, 30% slower reload"
     },
@@ -1212,7 +1212,7 @@ const CHAR_DATA = {
         backstory: "Safety oracle who predicts mishaps, carries emergency Palatschinken, and documents everything twice.",
         attack: "Clipboard Shockwave",
         speed: 1.5,
-        lives: 5,
+        lives: 4,
         ability: "FORESIGHT",
         abilityDesc: "Longer invincibility after taking damage"
     },
@@ -1221,7 +1221,7 @@ const CHAR_DATA = {
         backstory: "Espresso cannon whose warnings ring louder than the fire alarm and kick energy through the floor.",
         attack: "Sonic Shout",
         speed: 1.5,
-        lives: 5,
+        lives: 3,
         ability: "CAFFEINE RUSH",
         abilityDesc: "Attacks have faster cooldown"
     },
@@ -1230,7 +1230,7 @@ const CHAR_DATA = {
         backstory: "Bald audit phantom. Appears, fixes, vanishes. Hazards straighten themselves when he is near.",
         attack: "Stealth Audit",
         speed: 1.5,
-        lives: 5,
+        lives: 3,
         ability: "PHANTOM STEP",
         abilityDesc: "Hazards have smaller collision radius"
     },
@@ -1262,7 +1262,7 @@ function getCharStats(name) {
     const data = CHAR_DATA[name] || {};
     return {
         speed: data.speed ?? 1.5,
-        lives: data.lives ?? 5
+        lives: data.lives ?? 3
     };
 }
 
@@ -1463,7 +1463,7 @@ const BOSS_DEFEAT_DIALOGUES = {
             AT: "Mei Audit... unvollständig... da Papierkram... endet nia...",
             NL: "Mijn audit... onvolledig... de papierwinkel... eindigt nooit..."
         },
-        "Sebastian Sprigade": {
+        "Sebastian S.": {
             MEU: "TPH... dropping... delivery targets... not met...",
             DE: "TPH... sinkt... Lieferziele... nicht erreicht...",
             AT: "TPH... sinkt... Liefaziele... ned erreicht...",
@@ -1898,15 +1898,7 @@ const CHARACTER_DEFEAT_LINES = {
     ]
 };
 
-// --- AI STATUS HELPERS ---
-const aiStatusEl = document.getElementById('ai-status');
-let aiStatus = "init";
-
-function setAIStatus(message, level = 'info') {
-    aiStatus = level;
-    console.log(`[AI STATUS ${level}]: ${message}`);
-}
-
+// --- AI TEXT HELPERS ---
 function personalizeAIText(text) {
     if (!text) return text;
     const name = (typeof GAME !== 'undefined' && GAME.selectedChar) ? GAME.selectedChar : 'Coordinator';
@@ -2083,20 +2075,6 @@ const MECHA_BEZOS_ATTACKS = {
     DE: { enraged: "RASEND!", primeDelivery: "PRIME-LIEFERUNG!", primeNow: "PRIME JETZT!" },
     NL: { enraged: "WOEDEND!", primeDelivery: "PRIME-LEVERING!", primeNow: "PRIME NU!" }
 };
-
-// Helper to get localized Mecha Bezos taunt
-function getLocalizedMechaTaunt() {
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
-    const taunts = MECHA_BEZOS_TAUNTS[region] || MECHA_BEZOS_TAUNTS.EN;
-    return taunts[Math.floor(Math.random() * taunts.length)];
-}
-
-// Helper to get localized Mecha Bezos attack message
-function getLocalizedMechaAttack(type) {
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
-    const attacks = MECHA_BEZOS_ATTACKS[region] || MECHA_BEZOS_ATTACKS.EN;
-    return attacks[type] || attacks.enraged;
-}
 
 // Localized Mecha Jeff phase names
 const MECHA_JEFF_PHASE_NAMES = {
@@ -2731,7 +2709,7 @@ const TTSSys = {
         "MEGA SIMON": { pitch: 0.7, rate: 0.82, volume: 1.0, gender: "male", desc: "Final boss authority" },
         "Labour Inspector": { pitch: 1.1, rate: 1.0, volume: 1.0, gender: "female", desc: "Stern female enforcer" },
         "Compliance Auditor": { pitch: 1.05, rate: 0.85, volume: 0.9, gender: "female", desc: "Meticulous female watcher" },
-        "Sebastian Sprigade": { pitch: 0.75, rate: 1.15, volume: 1.0, gender: "male", desc: "Fast, TPH obsessed male" },
+        "Sebastian S.": { pitch: 0.75, rate: 1.15, volume: 1.0, gender: "male", desc: "Fast, TPH obsessed male" },
         "Regional OPS MGR": { pitch: 0.85, rate: 0.9, volume: 1.0, gender: "male", desc: "Male executive" },
         "Avetta Platform": { pitch: 0.3, rate: 0.7, volume: 0.85, gender: "neutral", desc: "AI, robotic" },
         "Jelena": { pitch: 1.15, rate: 0.95, volume: 0.95, gender: "female", desc: "HR guardian female" },
@@ -4425,7 +4403,7 @@ function generateAssets() {
         ctx.fillStyle = '#14b8a6'; ctx.fillRect(23,34,2,11);
     });
 
-    // Sebastian Sprigade Face (48x48)
+    // Sebastian S. Face (48x48)
     GFX.bossFaces.boss_sebastian = c(48,48, ctx => {
         // Background gradient (blue Amazon)
         const grad = ctx.createRadialGradient(24,24,8,24,24,24);
@@ -6340,7 +6318,7 @@ function generateAssets() {
         ctx.restore();
     });
 
-    // Defeated Sebastian Sprigade (64x64) - TPH monitor showing 0, sweating profusely
+    // Defeated Sebastian S. (64x64) - TPH monitor showing 0, sweating profusely
     GFX.bossDefeated.boss_sebastian = c(64,64, ctx => {
         // Blue sparks from broken monitor
         const grad = ctx.createRadialGradient(32,36,5,32,36,32);
@@ -7326,7 +7304,7 @@ const GAME = {
     camera: { x: 0, y: 0 },
     map: [], clutter: [], entities: [], projectiles: [], particles: [], floatingTexts: [],
     activeIssues: [],
-    issuesFixed: 0, lives: 5, genId: 0, gameOverTriggered: false, simonHits: 0, boss: null, pendingBossIntro: false,
+    issuesFixed: 0, lives: 3, genId: 0, gameOverTriggered: false, simonHits: 0, boss: null, pendingBossIntro: false,
     shake: 0, flash: 0,
     dialogText: "", dialogVisible: "", dialogTimer: 0,
     introDialogueStep: 0, // Track intro conversation sequence
@@ -7343,7 +7321,6 @@ const GAME = {
     startTime: 0, booksFired: 0, opsPushed: 0,
     lastAIBanterTime: 0, // Throttle AI requests
     fireExitDoor: null, // Hidden level door position
-    froggerVehicles: [], // Vehicles array (deprecated, kept for compatibility)
     jeffTaunt: "", // Current Jeff taunt
     jeffTauntTimer: 0, // Timer for taunt display
 
@@ -7397,7 +7374,7 @@ const GAME = {
     bossTypes: [
         { name: "Labour Inspector", sprite: "boss_inspector", hp: 25, speed: 1.2, attackDelay: 50, title: "The Enforcer", desc: "Checks every corner.", attackName: "Violation Notice", attackPattern: "sweep" },
         { name: "Compliance Auditor", sprite: "boss_compliance", hp: 30, speed: 0.8, attackDelay: 70, title: "The Watcher", desc: "Nothing escapes.", attackName: "Audit Cascade", attackPattern: "tracking" },
-        { name: "Sebastian Sprigade", sprite: "boss_sebastian", hp: 35, speed: 1.0, attackDelay: 60, title: "Delivery Station Mgr", desc: "Obsessed with TPH.", attackName: "TPH Overload", attackPattern: "burst" },
+        { name: "Sebastian S.", sprite: "boss_sebastian", hp: 35, speed: 1.0, attackDelay: 60, title: "Delivery Station Mgr", desc: "Obsessed with TPH.", attackName: "TPH Overload", attackPattern: "burst" },
         { name: "Regional OPS MGR", sprite: "boss_regional", hp: 32, speed: 0.6, attackDelay: 90, title: "The Executive", desc: "Metrics first.", attackName: "KPI Crusher", attackPattern: "orbital" },
         { name: "Avetta Platform", sprite: "boss_avetta", hp: 40, speed: 0.4, attackDelay: 100, title: "Risk Manager", desc: "Judges all.", attackName: "Risk Assessment Beam", attackPattern: "laser" },
         { name: "Jelena \"Jelly\"", sprite: "boss_jelly", hp: 28, speed: 0.9, attackDelay: 65, title: "HR Guardian", desc: "HR legend who never forgets a policy.", attackName: "Write-Up Wave", attackPattern: "wave" }
@@ -8646,17 +8623,30 @@ function handleAction() {
                 GAME.shopMessage = getShopMessage('no_items_to_return');
                 GAME.shopMessageTimer = 180;
             } else {
-                // Calculate total refund
+                // Calculate maxhp buffs being removed BEFORE clearing PPE
+                const maxHpBeingRemoved = getPPEBuffValue('maxhp');
+
+                // Calculate total refund at 50% value
                 let totalRefund = 0;
                 GAME.ppeUnlocked.forEach(ppeId => {
                     const ppe = PPE_ITEMS.find(p => p.id === ppeId);
-                    if (ppe && ppe.cost > 0) totalRefund += ppe.cost;
+                    if (ppe && ppe.cost > 0) totalRefund += Math.floor(ppe.cost * 0.5);
                 });
 
-                // Refund all points and clear PPE
+                // Refund 50% of points and clear PPE
                 GAME.safetyPoints += totalRefund;
                 const returnedCount = GAME.ppeUnlocked.length;
                 GAME.ppeUnlocked = [];
+
+                // Disable life buffs: reduce current lives if they exceed new max
+                if (maxHpBeingRemoved > 0) {
+                    const stats = getCharStats(GAME.selectedChar);
+                    const newMaxLives = stats.lives; // No more PPE buffs
+                    if (GAME.lives > newMaxLives) {
+                        GAME.lives = newMaxLives;
+                    }
+                }
+
                 AudioSys.sfx.fix();
                 spawnFloatingText(canvas.width / 2, canvas.height / 2, "+" + totalRefund + " " + getLocalizedText('sp_short') + "!", "#22c55e");
                 updatePpeBuffsHud(); // Update PPE buffs display
@@ -8665,7 +8655,7 @@ function handleAction() {
                 const regionName = getRegionName();
                 const langInst = getLanguageInstruction();
                 callGemini(
-                    `You are Simon Unglaube, the Quartermaster. The player just returned ${returnedCount} PPE items for a full refund of ${totalRefund} Safety Points. Make a witty comment about their decision. Max 20 words. ${langInst}`,
+                    `You are Simon Unglaube, the Quartermaster. The player just returned ${returnedCount} PPE items for a 50% refund of ${totalRefund} Safety Points. Make a witty comment about their decision to return gear. Max 20 words. ${langInst}`,
                     "ppe_return",
                     { count: returnedCount, refund: totalRefund, region: GAME.region }
                 ).then(response => {
@@ -9122,11 +9112,11 @@ function triggerBossDefeatCutscene() {
         }
     });
 
-    // Phase 1: Dramatic pause with visual effects (1.5 seconds)
+    // Phase 1: Dramatic pause with visual effects (3 seconds for longer visibility)
     setTimeout(() => {
         if (GAME.state !== 'BOSS_DEFEAT_CUTSCENE') return;
         advanceDefeatCutscene();
-    }, 1500);
+    }, 3000);
 }
 
 function advanceDefeatCutscene() {
@@ -9765,7 +9755,6 @@ function initMechaBezos() {
     GAME.player.y = 180;
     GAME.entities = [];
     GAME.projectiles = [];
-    GAME.froggerVehicles = [];
 
     document.getElementById('boss-name-el').innerText = "MECHA JEFF BEZOS";
     document.getElementById('boss-hud').style.display = 'block';
@@ -12442,9 +12431,10 @@ function winGame() {
     prepareHighscoreEntry(bossName);
 
     const currentGen = GAME.genId; const time = Math.floor((Date.now() - GAME.startTime)/1000);
-    const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
+    const finalScore = GAME.pendingHighscore ? GAME.pendingHighscore.score : 0;
+    const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed, score: finalScore };
     const langInstWin = getLanguageInstruction();
-    callGemini(`You are Simon, WHS Senior Regional Manager. Coordinator won in ${time} seconds clearing ${GAME.issuesFixed}/5 hazards, tossing ${GAME.booksFired} rule books, redirecting ${GAME.opsPushed} ops. Give warm but witty praise plus one practical safety takeaway using those stats. Max 55 words. ${langInstWin}`, "reviews_win", { stats }).then(praise => {
+    callGemini(`You are Simon, WHS Senior Regional Manager. Coordinator won in ${time} seconds clearing ${GAME.issuesFixed}/5 hazards, tossing ${GAME.booksFired} rule books, redirecting ${GAME.opsPushed} ops. Their final score: ${finalScore} points! Give warm but witty praise mentioning their score, plus one practical safety takeaway. Max 60 words. ${langInstWin}`, "reviews_win", { stats }).then(praise => {
         if (GAME.genId === currentGen) GAME.aiResultText = praise;
     });
 }
@@ -12652,6 +12642,9 @@ function handleNameEntryInput(key) {
                 GAME.state = 'HIGHSCORES';
             } else {
                 GAME.state = 'CREDITS';
+                GAME.stateTimer = 0; // Reset timer so credits start from beginning
+                GAME.creditsStarted = false; // Ensure startCredits() is called
+                updateMusicForState(); // Play credits music
             }
         }
         return;
@@ -13739,11 +13732,6 @@ function showNextBezosIntroDialogue() {
             showIntroDialog(finalText, step.speaker, true);
         }
     });
-}
-
-// Legacy function for backwards compatibility with older dialog system
-function showNextBezosDialogue() {
-    showNextBezosIntroDialogue();
 }
 
 function closeDialog() {
@@ -16163,6 +16151,8 @@ function updateBezosEscape() {
             GAME.state = 'CREDITS';
             GAME.stateTimer = 0;
             GAME.creditsType = 'mecha';
+            GAME.creditsStarted = false; // Ensure startCredits() is called
+            updateMusicForState(); // Play credits music
         }
     }
 }
@@ -18873,14 +18863,36 @@ function draw() {
         }
         ctx.globalAlpha = 1;
 
-        // Draw defeated boss (fading/flashing)
+        // Draw defeated boss (large centered sprite like in phase 0)
         if (GAME.boss && GAME.defeatCutscene) {
-            const bossX = GAME.boss.x - cx;
-            const bossY = GAME.boss.y - cy;
-            const flashAlpha = Math.sin(GAME.defeatCutscene.timer * 0.3) * 0.3 + 0.5;
-            ctx.globalAlpha = flashAlpha;
-            const bossImg = GAME.boss.sprite && GFX[GAME.boss.sprite] ? GFX[GAME.boss.sprite] : GFX.boss_manager;
-            ctx.drawImage(bossImg, bossX, bossY, 32, 32);
+            const t = GAME.defeatCutscene.timer;
+            const bossSprite = GAME.defeatCutscene.bossSprite || 'boss_manager';
+            const defeatedImg = GFX.bossDefeated && GFX.bossDefeated[bossSprite]
+                ? GFX.bossDefeated[bossSprite]
+                : (GFX.bossDefeated ? GFX.bossDefeated.boss_manager : null);
+
+            // Center the boss in the screen (same as BOSS_DEFEAT_CUTSCENE state)
+            const bossX = 96;
+            const bossY = 60;
+
+            // Subtle pulsing glow behind boss
+            const glowPulse = Math.sin(t * 0.1) * 0.2 + 0.8;
+            const glowGrad = ctx.createRadialGradient(128, 92, 10, 128, 92, 50);
+            glowGrad.addColorStop(0, `rgba(255, 68, 68, ${glowPulse * 0.4})`);
+            glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = glowGrad;
+            ctx.fillRect(0, 0, 256, 180);
+
+            ctx.globalAlpha = 1;
+            if (defeatedImg) {
+                ctx.save();
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(defeatedImg, bossX, bossY, 64, 64);
+                ctx.restore();
+            } else {
+                const bossImg = GAME.boss.sprite && GFX[GAME.boss.sprite] ? GFX[GAME.boss.sprite] : GFX.boss_manager;
+                ctx.drawImage(bossImg, bossX, bossY, 64, 64);
+            }
             ctx.globalAlpha = 1;
         }
 
