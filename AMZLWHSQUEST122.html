@@ -18412,7 +18412,7 @@ function draw() {
         if (GAME.player) {
             const px = GAME.player.x - cx;
             const py = GAME.player.y - cy;
-            const charImg = GFX.charSprites[GAME.selectedChar] || GFX.charSprites.Carrie;
+            const charImg = GFX.chars[GAME.selectedChar] || GFX.chars.Carrie;
             ctx.drawImage(charImg, px, py, 16, 16);
         }
 
