@@ -7886,6 +7886,63 @@ if (gameCanvas) {
         const x = (touch.clientX - rect.left) * scaleX;
         const y = (touch.clientY - rect.top) * scaleY;
 
+        // Name entry touch controls
+        if (GAME.state === 'NAME_ENTRY' && !GAME.highscoreSubmitted) {
+            const btns = nameEntryTouchButtons;
+            if (btns.left && x >= btns.left.x && x <= btns.left.x + btns.left.w && y >= btns.left.y && y <= btns.left.y + btns.left.h) {
+                e.preventDefault();
+                nameEntryCharIndex = (nameEntryCharIndex - 1 + NAME_ENTRY_CHARS.length) % NAME_ENTRY_CHARS.length;
+                AudioSys.sfx.step();
+                return;
+            }
+            if (btns.right && x >= btns.right.x && x <= btns.right.x + btns.right.w && y >= btns.right.y && y <= btns.right.y + btns.right.h) {
+                e.preventDefault();
+                nameEntryCharIndex = (nameEntryCharIndex + 1) % NAME_ENTRY_CHARS.length;
+                AudioSys.sfx.step();
+                return;
+            }
+            if (btns.add && x >= btns.add.x && x <= btns.add.x + btns.add.w && y >= btns.add.y && y <= btns.add.y + btns.add.h) {
+                e.preventDefault();
+                if (GAME.nameEntry.length < 5) {
+                    GAME.nameEntry += NAME_ENTRY_CHARS[nameEntryCharIndex];
+                    AudioSys.sfx.select();
+                }
+                return;
+            }
+            if (btns.del && x >= btns.del.x && x <= btns.del.x + btns.del.w && y >= btns.del.y && y <= btns.del.y + btns.del.h) {
+                e.preventDefault();
+                if (GAME.nameEntry.length > 0) {
+                    GAME.nameEntry = GAME.nameEntry.slice(0, -1);
+                    AudioSys.sfx.step();
+                }
+                return;
+            }
+            if (btns.submit && GAME.nameEntry.length > 0 && x >= btns.submit.x && x <= btns.submit.x + btns.submit.w && y >= btns.submit.y && y <= btns.submit.y + btns.submit.h) {
+                e.preventDefault();
+                submitPlayerHighscore();
+                return;
+            }
+            return;
+        }
+
+        // Name entry after submission - tap anywhere to continue
+        if (GAME.state === 'NAME_ENTRY' && GAME.highscoreSubmitted) {
+            e.preventDefault();
+            AudioSys.sfx.select();
+            GAME.state = 'HIGHSCORES';
+            GAME.stateTimer = 0;
+            return;
+        }
+
+        // Highscores screen - tap anywhere to return to title
+        if (GAME.state === 'HIGHSCORES') {
+            e.preventDefault();
+            AudioSys.sfx.select();
+            GAME.state = 'TITLE';
+            updateMusicForState();
+            return;
+        }
+
         // PPE Dialog menu options (tap to select and confirm)
         if (GAME.state === 'PPE_DIALOG' && GAME.ppeDialogButtons) {
             for (let i = 0; i < GAME.ppeDialogButtons.length; i++) {
@@ -9375,6 +9432,8 @@ function update() {
     if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'BEZOS_BOSS') {
         updatePlayer(); updateProjectiles(); updateParticles(); updateFloatingTexts(); updateFootprints();
         updateCamera();
+        // Update HUD every second to keep score current (time penalty updates)
+        if (GAME.ticks % 60 === 0) updateHud();
     }
 
     if (GAME.state === 'PLAY') {
@@ -9387,7 +9446,11 @@ function update() {
 
     // Yard level and Mecha boss updates
     if (GAME.state === 'YARD_LEVEL') updateYardLevel();
-    if (GAME.state === 'MECHA_BOSS') updateMechaBattle();
+    if (GAME.state === 'MECHA_BOSS') {
+        updateMechaBattle();
+        // Update HUD every second to keep score current
+        if (GAME.ticks % 60 === 0) updateHud();
+    }
 }
 
 function updatePlayer() {
@@ -11701,7 +11764,7 @@ function drawNameEntry() {
         if (blink) {
             ctx.font = '7px "Press Start 2P"';
             ctx.fillStyle = '#666';
-            ctx.fillText('[PRESS SPACE TO CONTINUE]', canvas.width / 2, 200);
+            ctx.fillText('[SPACE / TAP TO CONTINUE]', canvas.width / 2, 200);
         }
     } else {
         // Name entry prompt
@@ -11774,7 +11837,7 @@ function drawNameEntry() {
         // Controls hint
         ctx.font = '5px "Press Start 2P"';
         ctx.fillStyle = '#666';
-        ctx.fillText('< > SELECT   SPACE CONFIRM   B DELETE', canvas.width / 2, 180);
+        ctx.fillText('< > SELECT   SPACE ADD   BACK DEL', canvas.width / 2, 180);
 
         // Submit early option
         if (GAME.nameEntry.length > 0) {
@@ -11782,9 +11845,12 @@ function drawNameEntry() {
             if (blink) {
                 ctx.font = '6px "Press Start 2P"';
                 ctx.fillStyle = '#22c55e';
-                ctx.fillText('[PRESS START TO SUBMIT]', canvas.width / 2, 195);
+                ctx.fillText('[ENTER TO SUBMIT]', canvas.width / 2, 195);
             }
         }
+
+        // Draw touch buttons for mobile
+        drawNameEntryTouchButtons();
     }
 
     ctx.textAlign = 'left';
@@ -11907,7 +11973,76 @@ function drawHighscores() {
         ctx.textAlign = 'center';
         ctx.font = '6px "Press Start 2P"';
         ctx.fillStyle = '#666';
-        ctx.fillText('[PRESS SPACE TO CONTINUE]', canvas.width / 2, 218);
+        ctx.fillText('[SPACE / TAP TO CONTINUE]', canvas.width / 2, 218);
+    }
+
+    ctx.textAlign = 'left';
+}
+
+// Store touch button positions for name entry
+let nameEntryTouchButtons = {};
+
+// Draw touch buttons for name entry (mobile)
+function drawNameEntryTouchButtons() {
+    const btnW = 35;
+    const btnH = 22;
+    const btnY = 200;
+    const gap = 8;
+
+    // Calculate positions
+    const leftBtn = { x: 20, y: btnY, w: btnW, h: btnH };
+    const rightBtn = { x: 20 + btnW + gap, y: btnY, w: btnW, h: btnH };
+    const addBtn = { x: canvas.width / 2 - btnW / 2, y: btnY, w: btnW, h: btnH };
+    const delBtn = { x: canvas.width - 20 - btnW * 2 - gap, y: btnY, w: btnW, h: btnH };
+    const submitBtn = { x: canvas.width - 20 - btnW, y: btnY, w: btnW, h: btnH };
+
+    // Store for touch detection
+    nameEntryTouchButtons = { left: leftBtn, right: rightBtn, add: addBtn, del: delBtn, submit: submitBtn };
+
+    // Draw buttons
+    ctx.font = '8px "Press Start 2P"';
+    ctx.textAlign = 'center';
+
+    // Left arrow
+    ctx.fillStyle = '#1e3a5f';
+    ctx.fillRect(leftBtn.x, leftBtn.y, leftBtn.w, leftBtn.h);
+    ctx.strokeStyle = '#3b82f6';
+    ctx.strokeRect(leftBtn.x, leftBtn.y, leftBtn.w, leftBtn.h);
+    ctx.fillStyle = '#fff';
+    ctx.fillText('<', leftBtn.x + leftBtn.w / 2, leftBtn.y + 15);
+
+    // Right arrow
+    ctx.fillStyle = '#1e3a5f';
+    ctx.fillRect(rightBtn.x, rightBtn.y, rightBtn.w, rightBtn.h);
+    ctx.strokeStyle = '#3b82f6';
+    ctx.strokeRect(rightBtn.x, rightBtn.y, rightBtn.w, rightBtn.h);
+    ctx.fillStyle = '#fff';
+    ctx.fillText('>', rightBtn.x + rightBtn.w / 2, rightBtn.y + 15);
+
+    // Add character button
+    ctx.fillStyle = '#1e4d3a';
+    ctx.fillRect(addBtn.x, addBtn.y, addBtn.w, addBtn.h);
+    ctx.strokeStyle = '#22c55e';
+    ctx.strokeRect(addBtn.x, addBtn.y, addBtn.w, addBtn.h);
+    ctx.fillStyle = '#22c55e';
+    ctx.fillText('ADD', addBtn.x + addBtn.w / 2, addBtn.y + 15);
+
+    // Delete button
+    ctx.fillStyle = '#4d1e1e';
+    ctx.fillRect(delBtn.x, delBtn.y, delBtn.w, delBtn.h);
+    ctx.strokeStyle = '#ef4444';
+    ctx.strokeRect(delBtn.x, delBtn.y, delBtn.w, delBtn.h);
+    ctx.fillStyle = '#ef4444';
+    ctx.fillText('DEL', delBtn.x + delBtn.w / 2, delBtn.y + 15);
+
+    // Submit button (only if name has characters)
+    if (GAME.nameEntry.length > 0) {
+        ctx.fillStyle = '#4d3a1e';
+        ctx.fillRect(submitBtn.x, submitBtn.y, submitBtn.w, submitBtn.h);
+        ctx.strokeStyle = '#ffd700';
+        ctx.strokeRect(submitBtn.x, submitBtn.y, submitBtn.w, submitBtn.h);
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText('OK', submitBtn.x + submitBtn.w / 2, submitBtn.y + 15);
     }
 
     ctx.textAlign = 'left';
