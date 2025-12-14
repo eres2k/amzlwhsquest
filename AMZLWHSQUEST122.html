@@ -7742,13 +7742,16 @@ const GyroControlSystem = {
 };
 
 // Touch handlers for mobile controls
+// Global mobile detection flag
+let isMobileDevice = false;
+
 function initMobileControls() {
     // Detect touch capability - more reliable than CSS media queries alone
     const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const isMobile = hasTouch || isMobileUA;
+    isMobileDevice = hasTouch || isMobileUA;
 
-    if (!isMobile) return;
+    if (!isMobileDevice) return;
 
     // Explicitly show mobile controls via JS (CSS media query is unreliable on some devices)
     const mobileControls = document.getElementById('mobile-controls');
@@ -11636,7 +11639,7 @@ let nameEntryCharIndex = 0;
 function handleNameEntryInput(key) {
     if (GAME.highscoreSubmitted) {
         // After submission, any key advances to credits/highscores
-        if (key === 'space' || key === 'enter') {
+        if (key === 'space' || key === 'enter' || key === 'submit') {
             if (GAME.lastDefeatedBoss === 'Mecha Jeff') {
                 GAME.state = 'HIGHSCORES';
             } else {
@@ -11982,8 +11985,11 @@ function drawHighscores() {
 // Store touch button positions for name entry
 let nameEntryTouchButtons = {};
 
-// Draw touch buttons for name entry (mobile)
+// Draw touch buttons for name entry (mobile only)
 function drawNameEntryTouchButtons() {
+    // Only show touch buttons on mobile devices
+    if (!isMobileDevice) return;
+
     const btnW = 35;
     const btnH = 22;
     const btnY = 200;
