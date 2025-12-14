@@ -4602,54 +4602,180 @@ function generateAssets() {
         ctx.fillStyle = '#fbbf24'; ctx.fillRect(20,42,8,3);
     });
 
+    // ENHANCED MECHA JEFF - More detailed with animation support
     GFX.mechaJeff = c(64,64, ctx => {
-        // Transparent background - no fill needed
-        // Mecha body frame with gradient effect
+        // === MECHA BODY FRAME - Heavy Industrial Armor ===
+        // Base shadow/depth
+        ctx.fillStyle = '#0a0f18'; ctx.fillRect(6,30,52,32);
+        // Main body chassis
         ctx.fillStyle = '#1a1f2e'; ctx.fillRect(8,32,48,28);
-        ctx.fillStyle = '#252b3d'; ctx.fillRect(12,34,40,24);
-        // Body armor plates
+        // Body armor plating with gradient effect
+        ctx.fillStyle = '#252b3d'; ctx.fillRect(10,33,44,26);
+        ctx.fillStyle = '#2d3548'; ctx.fillRect(12,34,40,24);
+        // Chest plate with hexagonal pattern
         ctx.fillStyle = '#3d4556'; ctx.fillRect(14,36,36,20);
         ctx.fillStyle = '#4a5568'; ctx.fillRect(16,38,32,16);
-        // Amazon logo on chest (glowing)
+        // Armor panel lines
+        ctx.fillStyle = '#1a1f2e';
+        ctx.fillRect(20,36,2,20); ctx.fillRect(42,36,2,20);
+        ctx.fillRect(14,45,36,1);
+        // Ventilation grills
+        ctx.fillStyle = '#0f1318';
+        for (let i = 0; i < 3; i++) {
+            ctx.fillRect(22 + i * 6, 50, 4, 4);
+        }
+
+        // === AMAZON PRIME REACTOR CORE (chest) ===
+        // Outer glow ring
+        ctx.fillStyle = '#7f2d00'; ctx.fillRect(22,40,20,12);
+        ctx.fillStyle = '#b45309'; ctx.fillRect(23,41,18,10);
+        // Core reactor
         ctx.fillStyle = '#ff9900'; ctx.fillRect(24,42,16,8);
-        ctx.fillStyle = '#ffb347'; ctx.fillRect(26,44,12,4);
-        // Glowing arc smile
-        ctx.fillStyle = '#ff6600'; ctx.fillRect(32,46,8,4);
-        ctx.fillStyle = '#ff9900'; ctx.fillRect(38,44,4,8);
-        // Shoulder cannons
-        ctx.fillStyle = '#374151'; ctx.fillRect(2,28,12,24);
-        ctx.fillStyle = '#4b5563'; ctx.fillRect(4,30,8,20);
-        ctx.fillStyle = '#dc2626'; ctx.fillRect(5,34,6,6);
-        ctx.fillStyle = '#ef4444'; ctx.fillRect(6,35,4,4);
-        ctx.fillStyle = '#374151'; ctx.fillRect(50,28,12,24);
-        ctx.fillStyle = '#4b5563'; ctx.fillRect(52,30,8,20);
-        ctx.fillStyle = '#dc2626'; ctx.fillRect(53,34,6,6);
-        ctx.fillStyle = '#ef4444'; ctx.fillRect(54,35,4,4);
-        // Neck/collar chrome
-        ctx.fillStyle = '#6b7280'; ctx.fillRect(18,28,28,6);
-        ctx.fillStyle = '#9ca3af'; ctx.fillRect(20,29,24,4);
-        // Bald dome with shine
-        ctx.fillStyle = '#f5deb3'; ctx.fillRect(20,8,24,22);
-        ctx.fillStyle = '#faebd7'; ctx.fillRect(22,6,20,8);
-        ctx.fillStyle = '#fff5e6'; ctx.fillRect(26,4,12,6);
-        // Head shine highlight
-        ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillRect(24,6,8,4);
-        // Evil eyebrows
-        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(22,14,8,3); ctx.fillRect(34,14,8,3);
-        // Glowing red eyes
-        ctx.fillStyle = '#7f1d1d'; ctx.fillRect(24,18,6,6); ctx.fillRect(34,18,6,6);
-        ctx.fillStyle = '#dc2626'; ctx.fillRect(25,19,4,4); ctx.fillRect(35,19,4,4);
-        ctx.fillStyle = '#ef4444'; ctx.fillRect(26,20,2,2); ctx.fillRect(36,20,2,2);
-        // Evil grin
-        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(26,26,12,3);
-        ctx.fillStyle = '#fff'; ctx.fillRect(28,27,8,1);
-        // Ear pieces
-        ctx.fillStyle = '#4b5563'; ctx.fillRect(16,14,4,10); ctx.fillRect(44,14,4,10);
-        ctx.fillStyle = '#ef4444'; ctx.fillRect(17,16,2,6); ctx.fillRect(45,16,2,6);
-        // Legs
-        ctx.fillStyle = '#374151'; ctx.fillRect(18,56,10,8); ctx.fillRect(36,56,10,8);
-        ctx.fillStyle = '#4b5563'; ctx.fillRect(20,58,6,6); ctx.fillRect(38,58,6,6);
+        ctx.fillStyle = '#ffb347'; ctx.fillRect(25,43,14,6);
+        ctx.fillStyle = '#fcd34d'; ctx.fillRect(26,44,12,4);
+        // Amazon smile arc (glowing)
+        ctx.fillStyle = '#ff6600';
+        ctx.beginPath();
+        ctx.moveTo(27,47); ctx.quadraticCurveTo(32,51,38,46);
+        ctx.lineTo(39,48); ctx.quadraticCurveTo(32,54,26,48);
+        ctx.fill();
+        // Arrow tip
+        ctx.fillStyle = '#ff9900'; ctx.fillRect(37,45,4,3);
+        ctx.fillRect(39,43,2,3);
+
+        // === MASSIVE SHOULDER CANNONS WITH MISSILES ===
+        // Left shoulder mount
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(0,24,14,30);
+        ctx.fillStyle = '#374151'; ctx.fillRect(2,26,10,26);
+        ctx.fillStyle = '#4b5563'; ctx.fillRect(3,28,8,22);
+        // Left cannon barrel
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(4,20,6,10);
+        ctx.fillStyle = '#374151'; ctx.fillRect(5,18,4,12);
+        // Left missile pods
+        ctx.fillStyle = '#7f1d1d'; ctx.fillRect(3,30,8,4);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(4,31,6,2);
+        ctx.fillStyle = '#7f1d1d'; ctx.fillRect(3,36,8,4);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(4,37,6,2);
+        ctx.fillStyle = '#7f1d1d'; ctx.fillRect(3,42,8,4);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(4,43,6,2);
+        // Left targeting light
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(6,48,2,3);
+
+        // Right shoulder mount
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(50,24,14,30);
+        ctx.fillStyle = '#374151'; ctx.fillRect(52,26,10,26);
+        ctx.fillStyle = '#4b5563'; ctx.fillRect(53,28,8,22);
+        // Right cannon barrel
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(54,20,6,10);
+        ctx.fillStyle = '#374151'; ctx.fillRect(55,18,4,12);
+        // Right missile pods
+        ctx.fillStyle = '#7f1d1d'; ctx.fillRect(53,30,8,4);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(54,31,6,2);
+        ctx.fillStyle = '#7f1d1d'; ctx.fillRect(53,36,8,4);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(54,37,6,2);
+        ctx.fillStyle = '#7f1d1d'; ctx.fillRect(53,42,8,4);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(54,43,6,2);
+        // Right targeting light
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(56,48,2,3);
+
+        // === CHROME NECK/COLLAR ASSEMBLY ===
+        ctx.fillStyle = '#4b5563'; ctx.fillRect(16,26,32,8);
+        ctx.fillStyle = '#6b7280'; ctx.fillRect(18,27,28,6);
+        ctx.fillStyle = '#9ca3af'; ctx.fillRect(20,28,24,4);
+        // Neck hydraulics
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(18,28,3,5); ctx.fillRect(43,28,3,5);
+
+        // === BEZOS HEAD - Bald dome with cybernetic enhancements ===
+        // Head base
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(18,4,28,26);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(20,6,24,22);
+        // Bald dome with epic shine
+        ctx.fillStyle = '#f5deb3'; ctx.fillRect(22,2,20,14);
+        ctx.fillStyle = '#faebd7'; ctx.fillRect(24,1,16,10);
+        ctx.fillStyle = '#fff5e6'; ctx.fillRect(26,0,12,8);
+        // Multiple head shine highlights
+        ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(26,1,8,4);
+        ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(28,2,4,2);
+        ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fillRect(29,1,2,2);
+
+        // === CYBERNETIC IMPLANTS ===
+        // Forehead implant
+        ctx.fillStyle = '#374151'; ctx.fillRect(28,6,8,3);
+        ctx.fillStyle = '#4b5563'; ctx.fillRect(29,7,6,1);
+        ctx.fillStyle = '#22d3ee'; ctx.fillRect(30,7,4,1);
+
+        // === EVIL EYEBROWS - Angled for menace ===
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath();
+        ctx.moveTo(22,12); ctx.lineTo(30,14); ctx.lineTo(30,16); ctx.lineTo(22,15); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(42,12); ctx.lineTo(34,14); ctx.lineTo(34,16); ctx.lineTo(42,15); ctx.fill();
+
+        // === GLOWING CYBERNETIC EYES ===
+        // Eye sockets (deep)
+        ctx.fillStyle = '#0a0a0a'; ctx.fillRect(23,16,8,8); ctx.fillRect(33,16,8,8);
+        // Eye housing
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(24,17,6,6); ctx.fillRect(34,17,6,6);
+        // Glowing red cybernetic eyes
+        ctx.fillStyle = '#7f1d1d'; ctx.fillRect(25,18,4,4); ctx.fillRect(35,18,4,4);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(26,19,2,2); ctx.fillRect(36,19,2,2);
+        // Eye glow effect
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(26,19,1,1); ctx.fillRect(36,19,1,1);
+        // Scanning beam effect (varies with animation)
+        ctx.fillStyle = 'rgba(239,68,68,0.3)';
+        ctx.fillRect(25,22,4,1); ctx.fillRect(35,22,4,1);
+
+        // === EVIL MECHANICAL GRIN ===
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(25,25,14,4);
+        ctx.fillStyle = '#374151'; ctx.fillRect(26,26,12,2);
+        // Metal teeth
+        ctx.fillStyle = '#9ca3af';
+        for (let i = 0; i < 6; i++) {
+            ctx.fillRect(27 + i * 2, 26, 1, 2);
+        }
+
+        // === CYBERNETIC EAR PIECES ===
+        ctx.fillStyle = '#374151'; ctx.fillRect(14,12,6,14); ctx.fillRect(44,12,6,14);
+        ctx.fillStyle = '#4b5563'; ctx.fillRect(15,14,4,10); ctx.fillRect(45,14,4,10);
+        // Ear antenna
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(16,10,2,4); ctx.fillRect(46,10,2,4);
+        // Ear light strips
+        ctx.fillStyle = '#22d3ee'; ctx.fillRect(16,16,2,6); ctx.fillRect(46,16,2,6);
+
+        // === HEAVY MECHA LEGS ===
+        // Upper leg armor
+        ctx.fillStyle = '#1f2937'; ctx.fillRect(16,56,12,8); ctx.fillRect(36,56,12,8);
+        ctx.fillStyle = '#374151'; ctx.fillRect(17,57,10,6); ctx.fillRect(37,57,10,6);
+        ctx.fillStyle = '#4b5563'; ctx.fillRect(18,58,8,4); ctx.fillRect(38,58,8,4);
+        // Knee joints
+        ctx.fillStyle = '#fbbf24'; ctx.fillRect(20,60,4,2); ctx.fillRect(40,60,4,2);
+        // Thruster vents on legs
+        ctx.fillStyle = '#0891b2'; ctx.fillRect(19,62,2,2); ctx.fillRect(39,62,2,2);
+        ctx.fillRect(23,62,2,2); ctx.fillRect(43,62,2,2);
     });
+
+    // Create animated Mecha Jeff frames for eye glow pulsing
+    GFX.mechaJeffFrames = [];
+    for (let frame = 0; frame < 4; frame++) {
+        GFX.mechaJeffFrames[frame] = c(64,64, ctx => {
+            // Draw base mecha jeff
+            ctx.drawImage(GFX.mechaJeff, 0, 0);
+            // Add animated eye glow based on frame
+            const glowIntensity = [0.3, 0.5, 0.7, 0.5][frame];
+            ctx.fillStyle = `rgba(239, 68, 68, ${glowIntensity})`;
+            ctx.beginPath();
+            ctx.arc(27, 20, 6 + frame, 0, Math.PI * 2);
+            ctx.arc(37, 20, 6 + frame, 0, Math.PI * 2);
+            ctx.fill();
+            // Reactor core pulse
+            const reactorPulse = [0.2, 0.4, 0.6, 0.4][frame];
+            ctx.fillStyle = `rgba(255, 153, 0, ${reactorPulse})`;
+            ctx.beginPath();
+            ctx.arc(32, 46, 8 + frame, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
     // IMPROVED ASSOCIATE NPC
     GFX.assoc = c(16,16, ctx => {
         // Shadow
@@ -8719,6 +8845,47 @@ function startYardLevel() {
     GAME.projectiles = [];
     GAME.particles = [];
     GAME.floatingTexts = [];
+
+    // === YARD ATMOSPHERE ELEMENTS (like warehouse) ===
+    // Initialize yard package collectibles for bonus points
+    y.yardPackages = [];
+    // Spawn initial packages on the road lanes
+    for (let i = 0; i < 8; i++) {
+        const laneIndex = Math.floor(Math.random() * y.lanes.length);
+        const lane = y.lanes[laneIndex];
+        y.yardPackages.push({
+            x: 30 + Math.random() * (canvas.width - 60),
+            y: lane.y - 5 + Math.random() * 10,
+            collected: false,
+            bobTimer: Math.random() * Math.PI * 2,
+            glowTimer: Math.random() * Math.PI * 2,
+            type: Math.random() < 0.3 ? 'prime' : 'standard' // Prime packages worth more
+        });
+    }
+    y.packageSpawnTimer = 0;
+
+    // Yard atmosphere: conveyor belts at dock area, pallet stacks, dock signs
+    y.dockConveyors = [
+        { x: 20, y: h - 45, length: 80, dir: 1 },
+        { x: canvas.width - 100, y: h - 45, length: 80, dir: -1 }
+    ];
+    y.palletStacks = [
+        { x: 8, y: h - 55 }, { x: 45, y: h - 55 },
+        { x: canvas.width - 55, y: h - 55 }, { x: canvas.width - 25, y: h - 55 }
+    ];
+    y.dockWorkers = [];
+    for (let i = 0; i < 3; i++) {
+        y.dockWorkers.push({
+            x: 60 + Math.random() * (canvas.width - 120),
+            y: h - 50 + Math.random() * 20,
+            dir: Math.random() < 0.5 ? 1 : -1,
+            pauseTimer: Math.random() * 60
+        });
+    }
+
+    // Yard scoring tracking
+    y.vehicleHitPenalty = 0; // Track penalty points
+
     // Don't start yard music here - it will start when Simon's safety speech dialog closes
 
     // Show Simon's yard safety tip (localized)
@@ -9655,6 +9822,10 @@ function updateYardLevel() {
             if (GAME.player.iframe <= 0) {
                 GAME.lives--; GAME.flash = 15; GAME.shake = 20; AudioSys.sfx.hurt(); updateHud();
                 VibrationSystem.onHeavyDamage(); // Heavy damage vibration for forklift
+                // SCORING: -400 penalty for forklift hit
+                GAME.score = (GAME.score || 0) - 400;
+                y.vehicleHitPenalty = (y.vehicleHitPenalty || 0) + 400;
+                spawnFloatingText(f.x, f.y - 10, "-400", "#ef4444");
                 // Teleport to start - no iframe needed since player is repositioned
                 y.playerX = canvas.width / 2 - 8;
                 y.playerY = y.startY;
@@ -9677,6 +9848,11 @@ function updateYardLevel() {
             if (GAME.player.iframe <= 0) {
                 GAME.lives--; GAME.flash = 12; GAME.shake = 15; AudioSys.sfx.hurt(); updateHud();
                 VibrationSystem.onHeavyDamage(); // Heavy damage vibration for vehicle
+                // SCORING: -300 penalty for vehicle hit
+                const penalty = v.type === 'truck' ? 350 : 300;
+                GAME.score = (GAME.score || 0) - penalty;
+                y.vehicleHitPenalty = (y.vehicleHitPenalty || 0) + penalty;
+                spawnFloatingText(v.x + v.w/2, v.y - 10, "-" + penalty, "#ef4444");
                 // FULL RESET - player goes back to starting position, no iframe since teleporting
                 y.playerX = canvas.width / 2 - 8;
                 y.playerY = y.startY;
@@ -9686,6 +9862,67 @@ function updateYardLevel() {
                 if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('FLATTENED BY LOGISTICS!'); return; }
             }
         }
+    }
+
+    // === UPDATE YARD PACKAGE COLLECTIBLES ===
+    if (y.yardPackages && !y.inCastle) {
+        // Update package animations
+        y.yardPackages.forEach(pkg => {
+            if (!pkg.collected) {
+                pkg.bobTimer += 0.1;
+                pkg.glowTimer += 0.08;
+            }
+        });
+
+        // Check player collection
+        for (let i = y.yardPackages.length - 1; i >= 0; i--) {
+            const pkg = y.yardPackages[i];
+            if (!pkg.collected && Math.abs(pkg.x - y.playerX) < 18 && Math.abs(pkg.y - y.playerY) < 18) {
+                pkg.collected = true;
+                const points = pkg.type === 'prime' ? 250 : 150;
+                GAME.score = (GAME.score || 0) + points;
+                AudioSys.sfx.fix();
+                spawnFloatingText(pkg.x, pkg.y - 16, "+" + points, pkg.type === 'prime' ? "#ff9900" : "#22c55e");
+                spawnParticleBurst(pkg.x + 7, pkg.y + 7, pkg.type === 'prime' ? ['#ff9900', '#fbbf24', '#fff'] : ['#22c55e', '#86efac', '#fff'], 8);
+                // Remove collected package
+                y.yardPackages.splice(i, 1);
+            }
+        }
+
+        // Spawn new packages periodically
+        y.packageSpawnTimer = (y.packageSpawnTimer || 0) + 1;
+        if (y.packageSpawnTimer > 300 && y.yardPackages.length < 6) { // Every ~5 seconds
+            y.packageSpawnTimer = 0;
+            const laneIndex = Math.floor(Math.random() * y.lanes.length);
+            const lane = y.lanes[laneIndex];
+            // Only spawn if player is nearby (within view)
+            if (Math.abs(y.playerY - lane.y) < canvas.height) {
+                y.yardPackages.push({
+                    x: 30 + Math.random() * (canvas.width - 60),
+                    y: lane.y - 5 + Math.random() * 10,
+                    collected: false,
+                    bobTimer: 0,
+                    glowTimer: 0,
+                    type: Math.random() < 0.25 ? 'prime' : 'standard'
+                });
+            }
+        }
+    }
+
+    // === UPDATE DOCK WORKERS ===
+    if (y.dockWorkers && !y.inCastle) {
+        y.dockWorkers.forEach(worker => {
+            if (worker.pauseTimer > 0) {
+                worker.pauseTimer--;
+                return;
+            }
+            worker.x += worker.dir * 0.3;
+            if (Math.random() < 0.01) worker.pauseTimer = 30 + Math.random() * 60;
+            if (worker.x < 30 || worker.x > canvas.width - 30) {
+                worker.dir *= -1;
+                worker.pauseTimer = 20;
+            }
+        });
     }
 
     // === CASTLE SECTION UPDATES ===
@@ -13382,16 +13619,77 @@ function drawYardLevel() {
     ctx.fillStyle = '#334155'; ctx.fillRect(0, totalHeight - 22, canvas.width, 4);
     ctx.fillStyle = '#64748b'; for (let x=0; x<canvas.width; x+=14) ctx.fillRect(x, totalHeight - 16, 8, 3);
 
+    // === WAREHOUSE-STYLE YARD FLOOR TILES (between lanes) ===
+    if (y) {
+        const animFrame = y.jeffAnimFrame || 0;
+        // Draw concrete floor between vehicle lanes
+        for (let ty = hallwayEnd; ty < totalHeight - 60; ty += 16) {
+            for (let tx = 0; tx < canvas.width; tx += 16) {
+                // Check if not inside a lane band
+                let inLane = false;
+                y.lanes.forEach(lane => {
+                    if (ty > lane.y - 22 && ty < lane.y + 22) inLane = true;
+                });
+                if (!inLane) {
+                    // Concrete floor tiles with variation
+                    const shade = ((tx + ty) / 16 % 2 === 0) ? 0 : 8;
+                    ctx.fillStyle = `rgb(${55 + shade}, ${65 + shade}, ${81 + shade})`;
+                    ctx.fillRect(tx, ty, 16, 16);
+                    // Tile texture
+                    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+                    ctx.fillRect(tx + 1, ty + 1, 6, 6);
+                    // Occasional crack/stain
+                    if ((tx * ty) % 127 < 8) {
+                        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                        ctx.fillRect(tx + 4, ty + 4, 8, 1);
+                    }
+                }
+            }
+        }
+
+        // Safety lines on yard floor (5S markings)
+        ctx.fillStyle = '#facc15';
+        for (let zoneY = hallwayEnd + 40; zoneY < totalHeight - 80; zoneY += 60) {
+            // Pedestrian crossing markers
+            for (let x = 0; x < canvas.width; x += 24) {
+                ctx.fillRect(x + 4, zoneY, 12, 3);
+            }
+        }
+    }
+
     // lane bands and markings
     if (y) {
         ctx.setLineDash([8, 10]);
         ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2;
         y.lanes.forEach(lane => {
-            ctx.fillStyle = '#0f172a'; ctx.fillRect(0, lane.y - 20, canvas.width, 40);
-            ctx.fillStyle = '#111827'; ctx.fillRect(0, lane.y - 14, canvas.width, 28);
+            // Road surface with asphalt texture
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(0, lane.y - 22, canvas.width, 44);
+            ctx.fillStyle = '#111827'; ctx.fillRect(0, lane.y - 18, canvas.width, 36);
+            // Asphalt texture
+            for (let tx = 0; tx < canvas.width; tx += 8) {
+                const texAlpha = 0.02 + Math.random() * 0.03;
+                ctx.fillStyle = `rgba(255,255,255,${texAlpha})`;
+                ctx.fillRect(tx, lane.y - 16 + Math.random() * 30, 4, 2);
+            }
+            // Center lane marker
             ctx.beginPath(); ctx.moveTo(0, lane.y); ctx.lineTo(canvas.width, lane.y); ctx.stroke();
+            // Edge lines
             ctx.fillStyle = '#1e293b'; ctx.fillRect(0, lane.y - 22, canvas.width, 2);
             ctx.fillStyle = '#1e293b'; ctx.fillRect(0, lane.y + 20, canvas.width, 2);
+            // Direction arrows on road
+            if (lane.dir === 1) {
+                ctx.fillStyle = '#374151';
+                ctx.beginPath();
+                ctx.moveTo(50, lane.y - 8); ctx.lineTo(66, lane.y); ctx.lineTo(50, lane.y + 8); ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(150, lane.y - 8); ctx.lineTo(166, lane.y); ctx.lineTo(150, lane.y + 8); ctx.fill();
+            } else {
+                ctx.fillStyle = '#374151';
+                ctx.beginPath();
+                ctx.moveTo(90, lane.y + 8); ctx.lineTo(74, lane.y); ctx.lineTo(90, lane.y - 8); ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(200, lane.y + 8); ctx.lineTo(184, lane.y); ctx.lineTo(200, lane.y - 8); ctx.fill();
+            }
         });
         ctx.setLineDash([]);
     }
@@ -13450,11 +13748,133 @@ function drawYardLevel() {
             });
         }
 
+        // === DRAW ENHANCED DOCK ATMOSPHERE (warehouse-style) ===
+        const animFrame = y.jeffAnimFrame || 0;
+
+        // Draw dock conveyor belts (at bottom of yard)
+        if (y.dockConveyors) {
+            y.dockConveyors.forEach(conv => {
+                // Conveyor frame
+                ctx.fillStyle = '#374151';
+                ctx.fillRect(conv.x - 2, conv.y - 2, conv.length + 4, 14);
+                // Conveyor belt surface
+                ctx.fillStyle = '#1f2937';
+                ctx.fillRect(conv.x, conv.y, conv.length, 10);
+                // Moving belt lines
+                const beltOffset = (animFrame * conv.dir * 0.5) % 12;
+                ctx.fillStyle = '#4b5563';
+                for (let bx = 0; bx < conv.length; bx += 12) {
+                    ctx.fillRect(conv.x + ((bx + beltOffset + 12) % conv.length), conv.y + 2, 6, 6);
+                }
+                // Rollers at ends
+                ctx.fillStyle = '#6b7280';
+                ctx.beginPath();
+                ctx.arc(conv.x + 5, conv.y + 5, 5, 0, Math.PI * 2);
+                ctx.arc(conv.x + conv.length - 5, conv.y + 5, 5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // Draw pallet stacks (warehouse atmosphere)
+        if (y.palletStacks) {
+            y.palletStacks.forEach(pallet => {
+                // Pallet base
+                ctx.fillStyle = '#92400e';
+                ctx.fillRect(pallet.x, pallet.y + 10, 20, 6);
+                ctx.fillStyle = '#78350f';
+                ctx.fillRect(pallet.x + 2, pallet.y + 12, 6, 4);
+                ctx.fillRect(pallet.x + 12, pallet.y + 12, 6, 4);
+                // Stacked boxes on pallet
+                ctx.fillStyle = '#c2410c';
+                ctx.fillRect(pallet.x + 2, pallet.y, 16, 12);
+                ctx.fillStyle = '#ea580c';
+                ctx.fillRect(pallet.x + 4, pallet.y + 2, 12, 8);
+                // Amazon tape
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(pallet.x + 6, pallet.y + 4, 8, 2);
+            });
+        }
+
+        // Draw dock workers (warehouse-style NPCs)
+        if (y.dockWorkers) {
+            y.dockWorkers.forEach(worker => {
+                // Worker body
+                ctx.fillStyle = '#ca8a04'; // Yellow vest
+                ctx.fillRect(worker.x - 4, worker.y, 8, 10);
+                ctx.fillStyle = '#eab308';
+                ctx.fillRect(worker.x - 3, worker.y + 1, 6, 8);
+                // Head
+                ctx.fillStyle = '#d4a574';
+                ctx.fillRect(worker.x - 3, worker.y - 5, 6, 6);
+                // Hard hat
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(worker.x - 4, worker.y - 7, 8, 3);
+                // Legs
+                ctx.fillStyle = '#1e3a8a';
+                ctx.fillRect(worker.x - 3, worker.y + 9, 3, 4);
+                ctx.fillRect(worker.x, worker.y + 9, 3, 4);
+            });
+        }
+
         // Draw vehicles
         y.vehicles.forEach(v => {
             const sprite = v.type === 'van' ? GFX.van : GFX.truck;
             ctx.drawImage(sprite, v.x, v.y);
         });
+
+        // === DRAW YARD PACKAGE COLLECTIBLES ===
+        if (y.yardPackages) {
+            y.yardPackages.forEach(pkg => {
+                if (pkg.collected) return;
+                const bob = Math.sin(pkg.bobTimer) * 3;
+                const glow = Math.sin(pkg.glowTimer) * 0.3 + 0.7;
+
+                // Glow effect
+                const glowColor = pkg.type === 'prime' ? `rgba(255, 153, 0, ${glow * 0.4})` : `rgba(34, 197, 94, ${glow * 0.3})`;
+                ctx.fillStyle = glowColor;
+                ctx.beginPath();
+                ctx.arc(pkg.x + 7, pkg.y + 7 + bob, 14, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Package box
+                if (pkg.type === 'prime') {
+                    // Prime package (golden/orange)
+                    ctx.fillStyle = '#92400e';
+                    ctx.fillRect(pkg.x, pkg.y + bob, 14, 14);
+                    ctx.fillStyle = '#c2410c';
+                    ctx.fillRect(pkg.x + 1, pkg.y + 1 + bob, 12, 12);
+                    ctx.fillStyle = '#ea580c';
+                    ctx.fillRect(pkg.x + 2, pkg.y + 2 + bob, 10, 10);
+                    // Prime logo
+                    ctx.fillStyle = '#ff9900';
+                    ctx.fillRect(pkg.x + 3, pkg.y + 5 + bob, 8, 4);
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillRect(pkg.x + 4, pkg.y + 6 + bob, 6, 2);
+                    // Smile arrow
+                    ctx.fillStyle = '#ff6600';
+                    ctx.fillRect(pkg.x + 8, pkg.y + 7 + bob, 3, 2);
+                    // Star sparkle
+                    const sparkle = Math.floor(animFrame / 8) % 3;
+                    if (sparkle === 0) {
+                        ctx.fillStyle = '#fff';
+                        ctx.fillRect(pkg.x + 11, pkg.y - 2 + bob, 2, 2);
+                    }
+                } else {
+                    // Standard package (green/cardboard)
+                    ctx.fillStyle = '#78350f';
+                    ctx.fillRect(pkg.x, pkg.y + bob, 14, 14);
+                    ctx.fillStyle = '#92400e';
+                    ctx.fillRect(pkg.x + 1, pkg.y + 1 + bob, 12, 12);
+                    ctx.fillStyle = '#a16207';
+                    ctx.fillRect(pkg.x + 2, pkg.y + 2 + bob, 10, 10);
+                    // Tape
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillRect(pkg.x + 5, pkg.y + 3 + bob, 4, 8);
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.fillRect(pkg.x + 3, pkg.y + 6 + bob, 8, 2);
+                }
+            });
+        }
 
         // Draw forklifts
         if (y.forklifts) {
@@ -13965,17 +14385,53 @@ function drawMechaBattle() {
         }
     }
 
-    // Draw boss with enrage glow
+    // Draw boss with enrage glow and animated sprite
     if (m) {
-        // Enrage aura
+        // Enrage aura - larger and more intense
         if (m.enraged && m.enrageFlash < 10) {
-            ctx.fillStyle = 'rgba(220, 38, 38, 0.3)';
+            ctx.fillStyle = 'rgba(220, 38, 38, 0.4)';
             ctx.beginPath();
-            ctx.arc(m.x + 32, m.y + 32, 45 + Math.sin(GAME.ticks * 0.1) * 5, 0, Math.PI * 2);
+            ctx.arc(m.x + 32, m.y + 32, 50 + Math.sin(GAME.ticks * 0.1) * 8, 0, Math.PI * 2);
             ctx.fill();
+            // Electric arcs when enraged
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 3; i++) {
+                const angle = (GAME.ticks * 0.1 + i * 2) % (Math.PI * 2);
+                const dist = 40 + Math.sin(GAME.ticks * 0.2 + i) * 10;
+                ctx.beginPath();
+                ctx.moveTo(m.x + 32, m.y + 32);
+                ctx.lineTo(m.x + 32 + Math.cos(angle) * dist, m.y + 32 + Math.sin(angle) * dist);
+                ctx.stroke();
+            }
         }
 
-        ctx.drawImage(GFX.mechaJeff, m.x, m.y);
+        // Prime Reactor glow effect (always on)
+        const reactorGlow = Math.sin(GAME.ticks * 0.08) * 0.2 + 0.4;
+        ctx.fillStyle = `rgba(255, 153, 0, ${reactorGlow})`;
+        ctx.beginPath();
+        ctx.arc(m.x + 32, m.y + 46, 20 + Math.sin(GAME.ticks * 0.1) * 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Use animated frame based on game ticks
+        const animFrame = Math.floor(GAME.ticks / 10) % 4;
+        if (GFX.mechaJeffFrames && GFX.mechaJeffFrames[animFrame]) {
+            ctx.drawImage(GFX.mechaJeffFrames[animFrame], m.x, m.y);
+        } else {
+            ctx.drawImage(GFX.mechaJeff, m.x, m.y);
+        }
+
+        // Eye targeting lasers when attacking
+        if (m.currentPhase === 3 || (m.enraged && GAME.ticks % 30 < 15)) {
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(m.x + 27, m.y + 20);
+            ctx.lineTo(GAME.player.x + 8, GAME.player.y + 8);
+            ctx.moveTo(m.x + 37, m.y + 20);
+            ctx.lineTo(GAME.player.x + 8, GAME.player.y + 8);
+            ctx.stroke();
+        }
     }
 
     // Draw player
