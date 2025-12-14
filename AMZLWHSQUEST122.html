@@ -1446,6 +1446,101 @@ const SIMULATED_AI = {
     }
 };
 
+// === BOSS DEFEAT CUTSCENE DIALOGUES ===
+// Localized defeat lines for each boss and player responses
+const BOSS_DEFEAT_DIALOGUES = {
+    // Boss final words when defeated (by boss name)
+    bossLines: {
+        "Labour Inspector": {
+            MEU: "No... the violations... they were all... documented...",
+            DE: "Nein... die Verstöße... sie waren alle... dokumentiert...",
+            AT: "Na... die Verstöße... de woan olle... dokumentiert...",
+            NL: "Nee... de overtredingen... ze waren allemaal... gedocumenteerd..."
+        },
+        "Compliance Auditor": {
+            MEU: "My audit... incomplete... the paperwork... never ends...",
+            DE: "Mein Audit... unvollständig... der Papierkram... endet nie...",
+            AT: "Mei Audit... unvollständig... da Papierkram... endet nia...",
+            NL: "Mijn audit... onvolledig... de papierwinkel... eindigt nooit..."
+        },
+        "Sebastian Sprigade": {
+            MEU: "TPH... dropping... delivery targets... not met...",
+            DE: "TPH... sinkt... Lieferziele... nicht erreicht...",
+            AT: "TPH... sinkt... Liefaziele... ned erreicht...",
+            NL: "TPH... daalt... leveringsdoelen... niet gehaald..."
+        },
+        "Regional OPS MGR": {
+            MEU: "The KPIs... they meant nothing... safety wins...",
+            DE: "Die KPIs... sie bedeuteten nichts... Sicherheit gewinnt...",
+            AT: "Die KPIs... de hom nix bedeutet... Sicherheit gewinnt...",
+            NL: "De KPI's... ze betekenden niets... veiligheid wint..."
+        },
+        "Avetta Platform": {
+            MEU: "SYSTEM ERROR... risk assessment... failed... rebooting...",
+            DE: "SYSTEMFEHLER... Risikobewertung... fehlgeschlagen... Neustart...",
+            AT: "SYSTEMFEHLER... Risikobewertung... fehlgschlogn... Neustart...",
+            NL: "SYSTEEMFOUT... risicobeoordeling... mislukt... herstarten..."
+        },
+        "Jelena \"Jelly\"": {
+            MEU: "This will go in your file... wait, MY file?!",
+            DE: "Das kommt in deine Akte... Moment, MEINE Akte?!",
+            AT: "Des kummt in deine Akte... Moment, MEINE Akte?!",
+            NL: "Dit komt in je dossier... wacht, MIJN dossier?!"
+        }
+    },
+    // Player character victory responses (by character name)
+    playerLines: {
+        "Carrie": {
+            MEU: "Another hazard eliminated. My 5S system remains... supreme.",
+            DE: "Ein weiteres Risiko beseitigt. Mein 5S-System bleibt... überlegen.",
+            AT: "Noch a Risiko beseitigt. Mei 5S-System bleibt... überlegen.",
+            NL: "Nog een gevaar geëlimineerd. Mijn 5S-systeem blijft... oppermachtig."
+        },
+        "Nevena": {
+            MEU: "I foresaw this outcome. The clipboard never lies.",
+            DE: "Ich habe dieses Ergebnis vorhergesehen. Das Klemmbrett lügt nie.",
+            AT: "I hob des Ergebnis vorrausgsehn. Des Klemmbrett lügt nia.",
+            NL: "Ik voorspelde deze uitkomst. Het klembord liegt nooit."
+        },
+        "Joao": {
+            MEU: "SAFETY FIRST! Did everyone hear that? SAFETY FIRST!",
+            DE: "SICHERHEIT ZUERST! Hat das jeder gehört? SICHERHEIT ZUERST!",
+            AT: "SICHERHEIT ZUERST! Hot des jeda ghört? SICHERHEIT ZUERST!",
+            NL: "VEILIGHEID EERST! Heeft iedereen dat gehoord? VEILIGHEID EERST!"
+        },
+        "Roman": {
+            MEU: "They never saw me coming. The Ghost strikes again.",
+            DE: "Sie haben mich nicht kommen sehen. Der Geist schlägt wieder zu.",
+            AT: "De hom mi ned kumma gsehn. Da Geist schlägt wieder zua.",
+            NL: "Ze zagen me niet aankomen. De Geest slaat weer toe."
+        },
+        "Erwin": {
+            MEU: "Efficiency maximized. Now, back to my Tesla.",
+            DE: "Effizienz maximiert. Jetzt zurück zu meinem Tesla.",
+            AT: "Effizienz maximiert. Jetzt zruck zu meim Tesla.",
+            NL: "Efficiëntie gemaximaliseerd. Nu, terug naar mijn Tesla."
+        }
+    }
+};
+
+// Get localized boss defeat line
+function getBossDefeatLine(bossName) {
+    const region = GAME.region || 'MEU';
+    const lines = BOSS_DEFEAT_DIALOGUES.bossLines[bossName];
+    if (lines && lines[region]) return lines[region];
+    if (lines && lines.MEU) return lines.MEU;
+    return "Defeated... by safety compliance...";
+}
+
+// Get localized player victory response
+function getPlayerVictoryLine(charName) {
+    const region = GAME.region || 'MEU';
+    const lines = BOSS_DEFEAT_DIALOGUES.playerLines[charName];
+    if (lines && lines[region]) return lines[region];
+    if (lines && lines.MEU) return lines.MEU;
+    return "Another victory for workplace safety!";
+}
+
 // Helper function to get localized Simon dialogue
 function getLocalizedSimonDialogue(category) {
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -8583,6 +8678,215 @@ function initSimonBoss() {
     updateMusicForState();
 }
 
+// === BOSS DEFEAT CUTSCENE SYSTEM ===
+// Epic 10-second cutscene when defeating a boss (not Simon/Mecha)
+
+function triggerBossDefeatCutscene() {
+    // Store boss info before clearing
+    const bossName = GAME.boss ? (GAME.boss.originalName || GAME.boss.name) : 'Unknown Boss';
+    const bossSprite = GAME.boss ? GAME.boss.sprite : null;
+
+    // Stop action and set up cutscene state
+    GAME.projectiles = [];
+    GAME.shake = 25;
+    GAME.flash = 15;
+    AudioSys.sfx.fix(); // Victory hit sound
+
+    // Initialize cutscene state
+    GAME.defeatCutscene = {
+        phase: 0,           // 0=intro, 1=boss speaks, 2=player responds, 3=transition
+        timer: 0,
+        bossName: bossName,
+        bossSprite: bossSprite,
+        bossLine: null,     // Will be set by AI or fallback
+        playerLine: null,   // Will be set by AI or fallback
+        particles: [],
+        flashIntensity: 1.0
+    };
+
+    GAME.state = 'BOSS_DEFEAT_CUTSCENE';
+    GAME.stateTimer = 0;
+
+    // Hide HUD elements during cutscene
+    document.getElementById('boss-hud').style.display = 'none';
+    document.getElementById('hud-layer').style.display = 'none';
+
+    // Play dramatic sound and music
+    MusicSys.play('victory');
+    VibrationSystem.onVictory();
+
+    // Spawn defeat particles around boss
+    for (let i = 0; i < 20; i++) {
+        GAME.defeatCutscene.particles.push({
+            x: GAME.boss.x + 16 + (Math.random() - 0.5) * 40,
+            y: GAME.boss.y + 16 + (Math.random() - 0.5) * 40,
+            vx: (Math.random() - 0.5) * 4,
+            vy: -Math.random() * 3 - 1,
+            life: 60 + Math.random() * 60,
+            color: ['#ff6b6b', '#ffd93d', '#ff8c42', '#ffffff'][Math.floor(Math.random() * 4)]
+        });
+    }
+
+    // Get AI-generated lines or fallback to static
+    const currentGen = GAME.genId;
+    const langInst = getLanguageInstruction();
+
+    // Request boss defeat line from AI
+    callGemini(
+        `You are ${bossName}, a defeated boss in a warehouse safety game. You just lost to the safety coordinator. Give a dramatic, defeated final line that fits your character (max 15 words). Be theatrical and funny. ${langInst}`,
+        "boss_defeat",
+        { bossName }
+    ).then(line => {
+        if (GAME.genId === currentGen && GAME.defeatCutscene) {
+            GAME.defeatCutscene.bossLine = line;
+        }
+    });
+
+    // Request player victory line from AI
+    callGemini(
+        `You are ${GAME.selectedChar}, a victorious WHS coordinator. You just defeated ${bossName}. Give a confident, witty one-liner celebrating your safety victory (max 15 words). Stay in character. ${langInst}`,
+        "player_victory",
+        { charName: GAME.selectedChar, bossName }
+    ).then(line => {
+        if (GAME.genId === currentGen && GAME.defeatCutscene) {
+            GAME.defeatCutscene.playerLine = line;
+        }
+    });
+
+    // Phase 1: Dramatic pause with visual effects (1.5 seconds)
+    setTimeout(() => {
+        if (GAME.state !== 'BOSS_DEFEAT_CUTSCENE') return;
+        advanceDefeatCutscene();
+    }, 1500);
+}
+
+function advanceDefeatCutscene() {
+    if (!GAME.defeatCutscene) return;
+
+    GAME.defeatCutscene.phase++;
+
+    if (GAME.defeatCutscene.phase === 1) {
+        // Phase 1: Boss speaks their defeat line
+        const bossLine = GAME.defeatCutscene.bossLine || getBossDefeatLine(GAME.defeatCutscene.bossName);
+        const bossPortrait = GAME.defeatCutscene.bossSprite || GFX.entities.ops;
+
+        GAME.shake = 10;
+        showDialog(bossLine, GAME.defeatCutscene.bossName, bossPortrait, !!GAME.defeatCutscene.bossLine);
+        GAME.nextState = 'BOSS_DEFEAT_CUTSCENE_CONTINUE';
+    }
+    else if (GAME.defeatCutscene.phase === 2) {
+        // Phase 2: Player responds with victory line
+        const playerLine = GAME.defeatCutscene.playerLine || getPlayerVictoryLine(GAME.selectedChar);
+
+        GAME.flash = 8;
+        showDialog(playerLine, GAME.selectedChar, GFX.charFaces[GAME.selectedChar], !!GAME.defeatCutscene.playerLine);
+        GAME.nextState = 'BOSS_DEFEAT_CUTSCENE_END';
+    }
+    else if (GAME.defeatCutscene.phase === 3) {
+        // Phase 3: Transition to victory screen
+        GAME.defeatCutscene = null;
+        winGame();
+    }
+}
+
+function handleDefeatCutsceneDialogClose() {
+    if (GAME.nextState === 'BOSS_DEFEAT_CUTSCENE_CONTINUE') {
+        advanceDefeatCutscene();
+    }
+    else if (GAME.nextState === 'BOSS_DEFEAT_CUTSCENE_END') {
+        // Short pause before transitioning
+        setTimeout(() => {
+            if (GAME.defeatCutscene) {
+                advanceDefeatCutscene();
+            }
+        }, 500);
+    }
+}
+
+function updateDefeatCutscene() {
+    if (!GAME.defeatCutscene) return;
+
+    GAME.defeatCutscene.timer++;
+
+    // Update particles
+    for (let i = GAME.defeatCutscene.particles.length - 1; i >= 0; i--) {
+        const p = GAME.defeatCutscene.particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.05; // Gravity
+        p.life--;
+        if (p.life <= 0) {
+            GAME.defeatCutscene.particles.splice(i, 1);
+        }
+    }
+
+    // Spawn new particles during intro phase
+    if (GAME.defeatCutscene.phase === 0 && Math.random() < 0.3) {
+        GAME.defeatCutscene.particles.push({
+            x: GAME.boss ? GAME.boss.x + 16 : 128,
+            y: GAME.boss ? GAME.boss.y + 16 : 128,
+            vx: (Math.random() - 0.5) * 3,
+            vy: -Math.random() * 2 - 0.5,
+            life: 40 + Math.random() * 40,
+            color: ['#ff6b6b', '#ffd93d', '#ff8c42'][Math.floor(Math.random() * 3)]
+        });
+    }
+
+    // Fade flash effect
+    if (GAME.defeatCutscene.flashIntensity > 0) {
+        GAME.defeatCutscene.flashIntensity -= 0.02;
+    }
+}
+
+function drawDefeatCutscene() {
+    if (!GAME.defeatCutscene) return;
+
+    // Draw dramatic vignette
+    const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 180);
+    gradient.addColorStop(0, 'rgba(0,0,0,0)');
+    gradient.addColorStop(0.7, 'rgba(0,0,0,0.3)');
+    gradient.addColorStop(1, 'rgba(0,0,0,0.7)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 256, 256);
+
+    // Draw defeat particles
+    for (const p of GAME.defeatCutscene.particles) {
+        const alpha = Math.min(1, p.life / 30);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = alpha;
+        ctx.fillRect(Math.floor(p.x), Math.floor(p.y), 3, 3);
+    }
+    ctx.globalAlpha = 1;
+
+    // Flash overlay during intro
+    if (GAME.defeatCutscene.flashIntensity > 0 && GAME.defeatCutscene.phase === 0) {
+        ctx.fillStyle = `rgba(255,255,255,${GAME.defeatCutscene.flashIntensity * 0.5})`;
+        ctx.fillRect(0, 0, 256, 256);
+    }
+
+    // Draw "DEFEATED!" text during intro phase
+    if (GAME.defeatCutscene.phase === 0) {
+        ctx.save();
+        ctx.font = 'bold 16px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Pulsing effect
+        const pulse = Math.sin(GAME.defeatCutscene.timer * 0.15) * 0.2 + 0.8;
+
+        // Shadow
+        ctx.fillStyle = '#000';
+        ctx.fillText('DEFEATED!', 129, 49);
+        ctx.fillText('DEFEATED!', 127, 47);
+
+        // Main text with pulse
+        ctx.fillStyle = `rgb(${Math.floor(255 * pulse)}, ${Math.floor(100 * pulse)}, ${Math.floor(100 * pulse)})`;
+        ctx.fillText('DEFEATED!', 128, 48);
+
+        ctx.restore();
+    }
+}
+
 // Fake victory dialogue - player thinks they won at 0 HP, but Simon transforms
 function triggerFakeVictoryDialogue() {
     // Phase 1: Player Surprise
@@ -9617,6 +9921,12 @@ function update() {
         updateMechaBattle();
         // Update HUD every second to keep score current
         if (GAME.ticks % 60 === 0) updateHud();
+    }
+
+    // Boss defeat cutscene update
+    if (GAME.state === 'BOSS_DEFEAT_CUTSCENE') {
+        updateDefeatCutscene();
+        updateParticles();
     }
 }
 
@@ -10964,8 +11274,8 @@ function updateProjectiles() {
                         triggerFakeVictoryDialogue(); // Start the fake victory sequence
                         continue;
                     }
-                    // For non-Simon bosses, normal win condition
-                    if (GAME.boss.hp <= 0 && GAME.boss.name !== "MEGA SIMON") { winGame(); continue; }
+                    // For non-Simon bosses, trigger epic defeat cutscene
+                    if (GAME.boss.hp <= 0 && GAME.boss.name !== "MEGA SIMON") { triggerBossDefeatCutscene(); continue; }
                 }
             }
             if (GAME.state === 'PLAY') {
@@ -13093,6 +13403,12 @@ function closeDialog() {
     // Handle Simon fake victory dialogue sequence
     if (GAME.state === 'SIMON_FAKE_VICTORY_CONTINUE' || GAME.state === 'SIMON_FAKE_VICTORY_TRANSFORM') {
         handleFakeVictoryDialogClose();
+        return;
+    }
+
+    // Handle boss defeat cutscene dialogue sequence
+    if (GAME.state === 'BOSS_DEFEAT_CUTSCENE_CONTINUE' || GAME.state === 'BOSS_DEFEAT_CUTSCENE_END') {
+        handleDefeatCutsceneDialogClose();
         return;
     }
 
@@ -18059,6 +18375,51 @@ function draw() {
     if (GAME.state === 'MECHA_TRANSFORM') { drawMechaTransform(); ctx.restore(); return; }
     if (GAME.state === 'SIMON_MECHA_TRANSFORM') { drawSimonMechaTransform(); ctx.restore(); return; }
     if (GAME.state === 'MECHA_SIMON_SPLASH') { drawMechaSimonSplash(); ctx.restore(); return; }
+    // Boss defeat cutscene - draw dramatic background with overlay effects
+    if (GAME.state === 'BOSS_DEFEAT_CUTSCENE') {
+        // Dark dramatic background
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw the boss arena tiles dimmed
+        const cx = GAME.camera.x; const cy = GAME.camera.y;
+        ctx.globalAlpha = 0.4;
+        for (let y = 0; y < MAP_H; y++) {
+            for (let x = 0; x < MAP_W; x++) {
+                const tile = GAME.map[y][x];
+                const dx = x * TILE_SIZE - cx; const dy = y * TILE_SIZE - cy;
+                if (dx < -16 || dx > 272 || dy < -16 || dy > 272) continue;
+                if (tile === 0) {
+                    ctx.fillStyle = '#1a1a2e';
+                    ctx.fillRect(dx, dy, TILE_SIZE, TILE_SIZE);
+                }
+            }
+        }
+        ctx.globalAlpha = 1;
+
+        // Draw defeated boss (fading/flashing)
+        if (GAME.boss && GAME.defeatCutscene) {
+            const bossX = GAME.boss.x - cx;
+            const bossY = GAME.boss.y - cy;
+            const flashAlpha = Math.sin(GAME.defeatCutscene.timer * 0.3) * 0.3 + 0.5;
+            ctx.globalAlpha = flashAlpha;
+            const bossImg = GAME.boss.sprite && GFX[GAME.boss.sprite] ? GFX[GAME.boss.sprite] : GFX.boss_manager;
+            ctx.drawImage(bossImg, bossX, bossY, 32, 32);
+            ctx.globalAlpha = 1;
+        }
+
+        // Draw player character
+        if (GAME.player) {
+            const px = GAME.player.x - cx;
+            const py = GAME.player.y - cy;
+            const charImg = GFX.charSprites[GAME.selectedChar] || GFX.charSprites.Carrie;
+            ctx.drawImage(charImg, px, py, 16, 16);
+        }
+
+        drawDefeatCutscene();
+        ctx.restore();
+        return;
+    }
     if (GAME.state === 'BEZOS_ESCAPE') { updateBezosEscape(); drawBezosEscape(); ctx.restore(); return; }
     if (GAME.state === 'CREDITS') { drawCredits(); ctx.restore(); return; }
     if (GAME.state === 'BOSS_INTRO' && GAME.boss) {
