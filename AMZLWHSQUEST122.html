@@ -14485,32 +14485,108 @@ function drawYardLevel() {
     ctx.fillStyle = '#9ca3af'; for (let x=6; x<canvas.width; x+=50) ctx.fillRect(x, totalHeight - 48, 14, 6);
 
     if (y) {
-        // Draw static hazards (puddles, debris)
+        const animFrame = y.jeffAnimFrame || 0;
+
+        // Draw static hazards (puddles, debris) - ENHANCED
         if (y.staticHazards) {
             y.staticHazards.forEach(h => {
                 if (h.type === 'puddle') {
-                    // Oil/water puddle
+                    // Oil/water puddle with rainbow oil sheen effect
+                    const shimmer = Math.sin(GAME.ticks * 0.05 + h.x) * 0.15;
+
+                    // Outer dark ring
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
+                    ctx.beginPath();
+                    ctx.ellipse(h.x + 12, h.y + 8, 20, 10, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Main water/oil puddle
                     ctx.fillStyle = 'rgba(30, 64, 175, 0.6)';
                     ctx.beginPath();
                     ctx.ellipse(h.x + 12, h.y + 8, 18, 8, 0, 0, Math.PI * 2);
                     ctx.fill();
-                    ctx.fillStyle = 'rgba(96, 165, 250, 0.3)';
+
+                    // Oil sheen rainbow effect
+                    const oilGradient = ctx.createRadialGradient(h.x + 8, h.y + 4, 2, h.x + 12, h.y + 8, 16);
+                    oilGradient.addColorStop(0, `rgba(147, 51, 234, ${0.3 + shimmer})`);
+                    oilGradient.addColorStop(0.3, `rgba(59, 130, 246, ${0.25 + shimmer})`);
+                    oilGradient.addColorStop(0.5, `rgba(16, 185, 129, ${0.2 + shimmer})`);
+                    oilGradient.addColorStop(0.7, `rgba(245, 158, 11, ${0.25 + shimmer})`);
+                    oilGradient.addColorStop(1, `rgba(239, 68, 68, ${0.15})`);
+                    ctx.fillStyle = oilGradient;
                     ctx.beginPath();
-                    ctx.ellipse(h.x + 10, h.y + 6, 8, 4, 0, 0, Math.PI * 2);
+                    ctx.ellipse(h.x + 12, h.y + 8, 16, 7, 0, 0, Math.PI * 2);
                     ctx.fill();
-                    // Warning icon
+
+                    // Light reflection highlight
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                    ctx.beginPath();
+                    ctx.ellipse(h.x + 8, h.y + 4, 6, 3, -0.3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Ripple effect
+                    const ripple = (GAME.ticks * 0.03 + h.y) % 1;
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 * (1 - ripple)})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.ellipse(h.x + 12, h.y + 8, 8 + ripple * 10, 4 + ripple * 4, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Warning sign
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillRect(h.x + 6, h.y - 12, 12, 10);
+                    ctx.fillStyle = '#1f2937';
+                    ctx.fillRect(h.x + 7, h.y - 11, 10, 8);
                     ctx.fillStyle = '#fbbf24';
                     ctx.font = '6px "Press Start 2P"';
-                    ctx.fillText('!', h.x + 10, h.y - 2);
+                    ctx.fillText('!', h.x + 10, h.y - 5);
+                    // Sign post
+                    ctx.fillStyle = '#6b7280';
+                    ctx.fillRect(h.x + 10, h.y - 2, 2, 4);
+
                 } else if (h.type === 'debris') {
-                    // Debris pile
+                    // Enhanced debris pile with varied pieces
+                    const pieces = [
+                        { ox: 0, oy: 10, w: 8, h: 6, color: '#57534e' },
+                        { ox: 6, oy: 6, w: 10, h: 10, color: '#78716c' },
+                        { ox: 14, oy: 8, w: 8, h: 8, color: '#a8a29e' },
+                        { ox: 4, oy: 2, w: 6, h: 6, color: '#d6d3d1' },
+                        { ox: 10, oy: 4, w: 4, h: 4, color: '#e7e5e4' },
+                    ];
+
+                    // Shadow
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                    ctx.beginPath();
+                    ctx.ellipse(h.x + 12, h.y + 18, 14, 4, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Draw debris pieces with 3D effect
+                    pieces.forEach(p => {
+                        // Dark side
+                        ctx.fillStyle = '#44403c';
+                        ctx.fillRect(h.x + p.ox, h.y + p.oy + 2, p.w, p.h);
+                        // Main piece
+                        ctx.fillStyle = p.color;
+                        ctx.fillRect(h.x + p.ox, h.y + p.oy, p.w, p.h);
+                        // Highlight
+                        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                        ctx.fillRect(h.x + p.ox, h.y + p.oy, p.w, 2);
+                    });
+
+                    // Scattered small debris
                     ctx.fillStyle = '#78716c';
-                    ctx.fillRect(h.x, h.y + 8, 24, 8);
+                    ctx.fillRect(h.x - 4, h.y + 14, 3, 2);
+                    ctx.fillRect(h.x + 22, h.y + 12, 2, 3);
                     ctx.fillStyle = '#a8a29e';
-                    ctx.fillRect(h.x + 2, h.y + 4, 8, 10);
-                    ctx.fillRect(h.x + 12, h.y + 6, 10, 8);
-                    ctx.fillStyle = '#d6d3d1';
-                    ctx.fillRect(h.x + 4, h.y + 6, 4, 4);
+                    ctx.fillRect(h.x + 2, h.y + 16, 2, 2);
+
+                    // Caution tape
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillRect(h.x - 2, h.y + 8, 28, 2);
+                    ctx.fillStyle = '#1f2937';
+                    for (let t = 0; t < 7; t++) {
+                        ctx.fillRect(h.x - 2 + t * 4, h.y + 8, 2, 2);
+                    }
                 }
             });
         }
@@ -14536,133 +14612,503 @@ function drawYardLevel() {
 
         // === DRAW ENHANCED DOCK ATMOSPHERE (warehouse-style) ===
 
-        // Draw pallet stacks (warehouse atmosphere)
-        if (y.palletStacks) {
-            y.palletStacks.forEach(pallet => {
-                // Pallet base
-                ctx.fillStyle = '#92400e';
-                ctx.fillRect(pallet.x, pallet.y + 10, 20, 6);
-                ctx.fillStyle = '#78350f';
-                ctx.fillRect(pallet.x + 2, pallet.y + 12, 6, 4);
-                ctx.fillRect(pallet.x + 12, pallet.y + 12, 6, 4);
-                // Stacked boxes on pallet
-                ctx.fillStyle = '#c2410c';
-                ctx.fillRect(pallet.x + 2, pallet.y, 16, 12);
-                ctx.fillStyle = '#ea580c';
-                ctx.fillRect(pallet.x + 4, pallet.y + 2, 12, 8);
-                // Amazon tape
-                ctx.fillStyle = '#fbbf24';
-                ctx.fillRect(pallet.x + 6, pallet.y + 4, 8, 2);
-            });
-        }
+        // === WAREHOUSE OVERHEAD LIGHTING ===
+        // Draw overhead warehouse lights with light cones
+        const lightSpacing = 80;
+        for (let lx = 40; lx < canvas.width; lx += lightSpacing) {
+            for (let ly = hallwayEnd + 60; ly < totalHeight - 100; ly += 120) {
+                const flicker = Math.sin(GAME.ticks * 0.1 + lx + ly) * 0.1 + 0.9;
 
-        // Draw dock workers (warehouse-style NPCs)
-        if (y.dockWorkers) {
-            y.dockWorkers.forEach(worker => {
-                // Worker body
-                ctx.fillStyle = '#ca8a04'; // Yellow vest
-                ctx.fillRect(worker.x - 4, worker.y, 8, 10);
-                ctx.fillStyle = '#eab308';
-                ctx.fillRect(worker.x - 3, worker.y + 1, 6, 8);
-                // Head
-                ctx.fillStyle = '#d4a574';
-                ctx.fillRect(worker.x - 3, worker.y - 5, 6, 6);
-                // Hard hat
-                ctx.fillStyle = '#f59e0b';
-                ctx.fillRect(worker.x - 4, worker.y - 7, 8, 3);
-                // Legs
-                ctx.fillStyle = '#1e3a8a';
-                ctx.fillRect(worker.x - 3, worker.y + 9, 3, 4);
-                ctx.fillRect(worker.x, worker.y + 9, 3, 4);
-            });
-        }
-
-        // Draw vehicles
-        y.vehicles.forEach(v => {
-            const sprite = v.type === 'van' ? GFX.van : GFX.truck;
-            ctx.drawImage(sprite, v.x, v.y);
-        });
-
-        // === DRAW YARD PACKAGE COLLECTIBLES ===
-        if (y.yardPackages) {
-            y.yardPackages.forEach(pkg => {
-                if (pkg.collected) return;
-                const bob = Math.sin(pkg.bobTimer) * 3;
-                const glow = Math.sin(pkg.glowTimer) * 0.3 + 0.7;
-
-                // Glow effect
-                const glowColor = pkg.type === 'prime' ? `rgba(255, 153, 0, ${glow * 0.4})` : `rgba(34, 197, 94, ${glow * 0.3})`;
-                ctx.fillStyle = glowColor;
+                // Light cone (soft gradient)
+                const lightGrad = ctx.createRadialGradient(lx, ly, 0, lx, ly + 40, 50);
+                lightGrad.addColorStop(0, `rgba(255, 251, 235, ${0.15 * flicker})`);
+                lightGrad.addColorStop(0.5, `rgba(255, 251, 235, ${0.08 * flicker})`);
+                lightGrad.addColorStop(1, 'rgba(255, 251, 235, 0)');
+                ctx.fillStyle = lightGrad;
                 ctx.beginPath();
-                ctx.arc(pkg.x + 7, pkg.y + 7 + bob, 14, 0, Math.PI * 2);
+                ctx.moveTo(lx - 30, ly);
+                ctx.lineTo(lx - 45, ly + 80);
+                ctx.lineTo(lx + 45, ly + 80);
+                ctx.lineTo(lx + 30, ly);
+                ctx.closePath();
                 ctx.fill();
 
-                // Package box
-                if (pkg.type === 'prime') {
-                    // Prime package (golden/orange)
-                    ctx.fillStyle = '#92400e';
-                    ctx.fillRect(pkg.x, pkg.y + bob, 14, 14);
-                    ctx.fillStyle = '#c2410c';
-                    ctx.fillRect(pkg.x + 1, pkg.y + 1 + bob, 12, 12);
-                    ctx.fillStyle = '#ea580c';
-                    ctx.fillRect(pkg.x + 2, pkg.y + 2 + bob, 10, 10);
-                    // Prime logo
-                    ctx.fillStyle = '#ff9900';
-                    ctx.fillRect(pkg.x + 3, pkg.y + 5 + bob, 8, 4);
-                    ctx.fillStyle = '#fbbf24';
-                    ctx.fillRect(pkg.x + 4, pkg.y + 6 + bob, 6, 2);
-                    // Smile arrow
-                    ctx.fillStyle = '#ff6600';
-                    ctx.fillRect(pkg.x + 8, pkg.y + 7 + bob, 3, 2);
-                    // Star sparkle
-                    const sparkle = Math.floor(animFrame / 8) % 3;
-                    if (sparkle === 0) {
-                        ctx.fillStyle = '#fff';
-                        ctx.fillRect(pkg.x + 11, pkg.y - 2 + bob, 2, 2);
+                // Light fixture housing
+                ctx.fillStyle = '#374151';
+                ctx.fillRect(lx - 12, ly - 8, 24, 8);
+                ctx.fillStyle = '#4b5563';
+                ctx.fillRect(lx - 10, ly - 6, 20, 4);
+
+                // Light bulb/tube
+                ctx.fillStyle = `rgba(255, 251, 235, ${flicker})`;
+                ctx.fillRect(lx - 8, ly - 2, 16, 4);
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(lx - 6, ly - 1, 12, 2);
+
+                // Hanging chain
+                ctx.fillStyle = '#6b7280';
+                ctx.fillRect(lx - 1, ly - 16, 2, 8);
+            }
+        }
+
+        // === FLOATING DUST PARTICLES IN YARD ===
+        for (let d = 0; d < 20; d++) {
+            const dustX = ((animFrame * 0.3 + d * 47) % canvas.width);
+            const dustY = hallwayEnd + 30 + ((animFrame * 0.15 + d * 67) % (totalHeight - hallwayEnd - 80));
+            const dustAlpha = Math.sin(animFrame * 0.04 + d * 0.7) * 0.2 + 0.25;
+            const dustSize = 1 + (d % 3);
+            ctx.fillStyle = `rgba(255, 255, 255, ${dustAlpha})`;
+            ctx.fillRect(dustX, dustY, dustSize, dustSize);
+        }
+
+        // Draw pallet stacks (warehouse atmosphere) - ENHANCED
+        if (y.palletStacks) {
+            y.palletStacks.forEach((pallet, idx) => {
+                const stackHeight = (idx % 3) + 1; // Vary stack heights
+
+                // Shadow under pallet
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.beginPath();
+                ctx.ellipse(pallet.x + 10, pallet.y + 18, 12, 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Wooden pallet base with detail
+                ctx.fillStyle = '#78350f';
+                ctx.fillRect(pallet.x - 2, pallet.y + 12, 24, 6);
+                // Pallet slats
+                ctx.fillStyle = '#92400e';
+                ctx.fillRect(pallet.x, pallet.y + 12, 20, 2);
+                ctx.fillRect(pallet.x, pallet.y + 16, 20, 2);
+                // Pallet support blocks
+                ctx.fillStyle = '#5c2d0e';
+                ctx.fillRect(pallet.x, pallet.y + 14, 4, 4);
+                ctx.fillRect(pallet.x + 8, pallet.y + 14, 4, 4);
+                ctx.fillRect(pallet.x + 16, pallet.y + 14, 4, 4);
+                // Wood grain texture
+                ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                ctx.fillRect(pallet.x + 3, pallet.y + 13, 14, 1);
+
+                // Stack of boxes
+                for (let s = 0; s < stackHeight; s++) {
+                    const boxY = pallet.y - s * 10;
+                    const boxShade = 1 - s * 0.15;
+
+                    // Box shadow on box below
+                    if (s > 0) {
+                        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+                        ctx.fillRect(pallet.x + 1, boxY + 10, 18, 2);
                     }
-                } else {
-                    // Standard package (green/cardboard)
-                    ctx.fillStyle = '#78350f';
-                    ctx.fillRect(pkg.x, pkg.y + bob, 14, 14);
-                    ctx.fillStyle = '#92400e';
-                    ctx.fillRect(pkg.x + 1, pkg.y + 1 + bob, 12, 12);
-                    ctx.fillStyle = '#a16207';
-                    ctx.fillRect(pkg.x + 2, pkg.y + 2 + bob, 10, 10);
-                    // Tape
+
+                    // Main box with 3D effect
+                    ctx.fillStyle = `rgb(${Math.floor(194 * boxShade)}, ${Math.floor(65 * boxShade)}, ${Math.floor(12 * boxShade)})`;
+                    ctx.fillRect(pallet.x + 1, boxY, 18, 12);
+
+                    // Box front face (lighter)
+                    ctx.fillStyle = `rgb(${Math.floor(234 * boxShade)}, ${Math.floor(88 * boxShade)}, ${Math.floor(12 * boxShade)})`;
+                    ctx.fillRect(pallet.x + 2, boxY + 1, 16, 10);
+
+                    // Box top face (even lighter for 3D)
+                    ctx.fillStyle = `rgb(${Math.floor(249 * boxShade)}, ${Math.floor(115 * boxShade)}, ${Math.floor(22 * boxShade)})`;
+                    ctx.fillRect(pallet.x + 2, boxY, 14, 3);
+
+                    // Amazon smile tape
                     ctx.fillStyle = '#fbbf24';
-                    ctx.fillRect(pkg.x + 5, pkg.y + 3 + bob, 4, 8);
-                    ctx.fillStyle = '#f59e0b';
-                    ctx.fillRect(pkg.x + 3, pkg.y + 6 + bob, 8, 2);
+                    ctx.fillRect(pallet.x + 5, boxY + 4, 10, 3);
+                    ctx.fillStyle = '#ff9900';
+                    ctx.fillRect(pallet.x + 6, boxY + 5, 8, 1);
+                    // Arrow/smile
+                    ctx.fillRect(pallet.x + 11, boxY + 6, 3, 1);
+
+                    // Fragile sticker on some boxes
+                    if ((idx + s) % 4 === 0) {
+                        ctx.fillStyle = '#dc2626';
+                        ctx.fillRect(pallet.x + 3, boxY + 7, 6, 3);
+                        ctx.fillStyle = '#fff';
+                        ctx.fillRect(pallet.x + 4, boxY + 8, 1, 1);
+                    }
+
+                    // Barcode label
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(pallet.x + 12, boxY + 7, 5, 3);
+                    ctx.fillStyle = '#000';
+                    for (let b = 0; b < 4; b++) {
+                        ctx.fillRect(pallet.x + 12 + b, boxY + 8, 1, 1);
+                    }
+                }
+
+                // Shrink wrap effect on tall stacks
+                if (stackHeight > 1) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.fillRect(pallet.x + 1, pallet.y - (stackHeight - 1) * 10, 18, stackHeight * 10 + 12);
+                    // Wrap bands
+                    ctx.fillStyle = 'rgba(200, 200, 200, 0.3)';
+                    ctx.fillRect(pallet.x, pallet.y - (stackHeight - 1) * 10 + 2, 20, 2);
+                    ctx.fillRect(pallet.x, pallet.y + 6, 20, 2);
                 }
             });
         }
 
-        // Draw forklifts
+        // Draw dock workers (warehouse-style NPCs) - ENHANCED
+        if (y.dockWorkers) {
+            y.dockWorkers.forEach(worker => {
+                const walkPhase = Math.sin((GAME.ticks + worker.x) * 0.15);
+                const breathe = Math.sin((GAME.ticks + worker.y) * 0.08) * 0.5;
+
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.ellipse(worker.x, worker.y + 14, 6, 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Legs with walking animation
+                ctx.fillStyle = '#1e3a8a';
+                const legOffset = walkPhase * 2;
+                ctx.fillRect(worker.x - 3 - legOffset, worker.y + 9, 3, 5);
+                ctx.fillRect(worker.x + legOffset, worker.y + 9, 3, 5);
+                // Boots
+                ctx.fillStyle = '#1f2937';
+                ctx.fillRect(worker.x - 4 - legOffset, worker.y + 13, 4, 2);
+                ctx.fillRect(worker.x - 1 + legOffset, worker.y + 13, 4, 2);
+
+                // Body
+                ctx.fillStyle = '#374151'; // Dark shirt
+                ctx.fillRect(worker.x - 4, worker.y, 8, 10);
+
+                // Safety vest with reflective strips
+                ctx.fillStyle = '#ca8a04';
+                ctx.fillRect(worker.x - 4, worker.y + 1, 3, 8);
+                ctx.fillRect(worker.x + 1, worker.y + 1, 3, 8);
+                ctx.fillStyle = '#eab308';
+                ctx.fillRect(worker.x - 4, worker.y + 2, 2, 6);
+                ctx.fillRect(worker.x + 2, worker.y + 2, 2, 6);
+                // Reflective stripes
+                ctx.fillStyle = '#d4d4d4';
+                ctx.fillRect(worker.x - 4, worker.y + 3, 1, 4);
+                ctx.fillRect(worker.x + 3, worker.y + 3, 1, 4);
+                ctx.fillRect(worker.x - 3, worker.y + 1, 6, 1);
+                ctx.fillRect(worker.x - 3, worker.y + 7, 6, 1);
+
+                // Arms
+                ctx.fillStyle = '#374151';
+                ctx.fillRect(worker.x - 6, worker.y + 1, 2, 6);
+                ctx.fillRect(worker.x + 4, worker.y + 1, 2, 6);
+                // Hands
+                ctx.fillStyle = '#f5d0b0';
+                ctx.fillRect(worker.x - 6, worker.y + 6, 2, 2);
+                ctx.fillRect(worker.x + 4, worker.y + 6, 2, 2);
+
+                // Head with more detail
+                ctx.fillStyle = '#d4a574';
+                ctx.fillRect(worker.x - 3, worker.y - 6 + breathe, 6, 7);
+                // Hair/skin tone variation
+                ctx.fillStyle = '#c4956c';
+                ctx.fillRect(worker.x - 2, worker.y - 5 + breathe, 4, 2);
+                // Eyes
+                ctx.fillStyle = '#1f2937';
+                ctx.fillRect(worker.x - 2, worker.y - 4 + breathe, 1, 1);
+                ctx.fillRect(worker.x + 1, worker.y - 4 + breathe, 1, 1);
+
+                // Hard hat with details
+                ctx.fillStyle = '#d97706';
+                ctx.fillRect(worker.x - 4, worker.y - 9 + breathe, 8, 4);
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(worker.x - 3, worker.y - 8 + breathe, 6, 2);
+                // Hard hat brim
+                ctx.fillStyle = '#b45309';
+                ctx.fillRect(worker.x - 5, worker.y - 6 + breathe, 10, 1);
+                // Hard hat logo
+                ctx.fillStyle = '#ff9900';
+                ctx.fillRect(worker.x - 1, worker.y - 8 + breathe, 2, 2);
+
+                // ID badge
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(worker.x + 1, worker.y + 2, 3, 4);
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillRect(worker.x + 1, worker.y + 2, 3, 2);
+            });
+        }
+
+        // Draw vehicles - ENHANCED with shadows and details
+        y.vehicles.forEach(v => {
+            const sprite = v.type === 'van' ? GFX.van : GFX.truck;
+            const vWidth = v.type === 'van' ? 40 : 60;
+            const vHeight = v.type === 'van' ? 24 : 28;
+
+            // Vehicle shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+            ctx.beginPath();
+            ctx.ellipse(v.x + vWidth/2, v.y + vHeight + 4, vWidth/2 + 4, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw the vehicle sprite
+            ctx.drawImage(sprite, v.x, v.y);
+
+            // Add headlight glow if moving towards player (direction dependent)
+            if (v.dir && v.dir < 0) {
+                ctx.fillStyle = 'rgba(255, 251, 235, 0.4)';
+                ctx.beginPath();
+                ctx.arc(v.x + 4, v.y + vHeight/2, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Exhaust puff effect (subtle animation)
+            if (v.type === 'truck' && GAME.ticks % 20 < 10) {
+                const puffX = v.dir && v.dir > 0 ? v.x - 8 : v.x + vWidth + 2;
+                const puffAlpha = 0.2 - (GAME.ticks % 20) * 0.015;
+                ctx.fillStyle = `rgba(156, 163, 175, ${puffAlpha})`;
+                ctx.beginPath();
+                ctx.arc(puffX, v.y + vHeight - 4, 4 + (GAME.ticks % 20) * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+
+        // === DRAW YARD PACKAGE COLLECTIBLES - ENHANCED ===
+        if (y.yardPackages) {
+            y.yardPackages.forEach(pkg => {
+                if (pkg.collected) return;
+                const bob = Math.sin(pkg.bobTimer) * 4;
+                const glow = Math.sin(pkg.glowTimer) * 0.3 + 0.7;
+                const rotate = Math.sin(pkg.bobTimer * 0.5) * 0.1;
+                const scale = 1 + Math.sin(pkg.glowTimer * 2) * 0.05;
+
+                ctx.save();
+                ctx.translate(pkg.x + 8, pkg.y + 8 + bob);
+                ctx.rotate(rotate);
+                ctx.scale(scale, scale);
+
+                // Outer glow effect (multiple layers)
+                const glowColor = pkg.type === 'prime' ? [255, 153, 0] : [34, 197, 94];
+                for (let g = 3; g > 0; g--) {
+                    ctx.fillStyle = `rgba(${glowColor[0]}, ${glowColor[1]}, ${glowColor[2]}, ${glow * 0.15 * (4 - g)})`;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 8 + g * 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.beginPath();
+                ctx.ellipse(0, 10 - bob, 8, 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Package box
+                if (pkg.type === 'prime') {
+                    // Prime package (golden/orange) with 3D effect
+                    // Bottom/side shadow
+                    ctx.fillStyle = '#78350f';
+                    ctx.fillRect(-7, -5, 16, 16);
+
+                    // Main box body
+                    ctx.fillStyle = '#92400e';
+                    ctx.fillRect(-8, -6, 16, 14);
+                    ctx.fillStyle = '#c2410c';
+                    ctx.fillRect(-7, -5, 14, 12);
+                    ctx.fillStyle = '#ea580c';
+                    ctx.fillRect(-6, -4, 12, 10);
+
+                    // Top face (lighter)
+                    ctx.fillStyle = '#f97316';
+                    ctx.fillRect(-6, -6, 10, 3);
+
+                    // Prime logo tape
+                    ctx.fillStyle = '#ff9900';
+                    ctx.fillRect(-5, -2, 10, 5);
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillRect(-4, -1, 8, 3);
+
+                    // Amazon smile arrow
+                    ctx.fillStyle = '#ffb84d';
+                    ctx.beginPath();
+                    ctx.moveTo(-4, 1);
+                    ctx.quadraticCurveTo(0, 3, 4, 1);
+                    ctx.lineTo(5, 2);
+                    ctx.lineTo(4, 2);
+                    ctx.quadraticCurveTo(0, 4, -4, 2);
+                    ctx.fill();
+
+                    // Star sparkles (multiple)
+                    const sparkle = Math.floor(animFrame / 6) % 4;
+                    ctx.fillStyle = '#fff';
+                    if (sparkle === 0) {
+                        ctx.fillRect(5, -8, 3, 3);
+                        ctx.fillRect(6, -9, 1, 5);
+                        ctx.fillRect(5, -8, 3, 1);
+                    } else if (sparkle === 1) {
+                        ctx.fillRect(-9, -4, 2, 2);
+                    } else if (sparkle === 2) {
+                        ctx.fillRect(7, 2, 2, 2);
+                    }
+
+                    // Prime badge
+                    ctx.fillStyle = '#1e3a8a';
+                    ctx.fillRect(-3, 3, 6, 3);
+                    ctx.fillStyle = '#60a5fa';
+                    ctx.font = '3px "Press Start 2P"';
+                    ctx.fillText('P', -2, 5);
+
+                } else {
+                    // Standard package (cardboard) with 3D effect
+                    // Bottom/side shadow
+                    ctx.fillStyle = '#5c2d0e';
+                    ctx.fillRect(-7, -5, 16, 16);
+
+                    // Main box body
+                    ctx.fillStyle = '#78350f';
+                    ctx.fillRect(-8, -6, 16, 14);
+                    ctx.fillStyle = '#92400e';
+                    ctx.fillRect(-7, -5, 14, 12);
+                    ctx.fillStyle = '#a16207';
+                    ctx.fillRect(-6, -4, 12, 10);
+
+                    // Top face (lighter)
+                    ctx.fillStyle = '#b45309';
+                    ctx.fillRect(-6, -6, 10, 3);
+
+                    // Cardboard texture lines
+                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                    ctx.fillRect(-5, -3, 10, 1);
+                    ctx.fillRect(-5, 1, 10, 1);
+
+                    // Tape cross pattern
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillRect(-2, -4, 4, 10);
+                    ctx.fillRect(-5, -1, 10, 3);
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.fillRect(-1, -3, 2, 8);
+                    ctx.fillRect(-4, 0, 8, 1);
+
+                    // Barcode sticker
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(2, 2, 5, 4);
+                    ctx.fillStyle = '#000';
+                    for (let b = 0; b < 4; b++) {
+                        ctx.fillRect(3 + b, 3, 1, 2);
+                    }
+
+                    // Green checkmark for "standard delivery"
+                    ctx.fillStyle = '#22c55e';
+                    ctx.fillRect(-6, 3, 3, 3);
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(-5, 4, 1, 1);
+                }
+
+                ctx.restore();
+            });
+        }
+
+        // Draw forklifts - ENHANCED
         if (y.forklifts) {
             y.forklifts.forEach(f => {
-                // Forklift body
-                ctx.fillStyle = '#f59e0b';
-                ctx.fillRect(f.x, f.y, 28, 16);
-                ctx.fillStyle = '#d97706';
-                ctx.fillRect(f.x + 2, f.y + 2, 24, 12);
-                // Cage
-                ctx.fillStyle = '#1f2937';
-                ctx.fillRect(f.x + 4, f.y + 2, 8, 10);
-                ctx.fillStyle = '#374151';
-                ctx.fillRect(f.x + 5, f.y + 3, 6, 8);
-                // Forks
+                const bounce = Math.sin(GAME.ticks * 0.2 + f.x) * 0.5;
+                const forkX = f.dir === 1 ? f.x + 24 : f.x - 12;
+
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+                ctx.beginPath();
+                ctx.ellipse(f.x + 14, f.y + 20, 18, 4, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Forklift mast (vertical support for forks)
+                ctx.fillStyle = '#4b5563';
+                ctx.fillRect(f.dir === 1 ? f.x + 22 : f.x + 4, f.y - 8, 4, 24);
                 ctx.fillStyle = '#6b7280';
-                const forkX = f.dir === 1 ? f.x + 24 : f.x - 8;
-                ctx.fillRect(forkX, f.y + 12, 10, 3);
-                ctx.fillRect(forkX, f.y + 8, 10, 3);
-                // Wheels
+                ctx.fillRect(f.dir === 1 ? f.x + 23 : f.x + 5, f.y - 6, 2, 20);
+
+                // Forks with 3D effect
+                ctx.fillStyle = '#4b5563';
+                ctx.fillRect(forkX, f.y + 14, 14, 4);
+                ctx.fillRect(forkX, f.y + 8, 14, 4);
+                ctx.fillStyle = '#6b7280';
+                ctx.fillRect(forkX + 1, f.y + 14, 12, 2);
+                ctx.fillRect(forkX + 1, f.y + 8, 12, 2);
+                // Fork tips
+                ctx.fillStyle = '#9ca3af';
+                ctx.fillRect(f.dir === 1 ? forkX + 11 : forkX, f.y + 14, 3, 3);
+                ctx.fillRect(f.dir === 1 ? forkX + 11 : forkX, f.y + 8, 3, 3);
+
+                // Main body base (counterweight)
+                ctx.fillStyle = '#b45309';
+                ctx.fillRect(f.x - 2, f.y + 4 + bounce, 32, 14);
+                ctx.fillStyle = '#d97706';
+                ctx.fillRect(f.x, f.y + 6 + bounce, 28, 10);
+
+                // Body with gradient effect
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(f.x + 2, f.y + bounce, 24, 14);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(f.x + 4, f.y + 2 + bounce, 20, 4);
+
+                // Operator cage with safety bars
                 ctx.fillStyle = '#1f2937';
-                ctx.fillRect(f.x + 4, f.y + 14, 6, 4);
-                ctx.fillRect(f.x + 18, f.y + 14, 6, 4);
-                // Warning light
+                ctx.fillRect(f.x + 4, f.y - 6 + bounce, 12, 14);
+                ctx.fillStyle = '#374151';
+                ctx.fillRect(f.x + 5, f.y - 5 + bounce, 10, 12);
+                // Cage bars
+                ctx.fillStyle = '#4b5563';
+                ctx.fillRect(f.x + 4, f.y - 6 + bounce, 1, 14);
+                ctx.fillRect(f.x + 9, f.y - 6 + bounce, 1, 14);
+                ctx.fillRect(f.x + 14, f.y - 6 + bounce, 1, 14);
+                ctx.fillRect(f.x + 4, f.y - 6 + bounce, 12, 1);
+
+                // Operator (driver) silhouette
+                ctx.fillStyle = '#1e3a8a'; // Blue uniform
+                ctx.fillRect(f.x + 6, f.y + 2 + bounce, 6, 6);
+                ctx.fillStyle = '#d4a574'; // Head
+                ctx.fillRect(f.x + 7, f.y - 2 + bounce, 4, 4);
+                // Hard hat
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(f.x + 6, f.y - 4 + bounce, 6, 2);
+
+                // Steering wheel
+                ctx.fillStyle = '#1f2937';
+                ctx.fillRect(f.x + 12, f.y + 3 + bounce, 4, 4);
+                ctx.fillStyle = '#374151';
+                ctx.fillRect(f.x + 13, f.y + 4 + bounce, 2, 2);
+
+                // Wheels with rubber tires
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(f.x + 2, f.y + 14, 8, 6);
+                ctx.fillRect(f.x + 18, f.y + 14, 8, 6);
+                // Tire treads
+                ctx.fillStyle = '#1f2937';
+                ctx.fillRect(f.x + 3, f.y + 15, 6, 4);
+                ctx.fillRect(f.x + 19, f.y + 15, 6, 4);
+                // Wheel hubs
+                ctx.fillStyle = '#6b7280';
+                ctx.fillRect(f.x + 4, f.y + 16, 4, 2);
+                ctx.fillRect(f.x + 20, f.y + 16, 4, 2);
+
+                // Warning beacon with strobe effect
                 const lightPulse = Math.sin(GAME.ticks * 0.3) > 0;
+                const lightIntensity = Math.sin(GAME.ticks * 0.3) * 0.5 + 0.5;
+                // Beacon base
+                ctx.fillStyle = '#1f2937';
+                ctx.fillRect(f.x + 11, f.y - 6 + bounce, 6, 4);
+                // Beacon light
                 ctx.fillStyle = lightPulse ? '#ef4444' : '#7f1d1d';
-                ctx.fillRect(f.x + 12, f.y - 2, 4, 4);
+                ctx.fillRect(f.x + 12, f.y - 8 + bounce, 4, 4);
+                // Light glow
+                if (lightPulse) {
+                    ctx.fillStyle = `rgba(239, 68, 68, ${lightIntensity * 0.4})`;
+                    ctx.beginPath();
+                    ctx.arc(f.x + 14, f.y - 6 + bounce, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Headlights
+                ctx.fillStyle = '#fef3c7';
+                ctx.fillRect(f.dir === 1 ? f.x + 24 : f.x + 2, f.y + 8 + bounce, 3, 3);
+                // Headlight glow
+                ctx.fillStyle = 'rgba(254, 243, 199, 0.3)';
+                ctx.beginPath();
+                ctx.arc(f.dir === 1 ? f.x + 25 : f.x + 3, f.y + 10 + bounce, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Amazon logo on side
+                ctx.fillStyle = '#ff9900';
+                ctx.fillRect(f.x + 16, f.y + 7 + bounce, 6, 4);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(f.x + 17, f.y + 8 + bounce, 4, 2);
             });
         }
 
