@@ -1521,6 +1521,56 @@
     renderPortraits();
 
     // --- 8. LEADERBOARD SYSTEM ---
+    // Default highscores fallback for when API is unavailable
+    const DEFAULT_HIGHSCORES = [
+        { name: "BEZOS", character: "Erwin", bossDefeated: "Mecha Jeff", time: 142, score: 15000 },
+        { name: "WHS-1", character: "Roman", bossDefeated: "Mecha Jeff", time: 178, score: 13200 },
+        { name: "PRIME", character: "Carrie", bossDefeated: "Mecha Jeff", time: 195, score: 12100 },
+        { name: "TPH99", character: "Joao", bossDefeated: "Jelena \"Jelly\"", time: 156, score: 9850 },
+        { name: "AUDIT", character: "Nevena", bossDefeated: "Jelena \"Jelly\"", time: 168, score: 9200 },
+        { name: "5SGOD", character: "Carrie", bossDefeated: "Regional OPS MGR", time: 145, score: 8500 },
+        { name: "SAFE1", character: "Roman", bossDefeated: "Avetta Platform", time: 132, score: 7800 },
+        { name: "DVI-1", character: "Erwin", bossDefeated: "Sebastian Sprigade", time: 128, score: 7100 },
+        { name: "OSHA", character: "Nevena", bossDefeated: "Compliance Auditor", time: 115, score: 6500 },
+        { name: "ANDON", character: "Joao", bossDefeated: "Labour Inspector", time: 105, score: 5900 }
+    ];
+
+    function renderLeaderboard(highscores) {
+        const container = document.getElementById('leaderboard-content');
+        let html = `<table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>NAME</th>
+                    <th>CHARACTER</th>
+                    <th>BOSS DEFEATED</th>
+                    <th>TIME</th>
+                    <th style="text-align:right;">SCORE</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+        highscores.forEach((entry, idx) => {
+            const rank = idx + 1;
+            const rankClass = rank <= 3 ? `rank-${rank}` : '';
+            const mins = Math.floor(entry.time / 60);
+            const secs = entry.time % 60;
+            const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+            html += `<tr>
+                <td class="rank-col ${rankClass}">${rank}</td>
+                <td class="name-col">${escapeHtml(entry.name)}</td>
+                <td class="char-col">${escapeHtml(entry.character)}</td>
+                <td class="boss-col">${escapeHtml(entry.bossDefeated)}</td>
+                <td class="time-col">${timeStr}</td>
+                <td class="score-col">${entry.score.toLocaleString()}</td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
     async function fetchLeaderboard() {
         const container = document.getElementById('leaderboard-content');
         try {
@@ -1529,45 +1579,16 @@
             const data = await res.json();
 
             if (!data.success || !data.highscores || data.highscores.length === 0) {
-                container.innerHTML = '<div class="leaderboard-empty">NO RECORDS YET. BE THE FIRST TO COMPLETE THE QUEST!</div>';
+                // Use defaults if API returns empty
+                renderLeaderboard(DEFAULT_HIGHSCORES);
                 return;
             }
 
-            let html = `<table class="leaderboard-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>NAME</th>
-                        <th>CHARACTER</th>
-                        <th>BOSS DEFEATED</th>
-                        <th>TIME</th>
-                        <th style="text-align:right;">SCORE</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-
-            data.highscores.forEach((entry, idx) => {
-                const rank = idx + 1;
-                const rankClass = rank <= 3 ? `rank-${rank}` : '';
-                const mins = Math.floor(entry.time / 60);
-                const secs = entry.time % 60;
-                const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
-
-                html += `<tr>
-                    <td class="rank-col ${rankClass}">${rank}</td>
-                    <td class="name-col">${escapeHtml(entry.name)}</td>
-                    <td class="char-col">${escapeHtml(entry.character)}</td>
-                    <td class="boss-col">${escapeHtml(entry.bossDefeated)}</td>
-                    <td class="time-col">${timeStr}</td>
-                    <td class="score-col">${entry.score.toLocaleString()}</td>
-                </tr>`;
-            });
-
-            html += '</tbody></table>';
-            container.innerHTML = html;
+            renderLeaderboard(data.highscores);
         } catch (err) {
             console.error('Leaderboard fetch error:', err);
-            container.innerHTML = '<div class="leaderboard-empty">LEADERBOARD OFFLINE. PLAY THE GAME TO BE FIRST!</div>';
+            // Fall back to default highscores instead of showing error
+            renderLeaderboard(DEFAULT_HIGHSCORES);
         }
     }
 
