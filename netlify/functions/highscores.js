@@ -206,7 +206,7 @@ exports.handler = async (event, context) => {
             highscores = highscores.slice(0, MAX_HIGHSCORES);
 
             // Save updated highscores
-            await store.setJSON(HIGHSCORE_KEY, highscores);
+            await store.set(HIGHSCORE_KEY, JSON.stringify(highscores));
 
             // Find rank of the new entry
             const rank = highscores.findIndex(h => h.date === entry.date && h.name === entry.name);
