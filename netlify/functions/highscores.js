@@ -148,115 +148,126 @@ exports.handler = async (event, context) => {
         }
     }
 
-    try {
-        const store = getStore(HIGHSCORE_STORE_NAME);
-
-        // POST - Submit new highscore
-        if (event.httpMethod === "POST") {
-            let body;
-            try {
-                body = JSON.parse(event.body);
-            } catch (e) {
-                return {
-                    statusCode: 400,
-                    headers,
-                    body: JSON.stringify({ success: false, error: "Invalid JSON body" })
-                };
-            }
-
-            // Validate and sanitize input
-            const entry = {
-                name: (body.name || "").trim().substring(0, 5).toUpperCase(),
-                character: body.character,
-                time: parseInt(body.time) || 0,
-                hazardsFixed: parseInt(body.hazardsFixed) || 0,
-                booksFired: parseInt(body.booksFired) || 0,
-                opsPushed: parseInt(body.opsPushed) || 0,
-                booksMissed: parseInt(body.booksMissed) || 0,
-                simonHitsCount: parseInt(body.simonHitsCount) || 0,
-                livesRemaining: parseInt(body.livesRemaining) || 0,
-                bossDefeated: body.bossDefeated,
-                region: body.region || "EU"
-            };
-
-            // Use client's pre-calculated score (validated below)
-            // Client tracks misses in real-time which server can't replicate
-            entry.score = parseInt(body.score) || calculateScore(entry);
-
-            // Validate the entry
-            if (!validateScore(entry)) {
-                return {
-                    statusCode: 400,
-                    headers,
-                    body: JSON.stringify({ success: false, error: "Invalid score entry" })
-                };
-            }
-
-            // Add timestamp
-            entry.date = Date.now();
-
-            // Get existing highscores (start with defaults if empty)
-            let highscores = [];
-            try {
-                const data = await store.get(HIGHSCORE_KEY, { type: "json" });
-                highscores = data || [];
-
-                // Handle legacy double-encoded data
-                if (typeof highscores === 'string') {
-                    try {
-                        highscores = JSON.parse(highscores);
-                    } catch {
-                        highscores = [];
-                    }
-                }
-
-                // If store is empty or invalid, start with defaults
-                if (!Array.isArray(highscores) || highscores.length === 0) {
-                    highscores = [...DEFAULT_HIGHSCORES];
-                }
-            } catch (e) {
-                // No store yet - start with defaults
-                highscores = [...DEFAULT_HIGHSCORES];
-            }
-
-            // Add new entry and sort
-            highscores.push(entry);
-            highscores.sort((a, b) => b.score - a.score);
-
-            // Keep only top scores
-            highscores = highscores.slice(0, MAX_HIGHSCORES);
-
-            // Save updated highscores
-            await store.set(HIGHSCORE_KEY, JSON.stringify(highscores));
-
-            // Find rank of the new entry
-            const rank = highscores.findIndex(h => h.date === entry.date && h.name === entry.name);
-
+    // POST - Submit new highscore
+    if (event.httpMethod === "POST") {
+        let body;
+        try {
+            body = JSON.parse(event.body);
+        } catch (e) {
             return {
-                statusCode: 200,
+                statusCode: 400,
                 headers,
-                body: JSON.stringify({
-                    success: true,
-                    entry: entry,
-                    rank: rank >= 0 ? rank + 1 : null,
-                    isHighscore: rank >= 0 && rank < MAX_HIGHSCORES,
-                    highscores: highscores
-                })
+                body: JSON.stringify({ success: false, error: "Invalid JSON body" })
             };
         }
 
-        return {
-            statusCode: 405,
-            headers,
-            body: JSON.stringify({ success: false, error: "Method not allowed" })
+        // Validate and sanitize input
+        const entry = {
+            name: (body.name || "").trim().substring(0, 5).toUpperCase(),
+            character: body.character,
+            time: parseInt(body.time) || 0,
+            hazardsFixed: parseInt(body.hazardsFixed) || 0,
+            booksFired: parseInt(body.booksFired) || 0,
+            opsPushed: parseInt(body.opsPushed) || 0,
+            booksMissed: parseInt(body.booksMissed) || 0,
+            simonHitsCount: parseInt(body.simonHitsCount) || 0,
+            livesRemaining: parseInt(body.livesRemaining) || 0,
+            bossDefeated: body.bossDefeated,
+            region: body.region || "EU"
         };
 
-    } catch (error) {
-        console.error("Highscore function error:", error);
+        // Use client's pre-calculated score (validated below)
+        // Client tracks misses in real-time which server can't replicate
+        entry.score = parseInt(body.score) || calculateScore(entry);
+
+        // Validate the entry
+        if (!validateScore(entry)) {
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ success: false, error: "Invalid score entry" })
+            };
+        }
+
+        // Add timestamp
+        entry.date = Date.now();
+
+        // Try to use Blobs store, but gracefully handle if unavailable (e.g., on deploy previews)
+        let store = null;
+        let storeAvailable = false;
+        try {
+            store = getStore(HIGHSCORE_STORE_NAME);
+            storeAvailable = true;
+        } catch (e) {
+            console.log("Blobs store not available:", e.message);
+            storeAvailable = false;
+        }
+
+        // Get existing highscores (start with defaults if empty or store unavailable)
+        let highscores = [...DEFAULT_HIGHSCORES];
+        if (storeAvailable && store) {
+            try {
+                const data = await store.get(HIGHSCORE_KEY, { type: "json" });
+                if (data) {
+                    highscores = data;
+                    // Handle legacy double-encoded data
+                    if (typeof highscores === 'string') {
+                        try {
+                            highscores = JSON.parse(highscores);
+                        } catch {
+                            highscores = [...DEFAULT_HIGHSCORES];
+                        }
+                    }
+                    // If store data is invalid, use defaults
+                    if (!Array.isArray(highscores) || highscores.length === 0) {
+                        highscores = [...DEFAULT_HIGHSCORES];
+                    }
+                }
+            } catch (e) {
+                console.log("Could not read from store:", e.message);
+                highscores = [...DEFAULT_HIGHSCORES];
+            }
+        }
+
+        // Add new entry and sort
+        highscores.push(entry);
+        highscores.sort((a, b) => b.score - a.score);
+
+        // Keep only top scores
+        highscores = highscores.slice(0, MAX_HIGHSCORES);
+
+        // Try to save updated highscores (but don't fail if store unavailable)
+        let saved = false;
+        if (storeAvailable && store) {
+            try {
+                await store.set(HIGHSCORE_KEY, JSON.stringify(highscores));
+                saved = true;
+            } catch (e) {
+                console.log("Could not save to store:", e.message);
+                saved = false;
+            }
+        }
+
+        // Find rank of the new entry
+        const rank = highscores.findIndex(h => h.date === entry.date && h.name === entry.name);
+
         return {
-            statusCode: 500,
+            statusCode: 200,
             headers,
-            body: JSON.stringify({ success: false, error: "Server error" })
+            body: JSON.stringify({
+                success: true,
+                entry: entry,
+                rank: rank >= 0 ? rank + 1 : null,
+                isHighscore: rank >= 0 && rank < MAX_HIGHSCORES,
+                highscores: highscores,
+                persisted: saved // Let client know if score was persisted
+            })
         };
     }
+
+    return {
+        statusCode: 405,
+        headers,
+        body: JSON.stringify({ success: false, error: "Method not allowed" })
+    };
 };

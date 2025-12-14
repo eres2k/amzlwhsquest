@@ -6236,6 +6236,359 @@ function generateAssets() {
         ctx.fillStyle = '#4b5563'; ctx.fillRect(16,44,4,4); ctx.fillRect(28,44,4,4);
     });
     GFX.bezosProj = c(12,12, ctx => { ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(6,6,5,0,Math.PI*2); ctx.fill(); ctx.fillStyle = '#ff9900'; ctx.beginPath(); ctx.arc(6,6,3,0,Math.PI*2); ctx.fill(); });
+
+    // === DEFEATED BOSS SPRITES (64x64) - Larger, more detailed for defeat cutscene ===
+    GFX.bossDefeated = {};
+
+    // Defeated Labour Inspector (64x64) - Slumped, clipboard broken
+    GFX.bossDefeated.boss_inspector = c(64,64, ctx => {
+        // Dark defeated aura
+        const grad = ctx.createRadialGradient(32,40,5,32,40,32);
+        grad.addColorStop(0, 'rgba(239, 68, 68, 0.3)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad; ctx.fillRect(0,0,64,64);
+        // Broken clipboard scattered on floor
+        ctx.fillStyle = '#78350f'; ctx.fillRect(2,50,14,10);
+        ctx.fillStyle = '#fcd34d'; ctx.fillRect(4,52,10,6);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(5,54,3,2); // Red X marks
+        // Clipboard piece broken off
+        ctx.save(); ctx.translate(50,55); ctx.rotate(0.3);
+        ctx.fillStyle = '#78350f'; ctx.fillRect(0,0,8,6);
+        ctx.fillStyle = '#fcd34d'; ctx.fillRect(1,1,6,4);
+        ctx.restore();
+        // Grey disheveled hair (messed up)
+        ctx.fillStyle = '#52525b'; ctx.fillRect(18,6,28,14);
+        ctx.fillStyle = '#6b7280'; ctx.fillRect(20,8,24,10);
+        ctx.fillStyle = '#9ca3af'; ctx.fillRect(22,9,20,7);
+        // Hair strands falling (defeat)
+        ctx.fillStyle = '#6b7280'; ctx.fillRect(16,10,2,6); ctx.fillRect(46,12,2,5);
+        // Face - defeated expression, tilted down
+        ctx.fillStyle = '#c4956a'; ctx.fillRect(20,18,24,22);
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(22,20,20,18);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(24,22,16,14);
+        // Closed/squinting defeated eyes (X X)
+        ctx.fillStyle = '#1a1a1a';
+        // Left X eye
+        ctx.fillRect(26,27,2,1); ctx.fillRect(28,28,2,1); ctx.fillRect(26,29,2,1);
+        ctx.fillRect(28,27,2,1); ctx.fillRect(26,28,2,1); ctx.fillRect(28,29,2,1);
+        // Right X eye
+        ctx.fillRect(34,27,2,1); ctx.fillRect(36,28,2,1); ctx.fillRect(34,29,2,1);
+        ctx.fillRect(36,27,2,1); ctx.fillRect(34,28,2,1); ctx.fillRect(36,29,2,1);
+        // Sweat drops
+        ctx.fillStyle = '#7dd3fc'; ctx.fillRect(18,24,2,3); ctx.fillRect(44,26,2,3);
+        // Open mouth in shock/despair
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(28,34,8,4);
+        ctx.fillStyle = '#8b4513'; ctx.fillRect(29,35,6,2);
+        // Yellow jacket - wrinkled and defeated
+        ctx.fillStyle = '#92400e'; ctx.fillRect(10,40,44,24);
+        ctx.fillStyle = '#ca8a04'; ctx.fillRect(12,42,40,20);
+        ctx.fillStyle = '#eab308'; ctx.fillRect(14,44,36,16);
+        // Wrinkle lines
+        ctx.fillStyle = '#92400e'; ctx.fillRect(16,46,2,10); ctx.fillRect(46,48,2,8);
+        // Badge falling off (crooked)
+        ctx.save(); ctx.translate(22,50); ctx.rotate(-0.2);
+        ctx.fillStyle = '#0369a1'; ctx.fillRect(0,0,12,6);
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(1,1,10,4);
+        ctx.restore();
+        // Slumped arms
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(8,44,6,12); ctx.fillRect(50,46,6,10);
+    });
+
+    // Defeated Compliance Auditor (64x64) - Documents scattered, glasses cracked
+    GFX.bossDefeated.boss_compliance = c(64,64, ctx => {
+        // Cyan sparks effect
+        const grad = ctx.createRadialGradient(32,38,5,32,38,32);
+        grad.addColorStop(0, 'rgba(14, 165, 233, 0.3)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad; ctx.fillRect(0,0,64,64);
+        // Scattered documents everywhere
+        ctx.fillStyle = '#e2e8f0';
+        ctx.save(); ctx.translate(4,52); ctx.rotate(-0.2); ctx.fillRect(0,0,10,8); ctx.restore();
+        ctx.save(); ctx.translate(50,48); ctx.rotate(0.3); ctx.fillRect(0,0,10,8); ctx.restore();
+        ctx.save(); ctx.translate(20,58); ctx.rotate(0.1); ctx.fillRect(0,0,8,6); ctx.restore();
+        // Document text lines (scattered)
+        ctx.fillStyle = '#0891b2';
+        ctx.fillRect(6,54,6,1); ctx.fillRect(52,50,6,1); ctx.fillRect(22,60,4,1);
+        // Dark hair messed up
+        ctx.fillStyle = '#0a0f1f'; ctx.fillRect(16,4,32,16);
+        ctx.fillStyle = '#1a2744'; ctx.fillRect(18,6,28,12);
+        ctx.fillStyle = '#334155'; ctx.fillRect(20,7,24,9);
+        // Hair out of place
+        ctx.fillStyle = '#1a2744'; ctx.fillRect(14,8,4,8); ctx.fillRect(46,10,4,6);
+        // Face - shocked/defeated
+        ctx.fillStyle = '#c4956a'; ctx.fillRect(18,18,28,24);
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(20,20,24,20);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(22,22,20,16);
+        // Cracked glasses
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(22,26,10,8); ctx.fillRect(34,26,10,8);
+        ctx.fillStyle = '#475569'; ctx.fillRect(23,27,8,6); ctx.fillRect(35,27,8,6);
+        // Crack lines on glasses
+        ctx.fillStyle = '#fff'; ctx.fillRect(24,28,1,4); ctx.fillRect(25,29,2,1); ctx.fillRect(38,27,3,1); ctx.fillRect(40,28,1,3);
+        // Dizzy spiral eyes behind glasses
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(26,29,3,3); ctx.fillRect(38,29,3,3);
+        ctx.fillStyle = '#22d3ee'; ctx.fillRect(27,30,1,1); ctx.fillRect(39,30,1,1);
+        // Open mouth
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(28,38,8,3);
+        // Cyan suit disheveled
+        ctx.fillStyle = '#164e63'; ctx.fillRect(12,42,40,22);
+        ctx.fillStyle = '#0891b2'; ctx.fillRect(14,44,36,18);
+        ctx.fillStyle = '#0ea5e9'; ctx.fillRect(16,46,32,14);
+        // Loose tie
+        ctx.save(); ctx.translate(30,44); ctx.rotate(0.15);
+        ctx.fillStyle = '#115e59'; ctx.fillRect(0,0,6,16);
+        ctx.fillStyle = '#14b8a6'; ctx.fillRect(1,0,4,14);
+        ctx.restore();
+    });
+
+    // Defeated Sebastian Sprigade (64x64) - TPH monitor showing 0, sweating profusely
+    GFX.bossDefeated.boss_sebastian = c(64,64, ctx => {
+        // Blue sparks from broken monitor
+        const grad = ctx.createRadialGradient(32,36,5,32,36,32);
+        grad.addColorStop(0, 'rgba(34, 197, 94, 0.3)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad; ctx.fillRect(0,0,64,64);
+        // Broken TPH monitor on ground
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(44,48,16,14);
+        ctx.fillStyle = '#14532d'; ctx.fillRect(46,50,12,10);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(48,52,8,6); // Error display
+        ctx.fillStyle = '#fff'; ctx.fillRect(50,54,4,2); // "0"
+        // Spark particles from monitor
+        ctx.fillStyle = '#fbbf24'; ctx.fillRect(42,46,2,2); ctx.fillRect(56,52,2,2);
+        ctx.fillStyle = '#fff'; ctx.fillRect(44,50,1,1); ctx.fillRect(58,48,1,1);
+        // EPIC BALD HEAD - sweaty and red from stress
+        ctx.fillStyle = '#e8a574'; ctx.fillRect(16,2,32,24);
+        ctx.fillStyle = '#f5c49a'; ctx.fillRect(18,3,28,22);
+        ctx.fillStyle = '#fad0a0'; ctx.fillRect(20,3,24,18);
+        ctx.fillStyle = '#faebd7'; ctx.fillRect(22,2,20,14);
+        // Multiple sweat drops cascading down
+        ctx.fillStyle = '#7dd3fc';
+        ctx.fillRect(14,8,2,4); ctx.fillRect(48,10,2,4);
+        ctx.fillRect(18,14,2,3); ctx.fillRect(44,12,2,4);
+        ctx.fillRect(50,16,2,3); ctx.fillRect(12,18,2,3);
+        // Stressed eyebrows (very furrowed)
+        ctx.fillStyle = '#6b5340'; ctx.fillRect(22,18,8,2); ctx.fillRect(34,18,8,2);
+        ctx.fillRect(20,17,2,2); ctx.fillRect(42,17,2,2);
+        // Stressed spiral eyes
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(22,22,6,6); ctx.fillRect(36,22,6,6);
+        ctx.fillStyle = '#92400e'; ctx.fillRect(24,24,3,3); ctx.fillRect(38,24,3,3);
+        ctx.fillStyle = '#fff'; ctx.fillRect(25,25,1,1); ctx.fillRect(39,25,1,1);
+        // Beard - disheveled
+        ctx.fillStyle = '#6b5340'; ctx.fillRect(20,30,24,10);
+        ctx.fillStyle = '#7a6248'; ctx.fillRect(22,31,20,8);
+        ctx.fillStyle = '#8b7355'; ctx.fillRect(24,32,16,6);
+        // Mustache
+        ctx.fillStyle = '#6b5340'; ctx.fillRect(26,29,12,3);
+        // Open mouth yelling in defeat
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(28,36,8,4);
+        ctx.fillStyle = '#8b4513'; ctx.fillRect(29,37,6,2);
+        // Amazon polo wrinkled
+        ctx.fillStyle = '#1e3a8a'; ctx.fillRect(10,42,44,22);
+        ctx.fillStyle = '#1d4ed8'; ctx.fillRect(12,44,40,18);
+        ctx.fillStyle = '#2563eb'; ctx.fillRect(14,46,36,14);
+        // Orange logo flickering/broken
+        ctx.fillStyle = '#7f1d00'; ctx.fillRect(24,50,16,8);
+        ctx.fillStyle = '#c2410c'; ctx.fillRect(26,51,12,6);
+        // Broken clipboard
+        ctx.fillStyle = '#78350f'; ctx.fillRect(2,44,10,16);
+        ctx.fillStyle = '#fcd34d'; ctx.fillRect(4,46,6,12);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(5,48,4,8); // Red X marks everywhere
+    });
+
+    // Defeated Regional OPS MGR (64x64) - Trophy broken, phone cracked
+    GFX.bossDefeated.boss_regional = c(64,64, ctx => {
+        // Purple defeated glow
+        const grad = ctx.createRadialGradient(32,38,5,32,38,32);
+        grad.addColorStop(0, 'rgba(139, 92, 246, 0.3)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad; ctx.fillRect(0,0,64,64);
+        // Broken trophy on floor
+        ctx.fillStyle = '#92400e'; ctx.fillRect(4,52,10,10);
+        ctx.fillStyle = '#fbbf24'; ctx.fillRect(6,54,6,6);
+        // Trophy top broken off
+        ctx.save(); ctx.translate(48,56); ctx.rotate(-0.4);
+        ctx.fillStyle = '#fbbf24'; ctx.fillRect(0,0,6,8);
+        ctx.restore();
+        // Cracked phone on floor
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(50,44,8,14);
+        ctx.fillStyle = '#334155'; ctx.fillRect(51,46,6,10);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(52,48,4,6); // Cracked screen (red)
+        ctx.fillStyle = '#fff'; ctx.fillRect(53,49,1,4); ctx.fillRect(52,50,3,1); // Crack lines
+        // Executive hair - completely messed
+        ctx.fillStyle = '#1e1b4b'; ctx.fillRect(14,4,36,16);
+        ctx.fillStyle = '#312e81'; ctx.fillRect(16,6,32,12);
+        ctx.fillStyle = '#4c1d95'; ctx.fillRect(18,7,28,9);
+        // Hair sticking up in panic
+        ctx.fillStyle = '#312e81'; ctx.fillRect(22,2,4,6); ctx.fillRect(34,1,4,7); ctx.fillRect(42,3,4,5);
+        // Face - defeated shock
+        ctx.fillStyle = '#c4956a'; ctx.fillRect(18,18,28,22);
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(20,20,24,18);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(22,22,20,14);
+        // Wide shocked eyes
+        ctx.fillStyle = '#fff'; ctx.fillRect(24,26,6,6); ctx.fillRect(36,26,6,6);
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(26,28,3,3); ctx.fillRect(38,28,3,3);
+        ctx.fillStyle = '#3b82f6'; ctx.fillRect(27,29,2,2); ctx.fillRect(39,29,2,2);
+        // Small pupils (shocked)
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(27,29,1,1); ctx.fillRect(39,29,1,1);
+        // Open mouth screaming
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(28,36,8,5);
+        ctx.fillStyle = '#8b4513'; ctx.fillRect(30,37,4,3);
+        // Purple suit wrinkled
+        ctx.fillStyle = '#3b0764'; ctx.fillRect(10,40,44,24);
+        ctx.fillStyle = '#4c1d95'; ctx.fillRect(12,42,40,20);
+        ctx.fillStyle = '#6d28d9'; ctx.fillRect(14,44,36,16);
+        // Tie loosened and crooked
+        ctx.save(); ctx.translate(28,42); ctx.rotate(-0.2);
+        ctx.fillStyle = '#92400e'; ctx.fillRect(0,0,8,18);
+        ctx.fillStyle = '#d97706'; ctx.fillRect(1,1,6,16);
+        ctx.restore();
+    });
+
+    // Defeated Jelena "Jelly" HR Guardian (64x64) - Policy binder exploded
+    GFX.bossDefeated.boss_jelly = c(64,64, ctx => {
+        // Green defeated glow
+        const grad = ctx.createRadialGradient(32,38,5,32,38,32);
+        grad.addColorStop(0, 'rgba(34, 197, 94, 0.3)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad; ctx.fillRect(0,0,64,64);
+        // Exploded policy binder - pages everywhere
+        ctx.fillStyle = '#f0fdf4';
+        ctx.save(); ctx.translate(2,48); ctx.rotate(-0.3); ctx.fillRect(0,0,12,10); ctx.restore();
+        ctx.save(); ctx.translate(52,50); ctx.rotate(0.4); ctx.fillRect(0,0,10,8); ctx.restore();
+        ctx.save(); ctx.translate(8,56); ctx.rotate(0.15); ctx.fillRect(0,0,8,6); ctx.restore();
+        ctx.save(); ctx.translate(42,58); ctx.rotate(-0.2); ctx.fillRect(0,0,10,5); ctx.restore();
+        // Policy text on scattered pages
+        ctx.fillStyle = '#166534';
+        ctx.fillRect(4,50,6,1); ctx.fillRect(54,52,5,1); ctx.fillRect(10,58,4,1);
+        // Binder spine broken
+        ctx.fillStyle = '#14532d'; ctx.fillRect(26,54,12,8);
+        ctx.fillStyle = '#166534'; ctx.fillRect(28,55,8,6);
+        // Brown hair - completely disheveled
+        ctx.fillStyle = '#4a2c1a'; ctx.fillRect(14,4,36,16);
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(16,6,32,12);
+        ctx.fillStyle = '#7a5142'; ctx.fillRect(18,7,28,9);
+        // Hair strands flying
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(12,8,4,8); ctx.fillRect(48,10,4,6);
+        ctx.fillRect(20,2,3,6); ctx.fillRect(38,1,4,7);
+        // Face - exhausted defeat
+        ctx.fillStyle = '#c4956a'; ctx.fillRect(18,18,28,22);
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(20,20,24,18);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(22,22,20,14);
+        // Tired closed eyes (defeat)
+        ctx.fillStyle = '#5c3d2e'; ctx.fillRect(24,28,6,2); ctx.fillRect(36,28,6,2);
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(24,29,6,1); ctx.fillRect(36,29,6,1);
+        // Tears
+        ctx.fillStyle = '#7dd3fc'; ctx.fillRect(24,31,2,3); ctx.fillRect(40,31,2,3);
+        // Defeated frown
+        ctx.fillStyle = '#8b4513'; ctx.fillRect(28,36,8,2);
+        ctx.fillStyle = '#c17b5f'; ctx.fillRect(26,35,2,2); ctx.fillRect(36,35,2,2);
+        // Green HR jacket wrinkled
+        ctx.fillStyle = '#14532d'; ctx.fillRect(10,40,44,24);
+        ctx.fillStyle = '#166534'; ctx.fillRect(12,42,40,20);
+        ctx.fillStyle = '#16a34a'; ctx.fillRect(14,44,36,16);
+        // Name badge falling off
+        ctx.save(); ctx.translate(38,52); ctx.rotate(0.5);
+        ctx.fillStyle = '#fff'; ctx.fillRect(0,0,14,6);
+        ctx.fillStyle = '#166534'; ctx.fillRect(2,2,10,2);
+        ctx.restore();
+        // Broken pen
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(56,46,2,8);
+        ctx.fillStyle = '#3b82f6'; ctx.fillRect(58,44,2,6);
+    });
+
+    // Defeated Avetta Platform (64x64) - System error, sparking
+    GFX.bossDefeated.boss_avetta = c(64,64, ctx => {
+        // Cyan error sparks
+        const grad = ctx.createRadialGradient(32,32,5,32,32,32);
+        grad.addColorStop(0, 'rgba(34, 211, 238, 0.4)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad; ctx.fillRect(0,0,64,64);
+        // Spark particles everywhere
+        ctx.fillStyle = '#67e8f9';
+        ctx.fillRect(8,12,3,3); ctx.fillRect(52,16,3,3); ctx.fillRect(10,48,3,3);
+        ctx.fillRect(50,44,3,3); ctx.fillRect(4,32,2,2); ctx.fillRect(58,28,2,2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(9,13,1,1); ctx.fillRect(53,17,1,1); ctx.fillRect(11,49,1,1);
+        // Broken data nodes falling
+        ctx.fillStyle = 'rgba(34, 211, 238, 0.5)';
+        ctx.fillRect(4,8,4,4); ctx.fillRect(56,14,4,4); ctx.fillRect(6,52,3,3);
+        // Main AI chassis - damaged
+        ctx.fillStyle = '#0a0f1e'; ctx.fillRect(12,10,40,40);
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(14,12,36,36);
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(16,14,32,32);
+        // Cracked screen with error
+        ctx.fillStyle = '#7f1d1d'; ctx.fillRect(18,16,28,28); // Red error background
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(20,18,24,24);
+        // ERROR text
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(24,26,2,4); ctx.fillRect(26,26,1,1); ctx.fillRect(26,28,1,1); ctx.fillRect(26,30,1,1); // E
+        ctx.fillRect(29,26,2,4); ctx.fillRect(31,26,1,2); ctx.fillRect(31,29,1,2); // R
+        ctx.fillRect(34,26,2,4); ctx.fillRect(36,26,1,2); ctx.fillRect(36,29,1,2); // R
+        // Skull/X on screen
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(26,34,4,1); ctx.fillRect(34,34,4,1);
+        ctx.fillRect(28,35,2,1); ctx.fillRect(34,35,2,1);
+        ctx.fillRect(30,36,4,2);
+        // Crack lines on screen
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(22,20,1,8); ctx.fillRect(23,24,4,1);
+        ctx.fillRect(38,18,1,10); ctx.fillRect(35,22,4,1);
+        // Broken corner brackets
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(14,14,4,1); ctx.fillRect(14,14,1,4);
+        ctx.fillRect(46,14,4,1); ctx.fillRect(49,14,1,4);
+        ctx.fillRect(14,45,4,1); ctx.fillRect(14,42,1,4);
+        ctx.fillRect(46,45,4,1); ctx.fillRect(49,42,1,4);
+        // Broken antenna - bent
+        ctx.fillStyle = '#475569'; ctx.fillRect(28,4,8,8);
+        ctx.fillStyle = '#64748b'; ctx.fillRect(30,5,4,7);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(30,4,4,2); // Error light blinking
+        // Antenna bent to side
+        ctx.fillStyle = '#475569'; ctx.fillRect(36,6,6,3);
+        // Smoking base platform
+        ctx.fillStyle = '#1e293b'; ctx.fillRect(16,50,32,8);
+        ctx.fillStyle = '#334155'; ctx.fillRect(18,52,28,4);
+        // Smoke particles
+        ctx.fillStyle = 'rgba(100,100,100,0.5)';
+        ctx.fillRect(24,46,4,4); ctx.fillRect(36,44,4,6);
+        ctx.fillStyle = 'rgba(150,150,150,0.4)';
+        ctx.fillRect(26,42,3,4); ctx.fillRect(38,40,3,5);
+    });
+
+    // Defeated Generic Boss Manager (64x64)
+    GFX.bossDefeated.boss_manager = c(64,64, ctx => {
+        // Dark defeated aura
+        const grad = ctx.createRadialGradient(32,38,5,32,38,32);
+        grad.addColorStop(0, 'rgba(239, 68, 68, 0.3)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad; ctx.fillRect(0,0,64,64);
+        // Dark disheveled hair
+        ctx.fillStyle = '#0a0f1f'; ctx.fillRect(16,6,32,14);
+        ctx.fillStyle = '#1a2744'; ctx.fillRect(18,8,28,10);
+        ctx.fillStyle = '#2a3755'; ctx.fillRect(20,9,24,7);
+        // Hair messed up
+        ctx.fillStyle = '#1a2744'; ctx.fillRect(14,10,4,6); ctx.fillRect(46,12,4,5);
+        // Face - defeated
+        ctx.fillStyle = '#c4956a'; ctx.fillRect(18,18,28,22);
+        ctx.fillStyle = '#d4a574'; ctx.fillRect(20,20,24,18);
+        ctx.fillStyle = '#e8c49a'; ctx.fillRect(22,22,20,14);
+        // X eyes
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(26,27,2,1); ctx.fillRect(28,28,2,1); ctx.fillRect(26,29,2,1);
+        ctx.fillRect(28,27,2,1); ctx.fillRect(26,28,2,1); ctx.fillRect(28,29,2,1);
+        ctx.fillRect(36,27,2,1); ctx.fillRect(38,28,2,1); ctx.fillRect(36,29,2,1);
+        ctx.fillRect(38,27,2,1); ctx.fillRect(36,28,2,1); ctx.fillRect(38,29,2,1);
+        // Open mouth
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(28,34,8,4);
+        // Dark suit
+        ctx.fillStyle = '#0a0f1f'; ctx.fillRect(12,40,40,24);
+        ctx.fillStyle = '#1a2744'; ctx.fillRect(14,42,36,20);
+        // Loose tie
+        ctx.save(); ctx.translate(30,42); ctx.rotate(0.2);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(0,0,6,16);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(1,1,4,14);
+        ctx.restore();
+    });
+
     GFX.drone = c(16,16, ctx => {
         // Drone body
         ctx.fillStyle = '#2a2a2a'; ctx.fillRect(4,6,8,4);
@@ -8715,15 +9068,31 @@ function triggerBossDefeatCutscene() {
     MusicSys.play('victory');
     VibrationSystem.onVictory();
 
-    // Spawn defeat particles around boss
-    for (let i = 0; i < 20; i++) {
+    // Spawn EPIC defeat particles burst from center (where big boss sprite will display)
+    const centerX = 128;
+    const centerY = 92;
+    // Initial explosion burst - 40 particles radiating outward
+    for (let i = 0; i < 40; i++) {
+        const angle = (i / 40) * Math.PI * 2 + Math.random() * 0.2;
+        const speed = 2 + Math.random() * 4;
         GAME.defeatCutscene.particles.push({
-            x: GAME.boss.x + 16 + (Math.random() - 0.5) * 40,
-            y: GAME.boss.y + 16 + (Math.random() - 0.5) * 40,
-            vx: (Math.random() - 0.5) * 4,
-            vy: -Math.random() * 3 - 1,
-            life: 60 + Math.random() * 60,
-            color: ['#ff6b6b', '#ffd93d', '#ff8c42', '#ffffff'][Math.floor(Math.random() * 4)]
+            x: centerX + (Math.random() - 0.5) * 20,
+            y: centerY + (Math.random() - 0.5) * 20,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 1,
+            life: 80 + Math.random() * 60,
+            color: ['#ff6b6b', '#ffd93d', '#ff8c42', '#ffffff', '#ff4444', '#ffaa00'][Math.floor(Math.random() * 6)]
+        });
+    }
+    // Secondary burst - sparkling stars
+    for (let i = 0; i < 15; i++) {
+        GAME.defeatCutscene.particles.push({
+            x: centerX + (Math.random() - 0.5) * 60,
+            y: centerY + (Math.random() - 0.5) * 60,
+            vx: (Math.random() - 0.5) * 6,
+            vy: -Math.random() * 5 - 2,
+            life: 100 + Math.random() * 50,
+            color: '#ffffff'
         });
     }
 
@@ -8807,81 +9176,171 @@ function updateDefeatCutscene() {
     if (!GAME.defeatCutscene) return;
 
     GAME.defeatCutscene.timer++;
+    const t = GAME.defeatCutscene.timer;
 
-    // Update particles
+    // Update particles with enhanced physics
     for (let i = GAME.defeatCutscene.particles.length - 1; i >= 0; i--) {
         const p = GAME.defeatCutscene.particles[i];
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.05; // Gravity
+        p.vy += 0.04; // Slightly less gravity for longer floats
+        p.vx *= 0.99; // Slight air resistance
         p.life--;
         if (p.life <= 0) {
             GAME.defeatCutscene.particles.splice(i, 1);
         }
     }
 
-    // Spawn new particles during intro phase
-    if (GAME.defeatCutscene.phase === 0 && Math.random() < 0.3) {
-        GAME.defeatCutscene.particles.push({
-            x: GAME.boss ? GAME.boss.x + 16 : 128,
-            y: GAME.boss ? GAME.boss.y + 16 : 128,
-            vx: (Math.random() - 0.5) * 3,
-            vy: -Math.random() * 2 - 0.5,
-            life: 40 + Math.random() * 40,
-            color: ['#ff6b6b', '#ffd93d', '#ff8c42'][Math.floor(Math.random() * 3)]
-        });
+    // Spawn epic particles during intro phase (more frequent and varied)
+    if (GAME.defeatCutscene.phase === 0) {
+        // Center position where the big boss sprite is displayed
+        const centerX = 128;
+        const centerY = 92;
+
+        // Spawn multiple particles per frame for epic effect
+        const spawnCount = Math.random() < 0.5 ? 2 : 1;
+        for (let s = 0; s < spawnCount; s++) {
+            if (Math.random() < 0.6) {
+                // Explosion particles from boss center
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 1 + Math.random() * 3;
+                GAME.defeatCutscene.particles.push({
+                    x: centerX + (Math.random() - 0.5) * 40,
+                    y: centerY + (Math.random() - 0.5) * 40,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 1,
+                    life: 50 + Math.random() * 50,
+                    color: ['#ff6b6b', '#ffd93d', '#ff8c42', '#ffffff', '#ff4444', '#ffaa00'][Math.floor(Math.random() * 6)]
+                });
+            }
+        }
+
+        // Occasional big sparks
+        if (Math.random() < 0.15) {
+            GAME.defeatCutscene.particles.push({
+                x: centerX + (Math.random() - 0.5) * 60,
+                y: centerY + (Math.random() - 0.5) * 60,
+                vx: (Math.random() - 0.5) * 5,
+                vy: -Math.random() * 4 - 2,
+                life: 70 + Math.random() * 30,
+                color: '#ffffff'
+            });
+        }
+
+        // Rising embers
+        if (Math.random() < 0.2) {
+            GAME.defeatCutscene.particles.push({
+                x: centerX + (Math.random() - 0.5) * 80,
+                y: 200 + Math.random() * 20,
+                vx: (Math.random() - 0.5) * 1,
+                vy: -Math.random() * 2 - 1.5,
+                life: 80 + Math.random() * 40,
+                color: ['#ff6b6b', '#ff8c42', '#ffd93d'][Math.floor(Math.random() * 3)]
+            });
+        }
     }
 
-    // Fade flash effect
+    // Fade flash effect more slowly for dramatic impact
     if (GAME.defeatCutscene.flashIntensity > 0) {
-        GAME.defeatCutscene.flashIntensity -= 0.02;
+        GAME.defeatCutscene.flashIntensity -= 0.015;
     }
 }
 
 function drawDefeatCutscene() {
     if (!GAME.defeatCutscene) return;
 
-    // Draw dramatic vignette
+    const t = GAME.defeatCutscene.timer;
+
+    // Draw dramatic vignette (enhanced)
     const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 180);
     gradient.addColorStop(0, 'rgba(0,0,0,0)');
-    gradient.addColorStop(0.7, 'rgba(0,0,0,0.3)');
-    gradient.addColorStop(1, 'rgba(0,0,0,0.7)');
+    gradient.addColorStop(0.5, 'rgba(0,0,0,0.2)');
+    gradient.addColorStop(0.8, 'rgba(0,0,0,0.5)');
+    gradient.addColorStop(1, 'rgba(0,0,0,0.85)');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 256, 256);
 
-    // Draw defeat particles
+    // Draw epic defeat particles (larger and more colorful)
     for (const p of GAME.defeatCutscene.particles) {
         const alpha = Math.min(1, p.life / 30);
+        const size = 2 + Math.floor(p.life / 20);
         ctx.fillStyle = p.color;
         ctx.globalAlpha = alpha;
-        ctx.fillRect(Math.floor(p.x), Math.floor(p.y), 3, 3);
+
+        // Add glow effect for particles
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 6;
+        ctx.fillRect(Math.floor(p.x), Math.floor(p.y), size, size);
     }
+    ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
 
-    // Flash overlay during intro
+    // Epic flash overlay during intro (golden-red)
     if (GAME.defeatCutscene.flashIntensity > 0 && GAME.defeatCutscene.phase === 0) {
-        ctx.fillStyle = `rgba(255,255,255,${GAME.defeatCutscene.flashIntensity * 0.5})`;
+        const flashGrad = ctx.createRadialGradient(128, 92, 0, 128, 92, 150);
+        flashGrad.addColorStop(0, `rgba(255,215,0,${GAME.defeatCutscene.flashIntensity * 0.4})`);
+        flashGrad.addColorStop(0.5, `rgba(255,100,50,${GAME.defeatCutscene.flashIntensity * 0.3})`);
+        flashGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = flashGrad;
         ctx.fillRect(0, 0, 256, 256);
     }
 
-    // Draw "DEFEATED!" text during intro phase
+    // Draw epic "DEFEATED!" text during intro phase
     if (GAME.defeatCutscene.phase === 0) {
         ctx.save();
-        ctx.font = 'bold 16px monospace';
+
+        // Boss name banner at top
+        ctx.font = '8px "Press Start 2P", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
+        const bossName = GAME.defeatCutscene.bossName || 'BOSS';
+        ctx.fillStyle = '#666';
+        ctx.fillText(bossName.toUpperCase(), 128, 20);
 
-        // Pulsing effect
-        const pulse = Math.sin(GAME.defeatCutscene.timer * 0.15) * 0.2 + 0.8;
+        // Epic DEFEATED text with animation
+        const pulse = Math.sin(t * 0.15) * 0.3 + 0.7;
+        const scale = 1 + Math.sin(t * 0.1) * 0.05;
+        const yOffset = Math.sin(t * 0.08) * 2;
 
-        // Shadow
+        ctx.save();
+        ctx.translate(128, 148 + yOffset);
+        ctx.scale(scale, scale);
+
+        // Multiple shadow layers for depth
+        ctx.font = 'bold 20px "Press Start 2P", monospace';
         ctx.fillStyle = '#000';
-        ctx.fillText('DEFEATED!', 129, 49);
-        ctx.fillText('DEFEATED!', 127, 47);
+        ctx.fillText('DEFEATED!', 3, 3);
+        ctx.fillStyle = '#330000';
+        ctx.fillText('DEFEATED!', 2, 2);
+        ctx.fillStyle = '#550000';
+        ctx.fillText('DEFEATED!', 1, 1);
 
-        // Main text with pulse
-        ctx.fillStyle = `rgb(${Math.floor(255 * pulse)}, ${Math.floor(100 * pulse)}, ${Math.floor(100 * pulse)})`;
-        ctx.fillText('DEFEATED!', 128, 48);
+        // Main text with gradient effect
+        const textGrad = ctx.createLinearGradient(-60, -10, 60, 10);
+        textGrad.addColorStop(0, `rgb(${Math.floor(255 * pulse)}, ${Math.floor(50)}, ${Math.floor(50)})`);
+        textGrad.addColorStop(0.5, `rgb(${Math.floor(255)}, ${Math.floor(150 * pulse)}, ${Math.floor(50)})`);
+        textGrad.addColorStop(1, `rgb(${Math.floor(255 * pulse)}, ${Math.floor(50)}, ${Math.floor(50)})`);
+        ctx.fillStyle = textGrad;
+
+        // Glow effect
+        ctx.shadowColor = '#ff4444';
+        ctx.shadowBlur = 15;
+        ctx.fillText('DEFEATED!', 0, 0);
+
+        // Bright highlight on top
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = `rgba(255,255,255,${pulse * 0.4})`;
+        ctx.fillText('DEFEATED!', 0, -1);
+
+        ctx.restore();
+
+        // Victory subtitle
+        ctx.font = '6px "Press Start 2P", monospace';
+        ctx.fillStyle = `rgba(255, 215, 0, ${Math.sin(t * 0.12) * 0.3 + 0.7})`;
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 5;
+        ctx.fillText('SAFETY PREVAILS!', 128, 170);
+        ctx.shadowBlur = 0;
 
         ctx.restore();
     }
@@ -12142,11 +12601,16 @@ async function submitHighscore(entry) {
             GAME.highscores = data.highscores || [];
             GAME.highscoreSubmitted = true;
             return data;
+        } else {
+            // Server returned an error but we can still continue
+            console.warn('Highscore submission failed:', data.error);
+            return { success: false, submitted: false };
         }
     } catch (e) {
         console.warn('Could not submit highscore:', e);
+        // Network error - allow player to continue anyway
+        return { success: false, submitted: false, networkError: true };
     }
-    return null;
 }
 
 // Prepare highscore entry after winning
@@ -12239,9 +12703,15 @@ async function submitPlayerHighscore() {
     AudioSys.sfx.start();
 
     const result = await submitHighscore(GAME.pendingHighscore);
-    if (result) {
-        GAME.highscoreSubmitted = true;
+    // Always mark as submitted so player can continue, even if server failed
+    GAME.highscoreSubmitted = true;
+    if (result && result.success) {
         GAME.pendingHighscore.rank = result.rank;
+    } else {
+        // Server failed but we'll still let them continue
+        // Mark as submitted without a rank
+        GAME.pendingHighscore.rank = null;
+        GAME.pendingHighscore.submissionFailed = true;
     }
 }
 
@@ -12294,16 +12764,25 @@ function drawNameEntry() {
     if (GAME.highscoreSubmitted) {
         // Show submission confirmation
         ctx.font = '10px "Press Start 2P"';
-        ctx.fillStyle = '#22c55e';
-        ctx.fillText('SCORE SUBMITTED!', canvas.width / 2, 110);
+        if (GAME.pendingHighscore && GAME.pendingHighscore.submissionFailed) {
+            // Submission failed but player can continue
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillText('SCORE SAVED!', canvas.width / 2, 110);
+            ctx.font = '5px "Press Start 2P"';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText('(ONLINE SYNC UNAVAILABLE)', canvas.width / 2, 122);
+        } else {
+            ctx.fillStyle = '#22c55e';
+            ctx.fillText('SCORE SUBMITTED!', canvas.width / 2, 110);
+        }
 
         ctx.font = '8px "Press Start 2P"';
         ctx.fillStyle = '#fff';
-        ctx.fillText(`NAME: ${GAME.nameEntry}`, canvas.width / 2, 130);
+        ctx.fillText(`NAME: ${GAME.nameEntry}`, canvas.width / 2, 135);
 
         if (GAME.pendingHighscore && GAME.pendingHighscore.rank) {
             ctx.fillStyle = '#ffd700';
-            ctx.fillText(`RANK: #${GAME.pendingHighscore.rank}`, canvas.width / 2, 145);
+            ctx.fillText(`RANK: #${GAME.pendingHighscore.rank}`, canvas.width / 2, 150);
         }
 
         // Continue prompt
@@ -18431,13 +18910,34 @@ function draw() {
     if (GAME.state === 'MECHA_SIMON_SPLASH') { drawMechaSimonSplash(); ctx.restore(); return; }
     // Boss defeat cutscene - draw dramatic background with overlay effects
     if (GAME.state === 'BOSS_DEFEAT_CUTSCENE') {
-        // Dark dramatic background
-        ctx.fillStyle = '#0a0a0a';
+        // Epic dark dramatic background with gradient
+        const bgGrad = ctx.createRadialGradient(128, 128, 20, 128, 128, 180);
+        bgGrad.addColorStop(0, '#1a1a2e');
+        bgGrad.addColorStop(0.5, '#0f0f1a');
+        bgGrad.addColorStop(1, '#050508');
+        ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Draw the boss arena tiles dimmed
+        // Animated dramatic lines radiating from center
+        if (GAME.defeatCutscene && GAME.defeatCutscene.phase === 0) {
+            const t = GAME.defeatCutscene.timer;
+            ctx.save();
+            for (let i = 0; i < 16; i++) {
+                const angle = (i / 16) * Math.PI * 2 + t * 0.02;
+                const pulse = Math.sin(t * 0.1 + i) * 0.3 + 0.7;
+                ctx.strokeStyle = `rgba(255, 68, 68, ${pulse * 0.3})`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(128, 100);
+                ctx.lineTo(128 + Math.cos(angle) * 200, 100 + Math.sin(angle) * 200);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        // Draw the boss arena tiles very dimmed
         const cx = GAME.camera.x; const cy = GAME.camera.y;
-        ctx.globalAlpha = 0.4;
+        ctx.globalAlpha = 0.2;
         for (let y = 0; y < MAP_H; y++) {
             for (let x = 0; x < MAP_W; x++) {
                 const tile = GAME.map[y][x];
@@ -18451,23 +18951,86 @@ function draw() {
         }
         ctx.globalAlpha = 1;
 
-        // Draw defeated boss (fading/flashing)
+        // Draw EPIC defeated boss (larger 64x64 sprite, centered, with dramatic effects)
         if (GAME.boss && GAME.defeatCutscene) {
-            const bossX = GAME.boss.x - cx;
-            const bossY = GAME.boss.y - cy;
-            const flashAlpha = Math.sin(GAME.defeatCutscene.timer * 0.3) * 0.3 + 0.5;
-            ctx.globalAlpha = flashAlpha;
-            const bossImg = GAME.boss.sprite && GFX[GAME.boss.sprite] ? GFX[GAME.boss.sprite] : GFX.boss_manager;
-            ctx.drawImage(bossImg, bossX, bossY, 32, 32);
+            const t = GAME.defeatCutscene.timer;
+            const phase = GAME.defeatCutscene.phase;
+
+            // Get the larger defeated sprite
+            const bossSprite = GAME.defeatCutscene.bossSprite || 'boss_manager';
+            const defeatedImg = GFX.bossDefeated && GFX.bossDefeated[bossSprite]
+                ? GFX.bossDefeated[bossSprite]
+                : (GFX.bossDefeated ? GFX.bossDefeated.boss_manager : null);
+
+            // Center the boss in the screen
+            const bossX = 96; // Center 64px sprite in 256px canvas
+            const bossY = 60;
+
+            // Dramatic pulsing glow behind boss
+            const glowPulse = Math.sin(t * 0.1) * 0.3 + 0.7;
+            const glowGrad = ctx.createRadialGradient(128, 92, 10, 128, 92, 60);
+            glowGrad.addColorStop(0, `rgba(255, 68, 68, ${glowPulse * 0.5})`);
+            glowGrad.addColorStop(0.5, `rgba(255, 107, 107, ${glowPulse * 0.3})`);
+            glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = glowGrad;
+            ctx.fillRect(0, 0, 256, 200);
+
+            // Flash effect on defeat
+            if (phase === 0) {
+                const flashAlpha = Math.sin(t * 0.3) * 0.3 + 0.5;
+                ctx.globalAlpha = flashAlpha;
+            }
+
+            // Draw the large defeated boss sprite
+            if (defeatedImg) {
+                // Slight shake effect during intro
+                const shakeX = phase === 0 ? (Math.random() - 0.5) * 4 : 0;
+                const shakeY = phase === 0 ? (Math.random() - 0.5) * 4 : 0;
+
+                ctx.save();
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(defeatedImg, bossX + shakeX, bossY + shakeY, 64, 64);
+                ctx.restore();
+            } else {
+                // Fallback to regular sprite but bigger
+                const bossImg = GAME.boss.sprite && GFX[GAME.boss.sprite] ? GFX[GAME.boss.sprite] : GFX.boss_manager;
+                ctx.save();
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(bossImg, bossX, bossY, 64, 64);
+                ctx.restore();
+            }
             ctx.globalAlpha = 1;
+
+            // Dramatic "DEFEATED" frame/border
+            if (phase === 0) {
+                const frameAlpha = Math.sin(t * 0.15) * 0.3 + 0.7;
+                ctx.strokeStyle = `rgba(255, 215, 0, ${frameAlpha})`;
+                ctx.lineWidth = 3;
+                ctx.strokeRect(bossX - 8, bossY - 8, 80, 80);
+
+                // Corner accents
+                ctx.fillStyle = `rgba(255, 215, 0, ${frameAlpha})`;
+                ctx.fillRect(bossX - 12, bossY - 12, 8, 3);
+                ctx.fillRect(bossX - 12, bossY - 12, 3, 8);
+                ctx.fillRect(bossX + 68, bossY - 12, 8, 3);
+                ctx.fillRect(bossX + 73, bossY - 12, 3, 8);
+                ctx.fillRect(bossX - 12, bossY + 65, 8, 3);
+                ctx.fillRect(bossX - 12, bossY + 60, 3, 8);
+                ctx.fillRect(bossX + 68, bossY + 65, 8, 3);
+                ctx.fillRect(bossX + 73, bossY + 60, 3, 8);
+            }
         }
 
-        // Draw player character
+        // Draw player character (victorious pose position)
         if (GAME.player) {
-            const px = GAME.player.x - cx;
-            const py = GAME.player.y - cy;
+            const px = 200; // Position player to the right
+            const py = 110;
             const charImg = GFX.chars[GAME.selectedChar] || GFX.chars.Carrie;
-            ctx.drawImage(charImg, px, py, 16, 16);
+            ctx.save();
+            ctx.imageSmoothingEnabled = false;
+            // Draw player slightly larger
+            ctx.drawImage(charImg, px, py, 24, 24);
+            ctx.restore();
         }
 
         drawDefeatCutscene();
