@@ -8864,11 +8864,7 @@ function startYardLevel() {
     }
     y.packageSpawnTimer = 0;
 
-    // Yard atmosphere: conveyor belts at dock area, pallet stacks, dock signs
-    y.dockConveyors = [
-        { x: 20, y: h - 45, length: 80, dir: 1 },
-        { x: canvas.width - 100, y: h - 45, length: 80, dir: -1 }
-    ];
+    // Yard atmosphere: pallet stacks, dock signs (conveyors removed)
     y.palletStacks = [
         { x: 8, y: h - 55 }, { x: 45, y: h - 55 },
         { x: canvas.width - 55, y: h - 55 }, { x: canvas.width - 25, y: h - 55 }
@@ -9589,12 +9585,13 @@ function update() {
 
     if (['LOGO', 'INTRO', 'STORY', 'TITLE', 'HOWTO', 'BOSS_INTRO', 'VISITOR_SPLASH', 'BEZOS_INTRO', 'MECHA_TRANSFORM', 'MECHA_SIMON_SPLASH', 'BEZOS_ESCAPE', 'BEZOS_ESCAPE_MECHA_LINE', 'BEZOS_ESCAPE_JEFF_LINE', 'BEZOS_ESCAPE_DIALOGUE', 'SIMON_FAKE_VICTORY', 'HAZARD_DETAIL_MODAL', 'PPE_DIALOG', 'PPE_SHOP'].includes(GAME.state)) return;
 
-    // Bezos victory screen
+    // Bezos victory screen - transition to highscore entry
     if (GAME.state === 'BEZOS_WIN') {
-        // Auto-advance after delay
+        // Auto-advance to NAME_ENTRY for highscore after delay
         if (GAME.stateTimer > 300) {
-            GAME.state = 'TITLE';
-            updateMusicForState();
+            GAME.state = 'NAME_ENTRY';
+            GAME.stateTimer = 0;
+            nameEntryCharIndex = 0;
         }
         return;
     }
@@ -9879,11 +9876,11 @@ function updateYardLevel() {
             const pkg = y.yardPackages[i];
             if (!pkg.collected && Math.abs(pkg.x - y.playerX) < 18 && Math.abs(pkg.y - y.playerY) < 18) {
                 pkg.collected = true;
-                const points = pkg.type === 'prime' ? 250 : 150;
+                const points = 50; // All packages worth +50 points
                 GAME.score = (GAME.score || 0) + points;
                 AudioSys.sfx.fix();
-                spawnFloatingText(pkg.x, pkg.y - 16, "+" + points, pkg.type === 'prime' ? "#ff9900" : "#22c55e");
-                spawnParticleBurst(pkg.x + 7, pkg.y + 7, pkg.type === 'prime' ? ['#ff9900', '#fbbf24', '#fff'] : ['#22c55e', '#86efac', '#fff'], 8);
+                spawnFloatingText(pkg.x, pkg.y - 16, "+" + points, "#ff9900");
+                spawnParticleBurst(pkg.x + 7, pkg.y + 7, ['#ff9900', '#fbbf24', '#fff'], 8);
                 // Remove collected package
                 y.yardPackages.splice(i, 1);
             }
@@ -12573,6 +12570,9 @@ function showPerformanceEvalIntroDialog(text, isWin) {
 }
 
 function showDialog(text, speaker, portrait, isAI = false) {
+    // IMPORTANT: Stop any existing portrait animation FIRST to prevent flashing
+    stopPortraitAnimation();
+
     // Store previous state for background rendering during dialog
     // Don't overwrite if we're in the Bezos dialogue sequence (keep THRONE_CONFRONTATION)
     if (GAME.state !== 'DIALOG' && GAME.state !== 'BEZOS_DIALOGUE_NEXT' && GAME.state !== 'JEFF_DIALOGUE_CONTINUE') {
@@ -12613,6 +12613,9 @@ function showDialog(text, speaker, portrait, isAI = false) {
 
 // Show dialog with hazard detail option (press UP for regulatory info)
 function showHazardDialog(text, speaker, portrait, isAI = false, hazard = null) {
+    // IMPORTANT: Stop any existing portrait animation FIRST to prevent flashing
+    stopPortraitAnimation();
+
     // Store previous state for background rendering during dialog
     if (GAME.state !== 'DIALOG' && GAME.state !== 'BEZOS_DIALOGUE_NEXT' && GAME.state !== 'JEFF_DIALOGUE_CONTINUE') {
         GAME.dialogBackgroundState = GAME.state;
@@ -13749,31 +13752,6 @@ function drawYardLevel() {
         }
 
         // === DRAW ENHANCED DOCK ATMOSPHERE (warehouse-style) ===
-        const animFrame = y.jeffAnimFrame || 0;
-
-        // Draw dock conveyor belts (at bottom of yard)
-        if (y.dockConveyors) {
-            y.dockConveyors.forEach(conv => {
-                // Conveyor frame
-                ctx.fillStyle = '#374151';
-                ctx.fillRect(conv.x - 2, conv.y - 2, conv.length + 4, 14);
-                // Conveyor belt surface
-                ctx.fillStyle = '#1f2937';
-                ctx.fillRect(conv.x, conv.y, conv.length, 10);
-                // Moving belt lines
-                const beltOffset = (animFrame * conv.dir * 0.5) % 12;
-                ctx.fillStyle = '#4b5563';
-                for (let bx = 0; bx < conv.length; bx += 12) {
-                    ctx.fillRect(conv.x + ((bx + beltOffset + 12) % conv.length), conv.y + 2, 6, 6);
-                }
-                // Rollers at ends
-                ctx.fillStyle = '#6b7280';
-                ctx.beginPath();
-                ctx.arc(conv.x + 5, conv.y + 5, 5, 0, Math.PI * 2);
-                ctx.arc(conv.x + conv.length - 5, conv.y + 5, 5, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
 
         // Draw pallet stacks (warehouse atmosphere)
         if (y.palletStacks) {
@@ -15270,15 +15248,15 @@ function updateBezosEscape() {
         }
     }
     // Phase 4: Waiting for Jeff's dialogue to finish (handled by dialogue system)
-    // Phase 5: Show throne room backdrop, Jeff runs to rocket (200 frames)
+    // Phase 5: Show throne room backdrop, Jeff runs to rocket (350 frames - longer)
     else if (scene.phase === 5) {
-        // Move Jeff toward the big centered rocket
+        // Move Jeff toward the big centered rocket (slower movement)
         const targetX = scene.rocketX - 20; // Left of the rocket
         const targetY = scene.rocketY + 60; // Near bottom of rocket
-        scene.jeffX += (targetX - scene.jeffX) * 0.03;
-        scene.jeffY += (targetY - scene.jeffY) * 0.03;
+        scene.jeffX += (targetX - scene.jeffX) * 0.018; // Slower movement
+        scene.jeffY += (targetY - scene.jeffY) * 0.018;
 
-        if (t >= 200) {
+        if (t >= 350) {
             scene.phase = 6;
             scene.phaseTimer = 0;
             // Initialize camera for phase 6
@@ -15286,43 +15264,43 @@ function updateBezosEscape() {
             scene.cameraY = 0;
         }
     }
-    // Phase 6: Epic rocket launch sequence (600 frames total)
+    // Phase 6: Epic rocket launch sequence (900 frames total - longer and slower)
     else if (scene.phase === 6) {
-        // Sub-phases: 0-60 = boarding, 61-120 = countdown, 121+ = launch
+        // Sub-phases: 0-90 = boarding, 91-240 = countdown, 241+ = launch
 
         // Initialize countdown if not started
         if (t === 1) {
-            scene.launchCountdown = 3;
+            scene.launchCountdown = 5; // Longer countdown from 5
             scene.countdownTimer = 0;
         }
 
-        // Boarding phase (first 60 frames)
-        if (t <= 60 && !scene.rocketLaunched) {
+        // Boarding phase (first 90 frames - longer)
+        if (t <= 90 && !scene.rocketLaunched) {
             scene.jeffVisible = true;
-            // Jeff moves toward rocket hatch
+            // Jeff moves toward rocket hatch (slower)
             const hatchX = scene.rocketX + 32;
             const hatchY = scene.rocketY + 50;
-            scene.jeffX += (hatchX - scene.jeffX) * 0.08;
-            scene.jeffY += (hatchY - scene.jeffY) * 0.08;
+            scene.jeffX += (hatchX - scene.jeffX) * 0.05;
+            scene.jeffY += (hatchY - scene.jeffY) * 0.05;
         }
-        // Countdown phase (frames 61-120)
-        else if (t > 60 && t <= 180 && !scene.rocketLaunched) {
+        // Countdown phase (frames 91-300 - longer countdown)
+        else if (t > 90 && t <= 300 && !scene.rocketLaunched) {
             scene.jeffVisible = false; // Jeff is inside
             scene.countdownTimer++;
-            // Update countdown every 40 frames (about 0.67 seconds each)
-            if (scene.countdownTimer >= 40 && scene.launchCountdown > 0) {
+            // Update countdown every 42 frames (about 0.7 seconds each)
+            if (scene.countdownTimer >= 42 && scene.launchCountdown > 0) {
                 scene.launchCountdown--;
                 scene.countdownTimer = 0;
                 AudioSys.sfx.bossHit(); // Countdown beep
             }
-            // Camera starts zooming out slightly
-            scene.cameraZoom = Math.max(0.7, scene.cameraZoom - 0.003);
+            // Camera starts zooming out slightly (slower)
+            scene.cameraZoom = Math.max(0.7, scene.cameraZoom - 0.002);
         }
-        // Launch phase (frames 181+)
-        else if (t > 180) {
+        // Launch phase (frames 301+)
+        else if (t > 300) {
             if (!scene.rocketLaunched) {
                 scene.rocketLaunched = true;
-                scene.rocketVelocity = 0.5;
+                scene.rocketVelocity = 0.3; // Start slower
                 AudioSys.sfx.bossIntro(); // Big launch sound
                 // Initialize stars for space
                 scene.stars = [];
@@ -15336,30 +15314,30 @@ function updateBezosEscape() {
                 }
             }
 
-            // Rocket acceleration - starts slow, then speeds up dramatically
-            const launchTime = t - 180;
-            scene.rocketVelocity = 0.5 + launchTime * 0.025; // Smooth acceleration
+            // Rocket acceleration - starts slow, then speeds up (slower overall)
+            const launchTime = t - 300;
+            scene.rocketVelocity = 0.3 + launchTime * 0.012; // Slower acceleration
             scene.rocketY -= scene.rocketVelocity;
 
             // Camera follows the rocket
             scene.followingRocket = true;
             // Camera target follows rocket, keeping it in lower third of screen
             scene.cameraTargetY = scene.rocketY - canvas.height * 0.6;
-            // Smooth camera follow
-            scene.cameraY += (scene.cameraTargetY - scene.cameraY) * 0.08;
+            // Smooth camera follow (slower)
+            scene.cameraY += (scene.cameraTargetY - scene.cameraY) * 0.05;
 
-            // Continue zooming out as rocket goes higher
-            if (launchTime < 200) {
-                scene.cameraZoom = Math.max(0.4, scene.cameraZoom - 0.002);
+            // Continue zooming out as rocket goes higher (slower)
+            if (launchTime < 300) {
+                scene.cameraZoom = Math.max(0.4, scene.cameraZoom - 0.001);
             }
 
             // Transition to space when rocket is high enough
-            if (scene.rocketY < -500) {
+            if (scene.rocketY < -700) {
                 scene.inSpace = true;
             }
 
-            // End phase when rocket is far in space
-            if (scene.rocketY < -1500 || launchTime >= 420) {
+            // End phase when rocket is far in space (longer flight)
+            if (scene.rocketY < -2000 || launchTime >= 600) {
                 scene.phase = 7;
                 scene.dialogueStep = 0;
                 scene.phaseTimer = 0;
@@ -15381,12 +15359,12 @@ function updateBezosEscape() {
             scene.simonY = canvas.height - 45;
             MusicSys.play('victory');
         }
-        // Simon walks in from left
+        // Simon walks in from left (slower)
         if (scene.simonX < canvas.width / 2 - 50) {
-            scene.simonX += 1.5;
+            scene.simonX += 0.8; // Slower walk
         }
-        // After Simon arrives and some time passes, go to credits
-        if (t >= 350) {
+        // After Simon arrives and some time passes, go to credits (much longer - 600 frames)
+        if (t >= 600) {
             GAME.state = 'CREDITS';
             GAME.stateTimer = 0;
             GAME.creditsType = 'mecha';
