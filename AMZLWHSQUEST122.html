@@ -9628,9 +9628,16 @@ function startYardLevel() {
             x: 60 + Math.random() * (canvas.width - 120),
             y: h - 50 + Math.random() * 20,
             dir: Math.random() < 0.5 ? 1 : -1,
-            pauseTimer: Math.random() * 60
+            pauseTimer: Math.random() * 60,
+            banterTimer: 0,
+            banterText: null,
+            banterLife: 0
         });
     }
+
+    // === YARD BIRDS (3D atmosphere effect) ===
+    y.birds = [];
+    y.birdSpawnTimer = 0;
 
     // Yard scoring tracking
     y.vehicleHitPenalty = 0; // Track penalty points
@@ -10634,10 +10641,12 @@ function updateYardLevel() {
             const pkg = y.yardPackages[i];
             if (!pkg.collected && Math.abs(pkg.x - y.playerX) < 18 && Math.abs(pkg.y - y.playerY) < 18) {
                 pkg.collected = true;
-                const points = 50; // All packages worth +50 points
+                const points = pkg.type === 'prime' ? 100 : 50; // Prime packages worth more
                 GAME.score = (GAME.score || 0) + points;
                 AudioSys.sfx.fix();
-                spawnFloatingText(pkg.x, pkg.y - 16, "+" + points, "#ff9900");
+                // Show points above PLAYER'S head (screen position, accounting for camera)
+                const screenPlayerY = y.playerY - y.cameraY;
+                spawnFloatingText(y.playerX + 8, screenPlayerY - 24, "+" + points, pkg.type === 'prime' ? "#ff9900" : "#22c55e");
                 spawnParticleBurst(pkg.x + 7, pkg.y + 7, ['#ff9900', '#fbbf24', '#fff'], 8);
                 // Remove collected package
                 y.yardPackages.splice(i, 1);
@@ -10664,9 +10673,36 @@ function updateYardLevel() {
         }
     }
 
-    // === UPDATE DOCK WORKERS ===
+    // === UPDATE DOCK WORKERS WITH CHIT-CHAT ===
     if (y.dockWorkers && !y.inCastle) {
+        // Dock worker phrases (warehouse themed)
+        const DOCK_BANTER = [
+            "Heavy load...", "Where's that pallet?", "Scan scan scan!",
+            "Truck's late!", "VTO anyone?", "My back...", "Box heavy!",
+            "Lane's blocked!", "Watch the fork!", "Break soon?",
+            "Prime day prep!", "So many boxes...", "Scanner dying...",
+            "Safety first!", "Wrong dock!", "Where's my vest?",
+            "Coffee break?", "Long shift...", "More trucks?!"
+        ];
+
         y.dockWorkers.forEach(worker => {
+            // Update banter timer
+            if (worker.banterLife > 0) {
+                worker.banterLife--;
+                if (worker.banterLife <= 0) {
+                    worker.banterText = null;
+                }
+            }
+
+            // Random chance to speak (like warehouse entities)
+            worker.banterTimer = (worker.banterTimer || 0) + 1;
+            if (worker.banterTimer > 300 && Math.random() < 0.003 && !worker.banterText) {
+                worker.banterTimer = 0;
+                worker.banterText = DOCK_BANTER[Math.floor(Math.random() * DOCK_BANTER.length)];
+                worker.banterLife = 180; // Show for 3 seconds
+            }
+
+            // Movement
             if (worker.pauseTimer > 0) {
                 worker.pauseTimer--;
                 return;
@@ -10678,6 +10714,45 @@ function updateYardLevel() {
                 worker.pauseTimer = 20;
             }
         });
+    }
+
+    // === UPDATE YARD BIRDS (3D atmosphere effect) ===
+    if (!y.inCastle) {
+        // Spawn birds occasionally
+        y.birdSpawnTimer = (y.birdSpawnTimer || 0) + 1;
+        if (y.birdSpawnTimer > 180 && Math.random() < 0.02 && (y.birds || []).length < 5) {
+            y.birdSpawnTimer = 0;
+            const fromLeft = Math.random() < 0.5;
+            if (!y.birds) y.birds = [];
+            y.birds.push({
+                x: fromLeft ? -20 : canvas.width + 20,
+                y: y.cameraY + 30 + Math.random() * 60, // Near top of visible area
+                vx: fromLeft ? (1.5 + Math.random() * 1.5) : -(1.5 + Math.random() * 1.5),
+                vy: (Math.random() - 0.5) * 0.3,
+                wingPhase: Math.random() * Math.PI * 2,
+                scale: 0.6 + Math.random() * 0.4, // Size variation for depth
+                shadow: true
+            });
+        }
+
+        // Update birds
+        if (y.birds) {
+            for (let i = y.birds.length - 1; i >= 0; i--) {
+                const bird = y.birds[i];
+                bird.x += bird.vx;
+                bird.y += bird.vy;
+                bird.wingPhase += 0.3;
+
+                // Slight vertical wobble
+                bird.vy += (Math.random() - 0.5) * 0.05;
+                bird.vy = Math.max(-0.5, Math.min(0.5, bird.vy));
+
+                // Remove when off screen
+                if (bird.x < -40 || bird.x > canvas.width + 40) {
+                    y.birds.splice(i, 1);
+                }
+            }
+        }
     }
 
     // === CASTLE SECTION UPDATES ===
@@ -14661,6 +14736,52 @@ function drawYardLevel() {
             ctx.fillRect(dustX, dustY, dustSize, dustSize);
         }
 
+        // === DRAW BIRDS (3D atmosphere - flying over yard) ===
+        if (y.birds && y.birds.length > 0) {
+            y.birds.forEach(bird => {
+                const wingUp = Math.sin(bird.wingPhase) > 0;
+                const s = bird.scale;
+                const bx = bird.x;
+                const by = bird.y;
+
+                // Bird shadow on ground (creates 3D depth effect)
+                const shadowY = hallwayEnd + 80; // Shadow on yard floor
+                const shadowScale = 0.4 + (1 - s) * 0.3; // Smaller shadow for "higher" birds
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.beginPath();
+                ctx.ellipse(bx, shadowY, 8 * shadowScale, 3 * shadowScale, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Bird body (darker = further away, creating depth)
+                const shade = Math.floor(50 + s * 30);
+                ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade + 10})`;
+
+                // Body
+                ctx.fillRect(bx - 4 * s, by - 2 * s, 8 * s, 4 * s);
+
+                // Head
+                ctx.fillRect(bx + (bird.vx > 0 ? 3 : -5) * s, by - 2 * s, 3 * s, 3 * s);
+
+                // Beak
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(bx + (bird.vx > 0 ? 6 : -7) * s, by - 1 * s, 2 * s, 1 * s);
+
+                // Wings (animated)
+                ctx.fillStyle = `rgb(${shade - 10}, ${shade - 10}, ${shade})`;
+                if (wingUp) {
+                    // Wings up
+                    ctx.fillRect(bx - 2 * s, by - 6 * s, 4 * s, 4 * s);
+                } else {
+                    // Wings down
+                    ctx.fillRect(bx - 5 * s, by + 1 * s, 10 * s, 2 * s);
+                }
+
+                // Tail
+                ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+                ctx.fillRect(bx + (bird.vx > 0 ? -6 : 4) * s, by - 1 * s, 3 * s, 2 * s);
+            });
+        }
+
         // Draw pallet stacks (warehouse atmosphere) - ENHANCED
         if (y.palletStacks) {
             y.palletStacks.forEach((pallet, idx) => {
@@ -14825,6 +14946,47 @@ function drawYardLevel() {
                 ctx.fillRect(worker.x + 1, worker.y + 2, 3, 4);
                 ctx.fillStyle = '#3b82f6';
                 ctx.fillRect(worker.x + 1, worker.y + 2, 3, 2);
+
+                // === SPEECH BUBBLE FOR CHIT-CHAT ===
+                if (worker.banterText && worker.banterLife > 0) {
+                    const bubbleAlpha = Math.min(1, worker.banterLife / 30); // Fade out
+                    ctx.save();
+                    ctx.globalAlpha = bubbleAlpha;
+
+                    // Measure text for bubble sizing
+                    ctx.font = '5px "Press Start 2P"';
+                    const textWidth = ctx.measureText(worker.banterText).width;
+                    const bubbleW = textWidth + 8;
+                    const bubbleH = 12;
+                    const bubbleX = worker.x - bubbleW / 2;
+                    const bubbleY = worker.y - 22 + breathe;
+
+                    // Speech bubble background
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(bubbleX, bubbleY, bubbleW, bubbleH);
+
+                    // Bubble border
+                    ctx.fillStyle = '#374151';
+                    ctx.fillRect(bubbleX - 1, bubbleY, 1, bubbleH);
+                    ctx.fillRect(bubbleX + bubbleW, bubbleY, 1, bubbleH);
+                    ctx.fillRect(bubbleX, bubbleY - 1, bubbleW, 1);
+                    ctx.fillRect(bubbleX, bubbleY + bubbleH, bubbleW, 1);
+
+                    // Bubble tail
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(worker.x - 2, bubbleY + bubbleH, 4, 3);
+                    ctx.fillStyle = '#374151';
+                    ctx.fillRect(worker.x - 3, bubbleY + bubbleH, 1, 3);
+                    ctx.fillRect(worker.x + 2, bubbleY + bubbleH, 1, 3);
+
+                    // Text
+                    ctx.fillStyle = '#1f2937';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(worker.banterText, worker.x, bubbleY + 8);
+                    ctx.textAlign = 'left';
+
+                    ctx.restore();
+                }
             });
         }
 
@@ -15173,36 +15335,109 @@ function drawYardLevel() {
                 });
             }
 
-            // Draw guard turrets
+            // Draw guard turrets - ENHANCED with better visual feedback
             if (y.castleGuards) {
                 y.castleGuards.forEach(guard => {
-                    // Turret base
+                    const dirX = guard.x < canvas.width / 2 ? 1 : -1;
+                    const charging = guard.fireTimer > guard.fireRate - 20;
+                    const chargeProgress = charging ? (guard.fireTimer - (guard.fireRate - 20)) / 20 : 0;
+                    const aboutToFire = guard.fireTimer > guard.fireRate - 5;
+
+                    // Wall mount bracket
+                    ctx.fillStyle = '#1f2937';
+                    ctx.fillRect(guard.x - 2, guard.y + 2, 20, 4);
+                    ctx.fillRect(guard.x - 2, guard.y + 10, 20, 4);
+
+                    // Turret base with metallic effect
                     ctx.fillStyle = '#374151';
                     ctx.fillRect(guard.x, guard.y, 16, 16);
                     ctx.fillStyle = '#4b5563';
-                    ctx.fillRect(guard.x + 2, guard.y + 2, 12, 12);
-                    // Turret barrel
-                    const dirX = guard.x < canvas.width / 2 ? 1 : -1;
+                    ctx.fillRect(guard.x + 1, guard.y + 1, 14, 14);
                     ctx.fillStyle = '#6b7280';
-                    if (dirX === 1) {
-                        ctx.fillRect(guard.x + 12, guard.y + 5, 10, 6);
-                    } else {
-                        ctx.fillRect(guard.x - 6, guard.y + 5, 10, 6);
+                    ctx.fillRect(guard.x + 2, guard.y + 2, 12, 12);
+                    // Metallic highlight
+                    ctx.fillStyle = '#9ca3af';
+                    ctx.fillRect(guard.x + 3, guard.y + 3, 4, 2);
+
+                    // Turret barrel with detail
+                    const barrelX = dirX === 1 ? guard.x + 14 : guard.x - 10;
+                    ctx.fillStyle = '#4b5563';
+                    ctx.fillRect(barrelX, guard.y + 4, 12, 8);
+                    ctx.fillStyle = '#6b7280';
+                    ctx.fillRect(barrelX + 1, guard.y + 5, 10, 6);
+                    // Barrel bore
+                    ctx.fillStyle = '#1f2937';
+                    const boreX = dirX === 1 ? barrelX + 10 : barrelX;
+                    ctx.fillRect(boreX, guard.y + 6, 2, 4);
+                    // Barrel rings
+                    ctx.fillStyle = '#4b5563';
+                    ctx.fillRect(barrelX + 3, guard.y + 4, 2, 8);
+                    ctx.fillRect(barrelX + 7, guard.y + 4, 2, 8);
+
+                    // Charging glow effect
+                    if (charging) {
+                        ctx.fillStyle = `rgba(239, 68, 68, ${chargeProgress * 0.4})`;
+                        ctx.beginPath();
+                        ctx.arc(guard.x + 8, guard.y + 8, 12 + chargeProgress * 4, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Barrel charge glow
+                        ctx.fillStyle = `rgba(251, 191, 36, ${chargeProgress * 0.6})`;
+                        ctx.fillRect(boreX - 1, guard.y + 5, 4, 6);
                     }
-                    // Warning light
-                    const charging = guard.fireTimer > guard.fireRate - 20;
-                    ctx.fillStyle = charging ? '#ef4444' : '#22c55e';
-                    ctx.fillRect(guard.x + 6, guard.y - 2, 4, 4);
+
+                    // Warning light with pulsing effect
+                    const lightPulse = aboutToFire ? Math.sin(GAME.ticks * 0.5) * 0.3 + 0.7 : 1;
+                    ctx.fillStyle = '#1f2937';
+                    ctx.fillRect(guard.x + 5, guard.y - 4, 6, 6);
+                    ctx.fillStyle = charging ? `rgba(239, 68, 68, ${lightPulse})` : '#22c55e';
+                    ctx.fillRect(guard.x + 6, guard.y - 3, 4, 4);
+
+                    // Light glow
+                    if (charging) {
+                        ctx.fillStyle = `rgba(239, 68, 68, ${chargeProgress * 0.5})`;
+                        ctx.beginPath();
+                        ctx.arc(guard.x + 8, guard.y - 1, 6, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    // Sensor eye
+                    ctx.fillStyle = '#dc2626';
+                    ctx.fillRect(guard.x + 6, guard.y + 6, 4, 4);
+                    ctx.fillStyle = charging ? '#fbbf24' : '#ef4444';
+                    ctx.fillRect(guard.x + 7, guard.y + 7, 2, 2);
+
+                    // "SECURITY" label
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.font = '3px "Press Start 2P"';
+                    ctx.fillText('⚡', guard.x + 5, guard.y + 20);
                 });
             }
 
-            // Draw castle projectiles
+            // Draw castle projectiles - ENHANCED
             if (y.castleProjectiles) {
                 y.castleProjectiles.forEach(proj => {
+                    // Projectile trail
+                    ctx.fillStyle = 'rgba(251, 191, 36, 0.3)';
+                    const trailDir = proj.vx > 0 ? -1 : 1;
+                    ctx.fillRect(proj.x + trailDir * 4, proj.y - 2, 12, 4);
+                    ctx.fillStyle = 'rgba(251, 191, 36, 0.15)';
+                    ctx.fillRect(proj.x + trailDir * 12, proj.y - 1, 8, 2);
+
+                    // Main projectile body
                     ctx.fillStyle = '#fbbf24';
-                    ctx.fillRect(proj.x - 4, proj.y - 3, 8, 6);
+                    ctx.fillRect(proj.x - 5, proj.y - 4, 10, 8);
                     ctx.fillStyle = '#f59e0b';
+                    ctx.fillRect(proj.x - 4, proj.y - 3, 8, 6);
+                    // Core
+                    ctx.fillStyle = '#fff';
                     ctx.fillRect(proj.x - 2, proj.y - 1, 4, 2);
+
+                    // Glow effect
+                    ctx.fillStyle = 'rgba(251, 191, 36, 0.4)';
+                    ctx.beginPath();
+                    ctx.arc(proj.x, proj.y, 8, 0, Math.PI * 2);
+                    ctx.fill();
                 });
             }
 
