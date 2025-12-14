@@ -39,36 +39,43 @@ function validateScore(entry) {
     return true;
 }
 
-// Calculate score from game stats
+// Calculate score from game stats (server-side validation)
+// This should match the client-side calculation
 function calculateScore(stats) {
-    // Base score for completing the game
-    let score = 1000;
+    // Start with 5000 points
+    let score = 5000;
 
-    // Time bonus: faster = more points (max 3000 for under 60 seconds)
-    const timeBonus = Math.max(0, 3000 - Math.floor(stats.time * 20));
-    score += timeBonus;
+    // Time penalty: lose 100 points every 10 seconds
+    const timePenalty = Math.floor((stats.time || 0) / 10) * 100;
+    score -= timePenalty;
 
-    // Hazards fixed bonus: 200 points per hazard
+    // Penalty for missed book throws: -200 each
+    score -= (stats.booksMissed || 0) * 200;
+
+    // Penalty for hitting Simon: -500 each
+    score -= (stats.simonHitsCount || 0) * 500;
+
+    // GAINS:
+    // Hazards fixed: +200 points each
     score += (stats.hazardsFixed || 0) * 200;
 
-    // Combat bonus: 10 points per book thrown, 25 per ops pushed
-    score += (stats.booksFired || 0) * 10;
-    score += (stats.opsPushed || 0) * 25;
+    // Combat bonus: +50 per book hit, +100 per ops pushed
+    score += (stats.booksFired || 0) * 50;
+    score += (stats.opsPushed || 0) * 100;
 
-    // Lives bonus: 100 points per life remaining
+    // Lives remaining: +100 points each
     score += (stats.livesRemaining || 0) * 100;
 
-    // Mecha Jeff bonus: extra 2000 points
+    // Boss Kill bonus: +1000 points
+    score += 1000;
+
+    // Mecha Jeff bonus: +5000 points
     if (stats.bossDefeated === "Mecha Jeff") {
-        score += 2000;
+        score += 5000;
     }
 
-    // Character difficulty bonus (Erwin with 1 life gets bonus)
-    if (stats.character === "Erwin") {
-        score += 500;
-    }
-
-    return Math.floor(score);
+    // Minimum score is 0
+    return Math.max(0, Math.floor(score));
 }
 
 exports.handler = async (event, context) => {
@@ -135,13 +142,16 @@ exports.handler = async (event, context) => {
                 hazardsFixed: parseInt(body.hazardsFixed) || 0,
                 booksFired: parseInt(body.booksFired) || 0,
                 opsPushed: parseInt(body.opsPushed) || 0,
+                booksMissed: parseInt(body.booksMissed) || 0,
+                simonHitsCount: parseInt(body.simonHitsCount) || 0,
                 livesRemaining: parseInt(body.livesRemaining) || 0,
                 bossDefeated: body.bossDefeated,
                 region: body.region || "EU"
             };
 
-            // Calculate score
-            entry.score = calculateScore(entry);
+            // Use client's pre-calculated score (validated below)
+            // Client tracks misses in real-time which server can't replicate
+            entry.score = parseInt(body.score) || calculateScore(entry);
 
             // Validate the entry
             if (!validateScore(entry)) {

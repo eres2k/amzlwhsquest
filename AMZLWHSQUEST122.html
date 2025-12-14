@@ -6804,6 +6804,8 @@ const GAME = {
     pendingHighscore: null, // Score waiting to be submitted
     highscoreSubmitted: false, // Whether current score was submitted
     lastDefeatedBoss: null, // Track which boss was defeated for scoring
+    booksMissed: 0, // Track missed book throws for score penalty
+    simonHitsCount: 0, // Track hitting Simon for score penalty (separate from simonHits which tracks boss damage)
 
     // === QUARTERMASTER'S SAFETY LOCKER (PPE SHOP) ===
     safetyPoints: 0, // Currency earned by fixing hazards
@@ -8206,7 +8208,7 @@ function resetGame() {
     GAME.regenTimer = 0; // Reset hydration pouch timer
     GAME.hiddenDoor = null; GAME.yard = null; GAME.mecha = null;
     GAME.nextState = 'PLAY'; GAME.aiResultText = null;
-    GAME.startTime = Date.now(); GAME.booksFired = 0; GAME.opsPushed = 0;
+    GAME.startTime = Date.now(); GAME.booksFired = 0; GAME.opsPushed = 0; GAME.booksMissed = 0; GAME.simonHitsCount = 0;
 
     generateMap();
     GAME.entities.push({ type: 'simon', x: 100, y: 80, w: 16, h: 16 });
@@ -10560,9 +10562,17 @@ function updateProjectiles() {
         p.x += p.vx; p.y += p.vy; p.life--; if(p.grace > 0) p.grace--;
         // Skip wall collision check in Bezos boss level
         if (GAME.state !== 'BEZOS_BOSS') {
-            if (p.grace <= 0 && checkCol(p.x, p.y)) { GAME.projectiles.splice(i,1); continue; }
+            if (p.grace <= 0 && checkCol(p.x, p.y)) {
+                // Track missed player attacks for scoring
+                if (p.type === 'attack') GAME.booksMissed++;
+                GAME.projectiles.splice(i,1); continue;
+            }
         }
-        if (p.life <= 0) { GAME.projectiles.splice(i,1); continue; }
+        if (p.life <= 0) {
+            // Track missed player attacks for scoring (expired without hitting)
+            if (p.type === 'attack') GAME.booksMissed++;
+            GAME.projectiles.splice(i,1); continue;
+        }
         // Roman's PHANTOM STEP - smaller collision radius for projectiles
         const projectileRadius = GAME.selectedChar === 'Roman' ? 6 : 10;
         if ((p.type === 'req') && Math.hypot(p.x-GAME.player.x, p.y-GAME.player.y) < projectileRadius) {
@@ -10653,7 +10663,8 @@ function updateProjectiles() {
             if (GAME.state === 'PLAY') {
                 let simon = GAME.entities.find(e => e.type === 'simon');
                 if (simon && Math.hypot(p.x-simon.x, p.y-simon.y) < 12) {
-                     GAME.simonHits++; AudioSys.sfx.angry(); GAME.projectiles.splice(i,1);
+                     GAME.simonHits++; GAME.simonHitsCount++; // Track for scoring penalty
+                     AudioSys.sfx.angry(); GAME.projectiles.splice(i,1);
                      if (GAME.simonHits <= 2) {
                          const warningIndex = GAME.simonHits - 1;
                          const currentGen = GAME.genId;
@@ -11425,46 +11436,49 @@ function updatePpeBuffsHud() {
 
 // Calculate current score in real-time during gameplay
 function calculateCurrentScore() {
-    // Base score starts at 0
-    let score = 0;
+    // Start with 5000 points
+    let score = 5000;
 
-    // Time bonus: calculated dynamically (longer time = lower bonus, but still positive)
+    // Time penalty: lose 100 points every 10 seconds
     const elapsedTime = GAME.startTime ? Math.floor((Date.now() - GAME.startTime) / 1000) : 0;
-    // Start with potential max time bonus, decreases over time
-    const timeBonus = Math.max(0, 3000 - Math.floor(elapsedTime * 20));
-    score += timeBonus;
+    const timePenalty = Math.floor(elapsedTime / 10) * 100;
+    score -= timePenalty;
 
-    // Hazards fixed bonus: 200 points per hazard
+    // Penalty for missed book throws: -200 each
+    score -= (GAME.booksMissed || 0) * 200;
+
+    // Penalty for hitting Simon: -500 each
+    score -= (GAME.simonHitsCount || 0) * 500;
+
+    // GAINS:
+    // Hazards fixed: +200 points each
     score += (GAME.issuesFixed || 0) * 200;
 
-    // Combat bonus: 10 points per book thrown, 25 per ops pushed
-    score += (GAME.booksFired || 0) * 10;
-    score += (GAME.opsPushed || 0) * 25;
+    // Combat bonus: +50 per book that hit, +100 per ops pushed
+    // booksFired tracks successful hits, so use that
+    score += (GAME.booksFired || 0) * 50;
+    score += (GAME.opsPushed || 0) * 100;
 
-    // Lives bonus: 100 points per life remaining
+    // Lives remaining: +100 points each
     score += Math.max(0, GAME.lives || 0) * 100;
 
     // Bonus score from collectibles in yard level
     score += GAME.score || 0;
 
-    return Math.floor(score);
+    // Minimum score is 0
+    return Math.max(0, Math.floor(score));
 }
 
 // Calculate final score when game is won
 function calculateFinalScore(bossDefeated) {
     let score = calculateCurrentScore();
 
-    // Base completion bonus
+    // Boss Kill bonus: +1000 points
     score += 1000;
 
-    // Mecha Jeff bonus: extra 2000 points
+    // Mecha Jeff bonus: +5000 points
     if (bossDefeated === "Mecha Jeff") {
-        score += 2000;
-    }
-
-    // Character difficulty bonus (Erwin with 1 life gets bonus)
-    if (GAME.selectedChar === "Erwin") {
-        score += 500;
+        score += 5000;
     }
 
     return Math.floor(score);
@@ -11517,6 +11531,8 @@ function prepareHighscoreEntry(bossDefeated) {
         hazardsFixed: GAME.issuesFixed,
         booksFired: GAME.booksFired,
         opsPushed: GAME.opsPushed,
+        booksMissed: GAME.booksMissed,
+        simonHitsCount: GAME.simonHitsCount,
         livesRemaining: Math.max(0, GAME.lives),
         bossDefeated: bossDefeated,
         region: GAME.region,
