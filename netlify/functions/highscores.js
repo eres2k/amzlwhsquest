@@ -112,8 +112,17 @@ exports.handler = async (event, context) => {
             const data = await store.get(HIGHSCORE_KEY, { type: "json" });
             let highscores = data || [];
 
-            // If no highscores exist, return the default set
-            if (highscores.length === 0) {
+            // Handle legacy double-encoded data (was stored with JSON.stringify)
+            if (typeof highscores === 'string') {
+                try {
+                    highscores = JSON.parse(highscores);
+                } catch {
+                    highscores = [];
+                }
+            }
+
+            // Validate data is an array
+            if (!Array.isArray(highscores) || highscores.length === 0) {
                 highscores = DEFAULT_HIGHSCORES;
             }
 
@@ -191,8 +200,18 @@ exports.handler = async (event, context) => {
             try {
                 const data = await store.get(HIGHSCORE_KEY, { type: "json" });
                 highscores = data || [];
-                // If store is empty, start with defaults so players compete with them
-                if (highscores.length === 0) {
+
+                // Handle legacy double-encoded data
+                if (typeof highscores === 'string') {
+                    try {
+                        highscores = JSON.parse(highscores);
+                    } catch {
+                        highscores = [];
+                    }
+                }
+
+                // If store is empty or invalid, start with defaults
+                if (!Array.isArray(highscores) || highscores.length === 0) {
                     highscores = [...DEFAULT_HIGHSCORES];
                 }
             } catch (e) {
@@ -207,8 +226,8 @@ exports.handler = async (event, context) => {
             // Keep only top scores
             highscores = highscores.slice(0, MAX_HIGHSCORES);
 
-            // Save updated highscores
-            await store.set(HIGHSCORE_KEY, JSON.stringify(highscores));
+            // Save updated highscores (store.setJSON handles serialization)
+            await store.setJSON(HIGHSCORE_KEY, highscores);
 
             // Find rank of the new entry
             const rank = highscores.findIndex(h => h.date === entry.date && h.name === entry.name);
