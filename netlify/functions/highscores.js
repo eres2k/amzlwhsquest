@@ -16,16 +16,16 @@ const MAX_HIGHSCORES = 10;
 
 // Default highscores to populate an empty leaderboard
 const DEFAULT_HIGHSCORES = [
-    { name: "BEZOS", character: "Erwin", bossDefeated: "Mecha Jeff", time: 142, score: 15000, date: 1734100000000, region: "EU" },
-    { name: "WHS-1", character: "Roman", bossDefeated: "Mecha Jeff", time: 178, score: 13200, date: 1734000000000, region: "EU" },
-    { name: "PRIME", character: "Carrie", bossDefeated: "Mecha Jeff", time: 195, score: 12100, date: 1733900000000, region: "EU" },
-    { name: "TPH99", character: "Joao", bossDefeated: "Jelena \"Jelly\"", time: 156, score: 9850, date: 1733800000000, region: "EU" },
-    { name: "AUDIT", character: "Nevena", bossDefeated: "Jelena \"Jelly\"", time: 168, score: 9200, date: 1733700000000, region: "EU" },
-    { name: "5SGOD", character: "Carrie", bossDefeated: "Regional OPS MGR", time: 145, score: 8500, date: 1733600000000, region: "EU" },
-    { name: "SAFE1", character: "Roman", bossDefeated: "Avetta Platform", time: 132, score: 7800, date: 1733500000000, region: "EU" },
-    { name: "DVI-1", character: "Erwin", bossDefeated: "Sebastian Sprigade", time: 128, score: 7100, date: 1733400000000, region: "EU" },
-    { name: "OSHA", character: "Nevena", bossDefeated: "Compliance Auditor", time: 115, score: 6500, date: 1733300000000, region: "EU" },
-    { name: "ANDON", character: "Joao", bossDefeated: "Labour Inspector", time: 105, score: 5900, date: 1733200000000, region: "EU" }
+    { name: "BEZOS", character: "Erwin", bossDefeated: "Mecha Jeff", time: 142, score: 6000, date: 1734100000000, region: "EU" },
+    { name: "WHS-1", character: "Roman", bossDefeated: "Mecha Jeff", time: 178, score: 5700, date: 1734000000000, region: "EU" },
+    { name: "PRIME", character: "Carrie", bossDefeated: "Mecha Jeff", time: 195, score: 5400, date: 1733900000000, region: "EU" },
+    { name: "TPH99", character: "Joao", bossDefeated: "Jelena \"Jelly\"", time: 156, score: 5100, date: 1733800000000, region: "EU" },
+    { name: "AUDIT", character: "Nevena", bossDefeated: "Jelena \"Jelly\"", time: 168, score: 4800, date: 1733700000000, region: "EU" },
+    { name: "5SGOD", character: "Carrie", bossDefeated: "Regional OPS MGR", time: 145, score: 4500, date: 1733600000000, region: "EU" },
+    { name: "SAFE1", character: "Roman", bossDefeated: "Avetta Platform", time: 132, score: 4200, date: 1733500000000, region: "EU" },
+    { name: "DVI-1", character: "Erwin", bossDefeated: "Sebastian Sprigade", time: 128, score: 3900, date: 1733400000000, region: "EU" },
+    { name: "OSHA", character: "Nevena", bossDefeated: "Compliance Auditor", time: 115, score: 3600, date: 1733300000000, region: "EU" },
+    { name: "ANDON", character: "Joao", bossDefeated: "Labour Inspector", time: 105, score: 3000, date: 1733200000000, region: "EU" }
 ];
 
 // Validate player name (max 5 chars, alphanumeric and some special chars)
