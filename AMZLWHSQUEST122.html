@@ -945,6 +945,7 @@
             <div class="hud-text" id="hud-layer" style="display:none;">
                 <div style="color:#ff4444; margin-bottom:5px;">LIFE <span id="life-val">❤️❤️❤️❤️❤️</span></div>
                 <div style="color:#44ff44;">HAZARDS: <span id="score-val">0/5</span></div>
+                <div style="color:#ffd700; margin-top:3px; font-size:8px;">SCORE: <span id="highscore-val">0</span></div>
                 <div style="color:#22d3ee; margin-top:3px; font-size:8px;">SP: <span id="sp-val">0</span></div>
                 <div style="color:#66aaff; margin-top:3px; font-size:8px;">REGION: <span id="region-val">EU</span></div>
                 <div id="ppe-buffs" style="color:#a855f7; margin-top:5px; font-size:7px; display:none;">PPE: <span id="ppe-buffs-val"></span></div>
@@ -6793,6 +6794,17 @@ const GAME = {
     // === FOOTPRINT/TIRE MARK SYSTEM ===
     footprints: [], // Trail marks left by characters (footprints or tire marks)
 
+    // === HIGHSCORE SYSTEM ===
+    highscores: [], // Cached highscores from server
+    highscoresLoaded: false, // Whether highscores have been fetched
+    currentScore: 0, // Real-time calculated score
+    nameEntry: '', // Player name entry (max 5 chars)
+    nameEntryIndex: 0, // Current character position in name entry
+    showingHighscores: false, // Whether viewing highscore table
+    pendingHighscore: null, // Score waiting to be submitted
+    highscoreSubmitted: false, // Whether current score was submitted
+    lastDefeatedBoss: null, // Track which boss was defeated for scoring
+
     // === QUARTERMASTER'S SAFETY LOCKER (PPE SHOP) ===
     safetyPoints: 0, // Currency earned by fixing hazards
     ppeUnlocked: [], // Array of unlocked PPE item IDs
@@ -7428,6 +7440,29 @@ window.addEventListener('keydown', e => {
     if(e.key==='a'||e.key==='ArrowLeft') KEYS.left=true;
     if(e.key==='d'||e.key==='ArrowRight') KEYS.right=true;
     if(e.code==='Space') { if(!KEYS.action) handleAction(); KEYS.action=true; }
+    if(e.key==='Enter') { handleAction(); }
+
+    // Name entry state input handling
+    if (GAME.state === 'NAME_ENTRY') {
+        if(e.key==='ArrowLeft' || e.key==='a') { handleNameEntryInput('left'); e.preventDefault(); }
+        else if(e.key==='ArrowRight' || e.key==='d') { handleNameEntryInput('right'); e.preventDefault(); }
+        else if(e.key==='ArrowUp' || e.key==='w') { handleNameEntryInput('up'); e.preventDefault(); }
+        else if(e.key==='ArrowDown' || e.key==='s') { handleNameEntryInput('down'); e.preventDefault(); }
+        else if(e.key==='Backspace' || e.key==='b' || e.key==='B') { handleNameEntryInput('back'); e.preventDefault(); }
+        else if(e.key==='Enter') { handleNameEntryInput('submit'); e.preventDefault(); }
+        return;
+    }
+
+    // Highscores state - H key to view from title
+    if (GAME.state === 'TITLE' && (e.key==='h' || e.key==='H')) {
+        fetchHighscores().then(() => {
+            GAME.state = 'HIGHSCORES';
+            GAME.stateTimer = 0;
+        });
+        e.preventDefault();
+        return;
+    }
+
     // Escape key to exit PPE dialog/shop
     if(e.key==='Escape') {
         if (GAME.state === 'PPE_DIALOG') {
@@ -8101,7 +8136,19 @@ function handleAction() {
         document.getElementById('boss-hud').style.display = 'none'; GAME.state = 'TITLE'; updateMusicForState();
     }
     else if (GAME.state === 'BEZOS_WIN') {
-        GAME.state = 'TITLE'; updateMusicForState();
+        // Transition to name entry for highscore
+        GAME.state = 'NAME_ENTRY';
+        GAME.stateTimer = 0;
+        nameEntryCharIndex = 0;
+    }
+    else if (GAME.state === 'NAME_ENTRY') {
+        // Handle character confirm with space, or continue after submission
+        handleNameEntryInput('space');
+    }
+    else if (GAME.state === 'HIGHSCORES') {
+        // Return to title from highscores
+        GAME.state = 'TITLE';
+        updateMusicForState();
     }
     else if (GAME.state === 'CREDITS') {
         // Allow skip after credits have been rolling for a while
@@ -8122,6 +8169,7 @@ function init() {
 
     generateAssets();
     loadGameProgress(); // Load saved PPE and safety points
+    fetchHighscores(); // Load highscores from server
     GAME.state = 'PRESS_START';
     // DON'T call updateMusicForState() here - it will fail due to autoplay policy
     // Music will start on first user interaction in handleAction()
@@ -9021,6 +9069,10 @@ function winBezosLevel() {
     document.getElementById('hud-layer').style.display = 'none';
     AudioSys.sfx.start();
     MusicSys.play('victory');
+    VibrationSystem.onVictory();
+
+    // Prepare highscore entry for Mecha Jeff victory
+    prepareHighscoreEntry('Mecha Jeff');
 }
 
 // === WAREHOUSE ATMOSPHERE UPDATE ===
@@ -9159,7 +9211,7 @@ function update() {
             if (isWin) {
                 // Use intro dialog with HAPPY Simon
                 showPerformanceEvalIntroDialog(`OUTSTANDING!\n${finalText}`, true);
-                GAME.nextState = 'CREDITS';
+                // nextState already set in winGame() to NAME_ENTRY
             } else {
                 // Use intro dialog with DISAPPOINTED Simon
                 showPerformanceEvalIntroDialog(finalText, false);
@@ -9168,6 +9220,11 @@ function update() {
         } else if (!ready && GAME.splashTimer <= fallbackTimer) {
             GAME.aiResultText = 'System could not load live review. Using cached performance log.';
         }
+        return;
+    }
+
+    // Name entry and highscore screens - just animate, input handled by keydown
+    if (GAME.state === 'NAME_ENTRY' || GAME.state === 'HIGHSCORES') {
         return;
     }
 
@@ -11282,11 +11339,16 @@ function triggerGameOver(reason) {
 }
 
 function winGame() {
-    AudioSys.sfx.start(); MusicSys.play('victory'); GAME.nextState = 'CREDITS'; GAME.creditsType = 'normal'; GAME.state = 'WIN_SPLASH'; GAME.splashTimer = 260; GAME.aiResultText = null; GAME.stateTimer = 0;
+    AudioSys.sfx.start(); MusicSys.play('victory'); GAME.nextState = 'NAME_ENTRY'; GAME.creditsType = 'normal'; GAME.state = 'WIN_SPLASH'; GAME.splashTimer = 260; GAME.aiResultText = null; GAME.stateTimer = 0;
     stopPortraitAnimation();
     VibrationSystem.onVictory(); // Vibrate on victory
     document.getElementById('boss-hud').style.display = 'none'; document.getElementById('dialog-box').style.display = 'none';
     document.getElementById('hud-layer').style.display = 'none';
+
+    // Prepare highscore entry with the boss that was defeated
+    const bossName = GAME.boss ? GAME.boss.originalName || GAME.boss.name : 'Unknown Boss';
+    prepareHighscoreEntry(bossName);
+
     const currentGen = GAME.genId; const time = Math.floor((Date.now() - GAME.startTime)/1000);
     const stats = { time, hazards: GAME.issuesFixed, books: GAME.booksFired, ops: GAME.opsPushed };
     const langInstWin = getLanguageInstruction();
@@ -11312,6 +11374,12 @@ function updateHud() {
     // Update region indicator
     const regionEl = document.getElementById('region-val');
     if (regionEl) regionEl.innerText = GAME.region;
+    // Update real-time score display
+    const hsEl = document.getElementById('highscore-val');
+    if (hsEl) {
+        GAME.currentScore = calculateCurrentScore();
+        hsEl.innerText = GAME.currentScore;
+    }
     // Update PPE buffs display
     updatePpeBuffsHud();
 }
@@ -11351,6 +11419,462 @@ function updatePpeBuffsHud() {
     } else {
         ppeBuffsEl.style.display = 'none';
     }
+}
+
+// === HIGHSCORE SYSTEM ===
+
+// Calculate current score in real-time during gameplay
+function calculateCurrentScore() {
+    // Base score starts at 0
+    let score = 0;
+
+    // Time bonus: calculated dynamically (longer time = lower bonus, but still positive)
+    const elapsedTime = GAME.startTime ? Math.floor((Date.now() - GAME.startTime) / 1000) : 0;
+    // Start with potential max time bonus, decreases over time
+    const timeBonus = Math.max(0, 3000 - Math.floor(elapsedTime * 20));
+    score += timeBonus;
+
+    // Hazards fixed bonus: 200 points per hazard
+    score += (GAME.issuesFixed || 0) * 200;
+
+    // Combat bonus: 10 points per book thrown, 25 per ops pushed
+    score += (GAME.booksFired || 0) * 10;
+    score += (GAME.opsPushed || 0) * 25;
+
+    // Lives bonus: 100 points per life remaining
+    score += Math.max(0, GAME.lives || 0) * 100;
+
+    // Bonus score from collectibles in yard level
+    score += GAME.score || 0;
+
+    return Math.floor(score);
+}
+
+// Calculate final score when game is won
+function calculateFinalScore(bossDefeated) {
+    let score = calculateCurrentScore();
+
+    // Base completion bonus
+    score += 1000;
+
+    // Mecha Jeff bonus: extra 2000 points
+    if (bossDefeated === "Mecha Jeff") {
+        score += 2000;
+    }
+
+    // Character difficulty bonus (Erwin with 1 life gets bonus)
+    if (GAME.selectedChar === "Erwin") {
+        score += 500;
+    }
+
+    return Math.floor(score);
+}
+
+// Fetch highscores from server
+async function fetchHighscores() {
+    try {
+        const response = await fetch('/.netlify/functions/highscores');
+        const data = await response.json();
+        if (data.success) {
+            GAME.highscores = data.highscores || [];
+            GAME.highscoresLoaded = true;
+        }
+    } catch (e) {
+        console.warn('Could not fetch highscores:', e);
+        GAME.highscores = [];
+    }
+}
+
+// Submit a new highscore to server
+async function submitHighscore(entry) {
+    try {
+        const response = await fetch('/.netlify/functions/highscores', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entry)
+        });
+        const data = await response.json();
+        if (data.success) {
+            GAME.highscores = data.highscores || [];
+            GAME.highscoreSubmitted = true;
+            return data;
+        }
+    } catch (e) {
+        console.warn('Could not submit highscore:', e);
+    }
+    return null;
+}
+
+// Prepare highscore entry after winning
+function prepareHighscoreEntry(bossDefeated) {
+    const time = Math.floor((Date.now() - GAME.startTime) / 1000);
+    const finalScore = calculateFinalScore(bossDefeated);
+
+    GAME.pendingHighscore = {
+        name: '',
+        character: GAME.selectedChar,
+        time: time,
+        hazardsFixed: GAME.issuesFixed,
+        booksFired: GAME.booksFired,
+        opsPushed: GAME.opsPushed,
+        livesRemaining: Math.max(0, GAME.lives),
+        bossDefeated: bossDefeated,
+        region: GAME.region,
+        score: finalScore
+    };
+
+    GAME.lastDefeatedBoss = bossDefeated;
+    GAME.nameEntry = '';
+    GAME.nameEntryIndex = 0;
+    GAME.highscoreSubmitted = false;
+}
+
+// Name entry character set
+const NAME_ENTRY_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- ';
+let nameEntryCharIndex = 0;
+
+// Handle name entry input
+function handleNameEntryInput(key) {
+    if (GAME.highscoreSubmitted) {
+        // After submission, any key advances to credits/highscores
+        if (key === 'space' || key === 'enter') {
+            if (GAME.lastDefeatedBoss === 'Mecha Jeff') {
+                GAME.state = 'HIGHSCORES';
+            } else {
+                GAME.state = 'CREDITS';
+            }
+        }
+        return;
+    }
+
+    if (key === 'left') {
+        nameEntryCharIndex = (nameEntryCharIndex - 1 + NAME_ENTRY_CHARS.length) % NAME_ENTRY_CHARS.length;
+        AudioSys.sfx.text();
+    } else if (key === 'right') {
+        nameEntryCharIndex = (nameEntryCharIndex + 1) % NAME_ENTRY_CHARS.length;
+        AudioSys.sfx.text();
+    } else if (key === 'up') {
+        nameEntryCharIndex = (nameEntryCharIndex - 10 + NAME_ENTRY_CHARS.length) % NAME_ENTRY_CHARS.length;
+        AudioSys.sfx.text();
+    } else if (key === 'down') {
+        nameEntryCharIndex = (nameEntryCharIndex + 10) % NAME_ENTRY_CHARS.length;
+        AudioSys.sfx.text();
+    } else if (key === 'space' || key === 'enter') {
+        // Confirm current character or submit
+        if (GAME.nameEntry.length < 5) {
+            const selectedChar = NAME_ENTRY_CHARS[nameEntryCharIndex];
+            GAME.nameEntry += selectedChar;
+            AudioSys.sfx.fix();
+
+            // Auto-submit when 5 characters reached
+            if (GAME.nameEntry.length === 5) {
+                submitPlayerHighscore();
+            }
+        }
+    } else if (key === 'back') {
+        // Delete last character
+        if (GAME.nameEntry.length > 0) {
+            GAME.nameEntry = GAME.nameEntry.slice(0, -1);
+            AudioSys.sfx.hurt();
+        }
+    } else if (key === 'submit') {
+        // Force submit with current name (if at least 1 char)
+        if (GAME.nameEntry.length > 0) {
+            submitPlayerHighscore();
+        }
+    }
+}
+
+// Submit player's highscore
+async function submitPlayerHighscore() {
+    if (!GAME.pendingHighscore || GAME.highscoreSubmitted) return;
+
+    GAME.pendingHighscore.name = GAME.nameEntry.trim() || 'ANON';
+    AudioSys.sfx.start();
+
+    const result = await submitHighscore(GAME.pendingHighscore);
+    if (result) {
+        GAME.highscoreSubmitted = true;
+        GAME.pendingHighscore.rank = result.rank;
+    }
+}
+
+// Draw name entry screen
+function drawNameEntry() {
+    const t = GAME.stateTimer;
+
+    // Victory background gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#0a102a');
+    gradient.addColorStop(0.5, '#0d1b4c');
+    gradient.addColorStop(1, '#000');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Animated stars
+    for (let i = 0; i < 20; i++) {
+        const x = (i * 37 + t * 0.5) % canvas.width;
+        const y = (i * 61) % canvas.height;
+        const twinkle = Math.sin(t * 0.1 + i) * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(255,255,255,${twinkle * 0.6})`;
+        ctx.fillRect(x, y, 1, 1);
+    }
+
+    ctx.textAlign = 'center';
+
+    // Title
+    ctx.font = '12px "Press Start 2P"';
+    ctx.fillStyle = '#ffd700';
+    ctx.shadowColor = '#ff9900';
+    ctx.shadowBlur = 10;
+    ctx.fillText('NEW HIGH SCORE!', canvas.width / 2, 30);
+    ctx.shadowBlur = 0;
+
+    // Display score
+    ctx.font = '16px "Press Start 2P"';
+    ctx.fillStyle = '#fff';
+    const score = GAME.pendingHighscore ? GAME.pendingHighscore.score : 0;
+    ctx.fillText(score.toString(), canvas.width / 2, 55);
+
+    // Stats display
+    ctx.font = '6px "Press Start 2P"';
+    ctx.fillStyle = '#94a3b8';
+    const time = GAME.pendingHighscore ? GAME.pendingHighscore.time : 0;
+    const mins = Math.floor(time / 60);
+    const secs = time % 60;
+    ctx.fillText(`TIME: ${mins}:${secs.toString().padStart(2, '0')}  CHAR: ${GAME.selectedChar.toUpperCase()}`, canvas.width / 2, 72);
+    ctx.fillText(`BOSS: ${GAME.lastDefeatedBoss || 'Unknown'}`, canvas.width / 2, 84);
+
+    if (GAME.highscoreSubmitted) {
+        // Show submission confirmation
+        ctx.font = '10px "Press Start 2P"';
+        ctx.fillStyle = '#22c55e';
+        ctx.fillText('SCORE SUBMITTED!', canvas.width / 2, 110);
+
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(`NAME: ${GAME.nameEntry}`, canvas.width / 2, 130);
+
+        if (GAME.pendingHighscore && GAME.pendingHighscore.rank) {
+            ctx.fillStyle = '#ffd700';
+            ctx.fillText(`RANK: #${GAME.pendingHighscore.rank}`, canvas.width / 2, 145);
+        }
+
+        // Continue prompt
+        const blink = Math.floor(t / 30) % 2 === 0;
+        if (blink) {
+            ctx.font = '7px "Press Start 2P"';
+            ctx.fillStyle = '#666';
+            ctx.fillText('[PRESS SPACE TO CONTINUE]', canvas.width / 2, 200);
+        }
+    } else {
+        // Name entry prompt
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillStyle = '#7dd3fc';
+        ctx.fillText('ENTER YOUR NAME', canvas.width / 2, 100);
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillStyle = '#666';
+        ctx.fillText('(5 CHARACTERS MAX)', canvas.width / 2, 112);
+
+        // Name display boxes
+        const boxSize = 20;
+        const totalWidth = 5 * boxSize + 4 * 4;
+        const startX = (canvas.width - totalWidth) / 2;
+
+        for (let i = 0; i < 5; i++) {
+            const bx = startX + i * (boxSize + 4);
+            const by = 122;
+
+            // Box background
+            ctx.fillStyle = i < GAME.nameEntry.length ? '#1e3a5f' : '#0a1525';
+            ctx.fillRect(bx, by, boxSize, boxSize);
+
+            // Box border
+            ctx.strokeStyle = i === GAME.nameEntry.length ? '#ffd700' : '#3b82f6';
+            ctx.lineWidth = i === GAME.nameEntry.length ? 2 : 1;
+            ctx.strokeRect(bx, by, boxSize, boxSize);
+
+            // Character in box
+            if (i < GAME.nameEntry.length) {
+                ctx.font = '12px "Press Start 2P"';
+                ctx.fillStyle = '#fff';
+                ctx.fillText(GAME.nameEntry[i], bx + boxSize / 2, by + 15);
+            } else if (i === GAME.nameEntry.length) {
+                // Show current selection with blink
+                const blink = Math.floor(t / 15) % 2 === 0;
+                if (blink) {
+                    ctx.font = '12px "Press Start 2P"';
+                    ctx.fillStyle = '#ffd700';
+                    ctx.fillText(NAME_ENTRY_CHARS[nameEntryCharIndex], bx + boxSize / 2, by + 15);
+                }
+            }
+        }
+
+        // Character selection wheel
+        ctx.font = '8px "Press Start 2P"';
+        const wheelY = 160;
+
+        // Show surrounding characters
+        for (let offset = -4; offset <= 4; offset++) {
+            const idx = (nameEntryCharIndex + offset + NAME_ENTRY_CHARS.length) % NAME_ENTRY_CHARS.length;
+            const charX = canvas.width / 2 + offset * 16;
+            const isSelected = offset === 0;
+
+            ctx.fillStyle = isSelected ? '#ffd700' : `rgba(148, 163, 184, ${1 - Math.abs(offset) * 0.2})`;
+            ctx.font = isSelected ? '10px "Press Start 2P"' : '8px "Press Start 2P"';
+
+            const char = NAME_ENTRY_CHARS[idx] === ' ' ? '_' : NAME_ENTRY_CHARS[idx];
+            ctx.fillText(char, charX, wheelY);
+        }
+
+        // Selection indicator
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2 - 6, wheelY - 15);
+        ctx.lineTo(canvas.width / 2 + 6, wheelY - 15);
+        ctx.lineTo(canvas.width / 2, wheelY - 10);
+        ctx.fill();
+
+        // Controls hint
+        ctx.font = '5px "Press Start 2P"';
+        ctx.fillStyle = '#666';
+        ctx.fillText('< > SELECT   SPACE CONFIRM   B DELETE', canvas.width / 2, 180);
+
+        // Submit early option
+        if (GAME.nameEntry.length > 0) {
+            const blink = Math.floor(t / 30) % 2 === 0;
+            if (blink) {
+                ctx.font = '6px "Press Start 2P"';
+                ctx.fillStyle = '#22c55e';
+                ctx.fillText('[PRESS START TO SUBMIT]', canvas.width / 2, 195);
+            }
+        }
+    }
+
+    ctx.textAlign = 'left';
+}
+
+// Draw highscore table
+function drawHighscores() {
+    const t = GAME.stateTimer;
+
+    // Dark background
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#050510');
+    gradient.addColorStop(0.5, '#0a1525');
+    gradient.addColorStop(1, '#000');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Animated grid lines
+    ctx.strokeStyle = 'rgba(34, 211, 238, 0.1)';
+    ctx.lineWidth = 1;
+    const offset = (t * 0.5) % 16;
+    for (let y = offset; y < canvas.height; y += 16) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+    }
+
+    ctx.textAlign = 'center';
+
+    // Title with glow
+    ctx.font = '12px "Press Start 2P"';
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = '#ffd700';
+    ctx.fillText('HALL OF COMPLIANCE', canvas.width / 2, 22);
+    ctx.shadowBlur = 0;
+
+    // Column headers
+    ctx.font = '5px "Press Start 2P"';
+    ctx.fillStyle = '#7dd3fc';
+    ctx.textAlign = 'left';
+    ctx.fillText('RK', 8, 38);
+    ctx.fillText('NAME', 28, 38);
+    ctx.fillText('SCORE', 70, 38);
+    ctx.fillText('CHAR', 115, 38);
+    ctx.fillText('TIME', 160, 38);
+    ctx.fillText('BOSS', 195, 38);
+
+    // Separator line
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillRect(5, 42, canvas.width - 10, 1);
+
+    // Highscore entries
+    const entries = GAME.highscores.slice(0, 10);
+    const rowHeight = 16;
+    const startY = 55;
+
+    entries.forEach((entry, i) => {
+        const y = startY + i * rowHeight;
+        const isNew = GAME.pendingHighscore && entry.date === GAME.pendingHighscore.date;
+
+        // Highlight new entry
+        if (isNew) {
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.1)';
+            ctx.fillRect(5, y - 10, canvas.width - 10, rowHeight);
+        }
+
+        ctx.font = '6px "Press Start 2P"';
+
+        // Rank
+        const rankColors = ['#ffd700', '#c0c0c0', '#cd7f32'];
+        ctx.fillStyle = i < 3 ? rankColors[i] : '#94a3b8';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${i + 1}.`, 8, y);
+
+        // Name
+        ctx.fillStyle = isNew ? '#ffd700' : '#fff';
+        ctx.fillText(entry.name || 'ANON', 28, y);
+
+        // Score
+        ctx.fillStyle = isNew ? '#ffd700' : '#22c55e';
+        ctx.fillText(entry.score.toString(), 70, y);
+
+        // Character (abbreviated)
+        ctx.fillStyle = '#a855f7';
+        const charAbbrev = (entry.character || '???').substring(0, 4).toUpperCase();
+        ctx.fillText(charAbbrev, 115, y);
+
+        // Time
+        ctx.fillStyle = '#7dd3fc';
+        const mins = Math.floor((entry.time || 0) / 60);
+        const secs = (entry.time || 0) % 60;
+        ctx.fillText(`${mins}:${secs.toString().padStart(2, '0')}`, 160, y);
+
+        // Boss (abbreviated)
+        ctx.fillStyle = '#f87171';
+        const bossAbbrev = (entry.bossDefeated || '???').substring(0, 6);
+        ctx.font = '5px "Press Start 2P"';
+        ctx.fillText(bossAbbrev, 195, y);
+    });
+
+    // Empty slots
+    for (let i = entries.length; i < 10; i++) {
+        const y = startY + i * rowHeight;
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillStyle = '#333';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${i + 1}.`, 8, y);
+        ctx.fillText('---', 28, y);
+        ctx.fillText('---', 70, y);
+        ctx.fillText('---', 115, y);
+        ctx.fillText('---', 160, y);
+        ctx.fillText('---', 195, y);
+    }
+
+    // Continue prompt
+    const blink = Math.floor(t / 30) % 2 === 0;
+    if (blink) {
+        ctx.textAlign = 'center';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillStyle = '#666';
+        ctx.fillText('[PRESS SPACE TO CONTINUE]', canvas.width / 2, 218);
+    }
+
+    ctx.textAlign = 'left';
 }
 
 // Helper function to start portrait talking animation
@@ -11546,6 +12070,13 @@ function closeIntroDialog() {
     AudioSys.sfx.step();
     document.getElementById('intro-portrait-window').style.display = 'none';
     GAME.state = GAME.nextState;
+
+    // If transitioning to name entry for highscore, initialize
+    if (GAME.state === 'NAME_ENTRY') {
+        GAME.stateTimer = 0;
+        nameEntryCharIndex = 0;
+        return;
+    }
 
     // If transitioning to credits, initialize immediately (before next draw call)
     if (GAME.state === 'CREDITS') {
@@ -15511,6 +16042,8 @@ function draw() {
     if (GAME.state === 'LOSE_SPLASH') { drawSnesSplash(false); return; }
     if (GAME.state === 'WIN_SPLASH') { drawSnesSplash(true); return; }
     if (GAME.state === 'GAMEOVER_SPLASH') { drawGameOverSplash(); return; }
+    if (GAME.state === 'NAME_ENTRY') { drawNameEntry(); return; }
+    if (GAME.state === 'HIGHSCORES') { drawHighscores(); return; }
 
     ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width, canvas.height);
     let dxShake = 0, dyShake = 0;
@@ -16120,16 +16653,21 @@ function draw() {
             ctx.fillText('PRESS SPACE', canvas.width / 2, 160);
         }
 
+        // Highscore hint
+        ctx.fillStyle = '#ffd700';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.fillText('[H] HIGHSCORES', canvas.width / 2, 175);
+
         // Decorative lines
         ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(40, 170, 176, 2);
+        ctx.fillRect(40, 182, 176, 2);
         ctx.fillStyle = '#22d3ee';
-        ctx.fillRect(60, 175, 136, 1);
+        ctx.fillRect(60, 186, 136, 1);
 
         // Credits with style
         ctx.fillStyle = '#64748b';
         ctx.font = '7px monospace';
-        ctx.fillText('CREATED BY ERWIN ESENER', canvas.width / 2, 190);
+        ctx.fillText('CREATED BY ERWIN ESENER', canvas.width / 2, 200);
         ctx.fillStyle = '#475569';
         ctx.font = '6px monospace';
         ctx.fillText('© 2024 ERWIN ESENER PRODUCTIONS', canvas.width / 2, 220);
