@@ -8768,7 +8768,7 @@ function advanceDefeatCutscene() {
     if (GAME.defeatCutscene.phase === 1) {
         // Phase 1: Boss speaks their defeat line
         const bossLine = GAME.defeatCutscene.bossLine || getBossDefeatLine(GAME.defeatCutscene.bossName);
-        const bossPortrait = GAME.defeatCutscene.bossSprite || GFX.entities.ops;
+        const bossPortrait = GFX.bossFaces[GAME.defeatCutscene.bossSprite] || GFX.bossFaces.boss_manager;
 
         GAME.shake = 10;
         showDialog(bossLine, GAME.defeatCutscene.bossName, bossPortrait, !!GAME.defeatCutscene.bossLine);
