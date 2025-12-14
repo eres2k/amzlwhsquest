@@ -16,16 +16,16 @@ const MAX_HIGHSCORES = 10;
 
 // Default highscores to populate an empty leaderboard
 const DEFAULT_HIGHSCORES = [
-    { name: "ERWIN", character: "Roman", bossDefeated: "Mecha Jeff", time: 185, score: 12450, date: 1702500000000, region: "EU" },
-    { name: "JELLY", character: "Nevena", bossDefeated: "Mecha Jeff", time: 210, score: 11800, date: 1702400000000, region: "EU" },
-    { name: "CHLOE", character: "Carrie", bossDefeated: "Mecha Jeff", time: 245, score: 10950, date: 1702300000000, region: "EU" },
-    { name: "MARCO", character: "Joao", bossDefeated: "Regional OPS MGR", time: 165, score: 8200, date: 1702200000000, region: "EU" },
-    { name: "SASHA", character: "Erwin", bossDefeated: "Jelena \"Jelly\"", time: 180, score: 7650, date: 1702100000000, region: "EU" },
-    { name: "FELIX", character: "Roman", bossDefeated: "Avetta Platform", time: 155, score: 7100, date: 1702000000000, region: "EU" },
-    { name: "NINA", character: "Carrie", bossDefeated: "Sebastian Sprigade", time: 140, score: 6850, date: 1701900000000, region: "EU" },
-    { name: "VLAD", character: "Joao", bossDefeated: "Compliance Auditor", time: 130, score: 6400, date: 1701800000000, region: "EU" },
-    { name: "MAYA", character: "Nevena", bossDefeated: "Labour Inspector", time: 120, score: 5950, date: 1701700000000, region: "EU" },
-    { name: "AXEL", character: "Erwin", bossDefeated: "Labour Inspector", time: 145, score: 5500, date: 1701600000000, region: "EU" }
+    { name: "BEZOS", character: "Erwin", bossDefeated: "Mecha Jeff", time: 142, score: 15000, date: 1734100000000, region: "EU" },
+    { name: "WHS-1", character: "Roman", bossDefeated: "Mecha Jeff", time: 178, score: 13200, date: 1734000000000, region: "EU" },
+    { name: "PRIME", character: "Carrie", bossDefeated: "Mecha Jeff", time: 195, score: 12100, date: 1733900000000, region: "EU" },
+    { name: "TPH99", character: "Joao", bossDefeated: "Jelena \"Jelly\"", time: 156, score: 9850, date: 1733800000000, region: "EU" },
+    { name: "AUDIT", character: "Nevena", bossDefeated: "Jelena \"Jelly\"", time: 168, score: 9200, date: 1733700000000, region: "EU" },
+    { name: "5SGOD", character: "Carrie", bossDefeated: "Regional OPS MGR", time: 145, score: 8500, date: 1733600000000, region: "EU" },
+    { name: "SAFE1", character: "Roman", bossDefeated: "Avetta Platform", time: 132, score: 7800, date: 1733500000000, region: "EU" },
+    { name: "DVI-1", character: "Erwin", bossDefeated: "Sebastian Sprigade", time: 128, score: 7100, date: 1733400000000, region: "EU" },
+    { name: "OSHA", character: "Nevena", bossDefeated: "Compliance Auditor", time: 115, score: 6500, date: 1733300000000, region: "EU" },
+    { name: "ANDON", character: "Joao", bossDefeated: "Labour Inspector", time: 105, score: 5900, date: 1733200000000, region: "EU" }
 ];
 
 // Validate player name (max 5 chars, alphanumeric and some special chars)
@@ -206,7 +206,7 @@ exports.handler = async (event, context) => {
             highscores = highscores.slice(0, MAX_HIGHSCORES);
 
             // Save updated highscores
-            await store.setJSON(HIGHSCORE_KEY, highscores);
+            await store.set(HIGHSCORE_KEY, JSON.stringify(highscores));
 
             // Find rank of the new entry
             const rank = highscores.findIndex(h => h.date === entry.date && h.name === entry.name);
