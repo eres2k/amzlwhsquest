@@ -2054,6 +2054,20 @@ function getLocalizedMechaJeffPhaseTaunts() {
     return MECHA_JEFF_PHASE_TAUNTS[region] || MECHA_JEFF_PHASE_TAUNTS.EN;
 }
 
+// Localized Security Activation message (shown when crossing first laser beam)
+const SECURITY_ACTIVATION_TEXTS = {
+    EN: { title: "AMAZON SECURITY ACTIVATED", subtitle: "Laser grid online!" },
+    AT: { title: "AMAZON SICHERHEIT AKTIVIERT", subtitle: "Lasergitter online!" },
+    DE: { title: "AMAZON SICHERHEIT AKTIVIERT", subtitle: "Lasergitter online!" },
+    NL: { title: "AMAZON BEVEILIGING GEACTIVEERD", subtitle: "Laserraster online!" }
+};
+
+// Helper to get localized security activation text
+function getLocalizedSecurityActivation() {
+    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    return SECURITY_ACTIVATION_TEXTS[region] || SECURITY_ACTIVATION_TEXTS.EN;
+}
+
 // === WAREHOUSE RANDOM EVENTS SYSTEM ===
 // One random event triggers per game with random timer
 const WAREHOUSE_EVENTS = {
@@ -8526,6 +8540,7 @@ function startYardLevel() {
         castleEntered: false, // Track if castle entry message shown
         inHallway: false, // Track if player entered the hallway
         hallwayEntered: false, // Track if hallway entry message shown
+        firstLaserTriggered: false, // Track if first laser beam was crossed (security activation message)
         throneRoomGreeted: false, // Track if throne room AI greeting was shown
         jeffAnimFrame: 0, // Animation frame for Jeff
         // Extended vehicle lanes - more challenging gauntlet with varied patterns (in yard section only)
@@ -9562,6 +9577,20 @@ function updateYardLevel() {
         // Update hallway laser barriers (only in hallway section, NOT in throne room)
         // Throne room is Y < hallwayStart - safe zone with no hazards
         const hallwayBoundary = y.hallwayStart;
+
+        // Trigger security activation message when first approaching laser barrier zone
+        if (y.castleLaserBarriers && !y.firstLaserTriggered && y.playerY >= hallwayBoundary) {
+            // Find the first laser barrier (highest Y value - first one player encounters from yard)
+            const firstBarrierY = Math.max(...y.castleLaserBarriers.map(b => b.y));
+            // Trigger when player gets within 60 pixels of the first barrier
+            if (y.playerY <= firstBarrierY + 60) {
+                y.firstLaserTriggered = true;
+                y.securityActivationTimer = 180; // Show for 3 seconds
+                AudioSys.sfx.alert();
+                GAME.flash = 8;
+            }
+        }
+
         if (y.castleLaserBarriers && y.playerY >= hallwayBoundary) {
             y.castleLaserBarriers.forEach(barrier => {
                 barrier.timer++;
@@ -9984,9 +10013,7 @@ function updateMechaBattle() {
             updateBossHud();
             GAME.projectiles.splice(i, 1);
             AudioSys.sfx.bossHit();
-            spawnFloatingText(m.x + 32, m.y + 12, 'HIT!', '#ff2e63');
-            // Damage number above boss head
-            spawnFloatingText(m.x + 32, m.y - 10, '-1', '#ffffff');
+            // Hit text markers removed for cleaner visuals during Mecha Jeff fight
 
             // Spawn hit particles
             for (let j = 0; j < 4; j++) {
@@ -11926,22 +11953,23 @@ function startBezosConfrontationDialogue() {
 function showNextBezosIntroDialogue() {
     const currentGen = GAME.genId;
     const scene = GAME.throneScene;
+    const langInst = getLanguageInstruction();
 
     // Dialogue steps: Bezos taunts, player responds, Bezos transforms
     const dialoguePrompts = [
         {
             speaker: "Jeff Bezos",
-            prompt: `You are Jeff Bezos, megalomaniac CEO sitting on your golden Amazon throne. A ${GAME.selectedChar} warehouse worker just survived your gauntlet. Deliver an arrogant opening taunt about how pathetic their attempt is. Reference Prime delivery or ownership principles. Max 25 words.`,
+            prompt: `You are Jeff Bezos, megalomaniac CEO sitting on your golden Amazon throne. A ${GAME.selectedChar} warehouse worker just survived your gauntlet. Deliver an arrogant opening taunt about how pathetic their attempt is. Reference Prime delivery or ownership principles. Max 25 words. ${langInst}`,
             category: "bezos_confrontation"
         },
         {
             speaker: GAME.selectedChar,
-            prompt: `You are ${GAME.selectedChar}, a brave warehouse worker confronting evil Jeff Bezos. Deliver a defiant one-liner about ending his reign of terror over workers. Be heroic and determined. Max 20 words.`,
+            prompt: `You are ${GAME.selectedChar}, a brave warehouse worker confronting evil Jeff Bezos. Deliver a defiant one-liner about ending his reign of terror over workers. Be heroic and determined. Max 20 words. ${langInst}`,
             category: "player_response"
         },
         {
             speaker: "Jeff Bezos",
-            prompt: `You are Jeff Bezos, enraged that a worker dares challenge you. Announce your transformation into your TRUE FORM - Mecha Jeff. Be dramatic, megalomaniacal, and terrifying. Reference your ultimate power. Max 25 words.`,
+            prompt: `You are Jeff Bezos, enraged that a worker dares challenge you. Announce your transformation into your TRUE FORM - Mecha Jeff. Be dramatic, megalomaniacal, and terrifying. Reference your ultimate power. Max 25 words. ${langInst}`,
             category: "bezos_transform"
         }
     ];
@@ -13001,6 +13029,45 @@ function drawYardLevel() {
         ctx.fillStyle = '#22c55e';
         ctx.fillText('START', barX + barWidth / 2, barY + barHeight + 10);
         ctx.textAlign = 'left';
+    }
+
+    // === SECURITY ACTIVATION FLASH MESSAGE ===
+    if (y && y.securityActivationTimer && y.securityActivationTimer > 0) {
+        y.securityActivationTimer--;
+        const secText = getLocalizedSecurityActivation();
+        const t = y.securityActivationTimer;
+
+        // Full screen red flash at the start
+        if (t > 160) {
+            const flashAlpha = (t - 160) / 20 * 0.4;
+            ctx.fillStyle = `rgba(220, 38, 38, ${flashAlpha})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Semi-transparent dark overlay
+        const overlayAlpha = Math.min(0.7, (180 - t) / 30);
+        ctx.fillStyle = `rgba(0, 0, 0, ${overlayAlpha * 0.5})`;
+        ctx.fillRect(0, canvas.height / 2 - 35, canvas.width, 70);
+
+        // Warning border
+        const borderFlash = Math.floor(t / 10) % 2 === 0 ? '#dc2626' : '#ff9900';
+        ctx.fillStyle = borderFlash;
+        ctx.fillRect(0, canvas.height / 2 - 35, canvas.width, 3);
+        ctx.fillRect(0, canvas.height / 2 + 32, canvas.width, 3);
+
+        // Main title
+        ctx.save();
+        ctx.textAlign = 'center';
+        const shake = Math.sin(t * 0.5) * 2;
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillStyle = '#dc2626';
+        ctx.fillText(secText.title, canvas.width / 2 + shake, canvas.height / 2 - 5);
+
+        // Subtitle
+        ctx.font = '5px "Press Start 2P"';
+        ctx.fillStyle = '#ff9900';
+        ctx.fillText(secText.subtitle, canvas.width / 2, canvas.height / 2 + 15);
+        ctx.restore();
     }
 }
 
