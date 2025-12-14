@@ -105,40 +105,42 @@ exports.handler = async (event, context) => {
         return { statusCode: 204, headers, body: "" };
     }
 
+    // GET - Retrieve highscores
+    if (event.httpMethod === "GET") {
+        try {
+            const store = getStore(HIGHSCORE_STORE_NAME);
+            const data = await store.get(HIGHSCORE_KEY, { type: "json" });
+            let highscores = data || [];
+
+            // If no highscores exist, return the default set
+            if (highscores.length === 0) {
+                highscores = DEFAULT_HIGHSCORES;
+            }
+
+            return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify({
+                    success: true,
+                    highscores: highscores.slice(0, MAX_HIGHSCORES)
+                })
+            };
+        } catch (e) {
+            // Store unavailable or error - return defaults (don't fail the request)
+            console.log("Highscore GET fallback to defaults:", e.message);
+            return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify({
+                    success: true,
+                    highscores: DEFAULT_HIGHSCORES
+                })
+            };
+        }
+    }
+
     try {
         const store = getStore(HIGHSCORE_STORE_NAME);
-
-        // GET - Retrieve highscores
-        if (event.httpMethod === "GET") {
-            try {
-                const data = await store.get(HIGHSCORE_KEY, { type: "json" });
-                let highscores = data || [];
-
-                // If no highscores exist, return the default set
-                if (highscores.length === 0) {
-                    highscores = DEFAULT_HIGHSCORES;
-                }
-
-                return {
-                    statusCode: 200,
-                    headers,
-                    body: JSON.stringify({
-                        success: true,
-                        highscores: highscores.slice(0, MAX_HIGHSCORES)
-                    })
-                };
-            } catch (e) {
-                // No highscores yet - return defaults
-                return {
-                    statusCode: 200,
-                    headers,
-                    body: JSON.stringify({
-                        success: true,
-                        highscores: DEFAULT_HIGHSCORES
-                    })
-                };
-            }
-        }
 
         // POST - Submit new highscore
         if (event.httpMethod === "POST") {
