@@ -1,0 +1,14 @@
+{
+  "name": "amzl-whs-quest",
+  "version": "1.0.0",
+  "description": "AMZL WHS Coordinator Quest - A safety training game",
+  "main": "AMZLWHSQUEST122.html",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^7.0.0"
+  },
+  "author": "Erwin Esener",
+  "license": "MIT"
+}
