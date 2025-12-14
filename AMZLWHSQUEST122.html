@@ -18372,6 +18372,60 @@ function draw() {
         ctx.restore();
         return;
     }
+    // Draw boss defeat cutscene background during dialog
+    if (GAME.state === 'DIALOG' && GAME.dialogBackgroundState === 'BOSS_DEFEAT_CUTSCENE') {
+        // Dark dramatic background
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw the boss arena tiles dimmed
+        const cx = GAME.camera.x; const cy = GAME.camera.y;
+        ctx.globalAlpha = 0.4;
+        for (let y = 0; y < MAP_H; y++) {
+            for (let x = 0; x < MAP_W; x++) {
+                const tile = GAME.map[y][x];
+                const dx = x * TILE_SIZE - cx; const dy = y * TILE_SIZE - cy;
+                if (dx < -16 || dx > 272 || dy < -16 || dy > 272) continue;
+                if (tile === 0) {
+                    ctx.fillStyle = '#1a1a2e';
+                    ctx.fillRect(dx, dy, TILE_SIZE, TILE_SIZE);
+                }
+            }
+        }
+        ctx.globalAlpha = 1;
+
+        // Draw defeated boss (fading/flashing)
+        if (GAME.boss && GAME.defeatCutscene) {
+            const bossX = GAME.boss.x - cx;
+            const bossY = GAME.boss.y - cy;
+            const flashAlpha = Math.sin(GAME.defeatCutscene.timer * 0.3) * 0.3 + 0.5;
+            ctx.globalAlpha = flashAlpha;
+            const bossImg = GAME.boss.sprite && GFX[GAME.boss.sprite] ? GFX[GAME.boss.sprite] : GFX.boss_manager;
+            ctx.drawImage(bossImg, bossX, bossY, 32, 32);
+            ctx.globalAlpha = 1;
+        }
+
+        // Draw player character
+        if (GAME.player) {
+            const px = GAME.player.x - cx;
+            const py = GAME.player.y - cy;
+            const charImg = GFX.chars[GAME.selectedChar] || GFX.chars.Carrie;
+            ctx.drawImage(charImg, px, py, 16, 16);
+        }
+
+        // Draw defeat cutscene effects
+        if (GAME.defeatCutscene) {
+            drawDefeatCutscene();
+        }
+
+        // Continue updating the cutscene animation during dialog
+        if (GAME.defeatCutscene) {
+            updateDefeatCutscene();
+        }
+
+        ctx.restore();
+        return;
+    }
     if (GAME.state === 'MECHA_TRANSFORM') { drawMechaTransform(); ctx.restore(); return; }
     if (GAME.state === 'SIMON_MECHA_TRANSFORM') { drawSimonMechaTransform(); ctx.restore(); return; }
     if (GAME.state === 'MECHA_SIMON_SPLASH') { drawMechaSimonSplash(); ctx.restore(); return; }
