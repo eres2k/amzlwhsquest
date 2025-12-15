@@ -2243,8 +2243,8 @@ function queueNextWarehouseEvent(isFirst = false) {
     const eventKeys = Object.keys(WAREHOUSE_EVENTS);
     const selectedEvent = WAREHOUSE_EVENTS[eventKeys[Math.floor(Math.random() * eventKeys.length)]];
 
-    // Random trigger time between 30-90 seconds (1800-5400 frames)
-    const triggerTime = 1800 + Math.floor(Math.random() * 3600);
+    // Random trigger time between 15-45 seconds (900-2700 frames)
+    const triggerTime = 900 + Math.floor(Math.random() * 1800);
 
     GAME.warehouseEvent = {
         type: selectedEvent,
@@ -12653,8 +12653,11 @@ async function fetchHighscores() {
     }
 }
 
-// Submit a new highscore to server
-async function submitHighscore(entry) {
+// Submit a new highscore to server with retry logic
+async function submitHighscore(entry, retryCount = 0) {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAYS = [1000, 2000, 4000]; // Exponential backoff
+
     try {
         const response = await fetch('/.netlify/functions/highscores', {
             method: 'POST',
@@ -12666,12 +12669,24 @@ async function submitHighscore(entry) {
             GAME.highscores = data.highscores || [];
             GAME.highscoreSubmitted = true;
             return data;
+        } else if (data.retryable && retryCount < MAX_RETRIES) {
+            // Storage temporarily unavailable - retry with backoff
+            console.log(`Highscore save retry ${retryCount + 1}/${MAX_RETRIES}...`);
+            await new Promise(r => setTimeout(r, RETRY_DELAYS[retryCount]));
+            return submitHighscore(entry, retryCount + 1);
         } else {
             // Server returned an error but we can still continue
             console.warn('Highscore submission failed:', data.error);
+            GAME.highscores = data.highscores || [];
             return { success: false, submitted: false };
         }
     } catch (e) {
+        if (retryCount < MAX_RETRIES) {
+            // Network error - retry with backoff
+            console.log(`Network retry ${retryCount + 1}/${MAX_RETRIES}...`);
+            await new Promise(r => setTimeout(r, RETRY_DELAYS[retryCount]));
+            return submitHighscore(entry, retryCount + 1);
+        }
         console.warn('Could not submit highscore:', e);
         // Network error - allow player to continue anyway
         return { success: false, submitted: false, networkError: true };
@@ -13616,8 +13631,10 @@ ${langInst}`;
             }
             GAME.hazardModal.loading = false;
 
-            // Speak only the summary (not the full details or fines)
-            speakTTS(`${GAME.hazardModal.summary}`, "Simon");
+            // Speak regulation citation and summary (keep brief for max length)
+            const reg = GAME.hazardModal.regulation;
+            const lawQuote = reg && reg !== 'N/A' ? `Per ${reg}: ` : '';
+            speakTTS(`${lawQuote}${GAME.hazardModal.summary}`, "Simon");
         })
         .catch(() => {
             if (GAME.genId !== currentGen || GAME.state !== 'HAZARD_DETAIL_MODAL') return;
@@ -13635,6 +13652,11 @@ ${langInst}`;
                 GAME.hazardModal.penalty = 'Varies by jurisdiction';
             }
             GAME.hazardModal.loading = false;
+
+            // Speak regulation citation and summary (keep brief for max length)
+            const reg = GAME.hazardModal.regulation;
+            const lawQuote = reg && reg !== 'N/A' ? `Per ${reg}: ` : '';
+            speakTTS(`${lawQuote}${GAME.hazardModal.summary}`, "Simon");
         });
 }
 

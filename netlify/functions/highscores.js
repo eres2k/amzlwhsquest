@@ -252,6 +252,23 @@ exports.handler = async (event, context) => {
         // Find rank of the new entry
         const rank = highscores.findIndex(h => h.date === entry.date && h.name === entry.name);
 
+        // If not persisted, return error so client can retry
+        if (!saved) {
+            return {
+                statusCode: 503,
+                headers,
+                body: JSON.stringify({
+                    success: false,
+                    error: "Storage temporarily unavailable",
+                    entry: entry,
+                    rank: rank >= 0 ? rank + 1 : null,
+                    highscores: highscores,
+                    persisted: false,
+                    retryable: true
+                })
+            };
+        }
+
         return {
             statusCode: 200,
             headers,
@@ -261,7 +278,7 @@ exports.handler = async (event, context) => {
                 rank: rank >= 0 ? rank + 1 : null,
                 isHighscore: rank >= 0 && rank < MAX_HIGHSCORES,
                 highscores: highscores,
-                persisted: saved // Let client know if score was persisted
+                persisted: true
             })
         };
     }
