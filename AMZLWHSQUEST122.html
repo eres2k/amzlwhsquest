@@ -285,9 +285,9 @@ const CHAR_DATA = {
         backstory: "Precision hawk who spots crooked tape from 50 meters and breathes calm into chaotic clusters.",
         attack: "Label Maker Burst",
         speed: 1.5,
-        lives: 3,
+        lives: 2,
         ability: "PRECISION FOCUS",
-        abilityDesc: "2x damage, 30% slower reload"
+        abilityDesc: "2x Damage, 2 Lives"
     },
     "Nevena": {
         role: "The Oracle",
@@ -296,7 +296,7 @@ const CHAR_DATA = {
         speed: 1.5,
         lives: 4,
         ability: "FORESIGHT",
-        abilityDesc: "Longer invincibility after taking damage"
+        abilityDesc: "30% Longer Invincibility, 4 Lives"
     },
     "Joao": {
         role: "The Siren",
@@ -305,7 +305,7 @@ const CHAR_DATA = {
         speed: 1.5,
         lives: 3,
         ability: "CAFFEINE RUSH",
-        abilityDesc: "Attacks have faster cooldown"
+        abilityDesc: "35% Faster Cooldown, 3 Lives"
     },
     "Roman": {
         role: "The Ghost",
@@ -314,7 +314,7 @@ const CHAR_DATA = {
         speed: 1.5,
         lives: 3,
         ability: "PHANTOM STEP",
-        abilityDesc: "Hazards have smaller collision radius"
+        abilityDesc: "40% Smaller Hitbox, 3 Lives"
     },
     "Erwin": {
         role: "The Manager",
@@ -323,7 +323,7 @@ const CHAR_DATA = {
         speed: 1.95,
         lives: 1,
         ability: "TESLA RUSH",
-        abilityDesc: "1 life but 30% faster movement"
+        abilityDesc: "30% Faster, 1 Life"
     }
 };
 
@@ -1454,6 +1454,8 @@ function startEventEffects(eventType) {
         case 'PRIME_DAY':
             // Prime Day chaos: Many runners, falling packages, OPS everywhere
             GAME.primeDayActive = true;
+            // Initialize package storm shadows array (like Mecha Jeff Phase 2)
+            GAME.warehouseEvent.primeDayShadows = [];
             // Spawn 8 runners
             for (let i = 0; i < 8; i++) {
                 const rx = 50 + Math.random() * (MAP_W * TILE_SIZE - 100);
@@ -1535,31 +1537,46 @@ function updateEventEffects(eventType) {
             break;
 
         case 'PRIME_DAY':
-            // PRIME PACKAGE STORM - Frequent screen shake and falling packages
+            // PRIME PACKAGE STORM - Uses shadows like Mecha Jeff Phase 2
             if (Math.random() < 0.1) {
                 GAME.shake = Math.max(GAME.shake, 5);
             }
-            // Spawn falling package projectiles more frequently (every 15 frames = 4 per second)
-            if (GAME.warehouseEvent.timer % 15 === 0) {
-                // Spawn 2-3 packages at once for a real "storm" effect
-                const packagesToSpawn = 2 + Math.floor(Math.random() * 2);
-                for (let i = 0; i < packagesToSpawn; i++) {
-                    const targetX = 30 + Math.random() * (MAP_W * TILE_SIZE - 60);
-                    GAME.projectiles.push({
-                        type: 'fallingPackage',
-                        x: targetX,
-                        y: -20 - Math.random() * 40,
-                        vx: (Math.random() - 0.5) * 1,
-                        vy: 2.0 + Math.random() * 1.5,
-                        life: 120,
-                        primePackage: true,
-                        rotation: Math.random() * Math.PI * 2,
-                        rotSpeed: (Math.random() - 0.5) * 0.2
+
+            // Spawn shadow warnings (like Mecha Jeff) every 25 frames
+            if (GAME.warehouseEvent.timer % 25 === 0) {
+                const shadowsToSpawn = 2 + Math.floor(Math.random() * 2);
+                for (let i = 0; i < shadowsToSpawn; i++) {
+                    // Target near player with some randomness
+                    const targetX = GAME.player.x + (Math.random() - 0.5) * 120;
+                    GAME.warehouseEvent.primeDayShadows.push({
+                        x: Math.max(20, Math.min(MAP_W * TILE_SIZE - 40, targetX)),
+                        timer: 45 // Warning time before package drops
                     });
                 }
-                // Small screen shake when packages spawn
-                GAME.shake = Math.max(GAME.shake, 3);
             }
+
+            // Update shadows and spawn packages when timer expires (like Mecha Jeff)
+            for (let i = GAME.warehouseEvent.primeDayShadows.length - 1; i >= 0; i--) {
+                GAME.warehouseEvent.primeDayShadows[i].timer--;
+                if (GAME.warehouseEvent.primeDayShadows[i].timer <= 0) {
+                    const sx = GAME.warehouseEvent.primeDayShadows[i].x;
+                    // Spawn the actual falling package
+                    GAME.projectiles.push({
+                        type: 'fallingPackage',
+                        x: sx,
+                        y: -16,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: 1.8,
+                        life: 200,
+                        primePackage: true,
+                        rotation: 0
+                    });
+                    GAME.warehouseEvent.primeDayShadows.splice(i, 1);
+                    AudioSys.sfx.throw();
+                    GAME.shake = Math.max(GAME.shake, 3);
+                }
+            }
+
             // Respawn runners if too few (reduced count for shorter event)
             const primeDayRunners = GAME.entities.filter(e => e.primeDay && e.type === 'runner').length;
             if (primeDayRunners < 3 && Math.random() < 0.03) {
@@ -8964,9 +8981,9 @@ function updateYardPowerUps() {
             GAME.flash = 12;
             p.x = 128;
             p.y = 200;
-            spawnFloatingText(p.x, p.y - 20, "FORKLIFT!", "#fbbf24");
+            spawnFloatingText(p.x, p.y - 20, getLocalizedText('forklift'), "#fbbf24");
             if (GAME.lives <= 0) {
-                triggerGameOver("RUN OVER BY FORKLIFT!");
+                triggerGameOver(getLocalizedText('run_over_by_forklift'));
             }
         }
     });
@@ -9400,8 +9417,8 @@ function updateYardLevel() {
                 y.playerY = y.startY;
                 y.inCastle = false;
                 y.cameraY = Math.max(0, y.height - canvas.height);
-                spawnFloatingText(y.playerX, y.playerY - 20, "FORKLIFT! NO PEDESTRIANS!", "#ff4444");
-                if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver('FORKLIFT INCIDENT!'); return; }
+                spawnFloatingText(y.playerX, y.playerY - 20, getLocalizedText('forklift_no_pedestrians'), "#ff4444");
+                if (GAME.lives <= 0 && !GAME.gameOverTriggered) { triggerGameOver(getLocalizedText('forklift_incident')); return; }
             }
         }
     }
@@ -11134,6 +11151,30 @@ const UI_TEXT = {
         'DE': '< PFEILE AUSWÄHLEN > | LEERTASTE START',
         'AT': '< PFEILE AUSWÄHLEN > | LEERTASTE START',
         'NL': '< PIJLEN BLADEREN > | SPATIE STARTEN'
+    },
+    'forklift': {
+        'EN': 'FORKLIFT!',
+        'DE': 'STAPLER!',
+        'AT': 'STAPLER!',
+        'NL': 'VORKHEFTRUCK!'
+    },
+    'forklift_no_pedestrians': {
+        'EN': 'FORKLIFT! NO PEDESTRIANS!',
+        'DE': 'STAPLER! KEINE FUSSGÄNGER!',
+        'AT': 'STAPLER! KEINE FUSSGÄNGER!',
+        'NL': 'VORKHEFTRUCK! GEEN VOETGANGERS!'
+    },
+    'forklift_incident': {
+        'EN': 'FORKLIFT INCIDENT!',
+        'DE': 'STAPLER-UNFALL!',
+        'AT': 'STAPLER-UNFALL!',
+        'NL': 'VORKHEFTRUCK INCIDENT!'
+    },
+    'run_over_by_forklift': {
+        'EN': 'RUN OVER BY FORKLIFT!',
+        'DE': 'VOM STAPLER ÜBERFAHREN!',
+        'AT': 'VOM STAPLER ÜBERFAHREN!',
+        'NL': 'OVERREDEN DOOR VORKHEFTRUCK!'
     }
 };
 
@@ -19473,6 +19514,30 @@ function draw() {
             ctx.fillStyle = 'rgba(255, 100, 50, 0.15)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
+    }
+
+    // === PRIME DAY PACKAGE STORM: Draw shadow warnings (like Mecha Jeff) ===
+    if (GAME.primeDayActive && GAME.warehouseEvent && GAME.warehouseEvent.primeDayShadows && GAME.state === 'PLAY') {
+        GAME.warehouseEvent.primeDayShadows.forEach(s => {
+            const pulse = Math.sin(s.timer * 0.2) * 0.3 + 0.5;
+            ctx.fillStyle = `rgba(239, 68, 68, ${pulse})`;
+            ctx.beginPath();
+            // Draw shadow ellipse on ground (screen coords accounting for camera)
+            const screenX = s.x - GAME.camera.x;
+            const groundY = GAME.player.y + 12 - GAME.camera.y; // Near player ground level
+            ctx.ellipse(screenX + 8, Math.min(groundY + 8, canvas.height - 20), 12 - s.timer * 0.15, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Warning X mark
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            const xY = Math.min(groundY, canvas.height - 28);
+            ctx.moveTo(screenX + 2, xY - 6);
+            ctx.lineTo(screenX + 14, xY + 6);
+            ctx.moveTo(screenX + 14, xY - 6);
+            ctx.lineTo(screenX + 2, xY + 6);
+            ctx.stroke();
+        });
     }
 
     if (GAME.flash > 0) { ctx.globalAlpha = GAME.flash / 10; ctx.fillStyle = 'white'; ctx.fillRect(0,0,canvas.width, canvas.height); ctx.globalAlpha = 1.0; }

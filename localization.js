@@ -1196,7 +1196,7 @@ const LOCALIZATION = {
 // ============================================================================
 
 const HAZARD_NAMES = {
-    // === ERGONOMIC HAZARDS ===
+    // === ERGONOMIC HAZARDS - REPETITIVE MOTION ===
     "Repetitive Stow Motion (1000+ scans/shift)": {
         'EN': "Repetitive Stow Motion (1000+ scans/shift)",
         'DE': "Repetitive Stau-Bewegung (1000+ Scans/Schicht)",
@@ -1215,25 +1215,151 @@ const HAZARD_NAMES = {
         'AT': "Gleiche Bewegung beim Verstauen in Taschen",
         'NL': "Zelfde-Beweging Stouwen in Tassen"
     },
+    "High-Rate Pick Without Rotation": {
+        'EN': "High-Rate Pick Without Rotation",
+        'DE': "Hochfrequentes Picken ohne Rotation",
+        'AT': "Hochfrequentes Picken ohne Rotation",
+        'NL': "Hoog-Tempo Picken Zonder Rotatie"
+    },
+    "Carpal Tunnel Risk Station": {
+        'EN': "Carpal Tunnel Risk Station",
+        'DE': "Station mit Karpaltunnelsyndrom-Risiko",
+        'AT': "Station mit Karpaltunnelsyndrom-Risiko",
+        'NL': "Carpaal Tunnel Risico Station"
+    },
+
+    // === ERGONOMIC HAZARDS - AWKWARD POSTURES ===
+    "Top Shelf Overreach (Stow Bag)": {
+        'EN': "Top Shelf Overreach (Stow Bag)",
+        'DE': "Überstrecken zum obersten Regal (Stau-Tasche)",
+        'AT': "Überstrecken zum obersten Regal (Stau-Tasche)",
+        'NL': "Bovenste Plank Overreiken (Stouw Tas)"
+    },
+    "Bottom Shelf Repeated Bending": {
+        'EN': "Bottom Shelf Repeated Bending",
+        'DE': "Wiederholtes Bücken zum unteren Regal",
+        'AT': "Wiederholtes Bücken zum unteren Regal",
+        'NL': "Onderste Plank Herhaald Bukken"
+    },
+    "Twisted Spine While Scanning": {
+        'EN': "Twisted Spine While Scanning",
+        'DE': "Verdrehte Wirbelsäule beim Scannen",
+        'AT': "Verdrehte Wirbelsäule beim Scannen",
+        'NL': "Gedraaide Ruggengraat Tijdens Scannen"
+    },
+    "Shoulder-Height Stowing Station": {
+        'EN': "Shoulder-Height Stowing Station",
+        'DE': "Station auf Schulterhöhe",
+        'AT': "Station auf Schulterhöhe",
+        'NL': "Schouder-Hoogte Stouw Station"
+    },
+    "Kneeling Without Knee Pads": {
+        'EN': "Kneeling Without Knee Pads",
+        'DE': "Knien ohne Knieschoner",
+        'AT': "Knien ohne Knieschoner",
+        'NL': "Knielen Zonder Kniebeschermers"
+    },
+    "Standing Mat Missing At Station": {
+        'EN': "Standing Mat Missing At Station",
+        'DE': "Fehlende Stehmatte an Station",
+        'AT': "Fehlende Stehmatte an Station",
+        'NL': "Stamat Ontbreekt Bij Station"
+    },
+
+    // === ERGONOMIC HAZARDS - HEAVY LIFTING ===
+    "Non-Con Item (Dog Food 20kg+)": {
+        'EN': "Non-Con Item (Dog Food 20kg+)",
+        'DE': "Nicht-Förderbares Teil (Hundefutter 20kg+)",
+        'AT': "Nicht-Förderbares Teil (Hundefutter 20kg+)",
+        'NL': "Non-Con Item (Hondenvoer 20kg+)"
+    },
+    "Oversized Furniture Solo Lift": {
+        'EN': "Oversized Furniture Solo Lift",
+        'DE': "Übergroße Möbel alleine heben",
+        'AT': "Übergroße Möbel alleine heben",
+        'NL': "Oversized Meubels Solo Tillen"
+    },
     "Heavy Package Without Team Lift": {
         'EN': "Heavy Package Without Team Lift",
         'DE': "Schweres Paket ohne Teamheben",
         'AT': "Schweres Paket ohne Teamheben",
         'NL': "Zwaar Pakket Zonder Team Tillen"
     },
+    "Water Cases Stacked High": {
+        'EN': "Water Cases Stacked High",
+        'DE': "Wasserkisten hoch gestapelt",
+        'AT': "Wasserkisten hoch gestapelt",
+        'NL': "Waterkratten Hoog Gestapeld"
+    },
+    "Cat Litter Bucket Solo Carry": {
+        'EN': "Cat Litter Bucket Solo Carry",
+        'DE': "Katzenstreu-Eimer alleine tragen",
+        'AT': "Katzenstreu-Eimer alleine tragen",
+        'NL': "Kattenbakvulling Emmer Solo Dragen"
+    },
+    "Exercise Equipment Over 23kg": {
+        'EN': "Exercise Equipment Over 23kg",
+        'DE': "Fitnessgeräte über 23kg",
+        'AT': "Fitnessgeräte über 23kg",
+        'NL': "Fitnessapparatuur Boven 23kg"
+    },
+
+    // === ERGONOMIC HAZARDS - PUSHING/PULLING ===
     "Go-Cart With Bad Wheels (200kg+)": {
         'EN': "Go-Cart With Bad Wheels (200kg+)",
         'DE': "Gitterwagen mit defekten Rädern (200kg+)",
         'AT': "Gitterwagen mit defekten Rädern (200kg+)",
         'NL': "Rolcontainer met Slechte Wielen (200kg+)"
     },
+    "Heavy Cage High Rolling Resistance": {
+        'EN': "Heavy Cage High Rolling Resistance",
+        'DE': "Schwerer Käfig hoher Rollwiderstand",
+        'AT': "Schwerer Käfig hoher Rollwiderstand",
+        'NL': "Zware Kooi Hoge Rolweerstand"
+    },
+    "Stuck Pallet Jack Wheels": {
+        'EN': "Stuck Pallet Jack Wheels",
+        'DE': "Blockierte Hubwagenräder",
+        'AT': "Blockierte Hubwagenräder",
+        'NL': "Vastzittende Palletwagen Wielen"
+    },
+    "Overloaded Cart Exceeding Limit": {
+        'EN': "Overloaded Cart Exceeding Limit",
+        'DE': "Überladener Wagen überschreitet Limit",
+        'AT': "Überladener Wagen überschreitet Limit",
+        'NL': "Overbeladen Kar Overschrijdt Limiet"
+    },
+    "Cage Door Jamming On Floor": {
+        'EN': "Cage Door Jamming On Floor",
+        'DE': "Käfigtür klemmt am Boden",
+        'AT': "Käfigtür klemmt am Boden",
+        'NL': "Kooi Deur Klemt Op Vloer"
+    },
+    "Manual Pallet Movement No PPE": {
+        'EN': "Manual Pallet Movement No PPE",
+        'DE': "Manuelle Palettenbewegung ohne PSA",
+        'AT': "Manuelle Palettenbewegung ohne PSA",
+        'NL': "Handmatige Pallet Beweging Zonder PBM"
+    },
 
-    // === CONVEYOR HAZARDS ===
+    // === CONVEYOR & MACHINERY HAZARDS ===
     "Nip Point At Drive Roller": {
         'EN': "Nip Point At Drive Roller",
         'DE': "Quetschstelle an Antriebsrolle",
         'AT': "Quetschstelle an Antriebsrolle",
         'NL': "Knijppunt Bij Aandrijfrol"
+    },
+    "Pinch Point Belt Gap Exposed": {
+        'EN': "Pinch Point Belt Gap Exposed",
+        'DE': "Klemmstelle Bandlücke freigelegt",
+        'AT': "Klemmstelle Bandlücke freigelegt",
+        'NL': "Knijppunt Band Opening Blootgesteld"
+    },
+    "Jam Breaking While Belt Running": {
+        'EN': "Jam Breaking While Belt Running",
+        'DE': "Störung beheben während Band läuft",
+        'AT': "Störung beheben während Band läuft",
+        'NL': "Storing Oplossen Terwijl Band Draait"
     },
     "LOTO Violation At Conveyor": {
         'EN': "LOTO Violation At Conveyor",
@@ -1247,13 +1373,61 @@ const HAZARD_NAMES = {
         'AT': "Fehlende Schutzabdeckung am Band",
         'NL': "Ontbrekende Veiligheidsafscherming Op Band"
     },
+    "Package Falling From Overhead Chute": {
+        'EN': "Package Falling From Overhead Chute",
+        'DE': "Paket fällt von Überkopfrutsche",
+        'AT': "Paket fällt von Überkopfrutsche",
+        'NL': "Pakket Valt Van Bovenliggende Goot"
+    },
+    "Loose Clothing Near Moving Parts": {
+        'EN': "Loose Clothing Near Moving Parts",
+        'DE': "Lose Kleidung nahe beweglichen Teilen",
+        'AT': "Lose Kleidung nahe beweglichen Teilen",
+        'NL': "Losse Kleding Nabij Bewegende Delen"
+    },
+    "Hair/Lanyard Entanglement Risk": {
+        'EN': "Hair/Lanyard Entanglement Risk",
+        'DE': "Risiko Haar/Schlüsselband Verheddern",
+        'AT': "Risiko Haar/Schlüsselband Verheddern",
+        'NL': "Haar/Lanyard Verstrikking Risico"
+    },
+    "E-Stop Out Of Reach": {
+        'EN': "E-Stop Out Of Reach",
+        'DE': "Not-Aus außer Reichweite",
+        'AT': "Not-Aus außer Reichweite",
+        'NL': "Noodstop Buiten Bereik"
+    },
+    "Sortation System Package Jam": {
+        'EN': "Sortation System Package Jam",
+        'DE': "Paketstau im Sortiersystem",
+        'AT': "Paketstau im Sortiersystem",
+        'NL': "Sorteersysteem Pakket Storing"
+    },
+    "Missing Conveyor Safety Guard": {
+        'EN': "Missing Conveyor Safety Guard",
+        'DE': "Fehlende Förderband-Schutzvorrichtung",
+        'AT': "Fehlende Förderband-Schutzvorrichtung",
+        'NL': "Ontbrekende Transportband Veiligheidsafscherming"
+    },
+    "Constant Conveyor Alarm Noise": {
+        'EN': "Constant Conveyor Alarm Noise",
+        'DE': "Dauerhafter Förderband-Alarmton",
+        'AT': "Dauerhafter Förderband-Alarmton",
+        'NL': "Constante Transportband Alarm Geluid"
+    },
 
-    // === SLIPS, TRIPS, FALLS ===
-    "Wet Floor No Warning Sign": {
-        'EN': "Wet Floor No Warning Sign",
-        'DE': "Nasser Boden ohne Warnschild",
-        'AT': "Nasser Boden ohne Warnschild",
-        'NL': "Natte Vloer Geen Waarschuwingsbord"
+    // === SLIPS, TRIPS, AND FALLS ===
+    "Loose Shrink Wrap In Walkway": {
+        'EN': "Loose Shrink Wrap In Walkway",
+        'DE': "Lose Schrumpffolie im Gehweg",
+        'AT': "Lose Schrumpffolie im Gehweg",
+        'NL': "Losse Krimpfolie In Looppad"
+    },
+    "Pallet Straps On Floor": {
+        'EN': "Pallet Straps On Floor",
+        'DE': "Palettengurte auf dem Boden",
+        'AT': "Palettengurte auf dem Boden",
+        'NL': "Palletbanden Op Vloer"
     },
     "Broken Pallet Wood Scattered": {
         'EN': "Broken Pallet Wood Scattered",
@@ -1261,13 +1435,91 @@ const HAZARD_NAMES = {
         'AT': "Zerbrochenes Palettenholz verstreut",
         'NL': "Gebroken Pallethout Verspreid"
     },
+    "Damaged Concrete Surface": {
+        'EN': "Damaged Concrete Surface",
+        'DE': "Beschädigte Betonoberfläche",
+        'AT': "Beschädigte Betonoberfläche",
+        'NL': "Beschadigd Betonoppervlak"
+    },
+    "Floor Tape Peeling Up": {
+        'EN': "Floor Tape Peeling Up",
+        'DE': "Bodenmarkierung löst sich",
+        'AT': "Bodenmarkierung löst sich",
+        'NL': "Vloertape Laat Los"
+    },
+    "Wet Floor From Winter Tracking": {
+        'EN': "Wet Floor From Winter Tracking",
+        'DE': "Nasser Boden durch Winterspuren",
+        'AT': "Nasser Boden durch Winterspuren",
+        'NL': "Natte Vloer Door Winter Aanslepen"
+    },
+    "Ice/Snow Tracked Inside": {
+        'EN': "Ice/Snow Tracked Inside",
+        'DE': "Eis/Schnee hereingetragen",
+        'AT': "Eis/Schnee hereingetragen",
+        'NL': "IJs/Sneeuw Naar Binnen Gelopen"
+    },
+    "Wet Floor No Warning Sign": {
+        'EN': "Wet Floor No Warning Sign",
+        'DE': "Nasser Boden ohne Warnschild",
+        'AT': "Nasser Boden ohne Warnschild",
+        'NL': "Natte Vloer Geen Waarschuwingsbord"
+    },
+    "Narrow Aisle Blocked By Carts": {
+        'EN': "Narrow Aisle Blocked By Carts",
+        'DE': "Enger Gang durch Wagen blockiert",
+        'AT': "Enger Gang durch Wagen blockiert",
+        'NL': "Smalle Gang Geblokkeerd Door Karren"
+    },
+    "Staged Pallets Blocking Path": {
+        'EN': "Staged Pallets Blocking Path",
+        'DE': "Bereitgestellte Paletten blockieren Weg",
+        'AT': "Bereitgestellte Paletten blockieren Weg",
+        'NL': "Klaargezette Pallets Blokkeren Pad"
+    },
+    "Totes Forcing Squeeze-Through": {
+        'EN': "Totes Forcing Squeeze-Through",
+        'DE': "Behälter erzwingen Durchquetschen",
+        'AT': "Behälter erzwingen Durchquetschen",
+        'NL': "Bakken Dwingen Tot Doorkruipen"
+    },
+    "Step-Over Obstacle Hazard": {
+        'EN': "Step-Over Obstacle Hazard",
+        'DE': "Stolpergefahr durch Hindernis",
+        'AT': "Stolpergefahr durch Hindernis",
+        'NL': "Overstap Obstakel Gevaar"
+    },
 
-    // === PIT HAZARDS ===
-    "PIT Operator Without Certification": {
-        'EN': "PIT Operator Without Certification",
-        'DE': "Staplerfahrer ohne Zertifizierung",
-        'AT': "Staplerfahrer ohne Zertifizierung",
-        'NL': "PIT Operator Zonder Certificering"
+    // === POWERED INDUSTRIAL TRUCKS (PIT) ===
+    "EPJ Running Over Toes": {
+        'EN': "EPJ Running Over Toes",
+        'DE': "EPJ überfährt Zehen",
+        'AT': "EPJ überfährt Zehen",
+        'NL': "EPJ Rijdt Over Tenen"
+    },
+    "Manual Pallet Jack Foot Injury Risk": {
+        'EN': "Manual Pallet Jack Foot Injury Risk",
+        'DE': "Manueller Hubwagen Fußverletzungsrisiko",
+        'AT': "Manueller Hubwagen Fußverletzungsrisiko",
+        'NL': "Handmatige Palletwagen Voetletsel Risico"
+    },
+    "EPJ Collision With Racking": {
+        'EN': "EPJ Collision With Racking",
+        'DE': "EPJ Kollision mit Regalen",
+        'AT': "EPJ Kollision mit Regalen",
+        'NL': "EPJ Botsing Met Stellingen"
+    },
+    "Forklift Striking Infrastructure": {
+        'EN': "Forklift Striking Infrastructure",
+        'DE': "Stapler trifft Infrastruktur",
+        'AT': "Stapler trifft Infrastruktur",
+        'NL': "Vorkheftruck Raakt Infrastructuur"
+    },
+    "PIT-Cart Collision Zone": {
+        'EN': "PIT-Cart Collision Zone",
+        'DE': "PIT-Wagen Kollisionszone",
+        'AT': "PIT-Wagen Kollisionszone",
+        'NL': "PIT-Kar Botsingszone"
     },
     "Battery Handling Without PPE": {
         'EN': "Battery Handling Without PPE",
@@ -1275,13 +1527,155 @@ const HAZARD_NAMES = {
         'AT': "Batteriehandhabung ohne PSA",
         'NL': "Batterij Hantering Zonder PBM"
     },
+    "Lead-Acid Battery Corrosive Exposure": {
+        'EN': "Lead-Acid Battery Corrosive Exposure",
+        'DE': "Blei-Säure-Batterie Korrosive Belastung",
+        'AT': "Blei-Säure-Batterie Korrosive Belastung",
+        'NL': "Lood-Zuur Batterij Corrosieve Blootstelling"
+    },
+    "Charging Station Acid Spill": {
+        'EN': "Charging Station Acid Spill",
+        'DE': "Ladestation Säureaustritt",
+        'AT': "Ladestation Säureaustritt",
+        'NL': "Laadstation Zuur Morsen"
+    },
+    "PIT Operator Without Certification": {
+        'EN': "PIT Operator Without Certification",
+        'DE': "Staplerfahrer ohne Zertifizierung",
+        'AT': "Staplerfahrer ohne Zertifizierung",
+        'NL': "PIT Operator Zonder Certificering"
+    },
+    "Forklift Exceeding Speed Limit": {
+        'EN': "Forklift Exceeding Speed Limit",
+        'DE': "Stapler überschreitet Geschwindigkeitslimit",
+        'AT': "Stapler überschreitet Geschwindigkeitslimit",
+        'NL': "Vorkheftruck Overschrijdt Snelheidslimiet"
+    },
+
+    // === PSYCHOSOCIAL & ENVIRONMENTAL ===
+    "Noise >85dB Without Ear Protection": {
+        'EN': "Noise >85dB Without Ear Protection",
+        'DE': "Lärm >85dB ohne Gehörschutz",
+        'AT': "Lärm >85dB ohne Gehörschutz",
+        'NL': "Lawaai >85dB Zonder Gehoorbescherming"
+    },
+    "High Takt Time Pace Pressure": {
+        'EN': "High Takt Time Pace Pressure",
+        'DE': "Hoher Taktzeitdruck",
+        'AT': "Hoher Taktzeitdruck",
+        'NL': "Hoge Takttijd Tempo Druk"
+    },
+    "Peak Season Burnout Risk": {
+        'EN': "Peak Season Burnout Risk",
+        'DE': "Hochsaison Burnout-Risiko",
+        'AT': "Hochsaison Burnout-Risiko",
+        'NL': "Piekseizoen Burnout Risico"
+    },
+    "Rushing Due To Rate Targets": {
+        'EN': "Rushing Due To Rate Targets",
+        'DE': "Hetzen wegen Ratenvorgaben",
+        'AT': "Hetzen wegen Ratenvorgaben",
+        'NL': "Haasten Door Rate Doelen"
+    },
+    "Cold Stress Near Open Dock Door": {
+        'EN': "Cold Stress Near Open Dock Door",
+        'DE': "Kältestress nahe offener Docktür",
+        'AT': "Kältestress nahe offener Docktür",
+        'NL': "Koude Stress Nabij Open Dock Deur"
+    },
+    "Winter Temperature Extreme Zone": {
+        'EN': "Winter Temperature Extreme Zone",
+        'DE': "Winter Temperatur Extremzone",
+        'AT': "Winter Temperatur Extremzone",
+        'NL': "Winter Temperatuur Extreme Zone"
+    },
+    "Summer Heatwave Non-AC Area": {
+        'EN': "Summer Heatwave Non-AC Area",
+        'DE': "Sommer-Hitzewelle Bereich ohne Klimaanlage",
+        'AT': "Sommer-Hitzewelle Bereich ohne Klimaanlage",
+        'NL': "Zomer Hittegolf Geen-AC Gebied"
+    },
+    "Mental Fatigue Station": {
+        'EN': "Mental Fatigue Station",
+        'DE': "Station mit mentaler Ermüdung",
+        'AT': "Station mit mentaler Ermüdung",
+        'NL': "Mentale Vermoeidheid Station"
+    },
+
+    // === HAZARDOUS MATERIALS (HazMat) ===
+    "Leaking Package (Bleach)": {
+        'EN': "Leaking Package (Bleach)",
+        'DE': "Undichtes Paket (Bleichmittel)",
+        'AT': "Undichtes Paket (Bleichmittel)",
+        'NL': "Lekkend Pakket (Bleekmiddel)"
+    },
+    "Damaged Detergent Container": {
+        'EN': "Damaged Detergent Container",
+        'DE': "Beschädigter Waschmittelbehälter",
+        'AT': "Beschädigter Waschmittelbehälter",
+        'NL': "Beschadigde Wasmiddel Container"
+    },
+    "Lithium Battery Package Damage": {
+        'EN': "Lithium Battery Package Damage",
+        'DE': "Lithium-Batterie Paketschaden",
+        'AT': "Lithium-Batterie Paketschaden",
+        'NL': "Lithium Batterij Pakket Schade"
+    },
+    "Unknown Substance Spill": {
+        'EN': "Unknown Substance Spill",
+        'DE': "Unbekannte Substanz verschüttet",
+        'AT': "Unbekannte Substanz verschüttet",
+        'NL': "Onbekende Stof Morsen"
+    },
+    "Unmarked Dangerous Goods Package": {
+        'EN': "Unmarked Dangerous Goods Package",
+        'DE': "Nicht gekennzeichnetes Gefahrgutpaket",
+        'AT': "Nicht gekennzeichnetes Gefahrgutpaket",
+        'NL': "Ongemarkeerd Gevaarlijke Stoffen Pakket"
+    },
+    "Household Chemical Leak Trail": {
+        'EN': "Household Chemical Leak Trail",
+        'DE': "Haushaltschemikalien-Leckspur",
+        'AT': "Haushaltschemikalien-Leckspur",
+        'NL': "Huishoudchemicaliën Lek Spoor"
+    },
+    "Battery Thermal Event Risk": {
+        'EN': "Battery Thermal Event Risk",
+        'DE': "Batterie Thermisches Ereignis Risiko",
+        'AT': "Batterie Thermisches Ereignis Risiko",
+        'NL': "Batterij Thermische Gebeurtenis Risico"
+    },
 
     // === RED FLAG VIOLATIONS ===
+    "Daisy-Chained Extension Cords": {
+        'EN': "Daisy-Chained Extension Cords",
+        'DE': "Hintereinander geschaltete Verlängerungskabel",
+        'AT': "Hintereinander geschaltete Verlängerungskabel",
+        'NL': "Doorgeluste Verlengsnoeren"
+    },
     "Fire Exit Blocked By Carts": {
         'EN': "Fire Exit Blocked By Carts",
         'DE': "Notausgang durch Wagen blockiert",
         'AT': "Notausgang durch Wagen blockiert",
         'NL': "Branduitgang Geblokkeerd Door Karren"
+    },
+    "Fire Extinguisher Hidden By Pallets": {
+        'EN': "Fire Extinguisher Hidden By Pallets",
+        'DE': "Feuerlöscher durch Paletten verdeckt",
+        'AT': "Feuerlöscher durch Paletten verdeckt",
+        'NL': "Brandblusser Verborgen Door Pallets"
+    },
+    "Bent Racking Upright Not Offloaded": {
+        'EN': "Bent Racking Upright Not Offloaded",
+        'DE': "Verbogenes Regalständer nicht entladen",
+        'AT': "Verbogenes Regalständer nicht entladen",
+        'NL': "Verbogen Stellingstaander Niet Ontladen"
+    },
+    "Damaged Rack Under Load": {
+        'EN': "Damaged Rack Under Load",
+        'DE': "Beschädigtes Regal unter Last",
+        'AT': "Beschädigtes Regal unter Last",
+        'NL': "Beschadigde Stelling Onder Belasting"
     },
     "Emergency Exit Blocked By Cage": {
         'EN': "Emergency Exit Blocked By Cage",
@@ -1295,13 +1689,95 @@ const HAZARD_NAMES = {
         'AT': "Erste-Hilfe-Kasten leer/abgelaufen",
         'NL': "EHBO-kit Leeg/Verlopen"
     },
+    "AED Access Obstructed": {
+        'EN': "AED Access Obstructed",
+        'DE': "AED-Zugang versperrt",
+        'AT': "AED-Zugang versperrt",
+        'NL': "AED Toegang Geblokkeerd"
+    },
+    "LOTO Padlock Missing": {
+        'EN': "LOTO Padlock Missing",
+        'DE': "LOTO-Vorhängeschloss fehlt",
+        'AT': "LOTO-Vorhängeschloss fehlt",
+        'NL': "LOTO Hangslot Ontbreekt"
+    },
 
-    // === COMPLIANCE ===
+    // === STOW & STORAGE SPECIFIC ===
+    "Overstuffed Stow Bag Capacity": {
+        'EN': "Overstuffed Stow Bag Capacity",
+        'DE': "Überfüllte Stau-Tasche Kapazität",
+        'AT': "Überfüllte Stau-Tasche Kapazität",
+        'NL': "Overvol Stouw Tas Capaciteit"
+    },
+    "Heavy Item Stowed Above Shoulder": {
+        'EN': "Heavy Item Stowed Above Shoulder",
+        'DE': "Schweres Teil über Schulter verstaut",
+        'AT': "Schweres Teil über Schulter verstaut",
+        'NL': "Zwaar Item Gestouwd Boven Schouder"
+    },
+    "Bin Weight Limit Exceeded": {
+        'EN': "Bin Weight Limit Exceeded",
+        'DE': "Behälter-Gewichtslimit überschritten",
+        'AT': "Behälter-Gewichtslimit überschritten",
+        'NL': "Bak Gewichtslimiet Overschreden"
+    },
+    "Unstable Rack Section": {
+        'EN': "Unstable Rack Section",
+        'DE': "Instabiler Regalabschnitt",
+        'AT': "Instabiler Regalabschnitt",
+        'NL': "Instabiele Stelling Sectie"
+    },
+    "Top Stock Unstable Stack": {
+        'EN': "Top Stock Unstable Stack",
+        'DE': "Instabiler Stapel im Oberlager",
+        'AT': "Instabiler Stapel im Oberlager",
+        'NL': "Bovenste Voorraad Instabiele Stapel"
+    },
+
+    // === INBOUND/DOCK HAZARDS ===
+    "Trailer Without Wheel Chocks": {
+        'EN': "Trailer Without Wheel Chocks",
+        'DE': "Anhänger ohne Radkeile",
+        'AT': "Anhänger ohne Radkeile",
+        'NL': "Trailer Zonder Wielblokken"
+    },
+    "Dock Plate Not Secured": {
+        'EN': "Dock Plate Not Secured",
+        'DE': "Ladebrücke nicht gesichert",
+        'AT': "Ladebrücke nicht gesichert",
+        'NL': "Dock Plaat Niet Beveiligd"
+    },
+    "Dock Gap Foot Hazard": {
+        'EN': "Dock Gap Foot Hazard",
+        'DE': "Dock-Spalt Fußgefahr",
+        'AT': "Dock-Spalt Fußgefahr",
+        'NL': "Dock Opening Voet Gevaar"
+    },
+    "Trailer Loaded Unevenly": {
+        'EN': "Trailer Loaded Unevenly",
+        'DE': "Anhänger ungleichmäßig beladen",
+        'AT': "Anhänger ungleichmäßig beladen",
+        'NL': "Trailer Ongelijk Beladen"
+    },
+    "Vendor Pallet Leaning Dangerously": {
+        'EN': "Vendor Pallet Leaning Dangerously",
+        'DE': "Lieferanten-Palette kippt gefährlich",
+        'AT': "Lieferanten-Palette kippt gefährlich",
+        'NL': "Leverancier Pallet Leunt Gevaarlijk"
+    },
+
+    // === COMPLIANCE & DOCUMENTATION ===
     "LOTO Procedure Not Followed": {
         'EN': "LOTO Procedure Not Followed",
         'DE': "LOTO-Verfahren nicht befolgt",
         'AT': "LOTO-Verfahren nicht befolgt",
         'NL': "LOTO Procedure Niet Gevolgd"
+    },
+    "PPE Checklist Not Completed": {
+        'EN': "PPE Checklist Not Completed",
+        'DE': "PSA-Checkliste nicht ausgefüllt",
+        'AT': "PSA-Checkliste nicht ausgefüllt",
+        'NL': "PBM Checklist Niet Ingevuld"
     },
     "Near-Miss Incident Unreported": {
         'EN': "Near-Miss Incident Unreported",
@@ -1314,6 +1790,12 @@ const HAZARD_NAMES = {
         'DE': "Sicherheitsschulung abgelaufen",
         'AT': "Sicherheitsschulung abgelaufen",
         'NL': "Veiligheidstraining Verlopen"
+    },
+    "Risk Assessment Overdue": {
+        'EN': "Risk Assessment Overdue",
+        'DE': "Risikobewertung überfällig",
+        'AT': "Risikobewertung überfällig",
+        'NL': "Risicobeoordeling Achterstallig"
     },
 
     // === GERMANY SPECIFIC ===
@@ -1328,6 +1810,12 @@ const HAZARD_NAMES = {
         'DE': "Fehlende DGUV V3 Prüfplakette",
         'AT': "Fehlende DGUV V3 Prüfplakette",
         'NL': "Ontbrekende DGUV V3 Keuringssticker"
+    },
+    "Ladungssicherung Violation": {
+        'EN': "Load Securing Violation",
+        'DE': "Ladungssicherung Verstoß",
+        'AT': "Ladungssicherung Verstoß",
+        'NL': "Ladingzekering Overtreding"
     },
     "Fehlende Gefährdungsbeurteilung": {
         'EN': "Missing Risk Assessment",
@@ -1346,6 +1834,30 @@ const HAZARD_NAMES = {
         'DE': "Keine Betriebsanweisung ausgehängt",
         'AT': "Keine Betriebsanweisung ausgehängt",
         'NL': "Geen Bedieningsinstructies Geplaatst"
+    },
+    "BetrSichV Machine Safety Violation": {
+        'EN': "Machine Safety Violation",
+        'DE': "BetrSichV Maschinensicherheits-Verstoß",
+        'AT': "BetrSichV Maschinensicherheits-Verstoß",
+        'NL': "BetrSichV Machine Veiligheids Overtreding"
+    },
+    "Missing Erste-Hilfe-Kasten": {
+        'EN': "Missing First Aid Kit",
+        'DE': "Fehlender Erste-Hilfe-Kasten",
+        'AT': "Fehlender Erste-Hilfe-Kasten",
+        'NL': "Ontbrekende EHBO-kit"
+    },
+    "Expired Prüfplakette On Equipment": {
+        'EN': "Expired Inspection Sticker On Equipment",
+        'DE': "Abgelaufene Prüfplakette am Gerät",
+        'AT': "Abgelaufene Prüfplakette am Gerät",
+        'NL': "Verlopen Keuringssticker Op Apparatuur"
+    },
+    "Feuerlöscher Blocked Access": {
+        'EN': "Fire Extinguisher Blocked Access",
+        'DE': "Feuerlöscher Zugang blockiert",
+        'AT': "Feuerlöscher Zugang blockiert",
+        'NL': "Brandblusser Toegang Geblokkeerd"
     },
 
     // === AUSTRIA SPECIFIC ===
@@ -1373,6 +1885,42 @@ const HAZARD_NAMES = {
         'AT': "Arbeitsinspektorat-Warnung ignoriert",
         'NL': "Arbeidsinspectie Waarschuwing Genegeerd"
     },
+    "Fehlende Arbeitsplatzevaluierung": {
+        'EN': "Missing Workplace Evaluation",
+        'DE': "Fehlende Arbeitsplatzevaluierung",
+        'AT': "Fehlende Arbeitsplatzevaluierung",
+        'NL': "Ontbrekende Werkplek Evaluatie"
+    },
+    "AUVA Checklist Incomplete": {
+        'EN': "AUVA Checklist Incomplete",
+        'DE': "AUVA-Checkliste unvollständig",
+        'AT': "AUVA-Checkliste unvollständig",
+        'NL': "AUVA Checklist Onvolledig"
+    },
+    "Sicherheitsfachkraft Missing": {
+        'EN': "Safety Specialist Missing",
+        'DE': "Sicherheitsfachkraft fehlt",
+        'AT': "Sicherheitsfachkraft fehlt",
+        'NL': "Veiligheidsspecialist Ontbreekt"
+    },
+    "Missing Brandschutzbeauftragter": {
+        'EN': "Missing Fire Safety Officer",
+        'DE': "Fehlender Brandschutzbeauftragter",
+        'AT': "Fehlender Brandschutzbeauftragter",
+        'NL': "Ontbrekende Brandveiligheidsmedewerker"
+    },
+    "Arbeitsmittelverordnung Violation": {
+        'EN': "Work Equipment Ordinance Violation",
+        'DE': "Arbeitsmittelverordnung Verstoß",
+        'AT': "Arbeitsmittelverordnung Verstoß",
+        'NL': "Arbeidsmiddelen Verordening Overtreding"
+    },
+    "Notausgang Sign Obscured": {
+        'EN': "Emergency Exit Sign Obscured",
+        'DE': "Notausgang-Schild verdeckt",
+        'AT': "Notausgang-Schild verdeckt",
+        'NL': "Nooduitgang Bord Verduisterd"
+    },
 
     // === NETHERLANDS SPECIFIC ===
     "Missing RI&E Assessment": {
@@ -1393,11 +1941,23 @@ const HAZARD_NAMES = {
         'AT': "Präventionsbeauftragter abwesend",
         'NL': "Preventiemedewerker Afwezig"
     },
+    "Preventiemedewerker Not Trained": {
+        'EN': "Prevention Officer Not Trained",
+        'DE': "Präventionsbeauftragter nicht ausgebildet",
+        'AT': "Präventionsbeauftragter nicht ausgebildet",
+        'NL': "Preventiemedewerker Niet Getraind"
+    },
     "Arbocatalogus Not Followed": {
         'EN': "Arbo Catalog Not Followed",
         'DE': "Arbocatalogus nicht befolgt",
         'AT': "Arbocatalogus nicht befolgt",
         'NL': "Arbocatalogus Niet Gevolgd"
+    },
+    "Arbodeskundige Report Overdue": {
+        'EN': "Arbo Expert Report Overdue",
+        'DE': "Arbodeskundige Bericht überfällig",
+        'AT': "Arbodeskundige Bericht überfällig",
+        'NL': "Arbodeskundige Rapport Achterstallig"
     },
     "BHV Team Understaffed": {
         'EN': "Emergency Response Team Understaffed",
@@ -1410,6 +1970,18 @@ const HAZARD_NAMES = {
         'DE': "Fehlender Maßnahmenplan",
         'AT': "Fehlender Maßnahmenplan",
         'NL': "Ontbrekend Plan van Aanpak"
+    },
+    "Werkplekinspectie Skipped": {
+        'EN': "Workplace Inspection Skipped",
+        'DE': "Arbeitsplatzinspektion übersprungen",
+        'AT': "Arbeitsplatzinspektion übersprungen",
+        'NL': "Werkplekinspectie Overgeslagen"
+    },
+    "Veiligheidskundige Advice Ignored": {
+        'EN': "Safety Expert Advice Ignored",
+        'DE': "Sicherheitsexperten-Rat ignoriert",
+        'AT': "Sicherheitsexperten-Rat ignoriert",
+        'NL': "Veiligheidskundige Advies Genegeerd"
     }
 };
 
