@@ -10071,6 +10071,10 @@ function updateMechaBattle() {
                 document.getElementById('boss-hud').style.display = 'none';
                 MusicSys.stop();
                 AudioSys.sfx.bossHit();
+
+                // Prepare highscore entry for Mecha Jeff victory
+                prepareHighscoreEntry('Mecha Jeff');
+                VibrationSystem.onVictory();
                 return;
             }
         }
@@ -15864,7 +15868,7 @@ function showBezosEscapeDialogue(index) {
     const dialogue = dialogues[index];
     let portrait = GFX.jeffYard;
     if (dialogue.portrait === 'player') {
-        portrait = GFX.chars[GAME.selectedChar];
+        portrait = GFX.charFaces[GAME.selectedChar];
     }
 
     GAME.dialogBackgroundState = 'BEZOS_ESCAPE';
@@ -15894,19 +15898,20 @@ function drawBezosEscape() {
 
     const pt = scene.phaseTimer || 0;
 
-    // Draw throne room backdrop for phases 0-7 (keep throne room during dialogue)
-    if (scene.phase <= 7) {
+    // Draw throne room backdrop for all phases (stay in throne room throughout)
+    if (scene.phase === 5 || scene.phase === 6) {
         // For phases 5-6 (rocket escape), fade the throne room to black
-        if (scene.phase === 5 || scene.phase === 6) {
-            // Draw solid black background instead of throne room
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        } else {
-            drawThroneRoomBackdrop(t);
-        }
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
     } else {
-        // After dialogue, switch to victory scene for Simon joining
-        drawVictoryBackdrop(t);
+        // Keep throne room backdrop for phases 0-4, 7, and 8 (Simon joining)
+        drawThroneRoomBackdrop(t);
+        // Add victory glow effect for phase 8
+        if (scene.phase === 8) {
+            const victoryGlow = Math.sin(t * 0.03) * 0.05 + 0.1;
+            ctx.fillStyle = `rgba(255, 153, 0, ${victoryGlow})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
     }
 
     // Phase 0: Mecha sparks and shakes (defeated but still standing)
