@@ -1,7 +1,8 @@
 # Netlify configuration for AMZL WHS Quest
 
 [build]
-  # No build command needed - static HTML/JS project
+  # Install dependencies for Netlify Functions
+  command = "npm install"
   publish = "."
 
 [functions]

@@ -12500,12 +12500,31 @@ function getLocalizedText(key) {
     const region = GAME.region;
     const langMap = { 'DE': 'DE', 'AT': 'AT', 'NL': 'NL', 'MEU': 'EN' };
     const lang = langMap[region] || 'EN';
-    return (UI_TEXT[key] && UI_TEXT[key][lang]) || (UI_TEXT[key] && UI_TEXT[key]['EN']) || key;
+    // Check internal UI_TEXT first
+    if (UI_TEXT[key]) {
+        return UI_TEXT[key][lang] || UI_TEXT[key]['EN'] || key;
+    }
+    // Then check external LOCALIZATION from localization.js
+    if (typeof window !== 'undefined' && window.LOCALIZATION && window.LOCALIZATION[key]) {
+        return window.LOCALIZATION[key][lang] || window.LOCALIZATION[key]['EN'] || key;
+    }
+    return key;
 }
 
 // Backward compatibility wrapper
 function getShopMessage(key) {
     return getLocalizedText(key);
+}
+
+// Get localized hazard name from external localization.js
+function getLocalizedHazardName(hazardName) {
+    const region = GAME.region;
+    const langMap = { 'DE': 'DE', 'AT': 'AT', 'NL': 'NL', 'MEU': 'EN' };
+    const lang = langMap[region] || 'EN';
+    if (typeof window !== 'undefined' && window.HAZARD_NAMES && window.HAZARD_NAMES[hazardName]) {
+        return window.HAZARD_NAMES[hazardName][lang] || window.HAZARD_NAMES[hazardName]['EN'] || hazardName;
+    }
+    return hazardName;
 }
 
 // Helper function to get region-specific safety context for AI prompts
@@ -12636,12 +12655,13 @@ function tryInteract() {
             const safetyCtx = getRegionSafetyContext();
             const regName = getRegionName();
             const langInstHazard = getLanguageInstruction();
+            const localizedHazName = getLocalizedHazardName(h.data.name);
             callGemini(
                 `You are Simon, WHS Senior Regional Manager in ${regName}. Personality: bone-dry humor, deadpan delivery, secretly enjoys quoting regulations with a hint of sarcasm. A hazard "${h.data.name}" was fixed. Give dry, brief praise with subtle wit, then quote the specific regulation (e.g. "According to DGUV Vorschrift 68: ..."). Be sardonic but professional. No "Safety Tip:" prefix. Max 30 words. ${safetyCtx} ${langInstHazard}`,
                 "hazard",
                 { hazardName: h.data.name }
             ).then(tip => {
-                if (GAME.genId === currentGen) showHazardDialog(`${h.data.name}!\n${tip}`, "Simon", GFX.simonFaceLarge, true, h);
+                if (GAME.genId === currentGen) showHazardDialog(`${localizedHazName}!\n${tip}`, "Simon", GFX.simonFaceLarge, true, h);
             });
             return true;
         }
@@ -13757,6 +13777,7 @@ function showHazardDetail() {
     cancelTTS();
 
     const hazardName = GAME.currentHazard.data.name;
+    const localizedHazardName = getLocalizedHazardName(hazardName);
     const hazardType = GAME.currentHazard.data.type;
     const hazardRegion = GAME.currentHazard.data.region || GAME.region || 'US';
     const regionName = getRegionName();
@@ -13766,7 +13787,7 @@ function showHazardDetail() {
     // Initialize modal state with loading
     GAME.hazardModal = {
         loading: true,
-        hazardName: hazardName,
+        hazardName: localizedHazardName,
         hazardType: hazardType,
         region: hazardRegion,
         regionName: regionName,
