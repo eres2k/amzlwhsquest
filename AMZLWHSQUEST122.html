@@ -1005,6 +1005,9 @@
     </div>
 </div>
 
+<!-- Load localization before main game script -->
+<script src="localization.js"></script>
+
 <script type="module">
 // --- CONFIG ---
 let apiKey = null;
@@ -7414,7 +7417,7 @@ const PPE_ITEMS = [
     { id: 'exoskeleton', name: 'Exoskeleton Suit', cost: 5000, icon: 'exo',
       desc: '+40% Speed, +2 Max HP', context: 'EN ISO 13482 Personal care robot safety', buff: { type: 'multi', effects: [{ type: 'speed', value: 0.40 }, { type: 'maxhp', value: 2 }] } },
     { id: 'ar_helmet', name: 'AR Safety Helmet', cost: 7500, icon: 'arhelm',
-      desc: 'Auto-Tag Hazards, +1s Invuln', context: 'EN 812 with integrated HMI display', buff: { type: 'multi', effects: [{ type: 'hazard_reveal', value: 1 }, { type: 'iframe', value: 60 }] } },
+      desc: 'Tag Hazards/Runners/OPS, +1s Invuln', context: 'EN 812 with integrated HMI display - highlights threats', buff: { type: 'multi', effects: [{ type: 'hazard_reveal', value: 1 }, { type: 'iframe', value: 60 }] } },
     { id: 'quantum_vest', name: 'Quantum Shield Vest', cost: 10000, icon: 'quantum',
       desc: '25% Dmg Reflect, Regen 1HP/20s', context: 'Experimental OSHA-X prototype tech', buff: { type: 'multi', effects: [{ type: 'reflect', value: 0.25 }, { type: 'regen', value: 1200 }] } },
     { id: 'bezos_armor', name: 'Prime Guardian Armor', cost: 15000, icon: 'primearmor',
@@ -13009,7 +13012,7 @@ function drawNameEntry() {
     ctx.fillStyle = '#ffd700';
     ctx.shadowColor = '#ff9900';
     ctx.shadowBlur = 10;
-    ctx.fillText('NEW HIGH SCORE!', canvas.width / 2, 30);
+    ctx.fillText(getLocalizedText('new_high_score'), canvas.width / 2, 30);
     ctx.shadowBlur = 0;
 
     // Display score
@@ -13033,13 +13036,13 @@ function drawNameEntry() {
         if (GAME.pendingHighscore && GAME.pendingHighscore.submissionFailed) {
             // Submission failed but player can continue
             ctx.fillStyle = '#f59e0b';
-            ctx.fillText('SCORE SAVED!', canvas.width / 2, 110);
+            ctx.fillText(getLocalizedText('score_saved'), canvas.width / 2, 110);
             ctx.font = '5px "Press Start 2P"';
             ctx.fillStyle = '#94a3b8';
-            ctx.fillText('(ONLINE SYNC UNAVAILABLE)', canvas.width / 2, 122);
+            ctx.fillText(getLocalizedText('online_unavailable'), canvas.width / 2, 122);
         } else {
             ctx.fillStyle = '#22c55e';
-            ctx.fillText('SCORE SUBMITTED!', canvas.width / 2, 110);
+            ctx.fillText(getLocalizedText('score_submitted'), canvas.width / 2, 110);
         }
 
         ctx.font = '8px "Press Start 2P"';
@@ -13056,16 +13059,16 @@ function drawNameEntry() {
         if (blink) {
             ctx.font = '7px "Press Start 2P"';
             ctx.fillStyle = '#666';
-            ctx.fillText('[SPACE / TAP TO CONTINUE]', canvas.width / 2, 200);
+            ctx.fillText(getLocalizedText('space_tap_continue'), canvas.width / 2, 200);
         }
     } else {
         // Name entry prompt
         ctx.font = '8px "Press Start 2P"';
         ctx.fillStyle = '#7dd3fc';
-        ctx.fillText('ENTER YOUR NAME', canvas.width / 2, 100);
+        ctx.fillText(getLocalizedText('enter_your_name'), canvas.width / 2, 100);
         ctx.font = '6px "Press Start 2P"';
         ctx.fillStyle = '#666';
-        ctx.fillText('(5 CHARACTERS MAX)', canvas.width / 2, 112);
+        ctx.fillText(getLocalizedText('chars_max'), canvas.width / 2, 112);
 
         // Name display boxes
         const boxSize = 20;
@@ -13178,19 +13181,19 @@ function drawHighscores() {
     ctx.shadowColor = '#ffd700';
     ctx.shadowBlur = 10;
     ctx.fillStyle = '#ffd700';
-    ctx.fillText('HALL OF COMPLIANCE', canvas.width / 2, 22);
+    ctx.fillText(getLocalizedText('hall_of_compliance'), canvas.width / 2, 22);
     ctx.shadowBlur = 0;
 
     // Column headers
     ctx.font = '5px "Press Start 2P"';
     ctx.fillStyle = '#7dd3fc';
     ctx.textAlign = 'left';
-    ctx.fillText('RK', 8, 38);
-    ctx.fillText('NAME', 28, 38);
-    ctx.fillText('SCORE', 70, 38);
-    ctx.fillText('CHAR', 115, 38);
-    ctx.fillText('TIME', 160, 38);
-    ctx.fillText('BOSS', 195, 38);
+    ctx.fillText(getLocalizedText('rank'), 8, 38);
+    ctx.fillText(getLocalizedText('name'), 28, 38);
+    ctx.fillText(getLocalizedText('score'), 70, 38);
+    ctx.fillText(getLocalizedText('char'), 115, 38);
+    ctx.fillText(getLocalizedText('time'), 160, 38);
+    ctx.fillText(getLocalizedText('boss'), 195, 38);
 
     // Separator line
     ctx.fillStyle = '#3b82f6';
@@ -13265,7 +13268,7 @@ function drawHighscores() {
         ctx.textAlign = 'center';
         ctx.font = '6px "Press Start 2P"';
         ctx.fillStyle = '#666';
-        ctx.fillText('[SPACE / TAP TO CONTINUE]', canvas.width / 2, 218);
+        ctx.fillText(getLocalizedText('space_tap_continue'), canvas.width / 2, 218);
     }
 
     ctx.textAlign = 'left';
@@ -14381,17 +14384,18 @@ function drawGameOverSplash() {
     ctx.textAlign = 'center';
 
     // "GAME OVER" text with dramatic shadow
+    const gameOverText = getLocalizedText('game_over');
     ctx.font = 'bold 28px monospace';
     const shadowOffsets = [[3,3],[-3,3],[3,-3],[-3,-3],[0,4],[0,-4],[4,0],[-4,0]];
     shadowOffsets.forEach(([dx, dy]) => {
         ctx.fillStyle = '#000';
-        ctx.fillText('GAME OVER', canvas.width/2 + dx, canvas.height/2 - 30 + dy);
+        ctx.fillText(gameOverText, canvas.width/2 + dx, canvas.height/2 - 30 + dy);
     });
 
     // Pulsing red text
     const pulse = 0.7 + Math.sin(t / 10) * 0.3;
     ctx.fillStyle = `rgba(248, 113, 113, ${pulse})`;
-    ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 30);
+    ctx.fillText(gameOverText, canvas.width/2, canvas.height/2 - 30);
 
     // Corporate message
     ctx.font = '10px monospace';
@@ -14413,7 +14417,7 @@ function drawGameOverSplash() {
         if (blink) {
             ctx.font = '10px monospace';
             ctx.fillStyle = '#666';
-            ctx.fillText('[PRESS SPACE]', canvas.width/2, canvas.height - 20);
+            ctx.fillText(getLocalizedText('press_space_short'), canvas.width/2, canvas.height - 20);
         }
     }
 
@@ -18361,7 +18365,7 @@ function draw() {
         // Region selection title
         ctx.font = 'bold 10px monospace';
         ctx.fillStyle = '#88ccff';
-        ctx.fillText('SELECT YOUR REGION', canvas.width / 2, 35);
+        ctx.fillText(getLocalizedText('select_your_region'), canvas.width / 2, 35);
 
         // Region options
         const regions = GAME.regionList;
@@ -18444,16 +18448,16 @@ function draw() {
         ctx.fillStyle = `rgba(255, 215, 0, ${pulse})`;
         ctx.shadowColor = '#ffd700';
         ctx.shadowBlur = 8;
-        ctx.fillText('PRESS SPACEBAR', canvas.width / 2, 165);
+        ctx.fillText(getLocalizedText('press_spacebar'), canvas.width / 2, 165);
         ctx.shadowBlur = 0;
 
         ctx.font = '7px monospace';
         ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        ctx.fillText('↑↓ Select Region | SPACE to Start', canvas.width / 2, 180);
+        ctx.fillText(getLocalizedText('region_select_hint'), canvas.width / 2, 180);
 
         ctx.font = '6px monospace';
         ctx.fillStyle = 'rgba(136, 204, 255, 0.6)';
-        ctx.fillText('Learn real safety regulations!', canvas.width / 2, 195);
+        ctx.fillText(getLocalizedText('learn_safety_regulations'), canvas.width / 2, 195);
 
         ctx.textAlign = 'start';
         ctx.restore();
@@ -18898,13 +18902,14 @@ function draw() {
         ctx.shadowBlur = 15 * glowIntensity;
 
         // Title with multiple layers
+        const titleText = getLocalizedText('game_title');
         ctx.font = '16px "Press Start 2P"';
         ctx.fillStyle = '#7c2d12';
-        ctx.fillText('AMZL WHS QUEST', canvas.width / 2 + 2, 44);
+        ctx.fillText(titleText, canvas.width / 2 + 2, 44);
         ctx.fillStyle = '#ea580c';
-        ctx.fillText('AMZL WHS QUEST', canvas.width / 2 + 1, 43);
+        ctx.fillText(titleText, canvas.width / 2 + 1, 43);
         ctx.fillStyle = '#fbbf24';
-        ctx.fillText('AMZL WHS QUEST', canvas.width / 2, 42);
+        ctx.fillText(titleText, canvas.width / 2, 42);
         ctx.shadowBlur = 0;
 
         // Subtitle with glow
@@ -18912,7 +18917,7 @@ function draw() {
         ctx.shadowBlur = 8;
         ctx.fillStyle = '#22d3ee';
         ctx.font = '7px "Press Start 2P"';
-        ctx.fillText('SAFETY COORDINATOR EDITION', canvas.width / 2, 60);
+        ctx.fillText(getLocalizedText('game_subtitle'), canvas.width / 2, 60);
         ctx.shadowBlur = 0;
 
         // Animated character showcase
@@ -18932,13 +18937,13 @@ function draw() {
         if (blink) {
             ctx.fillStyle = '#fff';
             ctx.font = '9px "Press Start 2P"';
-            ctx.fillText('PRESS SPACE', canvas.width / 2, 160);
+            ctx.fillText(getLocalizedText('press_spacebar'), canvas.width / 2, 160);
         }
 
         // Highscore hint
         ctx.fillStyle = '#ffd700';
         ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('[H] HIGHSCORES', canvas.width / 2, 175);
+        ctx.fillText(getLocalizedText('highscores_hint'), canvas.width / 2, 175);
 
         // Decorative lines
         ctx.fillStyle = '#fbbf24';
@@ -18949,10 +18954,10 @@ function draw() {
         // Credits with style
         ctx.fillStyle = '#64748b';
         ctx.font = '7px monospace';
-        ctx.fillText('CREATED BY ERWIN ESENER', canvas.width / 2, 200);
+        ctx.fillText(getLocalizedText('created_by'), canvas.width / 2, 200);
         ctx.fillStyle = '#475569';
         ctx.font = '6px monospace';
-        ctx.fillText('© 2024 ERWIN ESENER PRODUCTIONS', canvas.width / 2, 220);
+        ctx.fillText(getLocalizedText('copyright'), canvas.width / 2, 220);
 
         ctx.textAlign = 'left';
         ctx.restore(); return;
@@ -18999,10 +19004,11 @@ function draw() {
         ctx.shadowColor = '#fbbf24';
         ctx.shadowBlur = 10 * glowIntensity;
         ctx.font = '10px "Press Start 2P"';
+        const howToPlayTitle = getLocalizedText('how_to_play');
         ctx.fillStyle = '#92400e';
-        ctx.fillText('HOW TO PLAY', canvas.width / 2 + 1, 24);
+        ctx.fillText(howToPlayTitle, canvas.width / 2 + 1, 24);
         ctx.fillStyle = '#fbbf24';
-        ctx.fillText('HOW TO PLAY', canvas.width / 2, 23);
+        ctx.fillText(howToPlayTitle, canvas.width / 2, 23);
         ctx.shadowBlur = 0;
 
         // Decorative line under title
@@ -19018,7 +19024,7 @@ function draw() {
         // CONTROLS header
         ctx.fillStyle = '#22d3ee';
         ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('CONTROLS', leftCol, 44);
+        ctx.fillText(getLocalizedText('controls'), leftCol, 44);
 
         // Control key boxes with descriptions
         const drawKeyBox = (x, y, key, desc) => {
@@ -19043,19 +19049,19 @@ function draw() {
         // === OBJECTIVE header ===
         ctx.fillStyle = '#22d3ee';
         ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('OBJECTIVE', leftCol, 120);
+        ctx.fillText(getLocalizedText('objective'), leftCol, 120);
 
         ctx.fillStyle = '#f0f0ff';
         ctx.font = '6px monospace';
-        ctx.fillText('Find and fix 5 safety', leftCol + 2, 132);
-        ctx.fillText('hazards in the warehouse', leftCol + 2, 142);
-        ctx.fillText('before losing all lives!', leftCol + 2, 152);
+        ctx.fillText(getLocalizedText('objective_text_1'), leftCol + 2, 132);
+        ctx.fillText(getLocalizedText('objective_text_2'), leftCol + 2, 142);
+        ctx.fillText(getLocalizedText('objective_text_3'), leftCol + 2, 152);
 
         // === RIGHT COLUMN: TIPS & ENEMIES ===
         // TIPS header
         ctx.fillStyle = '#22d3ee';
         ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('TIPS', rightCol, 44);
+        ctx.fillText(getLocalizedText('tips'), rightCol, 44);
 
         ctx.fillStyle = '#fbbf24';
         ctx.font = '6px monospace';
@@ -19072,25 +19078,25 @@ function draw() {
         // ENEMIES header
         ctx.fillStyle = '#22d3ee';
         ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('WATCH OUT FOR', rightCol, 105);
+        ctx.fillText(getLocalizedText('watch_out_for'), rightCol, 105);
 
         // Enemy icons with descriptions
         ctx.fillStyle = '#ef4444';
         ctx.font = '6px monospace';
-        ctx.fillText('OPS MANAGERS - Chase & shoot', rightCol + 2, 117);
+        ctx.fillText(getLocalizedText('ops_managers_desc'), rightCol + 2, 117);
         ctx.fillStyle = '#fbbf24';
-        ctx.fillText('RUNNERS - Stop floor runners', rightCol + 2, 129);
+        ctx.fillText(getLocalizedText('runners_desc'), rightCol + 2, 129);
         ctx.fillStyle = '#a855f7';
-        ctx.fillText('BOSSES - Surprise visitors!', rightCol + 2, 141);
+        ctx.fillText(getLocalizedText('bosses_desc'), rightCol + 2, 141);
 
         // PPE SHOP hint
         ctx.fillStyle = '#22d3ee';
         ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('PPE SHOP', rightCol, 158);
+        ctx.fillText(getLocalizedText('ppe_shop'), rightCol, 158);
         ctx.fillStyle = '#94a3b8';
         ctx.font = '6px monospace';
-        ctx.fillText('Find the Safety Cage', rightCol + 2, 170);
-        ctx.fillText('to unlock PPE buffs!', rightCol + 2, 180);
+        ctx.fillText(getLocalizedText('find_safety_cage'), rightCol + 2, 170);
+        ctx.fillText(getLocalizedText('unlock_ppe_buffs'), rightCol + 2, 180);
 
         // Animated prompt at bottom
         ctx.textAlign = 'center';
@@ -19098,7 +19104,7 @@ function draw() {
         if (blink) {
             ctx.fillStyle = '#fff';
             ctx.font = '7px "Press Start 2P"';
-            ctx.fillText('[SPACE TO CONTINUE]', canvas.width / 2, 206);
+            ctx.fillText(getLocalizedText('space_to_continue'), canvas.width / 2, 206);
         }
         ctx.textAlign = 'left';
         ctx.restore(); return;
@@ -20480,6 +20486,24 @@ function draw() {
                 ctx.drawImage(GFX.simon, dx, dy);
             }
             else if (e.type === 'ops') {
+                // AR Helmet effect: Tag OPS managers with red glow
+                if (hasHazardReveal) {
+                    const pulse = Math.sin(GAME.ticks * 0.15) * 0.3 + 0.7;
+                    ctx.save();
+                    ctx.shadowColor = '#ff4444';
+                    ctx.shadowBlur = 8 * pulse;
+                    ctx.strokeStyle = `rgba(255, 68, 68, ${pulse})`;
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(dx - 2, dy - 2, 20, 20);
+                    // Distance-based "!" indicator
+                    const dist = Math.hypot(e.x - GAME.player.x, e.y - GAME.player.y);
+                    if (dist < 120) {
+                        ctx.fillStyle = '#ff4444';
+                        ctx.font = '6px monospace';
+                        ctx.fillText('!', dx + 6, dy - 4);
+                    }
+                    ctx.restore();
+                }
                 ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(dx+8, dy+14, 6, 3, 0, 0, Math.PI*2); ctx.fill();
                 ctx.drawImage(GFX.ops, dx, dy);
             }
@@ -20488,6 +20512,24 @@ function draw() {
                 ctx.drawImage(GFX.assoc, dx, dy);
             }
             else if (e.type === 'runner') {
+                // AR Helmet effect: Tag runners with orange glow
+                if (hasHazardReveal) {
+                    const pulse = Math.sin(GAME.ticks * 0.15) * 0.3 + 0.7;
+                    ctx.save();
+                    ctx.shadowColor = '#ff9900';
+                    ctx.shadowBlur = 8 * pulse;
+                    ctx.strokeStyle = `rgba(255, 153, 0, ${pulse})`;
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(dx - 2, dy - 2, 20, 20);
+                    // Distance-based "!" indicator
+                    const dist = Math.hypot(e.x - GAME.player.x, e.y - GAME.player.y);
+                    if (dist < 120) {
+                        ctx.fillStyle = '#ff9900';
+                        ctx.font = '6px monospace';
+                        ctx.fillText('!', dx + 6, dy - 4);
+                    }
+                    ctx.restore();
+                }
                 ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(dx+8, dy+14, 6, 3, 0, 0, Math.PI*2); ctx.fill();
                 ctx.drawImage(GFX.runner, dx, dy);
             }
