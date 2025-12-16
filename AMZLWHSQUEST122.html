@@ -1293,18 +1293,18 @@ const WAREHOUSE_EVENTS = {
     },
     PRIME_DAY: {
         id: 'PRIME_DAY',
-        duration: 900, // 15 seconds
+        duration: 360, // 6 seconds at 60fps
         warning: {
-            EN: "PRIME DAY CHAOS",
-            AT: "PRIME DAY CHAOS",
-            DE: "PRIME DAY CHAOS",
-            NL: "PRIME DAY CHAOS"
+            EN: "PRIME PACKAGE STORM",
+            AT: "PRIME PAKETSTURM",
+            DE: "PRIME PAKETSTURM",
+            NL: "PRIME PAKKETSTORM"
         },
         subtitle: {
-            EN: "Dodge the package storm!",
-            AT: "Weiche dem Paketsturm aus!",
-            DE: "Weiche dem Paketsturm aus!",
-            NL: "Ontwijken de pakketstorm!"
+            EN: "Dodge the falling packages!",
+            AT: "Weiche den fallenden Paketen aus!",
+            DE: "Weiche den fallenden Paketen aus!",
+            NL: "Ontwijken de vallende pakketten!"
         }
     }
 };
@@ -1535,27 +1535,34 @@ function updateEventEffects(eventType) {
             break;
 
         case 'PRIME_DAY':
-            // Continuous chaos - screen shake, spawn projectiles, runners respawn
-            if (Math.random() < 0.08) {
-                GAME.shake = Math.max(GAME.shake, 4);
+            // PRIME PACKAGE STORM - Frequent screen shake and falling packages
+            if (Math.random() < 0.1) {
+                GAME.shake = Math.max(GAME.shake, 5);
             }
-            // Spawn falling package projectiles targeting player area
-            if (GAME.warehouseEvent.timer % 40 === 0) {
-                const targetX = GAME.player.x + (Math.random() - 0.5) * 80;
-                const targetY = GAME.player.y + (Math.random() - 0.5) * 80;
-                GAME.projectiles.push({
-                    type: 'req',
-                    x: targetX,
-                    y: targetY - 100,
-                    vx: 0,
-                    vy: 2.5,
-                    life: 60,
-                    primePackage: true
-                });
+            // Spawn falling package projectiles more frequently (every 15 frames = 4 per second)
+            if (GAME.warehouseEvent.timer % 15 === 0) {
+                // Spawn 2-3 packages at once for a real "storm" effect
+                const packagesToSpawn = 2 + Math.floor(Math.random() * 2);
+                for (let i = 0; i < packagesToSpawn; i++) {
+                    const targetX = 30 + Math.random() * (MAP_W * TILE_SIZE - 60);
+                    GAME.projectiles.push({
+                        type: 'fallingPackage',
+                        x: targetX,
+                        y: -20 - Math.random() * 40,
+                        vx: (Math.random() - 0.5) * 1,
+                        vy: 2.0 + Math.random() * 1.5,
+                        life: 120,
+                        primePackage: true,
+                        rotation: Math.random() * Math.PI * 2,
+                        rotSpeed: (Math.random() - 0.5) * 0.2
+                    });
+                }
+                // Small screen shake when packages spawn
+                GAME.shake = Math.max(GAME.shake, 3);
             }
-            // Respawn runners if too few
+            // Respawn runners if too few (reduced count for shorter event)
             const primeDayRunners = GAME.entities.filter(e => e.primeDay && e.type === 'runner').length;
-            if (primeDayRunners < 4 && Math.random() < 0.02) {
+            if (primeDayRunners < 3 && Math.random() < 0.03) {
                 const rx = 50 + Math.random() * (MAP_W * TILE_SIZE - 100);
                 const ry = 50 + Math.random() * (MAP_H * TILE_SIZE - 100);
                 GAME.entities.push({
@@ -8334,6 +8341,23 @@ function startYardLevel() {
     }
     y.packageSpawnTimer = 0;
 
+    // === YARD POWER-UPS (Speed Boost, Shield, Extra Life) ===
+    GAME.powerUps = [];
+    GAME.collectibles = [];
+    // Spawn initial power-ups scattered in safe areas between lanes
+    const powerUpTypes = ['speed', 'shield', 'life'];
+    for (let i = 0; i < 5; i++) {
+        const laneIndex = Math.floor(Math.random() * y.lanes.length);
+        const lane = y.lanes[laneIndex];
+        GAME.powerUps.push({
+            x: 20 + Math.random() * (canvas.width - 40),
+            y: lane.y + 15 + Math.random() * 20, // Between lanes for safety
+            type: powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)],
+            bobTimer: Math.random() * Math.PI * 2
+        });
+    }
+    y.powerUpSpawnTimer = 0;
+
     // Yard atmosphere: pallet stacks, dock signs (conveyors removed)
     y.palletStacks = [
         { x: 8, y: h - 55 }, { x: 45, y: h - 55 },
@@ -8818,6 +8842,11 @@ function updateWarehouseAtmosphere() {
 // === YARD LEVEL POWER-UP AND COLLECTIBLE UPDATE ===
 function updateYardPowerUps() {
     const p = GAME.player;
+    const y = GAME.yard;
+    // Use yard coordinates if in yard level, otherwise use player coordinates
+    const playerX = y ? y.playerX : p.x;
+    const playerY = y ? y.playerY : p.y;
+    const screenPlayerY = y ? (playerY - y.cameraY) : p.y;
 
     // Update power-up timer
     if (GAME.playerPowerUp) {
@@ -8825,45 +8854,76 @@ function updateYardPowerUps() {
         if (GAME.powerUpTimer <= 0) {
             // Remove power-up effects
             if (GAME.playerPowerUp === 'speed') {
-                p.speed = getCharStats(GAME.selectedChar).speed * 0.9;
+                if (y) {
+                    y.speed = getCharStats(GAME.selectedChar).speed * 0.95;
+                } else {
+                    p.speed = getCharStats(GAME.selectedChar).speed * 0.9;
+                }
             }
             GAME.playerPowerUp = null;
         }
     }
 
-    // Check power-up collection
+    // Check power-up collection (using yard coordinates)
     for (let i = GAME.powerUps.length - 1; i >= 0; i--) {
         const pu = GAME.powerUps[i];
-        if (Math.hypot(pu.x - p.x, pu.y - p.y) < 16) {
+        if (Math.hypot(pu.x - playerX, pu.y - playerY) < 20) {
             AudioSys.sfx.fix();
             GAME.powerUps.splice(i, 1);
 
             if (pu.type === 'speed') {
                 GAME.playerPowerUp = 'speed';
                 GAME.powerUpTimer = 300; // 5 seconds
-                p.speed = getCharStats(GAME.selectedChar).speed * 1.5;
-                spawnFloatingText(p.x, p.y - 16, getLocalizedText('speed_boost'), "#22d3ee");
+                if (y) {
+                    y.speed = getCharStats(GAME.selectedChar).speed * 1.5;
+                } else {
+                    p.speed = getCharStats(GAME.selectedChar).speed * 1.5;
+                }
+                spawnFloatingText(playerX, screenPlayerY - 16, getLocalizedText('speed_boost'), "#22d3ee");
             } else if (pu.type === 'shield') {
                 GAME.playerPowerUp = 'shield';
                 GAME.powerUpTimer = 180; // 3 seconds
                 p.iframe = 180; // Temporary invincibility
-                spawnFloatingText(p.x, p.y - 16, "SHIELD!", "#a855f7");
+                spawnFloatingText(playerX, screenPlayerY - 16, "SHIELD!", "#a855f7");
             } else if (pu.type === 'life') {
                 GAME.lives = Math.min(GAME.lives + 1, 5);
                 updateHud();
-                spawnFloatingText(p.x, p.y - 16, "+1 LIFE!", "#f87171");
+                spawnFloatingText(playerX, screenPlayerY - 16, "+1 LIFE!", "#f87171");
             }
+
+            // Spawn particles for pickup effect
+            spawnParticleBurst(pu.x, pu.y, ['#fff', '#22d3ee', '#a855f7'], 8);
         }
     }
 
     // Check collectible package collection
     for (let i = GAME.collectibles.length - 1; i >= 0; i--) {
         const col = GAME.collectibles[i];
-        if (Math.hypot(col.x - p.x, col.y - p.y) < 16) {
+        if (Math.hypot(col.x - playerX, col.y - playerY) < 16) {
             AudioSys.sfx.pop();
             GAME.collectibles.splice(i, 1);
             GAME.score += 100;
-            spawnFloatingText(col.x, col.y - 10, "+100", "#ffd700");
+            spawnFloatingText(col.x, col.y - (y ? y.cameraY : 0) - 10, "+100", "#ffd700");
+        }
+    }
+
+    // Spawn new power-ups periodically (if less than 3 in yard)
+    if (y && !y.inCastle && GAME.powerUps.length < 3) {
+        y.powerUpSpawnTimer = (y.powerUpSpawnTimer || 0) + 1;
+        if (y.powerUpSpawnTimer > 600) { // Every 10 seconds
+            y.powerUpSpawnTimer = 0;
+            const powerUpTypes = ['speed', 'shield', 'life'];
+            const laneIndex = Math.floor(Math.random() * y.lanes.length);
+            const lane = y.lanes[laneIndex];
+            // Only spawn if within view
+            if (Math.abs(playerY - lane.y) < canvas.height * 1.5) {
+                GAME.powerUps.push({
+                    x: 20 + Math.random() * (canvas.width - 40),
+                    y: lane.y + 15 + Math.random() * 20,
+                    type: powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)],
+                    bobTimer: Math.random() * Math.PI * 2
+                });
+            }
         }
     }
 
@@ -9088,9 +9148,17 @@ function update() {
     if (GAME.state === 'BEZOS_BOSS') updateMechaBezos();
 
     // Yard level and Mecha boss updates
-    if (GAME.state === 'YARD_LEVEL') updateYardLevel();
+    if (GAME.state === 'YARD_LEVEL') {
+        updateYardLevel();
+        // Update floating texts and particles for yard pickup feedback
+        updateFloatingTexts();
+        updateParticles();
+    }
     if (GAME.state === 'MECHA_BOSS') {
         updateMechaBattle();
+        // Update floating texts and particles so they disappear properly
+        updateFloatingTexts();
+        updateParticles();
         // Update HUD every second to keep score current
         if (GAME.ticks % 60 === 0) updateHud();
     }
@@ -9201,6 +9269,9 @@ function updateYardLevel() {
     if (!GAME.yard) return;
     const y = GAME.yard;
     GAME.player.x = y.playerX; GAME.player.y = y.playerY;
+
+    // Update power-ups collection and spawning
+    updateYardPowerUps();
 
     // Decrement invincibility frames (fixes permanent invincibility bug)
     if (GAME.player.iframe > 0) GAME.player.iframe--;
@@ -10432,7 +10503,11 @@ function updateProjectiles() {
         }
         // Roman's PHANTOM STEP - smaller collision radius for projectiles
         const projectileRadius = GAME.selectedChar === 'Roman' ? 6 : 10;
-        if ((p.type === 'req') && Math.hypot(p.x-GAME.player.x, p.y-GAME.player.y) < projectileRadius) {
+        // Handle falling package rotation animation
+        if (p.type === 'fallingPackage' && p.rotSpeed) {
+            p.rotation = (p.rotation || 0) + p.rotSpeed;
+        }
+        if ((p.type === 'req' || p.type === 'fallingPackage') && Math.hypot(p.x-GAME.player.x, p.y-GAME.player.y) < projectileRadius) {
             if (GAME.player.iframe<=0) {
                 // === PPE BUFF: High-Vis Vest - 15% dodge chance ===
                 if (GAME.ppeUnlocked.includes('hi_vis_vest') && Math.random() < 0.15) {
@@ -13968,6 +14043,68 @@ function drawYardLevel() {
             });
         }
 
+        // === DRAW POWER-UPS (Speed, Shield, Life) ===
+        if (GAME.powerUps && GAME.powerUps.length > 0) {
+            GAME.powerUps.forEach(pu => {
+                const bob = Math.sin((pu.bobTimer || 0) + GAME.ticks * 0.1) * 3;
+                const pulse = Math.sin(GAME.ticks * 0.15) * 0.2 + 0.8;
+
+                ctx.save();
+                ctx.translate(pu.x + 8, pu.y + 8 + bob);
+
+                // Glow effect
+                let glowColor, mainColor, icon;
+                if (pu.type === 'speed') {
+                    glowColor = 'rgba(34, 211, 238, '; // Cyan
+                    mainColor = '#22d3ee';
+                    icon = '⚡';
+                } else if (pu.type === 'shield') {
+                    glowColor = 'rgba(168, 85, 247, '; // Purple
+                    mainColor = '#a855f7';
+                    icon = '🛡';
+                } else if (pu.type === 'life') {
+                    glowColor = 'rgba(248, 113, 113, '; // Red
+                    mainColor = '#f87171';
+                    icon = '❤';
+                }
+
+                // Outer glow
+                for (let g = 3; g > 0; g--) {
+                    ctx.fillStyle = glowColor + (pulse * 0.15 * (4 - g)) + ')';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 10 + g * 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.beginPath();
+                ctx.ellipse(0, 10 - bob, 8, 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Main circle
+                ctx.fillStyle = mainColor;
+                ctx.beginPath();
+                ctx.arc(0, 0, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Inner highlight
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.beginPath();
+                ctx.arc(-2, -3, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Icon text
+                ctx.fillStyle = '#fff';
+                ctx.font = '8px "Press Start 2P"';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(icon, 0, 1);
+
+                ctx.restore();
+            });
+        }
+
         // Draw forklifts - ENHANCED
         if (y.forklifts) {
             y.forklifts.forEach(f => {
@@ -14184,15 +14321,15 @@ function drawYardLevel() {
                     ctx.fillRect(barrelX + 3, guard.y + 4, 2, 8);
                     ctx.fillRect(barrelX + 7, guard.y + 4, 2, 8);
 
-                    // Charging glow effect
+                    // Charging glow effect (subtle, smaller)
                     if (charging) {
-                        ctx.fillStyle = `rgba(239, 68, 68, ${chargeProgress * 0.4})`;
+                        ctx.fillStyle = `rgba(239, 68, 68, ${chargeProgress * 0.2})`;
                         ctx.beginPath();
-                        ctx.arc(guard.x + 8, guard.y + 8, 12 + chargeProgress * 4, 0, Math.PI * 2);
+                        ctx.arc(guard.x + 8, guard.y + 8, 8 + chargeProgress * 2, 0, Math.PI * 2);
                         ctx.fill();
 
                         // Barrel charge glow
-                        ctx.fillStyle = `rgba(251, 191, 36, ${chargeProgress * 0.6})`;
+                        ctx.fillStyle = `rgba(251, 191, 36, ${chargeProgress * 0.4})`;
                         ctx.fillRect(boreX - 1, guard.y + 5, 4, 6);
                     }
 
@@ -14202,14 +14339,6 @@ function drawYardLevel() {
                     ctx.fillRect(guard.x + 5, guard.y - 4, 6, 6);
                     ctx.fillStyle = charging ? `rgba(239, 68, 68, ${lightPulse})` : '#22c55e';
                     ctx.fillRect(guard.x + 6, guard.y - 3, 4, 4);
-
-                    // Light glow
-                    if (charging) {
-                        ctx.fillStyle = `rgba(239, 68, 68, ${chargeProgress * 0.5})`;
-                        ctx.beginPath();
-                        ctx.arc(guard.x + 8, guard.y - 1, 6, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
 
                     // Sensor eye
                     ctx.fillStyle = '#dc2626';
@@ -14411,42 +14540,42 @@ function drawYardLevel() {
         ctx.textAlign = 'left';
     }
 
-    // === SECURITY ACTIVATION FLASH MESSAGE ===
+    // === SECURITY ACTIVATION FLASH MESSAGE (positioned at top of screen) ===
     if (y && y.securityActivationTimer && y.securityActivationTimer > 0) {
         y.securityActivationTimer--;
         const secText = getLocalizedSecurityActivation();
         const t = y.securityActivationTimer;
 
-        // Full screen red flash at the start
+        // Full screen red flash at the start (brief)
         if (t > 160) {
-            const flashAlpha = (t - 160) / 20 * 0.4;
+            const flashAlpha = (t - 160) / 20 * 0.3;
             ctx.fillStyle = `rgba(220, 38, 38, ${flashAlpha})`;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
-        // Semi-transparent dark overlay
+        // Semi-transparent dark overlay at TOP of screen
         const overlayAlpha = Math.min(0.7, (180 - t) / 30);
         ctx.fillStyle = `rgba(0, 0, 0, ${overlayAlpha * 0.5})`;
-        ctx.fillRect(0, canvas.height / 2 - 35, canvas.width, 70);
+        ctx.fillRect(0, 0, canvas.width, 50);
 
-        // Warning border
+        // Warning border at top
         const borderFlash = Math.floor(t / 10) % 2 === 0 ? '#dc2626' : '#ff9900';
         ctx.fillStyle = borderFlash;
-        ctx.fillRect(0, canvas.height / 2 - 35, canvas.width, 3);
-        ctx.fillRect(0, canvas.height / 2 + 32, canvas.width, 3);
+        ctx.fillRect(0, 0, canvas.width, 3);
+        ctx.fillRect(0, 47, canvas.width, 3);
 
-        // Main title
+        // Main title at top
         ctx.save();
         ctx.textAlign = 'center';
         const shake = Math.sin(t * 0.5) * 2;
-        ctx.font = '8px "Press Start 2P"';
+        ctx.font = '7px "Press Start 2P"';
         ctx.fillStyle = '#dc2626';
-        ctx.fillText(secText.title, canvas.width / 2 + shake, canvas.height / 2 - 5);
+        ctx.fillText(secText.title, canvas.width / 2 + shake, 20);
 
         // Subtitle
         ctx.font = '5px "Press Start 2P"';
         ctx.fillStyle = '#ff9900';
-        ctx.fillText(secText.subtitle, canvas.width / 2, canvas.height / 2 + 15);
+        ctx.fillText(secText.subtitle, canvas.width / 2, 36);
         ctx.restore();
     }
 }
@@ -19151,6 +19280,31 @@ function draw() {
             }
             else if (e.type === 'book') ctx.drawImage(GFX.book, dx, dy);
             else if (e.type === 'req') { if (e.boss) ctx.drawImage(GFX.bossProj, dx, dy); else ctx.drawImage(GFX.req, dx, dy); }
+            else if (e.type === 'fallingPackage') {
+                // Draw falling Prime package with rotation
+                ctx.save();
+                ctx.translate(dx + 8, dy + 8);
+                ctx.rotate(e.rotation || 0);
+                // Package shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(-6, 8, 12, 4);
+                // Package body (Prime orange/brown)
+                ctx.fillStyle = '#92400e';
+                ctx.fillRect(-8, -7, 16, 14);
+                ctx.fillStyle = '#c2410c';
+                ctx.fillRect(-7, -6, 14, 12);
+                // Prime tape stripe
+                ctx.fillStyle = '#ff9900';
+                ctx.fillRect(-5, -2, 10, 4);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(-4, -1, 8, 2);
+                // Warning glow effect
+                ctx.fillStyle = 'rgba(255, 153, 0, 0.3)';
+                ctx.beginPath();
+                ctx.arc(0, 0, 12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
         }
     });
 
