@@ -5082,51 +5082,55 @@ function generateAssets() {
 
     GFX.clutter = { cart: c(16,16, ctx => { ctx.fillStyle = '#444'; ctx.fillRect(2,6,12,8); ctx.fillStyle = '#8b4513'; ctx.fillRect(4,4,8,6); }), coffee: c(8,8, ctx => { ctx.fillStyle='#fff'; ctx.fillRect(2,2,4,5); }), paper: c(8,8, ctx => { ctx.fillStyle='#eee'; ctx.fillRect(1,3,6,4); }), tape: c(8,8, ctx => { ctx.fillStyle='#d97706'; ctx.beginPath(); ctx.arc(4,4,3,0,Math.PI*2); ctx.fill(); }) };
    GFX.hazards = {
-    // --- Liquids / Spills (Amazon yellow warning) ---
+    // --- Liquids / Spills - Chemical leak, wet floor, HazMat ---
     spill: c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.beginPath(); ctx.ellipse(8,11,7,4,0,0,Math.PI*2); ctx.fill();
-        // Dark base
-        ctx.fillStyle = '#b91c1c';
-        ctx.beginPath(); ctx.ellipse(8,10,6,4,0,0,Math.PI*2); ctx.fill();
-        // Main puddle (red hazmat)
-        ctx.fillStyle = '#dc2626';
-        ctx.beginPath(); ctx.ellipse(8,9,5,3,0,0,Math.PI*2); ctx.fill();
-        // Highlight
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath(); ctx.ellipse(6,8,2,1.5,0,0,Math.PI*2); ctx.fill();
-        // Warning reflection
-        ctx.fillStyle = '#fecaca';
-        ctx.fillRect(9,9,2,1);
+        ctx.beginPath(); ctx.ellipse(8,12,7,3,0,0,Math.PI*2); ctx.fill();
+        // Dark base (chemical green/blue)
+        ctx.fillStyle = '#065f46';
+        ctx.beginPath(); ctx.ellipse(8,11,6,3,0,0,Math.PI*2); ctx.fill();
+        // Main puddle (bleach/detergent blue-green)
+        ctx.fillStyle = '#0d9488';
+        ctx.beginPath(); ctx.ellipse(8,10,5,2.5,0,0,Math.PI*2); ctx.fill();
+        // Chemical sheen highlight
+        ctx.fillStyle = '#5eead4';
+        ctx.beginPath(); ctx.ellipse(6,9,2,1,0,0,Math.PI*2); ctx.fill();
+        // Wet floor warning triangle
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath(); ctx.moveTo(8,2); ctx.lineTo(12,8); ctx.lineTo(4,8); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#111';
+        ctx.fillRect(7,4,2,2); ctx.fillRect(7,7,2,1);
     }),
 
-    // --- Amazon Box ---
+    // --- Heavy Non-Con Package (Dog Food, Furniture) ---
     box: c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(2,6,13,10);
-        // Main box (Amazon brown)
-        ctx.fillStyle = '#92400e';
-        ctx.fillRect(1,4,13,10);
+        ctx.fillRect(1,5,14,11);
+        // Main box (larger, heavier)
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(0,3,15,11);
         // Front face
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(1,4,13,9);
+        // Bulging sides (overweight)
         ctx.fillStyle = '#a16207';
-        ctx.fillRect(2,5,11,8);
-        // Top flaps
-        ctx.fillStyle = '#ca8a04';
-        ctx.fillRect(2,3,11,2);
-        // Amazon tape (Prime blue)
-        ctx.fillStyle = '#0284c7';
-        ctx.fillRect(4,7,6,2);
-        // Smile arrow
-        ctx.fillStyle = '#f97316';
-        ctx.fillRect(5,10,4,1);
-        ctx.fillRect(8,9,1,1);
-        // Barcode label
+        ctx.fillRect(2,5,11,7);
+        // HEAVY warning label (red)
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(3,6,6,3);
         ctx.fillStyle = '#fff';
-        ctx.fillRect(9,5,3,3);
+        ctx.fillRect(4,7,4,1); // "HEAVY" text
+        // Weight indicator "20kg+"
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(10,6,4,3);
         ctx.fillStyle = '#111';
-        ctx.fillRect(10,6,1,1);
+        ctx.fillRect(11,7,2,1);
+        // Team lift icon
+        ctx.fillStyle = '#111';
+        ctx.fillRect(5,10,2,2); ctx.fillRect(8,10,2,2); // Two people
+        ctx.fillRect(6,11,3,1); // Arms together
     }),
 
     // --- Chemical drum / hazmat ---
@@ -5151,151 +5155,211 @@ function generateAssets() {
         ctx.fillRect(7,7,2,1);
     }),
 
-    // --- Tall pallet stacks ---
+    // --- Damaged Racking / Bent Upright Under Load ---
     tall_pallet: c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(4,14,10,2);
-        // Main stack (Amazon orange)
-        ctx.fillStyle = '#c2410c';
-        ctx.fillRect(3,1,10,13);
-        // Box layers
-        ctx.fillStyle = '#ea580c';
-        ctx.fillRect(4,2,8,3);
-        ctx.fillRect(4,6,8,3);
-        ctx.fillRect(4,10,8,3);
-        // Tape highlights
-        ctx.fillStyle = '#0284c7';
-        ctx.fillRect(5,3,2,1); ctx.fillRect(9,3,2,1);
-        ctx.fillRect(5,7,2,1); ctx.fillRect(9,7,2,1);
-        // Pallet base (wood)
-        ctx.fillStyle = '#92400e';
-        ctx.fillRect(2,13,12,2);
-        ctx.fillStyle = '#a16207';
-        ctx.fillRect(3,13,2,2); ctx.fillRect(7,13,2,2); ctx.fillRect(11,13,2,2);
-    }),
-
-    // --- Debris / broken pallets ---
-    debris: c(16,16, ctx => {
-        // Scattered packing material
-        ctx.fillStyle = '#d6d3d1';
-        ctx.fillRect(2,8,4,2); ctx.fillRect(10,10,3,2);
-        // Main broken plank
+        ctx.fillRect(3,14,11,2);
+        // BENT racking upright (red = damaged!)
+        ctx.fillStyle = '#dc2626';
         ctx.save();
-        ctx.translate(8,8);
-        ctx.rotate(0.35);
-        ctx.fillStyle = '#78350f';
-        ctx.fillRect(-6,-2,12,4);
-        ctx.fillStyle = '#92400e';
-        ctx.fillRect(-5,-1,10,2);
+        ctx.translate(2,8);
+        ctx.rotate(-0.15); // Bent!
+        ctx.fillRect(0,-8,2,16);
         ctx.restore();
-        // Scattered nails/screws
-        ctx.fillStyle = '#71717a';
-        ctx.fillRect(4,12,1,2); ctx.fillRect(11,11,2,1);
-        // Cardboard chunk
+        // Second upright (also damaged)
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(13,0,2,15);
+        // Beam (sagging under weight)
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(2,5,12,2);
+        ctx.fillRect(2,10,12,2);
+        // Heavy load on damaged rack
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(4,1,8,4);
         ctx.fillStyle = '#a16207';
-        ctx.fillRect(1,4,3,3);
+        ctx.fillRect(5,2,6,2);
+        // More boxes (overloaded!)
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(4,6,8,4);
+        // WARNING - bent indicator
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.moveTo(1,14); ctx.lineTo(3,10); ctx.lineTo(5,14); ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#111';
+        ctx.fillRect(2,11,2,2);
+        // Red violation X
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(10,12,1,3); ctx.fillRect(9,13,3,1);
     }),
 
-    // --- Conveyor / chute (Amazon FC style) ---
+    // --- Floor Debris - Pallet Straps, Broken Wood, Shrink Wrap ---
+    debris: c(16,16, ctx => {
+        // Shadow/floor
+        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+        ctx.fillRect(0,10,16,6);
+        // Broken pallet plank
+        ctx.save();
+        ctx.translate(8,11);
+        ctx.rotate(0.25);
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(-7,-2,14,3);
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(-6,-1,12,1);
+        ctx.restore();
+        // Pallet STRAP (blue/black - trip hazard!)
+        ctx.strokeStyle = '#1e40af';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(1,8); ctx.bezierCurveTo(4,12,8,6,12,10);
+        ctx.bezierCurveTo(14,12,15,8,15,12);
+        ctx.stroke();
+        // Loose shrink wrap
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(2,4,5,3);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(3,5,3,1);
+        // Nails sticking up (hazard!)
+        ctx.fillStyle = '#71717a';
+        ctx.fillRect(10,8,1,3);
+        ctx.fillRect(6,12,1,2);
+        // Warning color
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(9,7,3,2); // Caution area
+    }),
+
+    // --- Conveyor with Pinch Point / LOTO Hazard ---
     conveyor: c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(2,12,13,3);
+        ctx.fillRect(2,13,13,3);
         // Frame (industrial gray)
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(1,5,14,8);
-        // Belt surface
+        ctx.fillRect(0,6,16,8);
+        // Belt surface (moving)
         ctx.fillStyle = '#374151';
-        ctx.fillRect(2,6,12,6);
-        // Belt segments
-        ctx.fillStyle = '#4b5563';
-        ctx.fillRect(3,7,2,4); ctx.fillRect(7,7,2,4); ctx.fillRect(11,7,2,4);
-        // Rollers
-        ctx.fillStyle = '#9ca3af';
-        ctx.fillRect(2,5,3,1); ctx.fillRect(11,5,3,1);
-        // Jammed package (Amazon brown)
-        ctx.fillStyle = '#92400e';
-        ctx.fillRect(5,3,6,4);
-        ctx.fillStyle = '#a16207';
-        ctx.fillRect(6,4,4,2);
-        // Warning light
+        ctx.fillRect(1,7,14,6);
+        // Drive rollers (pinch point!)
+        ctx.fillStyle = '#71717a';
+        ctx.beginPath(); ctx.arc(3,10,2,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(13,10,2,0,Math.PI*2); ctx.fill();
+        // Nip point warning (red triangles)
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath(); ctx.moveTo(3,7); ctx.lineTo(5,9); ctx.lineTo(1,9); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(13,7); ctx.lineTo(15,9); ctx.lineTo(11,9); ctx.closePath(); ctx.fill();
+        // Belt gap (pinch hazard)
+        ctx.fillStyle = '#111';
+        ctx.fillRect(6,9,4,1);
+        // Hand reaching in (LOTO violation!)
+        ctx.fillStyle = '#fcd34d';
+        ctx.fillRect(7,4,2,4); // Arm
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(6,3,4,2); // Hand
+        // Warning strobe
         ctx.fillStyle = '#ef4444';
-        ctx.fillRect(1,4,2,2);
+        ctx.fillRect(0,5,2,2);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(14,5,2,2);
     }),
 
-    // --- Scanner Battery / charging station ---
+    // --- Lithium Battery / Thermal Event Risk ---
     battery: c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(4,13,9,3);
-        // Battery body
+        ctx.fillRect(3,13,10,3);
+        // Battery body (swelling/damaged)
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(3,5,10,8);
+        ctx.fillRect(2,5,12,9);
         ctx.fillStyle = '#374151';
-        ctx.fillRect(4,6,8,6);
-        // Terminals (yellow)
+        ctx.fillRect(3,6,10,7);
+        // Terminals
         ctx.fillStyle = '#eab308';
         ctx.fillRect(5,3,2,3); ctx.fillRect(9,3,2,3);
-        // Lightning symbol
-        ctx.fillStyle = '#facc15';
-        ctx.fillRect(7,6,2,1); ctx.fillRect(6,7,1,2); ctx.fillRect(7,8,2,1); ctx.fillRect(9,9,1,2);
-        // Warning label
+        // Thermal warning (flames!)
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(4,1,2,3); ctx.fillRect(10,1,2,3);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(5,0,1,2); ctx.fillRect(11,0,1,2);
+        // Swelling indicator
+        ctx.fillStyle = '#4b5563';
+        ctx.beginPath(); ctx.arc(8,9,3,0,Math.PI*2); ctx.fill();
+        // Lightning/danger symbol
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(7,7,2,1); ctx.fillRect(6,8,2,2); ctx.fillRect(8,9,2,2);
+        // Red warning label
         ctx.fillStyle = '#dc2626';
-        ctx.fillRect(5,10,6,2);
+        ctx.fillRect(4,11,8,2);
         ctx.fillStyle = '#fff';
-        ctx.fillRect(7,11,2,1);
+        ctx.fillRect(6,12,4,1);
     }),
 
-    // --- Extension Cord / scanner cord ---
+    // --- Daisy-Chained Extension Cords (Red Flag!) ---
     cord: c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.beginPath(); ctx.ellipse(8,13,6,2,0,0,Math.PI*2); ctx.fill();
-        // Coiled yellow cable
+        ctx.beginPath(); ctx.ellipse(8,14,7,2,0,0,Math.PI*2); ctx.fill();
+        // First cable (orange)
+        ctx.strokeStyle = '#f97316';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(1,6); ctx.bezierCurveTo(4,10,6,4,8,8);
+        ctx.stroke();
+        // Second cable daisy-chained (yellow)
         ctx.strokeStyle = '#eab308';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(2,4);
-        ctx.bezierCurveTo(5,10,8,2,11,8);
-        ctx.bezierCurveTo(13,12,15,6,14,10);
+        ctx.moveTo(8,8); ctx.bezierCurveTo(10,12,12,6,15,10);
         ctx.stroke();
-        // Cable highlight
-        ctx.strokeStyle = '#fbbf24';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(3,3); ctx.bezierCurveTo(6,8,9,2,12,6);
-        ctx.stroke();
-        // Plug
+        // Connection point (danger!)
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath(); ctx.arc(8,8,3,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath(); ctx.arc(8,8,2,0,Math.PI*2); ctx.fill();
+        // Sparks!
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(6,6,1,1); ctx.fillRect(10,6,1,1);
+        ctx.fillRect(7,10,1,1); ctx.fillRect(9,10,1,1);
+        // Plugs
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(12,8,3,4);
-        ctx.fillStyle = '#9ca3af';
-        ctx.fillRect(13,12,1,2);
+        ctx.fillRect(0,5,2,3); ctx.fillRect(14,9,2,3);
+        // Warning X
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(7,2,2,3); ctx.fillRect(6,3,4,1);
     }),
 
-    // --- Amazon Tote / bin ---
+    // --- Overstuffed Stow Bag / Bin Capacity Exceeded ---
     tote: c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(3,13,11,3);
-        // Main body (Amazon yellow)
+        ctx.fillRect(2,13,12,3);
+        // Main body (Amazon yellow - bulging)
         ctx.fillStyle = '#ca8a04';
-        ctx.fillRect(2,5,12,9);
-        // Front face
+        ctx.fillRect(1,4,14,10);
+        // Front face (stressed)
         ctx.fillStyle = '#eab308';
-        ctx.fillRect(3,6,10,7);
-        // Rim
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(2,4,12,2);
-        // Handle cutouts
+        ctx.fillRect(2,5,12,8);
+        // OVERSTUFFED - items poking out top!
         ctx.fillStyle = '#92400e';
-        ctx.fillRect(4,5,3,1); ctx.fillRect(9,5,3,1);
-        // Label area
+        ctx.fillRect(3,1,4,5); // Box sticking out
+        ctx.fillStyle = '#a16207';
+        ctx.fillRect(4,2,2,3);
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(9,2,4,4); // Another item
+        // Rim (stretched)
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(1,3,14,2);
+        // Capacity warning
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(4,7,8,3);
         ctx.fillStyle = '#fff';
-        ctx.fillRect(5,8,6,3);
-        // Barcode
-        ctx.fillStyle = '#111';
-        ctx.fillRect(6,9,4,1);
+        ctx.fillRect(5,8,6,1); // "FULL"
+        // Strain marks
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(1,6,1,4); ctx.fillRect(14,6,1,4);
+        // Handle cutouts (stressed)
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(3,4,3,1); ctx.fillRect(10,4,3,1);
     }),
 
     // --- Stretch wrap / shrink wrap ---
@@ -5319,184 +5383,251 @@ function generateAssets() {
         ctx.fillRect(10,10,3,2);
     }),
 
-    // --- Roller cage / Gaylord cage ---
+    // --- Heavy Cage with Stuck Wheels / High Rolling Resistance ---
     cage: c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(4,14,9,2);
-        // Frame (blue warehouse cage)
+        ctx.fillRect(3,14,11,2);
+        // Frame (blue warehouse cage - overloaded)
         ctx.fillStyle = '#1e40af';
-        ctx.fillRect(2,2,12,12);
+        ctx.fillRect(1,1,14,13);
         // Wire mesh pattern
         ctx.fillStyle = '#3b82f6';
-        for (let x = 3; x <= 12; x += 2) { ctx.fillRect(x,3,1,10); }
-        for (let y = 4; y <= 11; y += 2) { ctx.fillRect(3,y,10,1); }
-        // Contents visible
+        for (let x = 2; x <= 13; x += 2) { ctx.fillRect(x,2,1,11); }
+        for (let y = 3; y <= 11; y += 2) { ctx.fillRect(2,y,12,1); }
+        // OVERLOADED contents (bulging)
         ctx.fillStyle = '#92400e';
-        ctx.fillRect(5,6,3,4); ctx.fillRect(9,7,3,3);
-        // Caster wheels
-        ctx.fillStyle = '#111';
-        ctx.fillRect(3,13,2,2); ctx.fillRect(11,13,2,2);
+        ctx.fillRect(3,3,10,9);
+        ctx.fillStyle = '#a16207';
+        ctx.fillRect(4,4,8,7);
+        // Heavy weight indicator
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(5,5,6,2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(6,6,4,1);
+        // DAMAGED/STUCK wheels (red)
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(2,13,3,3); ctx.fillRect(11,13,3,3);
+        // Wheel jam indicator
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(0,14,2,1); ctx.fillRect(14,14,2,1);
+        // Door jamming on floor
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(7,12,2,4);
     }),
 
-    // --- Flat cart / Amazon blue cart ---
+    // --- Go-Cart with Bad Wheels (200kg+ Heavy Load) ---
     cart: c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(3,13,11,3);
-        // Platform (Amazon blue)
+        ctx.fillRect(2,13,13,3);
+        // Platform (Amazon blue, overloaded)
         ctx.fillStyle = '#1e40af';
-        ctx.fillRect(2,9,12,4);
+        ctx.fillRect(1,8,14,5);
         ctx.fillStyle = '#3b82f6';
-        ctx.fillRect(2,8,12,2);
+        ctx.fillRect(2,7,12,2);
+        // Heavy load on top (boxes)
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(3,3,10,5);
+        ctx.fillStyle = '#a16207';
+        ctx.fillRect(4,4,8,3);
+        // Weight indicator (200kg+)
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(5,4,6,2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(6,5,4,1);
         // Handle frame
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(3,3,2,6);
-        ctx.fillRect(3,3,9,2);
-        ctx.fillRect(11,3,2,3);
-        // Grip
+        ctx.fillRect(1,2,2,7);
         ctx.fillStyle = '#f97316';
-        ctx.fillRect(4,3,7,1);
-        // Wheels
-        ctx.fillStyle = '#111';
-        ctx.fillRect(3,12,3,3); ctx.fillRect(10,12,3,3);
-        ctx.fillStyle = '#374151';
-        ctx.fillRect(4,13,1,1); ctx.fillRect(11,13,1,1);
+        ctx.fillRect(1,2,3,1);
+        // BAD WHEELS (damaged, stuck)
+        ctx.fillStyle = '#ef4444'; // Red = bad
+        ctx.fillRect(2,12,3,3); ctx.fillRect(11,12,3,3);
+        ctx.fillStyle = '#991b1b';
+        ctx.fillRect(3,13,1,1); ctx.fillRect(12,13,1,1);
+        // Struggle lines (hard to push)
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(0,10,2,1); ctx.fillRect(14,10,2,1);
     }),
 
-    // --- Fire door / emergency exit ---
+    // --- Blocked Fire Exit (Red Flag Violation!) ---
     door: c(16,16, ctx => {
-        // Frame
+        // Frame (emergency red)
         ctx.fillStyle = '#991b1b';
-        ctx.fillRect(3,1,10,14);
+        ctx.fillRect(2,0,12,16);
         // Door panel (safety green)
         ctx.fillStyle = '#15803d';
-        ctx.fillRect(4,2,8,12);
+        ctx.fillRect(3,1,10,14);
         ctx.fillStyle = '#16a34a';
-        ctx.fillRect(5,3,6,10);
-        // Window
-        ctx.fillStyle = '#0c4a6e';
-        ctx.fillRect(6,3,4,3);
-        ctx.fillStyle = '#0ea5e9';
-        ctx.fillRect(7,4,2,1);
-        // Push bar
+        ctx.fillRect(4,2,8,12);
+        // EXIT sign (lit)
         ctx.fillStyle = '#dc2626';
-        ctx.fillRect(5,8,6,2);
-        // EXIT sign
-        ctx.fillStyle = '#22c55e';
-        ctx.fillRect(6,11,4,2);
-        // Wedge blocking (hazard!)
-        ctx.fillStyle = '#fbbf24';
-        ctx.beginPath();
-        ctx.moveTo(4,14); ctx.lineTo(8,14); ctx.lineTo(8,12); ctx.closePath();
-        ctx.fill();
+        ctx.fillRect(5,1,6,2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(6,1,4,1);
+        // Push bar
+        ctx.fillStyle = '#9ca3af';
+        ctx.fillRect(4,7,8,2);
+        // Running person icon
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(7,4,2,1); // Head
+        ctx.fillRect(6,5,4,2); // Body
+        // BLOCKING PALLET (hazard!)
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(0,8,6,7);
+        ctx.fillStyle = '#a16207';
+        ctx.fillRect(1,9,4,5);
+        // Boxes on pallet blocking exit
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(1,6,5,3);
+        // Big red X (violation)
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(11,10,4,1); ctx.fillRect(13,8,1,5);
+        ctx.fillRect(11,8,1,1); ctx.fillRect(14,12,1,1);
     }),
 
-    // --- Loading dock ---
+    // --- Open Dock Door - Cold Stress / Temperature Extreme ---
     dock: c(16,16, ctx => {
-        // Shadow/pit
-        ctx.fillStyle = '#020617';
-        ctx.fillRect(1,8,14,7);
-        // Dock plate
+        // Outside (cold blue - winter)
+        ctx.fillStyle = '#0c4a6e';
+        ctx.fillRect(0,0,16,8);
+        // Snow/ice outside
+        ctx.fillStyle = '#e0f2fe';
+        ctx.fillRect(1,5,3,2); ctx.fillRect(6,4,4,3); ctx.fillRect(12,5,3,2);
+        // Dock opening frame
         ctx.fillStyle = '#374151';
-        ctx.fillRect(2,9,12,5);
-        // Diamond plate texture
+        ctx.fillRect(0,7,16,2);
+        // Dock plate
         ctx.fillStyle = '#4b5563';
-        ctx.fillRect(3,10,2,1); ctx.fillRect(6,10,2,1); ctx.fillRect(9,10,2,1); ctx.fillRect(12,10,2,1);
-        ctx.fillRect(4,12,2,1); ctx.fillRect(7,12,2,1); ctx.fillRect(10,12,2,1);
+        ctx.fillRect(1,9,14,6);
+        // Diamond plate
+        ctx.fillStyle = '#6b7280';
+        ctx.fillRect(2,10,2,1); ctx.fillRect(6,10,2,1); ctx.fillRect(10,10,2,1);
         // Yellow safety edge
         ctx.fillStyle = '#eab308';
-        ctx.fillRect(2,8,12,2);
-        // Warning stripes
+        ctx.fillRect(1,8,14,2);
         ctx.fillStyle = '#111';
-        ctx.fillRect(4,8,2,2); ctx.fillRect(8,8,2,2); ctx.fillRect(12,8,2,2);
-        // Edge bumper
-        ctx.fillStyle = '#f97316';
-        ctx.fillRect(1,6,3,2); ctx.fillRect(12,6,3,2);
+        ctx.fillRect(3,8,2,2); ctx.fillRect(7,8,2,2); ctx.fillRect(11,8,2,2);
+        // Cold air coming in (wind lines)
+        ctx.fillStyle = '#93c5fd';
+        ctx.fillRect(2,2,4,1); ctx.fillRect(8,1,5,1); ctx.fillRect(4,4,6,1);
+        // Snowflake icon
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(13,1,1,3); ctx.fillRect(12,2,3,1);
+        // Temperature warning
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(1,11,3,4); // Thermometer
+        ctx.fillStyle = '#60a5fa';
+        ctx.fillRect(2,12,1,2);
     }),
 
-    // --- Facility hazard / bollard ---
+    // --- Noise Exposure / Environmental Hazard (>85dB) ---
     facility: c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.beginPath(); ctx.ellipse(8,15,4,2,0,0,Math.PI*2); ctx.fill();
-        // Column base
+        ctx.beginPath(); ctx.ellipse(8,15,5,2,0,0,Math.PI*2); ctx.fill();
+        // Alarm/speaker unit
         ctx.fillStyle = '#374151';
-        ctx.fillRect(5,12,6,3);
-        // Main column (safety yellow)
-        ctx.fillStyle = '#eab308';
-        ctx.fillRect(5,2,6,11);
-        // Warning stripes
+        ctx.fillRect(4,5,8,8);
+        ctx.fillStyle = '#4b5563';
+        ctx.fillRect(5,6,6,6);
+        // Speaker cone
+        ctx.fillStyle = '#1f2937';
+        ctx.beginPath(); ctx.arc(8,9,3,0,Math.PI*2); ctx.fill();
         ctx.fillStyle = '#111';
-        ctx.fillRect(5,4,6,2); ctx.fillRect(5,8,6,2); ctx.fillRect(5,12,6,1);
-        // Top cap
+        ctx.beginPath(); ctx.arc(8,9,2,0,Math.PI*2); ctx.fill();
+        // Sound waves (noise!)
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(8,9,5,5.5,0.8); ctx.stroke();
+        ctx.beginPath(); ctx.arc(8,9,6,5.5,0.8); ctx.stroke();
+        // dB warning label
         ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(5,1,6,2);
-        // Reflector
-        ctx.fillStyle = '#ef4444';
-        ctx.fillRect(6,5,4,1);
+        ctx.fillRect(3,1,10,4);
+        ctx.fillStyle = '#111';
+        ctx.fillRect(5,2,6,2); // ">85dB"
+        // Ear protection required icon
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(1,6,3,5);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(2,7,1,3);
+        // Mount
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(6,12,4,3);
     }),
 
-    // --- Unsafe worker behavior ---
+    // --- Ergonomic Hazard Worker (Awkward Posture/Overreaching) ---
     npc: c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.25)';
         ctx.beginPath(); ctx.ellipse(8,15,5,2,0,0,Math.PI*2); ctx.fill();
-        // Head
-        ctx.fillStyle = '#facc15';
-        ctx.beginPath();
-        ctx.arc(8,4,3,0,Math.PI*2);
-        ctx.fill();
-        // Body (Amazon hi-vis vest)
+        // Bent/twisted body posture
         ctx.fillStyle = '#ca8a04';
-        ctx.fillRect(5,7,6,7);
+        ctx.save();
+        ctx.translate(8,10);
+        ctx.rotate(0.3); // Twisted spine!
+        ctx.fillRect(-3,-3,6,7);
         ctx.fillStyle = '#eab308';
-        ctx.fillRect(6,8,4,5);
-        // Hi-vis reflective stripes
+        ctx.fillRect(-2,-2,4,5);
+        ctx.restore();
+        // Head (looking up - overreaching)
+        ctx.fillStyle = '#fcd34d';
+        ctx.beginPath(); ctx.arc(9,4,3,0,Math.PI*2); ctx.fill();
+        // Hi-vis stripes
         ctx.fillStyle = '#fef08a';
         ctx.fillRect(5,8,6,1); ctx.fillRect(5,11,6,1);
-        // Phone in hand (distracted!)
-        ctx.fillStyle = '#1f2937';
-        ctx.fillRect(11,6,3,5);
-        ctx.fillStyle = '#60a5fa';
-        ctx.fillRect(12,7,1,3);
-        // Legs
+        // Arm reaching HIGH (top shelf hazard)
+        ctx.fillStyle = '#fcd34d';
+        ctx.fillRect(11,2,2,5); // Arm up high
+        ctx.fillRect(12,0,3,2); // Hand at top
+        // Pain indicator (red back)
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(6,9,4,2); // Lower back strain
+        // Stow bag above (what they're reaching for)
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(13,0,3,4);
+        // Legs (bent awkwardly)
         ctx.fillStyle = '#1e3a8a';
-        ctx.fillRect(6,13,2,2); ctx.fillRect(8,13,2,2);
+        ctx.fillRect(5,13,2,2); ctx.fillRect(9,12,2,3);
     }),
 
-    // --- PIT Forklift ---
+    // --- EPJ / Pallet Jack - Foot Injury Hazard ---
     forklift: c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(5,13,10,3);
-        // Main body (Amazon orange)
+        ctx.fillRect(2,13,13,3);
+        // EPJ body (Amazon orange)
         ctx.fillStyle = '#c2410c';
-        ctx.fillRect(3,7,8,6);
+        ctx.fillRect(5,6,6,5);
         ctx.fillStyle = '#ea580c';
-        ctx.fillRect(4,8,6,4);
-        // Cabin/cage
+        ctx.fillRect(6,7,4,3);
+        // Handle/controls
         ctx.fillStyle = '#1f2937';
-        ctx.fillRect(3,4,7,4);
+        ctx.fillRect(6,2,4,5);
         ctx.fillStyle = '#374151';
-        ctx.fillRect(4,5,5,2);
-        // Windshield
-        ctx.fillStyle = '#0c4a6e';
-        ctx.fillRect(5,5,3,2);
-        // Mast
-        ctx.fillStyle = '#374151';
-        ctx.fillRect(10,2,2,11);
-        ctx.fillStyle = '#4b5563';
-        ctx.fillRect(11,3,1,9);
-        // Forks
+        ctx.fillRect(7,3,2,3);
+        // Control buttons
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(7,4,1,1);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(8,4,1,1);
+        // Forks (yellow safety)
         ctx.fillStyle = '#eab308';
-        ctx.fillRect(11,11,4,1); ctx.fillRect(11,13,4,1);
+        ctx.fillRect(1,10,5,2); ctx.fillRect(10,10,5,2);
         // Wheels
         ctx.fillStyle = '#111';
-        ctx.fillRect(3,12,3,3); ctx.fillRect(7,12,3,3);
-        // Warning light
-        ctx.fillStyle = '#f97316';
-        ctx.fillRect(5,4,2,1);
+        ctx.fillRect(2,11,2,3); ctx.fillRect(12,11,2,3);
+        ctx.fillRect(7,11,2,3);
+        // FOOT being run over (hazard!)
+        ctx.fillStyle = '#fcd34d';
+        ctx.fillRect(0,12,3,2); // Foot
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(1,12,2,1); // Injury indicator
+        // Warning stripes on forks
+        ctx.fillStyle = '#111';
+        ctx.fillRect(2,10,1,2); ctx.fillRect(4,10,1,2);
+        ctx.fillRect(11,10,1,2); ctx.fillRect(13,10,1,2);
     }),
 
     // --- DSP Van / yard hazard ---
@@ -5526,33 +5657,45 @@ function generateAssets() {
         ctx.fillRect(11,8,2,1);
     }),
 
-    // --- Compliance / audit clipboard ---
+    // --- LOTO Violation / Safety Compliance Failure ---
     compliance: c(16,16, ctx => {
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.fillRect(4,13,9,3);
-        // Clipboard board
-        ctx.fillStyle = '#92400e';
-        ctx.fillRect(3,2,10,13);
-        ctx.fillStyle = '#a16207';
-        ctx.fillRect(4,3,8,11);
-        // Metal clip
-        ctx.fillStyle = '#9ca3af';
-        ctx.fillRect(6,1,4,3);
-        ctx.fillStyle = '#d4d4d8';
-        ctx.fillRect(7,2,2,1);
-        // Paper
-        ctx.fillStyle = '#f5f5f4';
-        ctx.fillRect(5,4,6,9);
-        // Checklist lines
-        ctx.fillStyle = '#71717a';
-        ctx.fillRect(6,5,4,1); ctx.fillRect(6,7,4,1); ctx.fillRect(6,9,3,1);
-        // Red X marks (violations!)
+        ctx.fillRect(3,13,10,3);
+        // LOTO Padlock (missing/open - violation!)
         ctx.fillStyle = '#dc2626';
-        ctx.fillRect(10,5,1,1); ctx.fillRect(10,7,1,1);
-        // Warning stamp
+        ctx.fillRect(1,2,6,6);
         ctx.fillStyle = '#ef4444';
-        ctx.fillRect(6,10,4,2);
+        ctx.fillRect(2,3,4,4);
+        // Open shackle (not locked!)
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(2,0,1,3);
+        ctx.fillRect(5,0,1,3);
+        ctx.fillRect(2,0,4,1);
+        // Missing padlock body
+        ctx.fillStyle = '#991b1b';
+        ctx.fillRect(3,4,2,2);
+        // Clipboard with violations
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(8,1,7,14);
+        ctx.fillStyle = '#f5f5f4';
+        ctx.fillRect(9,3,5,10);
+        // Checklist with X marks
+        ctx.fillStyle = '#71717a';
+        ctx.fillRect(10,4,3,1); ctx.fillRect(10,6,3,1); ctx.fillRect(10,8,3,1);
+        // All FAILED (red X)
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(13,4,1,1); ctx.fillRect(13,6,1,1); ctx.fillRect(13,8,1,1);
+        // VIOLATION stamp
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(9,10,5,2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(10,11,3,1);
+        // Warning triangle
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath(); ctx.moveTo(4,10); ctx.lineTo(7,15); ctx.lineTo(1,15); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#111';
+        ctx.fillRect(3,12,2,1); ctx.fillRect(3,14,2,1);
     }),
 
     // --- Box cutter / safety blade ---
@@ -7256,9 +7399,9 @@ const PPE_ITEMS = [
     { id: 'cut_gloves', name: 'Cut-Resistant Gloves', cost: 1200, icon: 'glove',
       desc: '+20% Fire Rate', context: 'Hand protection EN 388', buff: { type: 'firerate', value: 0.20 } },
     { id: 'safety_goggles', name: 'Safety Goggles', cost: 750, icon: 'goggle',
-      desc: '+50% Projectile Size', context: 'Eye protection EN 166', buff: { type: 'projsize', value: 0.50 } },
+      desc: '+25% Critical Hit Chance', context: 'Eye protection EN 166 - spot hazards faster', buff: { type: 'crit', value: 0.25 } },
     { id: 'back_belt', name: 'Back Support Belt', cost: 600, icon: 'belt',
-      desc: '+50% Knockback Resist', context: 'Ergonomic lifting support', buff: { type: 'knockback', value: 0.50 } },
+      desc: '+30% Score Multiplier', context: 'Ergonomic lifting support - work efficiently', buff: { type: 'score', value: 0.30 } },
     { id: 'bump_cap', name: 'Bump Cap', cost: 900, icon: 'cap',
       desc: '+0.5s Invincibility', context: 'Head impact protection EN 812', buff: { type: 'iframe', value: 30 } },
     { id: 'hydration', name: 'Hydration Pouch', cost: 2000, icon: 'water',
@@ -7274,6 +7417,8 @@ const PPE_ITEMS = [
       desc: 'Auto-Tag Hazards, +1s Invuln', context: 'EN 812 with integrated HMI display', buff: { type: 'multi', effects: [{ type: 'hazard_reveal', value: 1 }, { type: 'iframe', value: 60 }] } },
     { id: 'quantum_vest', name: 'Quantum Shield Vest', cost: 10000, icon: 'quantum',
       desc: '25% Dmg Reflect, Regen 1HP/20s', context: 'Experimental OSHA-X prototype tech', buff: { type: 'multi', effects: [{ type: 'reflect', value: 0.25 }, { type: 'regen', value: 1200 }] } },
+    { id: 'bezos_armor', name: 'Prime Guardian Armor', cost: 15000, icon: 'primearmor',
+      desc: '2x Damage, 50% Block Chance', context: 'Ultimate safety gear - customer obsession incarnate', buff: { type: 'multi', effects: [{ type: 'damage', value: 2.0 }, { type: 'block', value: 0.50 }] } },
     // === SPECIAL ACTIONS ===
     { id: 'return_all', name: '>> RETURN ALL PPE <<', cost: 0, icon: 'return',
       desc: 'Return ALL items for full refund', context: 'Full PPE reset - get your Safety Points back!', buff: null, isAction: true },
@@ -7382,126 +7527,141 @@ const GAME = {
 };
 
 const HAZARD_POOL = [
-    // === POWERED INDUSTRIAL TRUCKS (PITs) ===
-    { name: "Speeding PIT Operator", type: "forklift" },
-    { name: "Forklift With Blocked View", type: "forklift" },
-    { name: "Reach Truck Cutting Corner", type: "forklift" },
-    { name: "Order Picker Too High", type: "forklift" },
-    { name: "Turret Truck Near Pedestrians", type: "forklift" },
-    { name: "Clamp Truck Overloaded", type: "forklift" },
-    { name: "PIT Operator Without Seatbelt", type: "forklift" },
+    // === ERGONOMIC HAZARDS - REPETITIVE MOTION (Stowing/Picking) ===
+    { name: "Repetitive Stow Motion (1000+ scans/shift)", type: "npc" },
+    { name: "Continuous Scanning/Twisting Pattern", type: "npc" },
+    { name: "Same-Motion Stowing Into Bags", type: "npc" },
+    { name: "High-Rate Pick Without Rotation", type: "npc" },
+    { name: "Carpal Tunnel Risk Station", type: "facility" },
 
-    // === PACK & SHIP HAZARDS ===
-    { name: "Overflowing SLAM Line", type: "conveyor" },
-    { name: "Jammed AFE Chute", type: "conveyor" },
-    { name: "SIOC Avalanche", type: "box" },
-    { name: "Crushed Jiffy Mailer Pile", type: "debris" },
-    { name: "Tape Gun Left Running", type: "blade" },
-    { name: "Poly Bag Explosion", type: "wrap" },
-    { name: "Gift Wrap Station Chaos", type: "debris" },
-    { name: "Dunnage Bag Mountain", type: "debris" },
+    // === ERGONOMIC HAZARDS - AWKWARD POSTURES ===
+    { name: "Top Shelf Overreach (Stow Bag)", type: "npc" },
+    { name: "Bottom Shelf Repeated Bending", type: "npc" },
+    { name: "Twisted Spine While Scanning", type: "npc" },
+    { name: "Shoulder-Height Stowing Station", type: "facility" },
+    { name: "Kneeling Without Knee Pads", type: "npc" },
+    { name: "Standing Mat Missing At Station", type: "facility" },
 
-    // === INBOUND & RECEIVE ===
-    { name: "Unbroken-Down Gaylord", type: "tall_pallet" },
-    { name: "Vendor Pallet Leaning", type: "tall_pallet" },
-    { name: "Receive Dock Gap", type: "dock" },
+    // === ERGONOMIC HAZARDS - HEAVY LIFTING ===
+    { name: "Non-Con Item (Dog Food 20kg+)", type: "box" },
+    { name: "Oversized Furniture Solo Lift", type: "box" },
+    { name: "Heavy Package Without Team Lift", type: "box" },
+    { name: "Water Cases Stacked High", type: "tall_pallet" },
+    { name: "Cat Litter Bucket Solo Carry", type: "box" },
+    { name: "Exercise Equipment Over 23kg", type: "box" },
+
+    // === ERGONOMIC HAZARDS - PUSHING/PULLING FORCE ===
+    { name: "Go-Cart With Bad Wheels (200kg+)", type: "cart" },
+    { name: "Heavy Cage High Rolling Resistance", type: "cage" },
+    { name: "Stuck Pallet Jack Wheels", type: "forklift" },
+    { name: "Overloaded Cart Exceeding Limit", type: "cart" },
+    { name: "Cage Door Jamming On Floor", type: "cage" },
+    { name: "Manual Pallet Movement No PPE", type: "cart" },
+
+    // === CONVEYOR & MACHINERY HAZARDS ===
+    { name: "Nip Point At Drive Roller", type: "conveyor" },
+    { name: "Pinch Point Belt Gap Exposed", type: "conveyor" },
+    { name: "Jam Breaking While Belt Running", type: "conveyor" },
+    { name: "LOTO Violation At Conveyor", type: "conveyor" },
+    { name: "Missing Safety Guard On Belt", type: "conveyor" },
+    { name: "Package Falling From Overhead Chute", type: "conveyor" },
+    { name: "Loose Clothing Near Moving Parts", type: "conveyor" },
+    { name: "Hair/Lanyard Entanglement Risk", type: "conveyor" },
+    { name: "E-Stop Out Of Reach", type: "conveyor" },
+    { name: "Sortation System Package Jam", type: "conveyor" },
+
+    // === SLIPS, TRIPS, AND FALLS ===
+    { name: "Loose Shrink Wrap In Walkway", type: "debris" },
+    { name: "Pallet Straps On Floor", type: "debris" },
+    { name: "Broken Pallet Wood Scattered", type: "debris" },
+    { name: "Damaged Concrete Surface", type: "spill" },
+    { name: "Floor Tape Peeling Up", type: "spill" },
+    { name: "Wet Floor From Winter Tracking", type: "spill" },
+    { name: "Ice/Snow Tracked Inside", type: "spill" },
+    { name: "Wet Floor No Warning Sign", type: "spill" },
+    { name: "Narrow Aisle Blocked By Carts", type: "cart" },
+    { name: "Staged Pallets Blocking Path", type: "tall_pallet" },
+    { name: "Totes Forcing Squeeze-Through", type: "tote" },
+    { name: "Step-Over Obstacle Hazard", type: "debris" },
+
+    // === POWERED INDUSTRIAL TRUCKS (PIT) ===
+    { name: "EPJ Running Over Toes", type: "forklift" },
+    { name: "Manual Pallet Jack Foot Injury Risk", type: "forklift" },
+    { name: "EPJ Collision With Racking", type: "forklift" },
+    { name: "Forklift Striking Infrastructure", type: "forklift" },
+    { name: "PIT-Cart Collision Zone", type: "forklift" },
+    { name: "Battery Handling Without PPE", type: "battery" },
+    { name: "Lead-Acid Battery Corrosive Exposure", type: "battery" },
+    { name: "Charging Station Acid Spill", type: "battery" },
+    { name: "PIT Operator Without Certification", type: "forklift" },
+    { name: "Forklift Exceeding Speed Limit", type: "forklift" },
+
+    // === PSYCHOSOCIAL & ENVIRONMENTAL ===
+    { name: "Noise >85dB Without Ear Protection", type: "facility" },
+    { name: "Constant Conveyor Alarm Noise", type: "conveyor" },
+    { name: "High Takt Time Pace Pressure", type: "npc" },
+    { name: "Peak Season Burnout Risk", type: "npc" },
+    { name: "Rushing Due To Rate Targets", type: "npc" },
+    { name: "Cold Stress Near Open Dock Door", type: "dock" },
+    { name: "Winter Temperature Extreme Zone", type: "dock" },
+    { name: "Summer Heatwave Non-AC Area", type: "facility" },
+    { name: "Mental Fatigue Station", type: "npc" },
+
+    // === HAZARDOUS MATERIALS (HazMat) ===
+    { name: "Leaking Package (Bleach)", type: "spill" },
+    { name: "Damaged Detergent Container", type: "spill" },
+    { name: "Lithium Battery Package Damage", type: "battery" },
+    { name: "Unknown Substance Spill", type: "spill" },
+    { name: "Unmarked Dangerous Goods Package", type: "box" },
+    { name: "Household Chemical Leak Trail", type: "spill" },
+    { name: "Battery Thermal Event Risk", type: "battery" },
+
+    // === RED FLAG VIOLATIONS ===
+    { name: "Daisy-Chained Extension Cords", type: "cord" },
+    { name: "Fire Exit Blocked By Carts", type: "door" },
+    { name: "Fire Extinguisher Hidden By Pallets", type: "door" },
+    { name: "Bent Racking Upright Not Offloaded", type: "tall_pallet" },
+    { name: "Damaged Rack Under Load", type: "tall_pallet" },
+    { name: "Missing Conveyor Safety Guard", type: "conveyor" },
+    { name: "Emergency Exit Blocked By Cage", type: "door" },
+    { name: "First Aid Kit Empty/Expired", type: "compliance" },
+    { name: "AED Access Obstructed", type: "facility" },
+    { name: "LOTO Padlock Missing", type: "compliance" },
+
+    // === STOW & STORAGE SPECIFIC ===
+    { name: "Overstuffed Stow Bag Capacity", type: "tote" },
+    { name: "Heavy Item Stowed Above Shoulder", type: "tall_pallet" },
+    { name: "Bin Weight Limit Exceeded", type: "box" },
+    { name: "Unstable Rack Section", type: "tall_pallet" },
+    { name: "Top Stock Unstable Stack", type: "tall_pallet" },
+
+    // === INBOUND/DOCK HAZARDS ===
     { name: "Trailer Without Wheel Chocks", type: "dock" },
     { name: "Dock Plate Not Secured", type: "dock" },
-    { name: "Mixed SKU Nightmare Pallet", type: "tall_pallet" },
-    { name: "Shrink Wrap Tornado", type: "wrap" },
-
-    // === PROBLEM SOLVE CHAOS ===
-    { name: "Problem Solve Cart Avalanche", type: "cart" },
-    { name: "ASIN Research Black Hole", type: "tote" },
-    { name: "Damaged Out Pile Growing", type: "box" },
-    { name: "Research Bin Overflow", type: "tote" },
-    { name: "Missing Label Saga", type: "compliance" },
-
-    // === FLOOR HAZARDS ===
-    { name: "Ice Pack Leak Trail", type: "spill" },
-    { name: "Crushed Fragile Item Spill", type: "spill" },
-    { name: "Leaking Liquid Hazmat", type: "spill" },
-    { name: "Sweeper Missed This Spot", type: "spill" },
-    { name: "Energy Drink Explosion", type: "spill" },
-    { name: "Smoothie Shrapnel Zone", type: "spill" },
-    { name: "Coffee Ring of Standup Past", type: "spill" },
-    { name: "Wet Floor No Sign", type: "spill" },
-
-    // === STOW & STORAGE ===
-    { name: "Overstuffed Prime Bin", type: "tote" },
-    { name: "Top Stock About to Fall", type: "tall_pallet" },
-    { name: "Heavy Item Stowed High", type: "tall_pallet" },
-    { name: "Bin Capacity Ignored", type: "box" },
-    { name: "Unstable Rack Section", type: "tall_pallet" },
-    { name: "Random Cage Contents", type: "cage" },
-
-    // === PICK & COUNT ===
-    { name: "Scanner Cord Trip Wire", type: "cord" },
-    { name: "Pick Cart Wheel Failure", type: "cart" },
-    { name: "Tote Stack Too Tall", type: "tote" },
-    { name: "Mystery SKU in Wrong Bin", type: "box" },
-    { name: "Cycle Count Chaos", type: "compliance" },
-
-    // === EQUIPMENT & TOOLS ===
-    { name: "Box Cutter Without Guard", type: "blade" },
-    { name: "Frayed Scanner Holster", type: "cord" },
-    { name: "Broken Safety Ladder", type: "facility" },
-    { name: "Missing Step Stool", type: "facility" },
-    { name: "Unsecured Extension Cord", type: "cord" },
-    { name: "Charging Station Overload", type: "battery" },
-    { name: "Dead Battery Pile", type: "battery" },
-
-    // === FIRE & EMERGENCY ===
-    { name: "Blocked Fire Exit", type: "door" },
-    { name: "Fire Extinguisher Hidden", type: "door" },
-    { name: "Emergency Shower Blocked", type: "facility" },
-    { name: "First Aid Kit Empty", type: "compliance" },
-    { name: "AED Signage Covered", type: "facility" },
-
-    // === ERGONOMIC HAZARDS ===
-    { name: "Overreaching Associate", type: "npc" },
-    { name: "Improper Lifting Technique", type: "npc" },
-    { name: "Continuous Repetitive Motion", type: "npc" },
-    { name: "Standing Mat Missing", type: "facility" },
-    { name: "Keyboard at Wrong Height", type: "facility" },
-
-    // === PEOPLE & BEHAVIOR ===
-    { name: "Phone Walker on Floor", type: "npc" },
-    { name: "Manager Speed Walk Mode", type: "npc" },
-    { name: "New Hire Wrong Way Traffic", type: "npc" },
-    { name: "Peak Season Burnout Zone", type: "npc" },
-    { name: "Ambassador Training Cluster", type: "npc" },
-    { name: "VTO Line Blocking Path", type: "npc" },
-
-    // === OUTBOUND & SHIPPING ===
+    { name: "Dock Gap Foot Hazard", type: "dock" },
     { name: "Trailer Loaded Unevenly", type: "dock" },
-    { name: "Smalls Bag Landslide", type: "debris" },
-    { name: "Rollers Not Locked", type: "cage" },
-    { name: "Cart Wall Collapse Risk", type: "cart" },
-    { name: "CPT Rush Hour Chaos", type: "conveyor" },
-    { name: "Sortation System Jam", type: "conveyor" },
+    { name: "Vendor Pallet Leaning Dangerously", type: "tall_pallet" },
 
     // === COMPLIANCE & DOCUMENTATION ===
-    { name: "Safety Audit Due Tomorrow", type: "compliance" },
-    { name: "Training Expired Badge", type: "compliance" },
-    { name: "PPE Checklist Skipped", type: "compliance" },
-    { name: "Incident Near-Miss Unreported", type: "compliance" },
-    { name: "OSHA Log Update Pending", type: "compliance" },
-    { name: "Lockout Tagout Forgotten", type: "compliance" },
+    { name: "LOTO Procedure Not Followed", type: "compliance" },
+    { name: "PPE Checklist Not Completed", type: "compliance" },
+    { name: "Near-Miss Incident Unreported", type: "compliance" },
+    { name: "Safety Training Expired", type: "compliance" },
+    { name: "Risk Assessment Overdue", type: "compliance" },
 
-    // === GERMANY (DE) - DGUV & ArbSchG Regulations ===
+    // === GERMANY (DE) - DGUV & ArbSchG ===
     { name: "Blocked Fluchtweg (Escape Route)", type: "door", region: "DE" },
-    { name: "Missing DGUV V3 Sticker", type: "battery", region: "DE" },
-    { name: "Unsecured Pallet (Ladungssicherung)", type: "tall_pallet", region: "DE" },
+    { name: "Missing DGUV V3 Prüfung Sticker", type: "battery", region: "DE" },
+    { name: "Ladungssicherung Violation", type: "tall_pallet", region: "DE" },
     { name: "Fehlende Gefährdungsbeurteilung", type: "compliance", region: "DE" },
     { name: "Sicherheitsbeauftragter Absent", type: "npc", region: "DE" },
     { name: "No Betriebsanweisung Posted", type: "compliance", region: "DE" },
-    { name: "BetrSichV Violation Notice", type: "compliance", region: "DE" },
+    { name: "BetrSichV Machine Safety Violation", type: "compliance", region: "DE" },
     { name: "Missing Erste-Hilfe-Kasten", type: "facility", region: "DE" },
-    { name: "Expired Prüfplakette on Forklift", type: "forklift", region: "DE" },
-    { name: "Feuerlöscher Access Blocked", type: "door", region: "DE" },
+    { name: "Expired Prüfplakette On Equipment", type: "forklift", region: "DE" },
+    { name: "Feuerlöscher Blocked Access", type: "door", region: "DE" },
 
-    // === AUSTRIA (AT) - ASchG & BauV Regulations ===
+    // === AUSTRIA (AT) - ASchG & BauV ===
     { name: "Unchecked PSA (PPE)", type: "compliance", region: "AT" },
     { name: "Missing Evaluierung (Risk Assessment)", type: "compliance", region: "AT" },
     { name: "SVP Not Informed", type: "npc", region: "AT" },
@@ -7513,10 +7673,10 @@ const HAZARD_POOL = [
     { name: "Arbeitsmittelverordnung Violation", type: "facility", region: "AT" },
     { name: "Notausgang Sign Obscured", type: "door", region: "AT" },
 
-    // === NETHERLANDS (NL) - Arbowet & RI&E Regulations ===
+    // === NETHERLANDS (NL) - Arbowet & RI&E ===
     { name: "Missing RI&E Assessment", type: "compliance", region: "NL" },
     { name: "Blocked Nooduitgang", type: "door", region: "NL" },
-    { name: "Prevention Officer Absent", type: "npc", region: "NL" },
+    { name: "Preventiemedewerker Absent", type: "npc", region: "NL" },
     { name: "Preventiemedewerker Not Trained", type: "npc", region: "NL" },
     { name: "Arbocatalogus Not Followed", type: "compliance", region: "NL" },
     { name: "Arbodeskundige Report Overdue", type: "compliance", region: "NL" },
@@ -11743,6 +11903,16 @@ function updateProjectiles() {
                     continue; // Don't take damage
                 }
 
+                // === PPE BUFF: Prime Guardian Armor - 50% Block Chance ===
+                const blockChance = getPPEBuffValue('block');
+                if (blockChance > 0 && Math.random() < blockChance) {
+                    spawnFloatingText(GAME.player.x, GAME.player.y - 16, "BLOCKED!", "#00ffff");
+                    spawnParticleBurst(GAME.player.x + 8, GAME.player.y + 8, ['#00ffff', '#ffffff'], 6);
+                    AudioSys.sfx.alert();
+                    GAME.projectiles.splice(i,1);
+                    continue; // Don't take damage
+                }
+
                 GAME.lives--; GAME.player.iframe = iframeBonus; GAME.shake = 10; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
                 VibrationSystem.onDamage(); // Vibrate on damage
                 if (GAME.lives<=0 && !GAME.gameOverTriggered) triggerGameOver("OVERWHELMED!");
@@ -11781,12 +11951,17 @@ function updateProjectiles() {
                             continue;
                         }
                     }
-                    // Character ability damage multipliers
+                    // Character ability damage multipliers + PPE damage buffs
                     let dmg = 1;
                     if (GAME.selectedChar === 'Carrie') dmg = 2; // PRECISION FOCUS
-                    GAME.boss.hp -= dmg; updateBossHud(); AudioSys.sfx.bossHit(); VibrationSystem.onBossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, attackMeta.color || '#ff0000', -2); GAME.projectiles.splice(i,1);
+                    // Apply critical hit damage modifier from projectile
+                    if (p.damageMod) dmg = Math.ceil(dmg * p.damageMod);
+                    // Apply Prime Guardian Armor damage buff
+                    const damageBuffValue = getPPEBuffValue('damage');
+                    if (damageBuffValue > 0) dmg = Math.ceil(dmg * damageBuffValue);
+                    GAME.boss.hp -= dmg; updateBossHud(); AudioSys.sfx.bossHit(); VibrationSystem.onBossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, p.color || '#ff0000', -2); GAME.projectiles.splice(i,1);
                     spawnFloatingText(GAME.player.x, GAME.player.y - 24, "+50", "#22c55e"); // Score indicator
-                    const dmgText = dmg > 1 ? `${attackMeta.text || 'Hit!'} x${dmg}` : (attackMeta.text || 'Hit!');
+                    const dmgText = p.isCrit ? `CRIT! -${dmg}` : (dmg > 1 ? `${attackMeta.text || 'Hit!'} x${dmg}` : (attackMeta.text || 'Hit!'));
                     spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, dmgText, attackMeta.color || '#ff0000');
                     // Damage number above boss head
                     spawnFloatingText(GAME.boss.x+16, GAME.boss.y-8, `-${dmg}`, '#ffffff');
@@ -12000,10 +12175,12 @@ function throwBook() {
         else { if (KEYS.up) vy=-speed; else if (KEYS.down) vy=speed; else if (KEYS.left) vx=-speed; else vx=speed; }
     }
 
-    // === PPE BUFF: Safety Goggles - 50% larger projectile collision ===
-    const projSizeMod = GAME.ppeUnlocked.includes('safety_goggles') ? 1.5 : 1.0;
+    // === PPE BUFF: Safety Goggles - 25% Critical Hit Chance (double damage) ===
+    const critChance = getPPEBuffValue('crit');
+    const isCrit = Math.random() < critChance;
+    const critMod = isCrit ? 2.0 : 1.0;
 
-    GAME.projectiles.push({ type:'attack', owner: GAME.selectedChar, sprite: attackMeta.sprite, color: attackMeta.color, x:p.x+8, y:p.y+8, vx, vy, life:attackMeta.life || 40, text: attackMeta.text, sizeMod: projSizeMod }); AudioSys.sfx.throw();
+    GAME.projectiles.push({ type:'attack', owner: GAME.selectedChar, sprite: attackMeta.sprite, color: isCrit ? '#ffff00' : (attackMeta.color || '#ff0000'), x:p.x+8, y:p.y+8, vx, vy, life:attackMeta.life || 40, text: attackMeta.text, sizeMod: 1.0, damageMod: critMod, isCrit: isCrit }); AudioSys.sfx.throw();
 }
 
 // === HELPER: Get total PPE buff value for a specific buff type (supports multi-effects) ===
@@ -12618,6 +12795,12 @@ function calculateCurrentScore() {
 
     // Bonus score from collectibles in yard level
     score += GAME.score || 0;
+
+    // === PPE BUFF: Back Support Belt - Score Multiplier ===
+    const scoreBuff = getPPEBuffValue('score');
+    if (scoreBuff > 0) {
+        score = Math.floor(score * (1 + scoreBuff));
+    }
 
     // Minimum score is 0
     return Math.max(0, Math.floor(score));
