@@ -2939,6 +2939,13 @@ const AudioSys = {
         throw: () => AudioSys.playTone(400, 'square', 0.1, 0.1),
         hit: () => { AudioSys.playNoise(0.1, 0.2); AudioSys.playTone(100, 'sawtooth', 0.1, 0.2); },
         bossHit: () => { AudioSys.playNoise(0.2, 0.3); AudioSys.playTone(80, 'sawtooth', 0.2, 0.3); },
+        // Critical hit sound - powerful impact with rising tone
+        critHit: () => {
+            AudioSys.playNoise(0.15, 0.35);
+            AudioSys.playTone(150, 'sawtooth', 0.15, 0.35);
+            setTimeout(() => AudioSys.playTone(300, 'square', 0.1, 0.25), 50);
+            setTimeout(() => AudioSys.playTone(600, 'sine', 0.1, 0.2), 100);
+        },
         alert: () => AudioSys.playTone(600, 'square', 0.2, 0.1),
         text: () => AudioSys.playTone(800, 'square', 0.03, 0.05),
         fix: () => { [440, 554, 659].forEach((f,i) => setTimeout(()=>AudioSys.playTone(f,'sine',0.2,0.1), i*100)); },
@@ -7402,7 +7409,7 @@ const PPE_ITEMS = [
     { id: 'cut_gloves', name: 'Cut-Resistant Gloves', cost: 1200, icon: 'glove',
       desc: '+20% Fire Rate', context: 'Hand protection EN 388', buff: { type: 'firerate', value: 0.20 } },
     { id: 'safety_goggles', name: 'Safety Goggles', cost: 750, icon: 'goggle',
-      desc: '+25% Critical Hit Chance', context: 'Eye protection EN 166 - spot hazards faster', buff: { type: 'crit', value: 0.25 } },
+      desc: '25% Crit (2x Dmg, Bypass)', context: 'EN 166 - Crits bypass dodge/deflect!', buff: { type: 'crit', value: 0.25 } },
     { id: 'back_belt', name: 'Back Support Belt', cost: 600, icon: 'belt',
       desc: '+30% Score Multiplier', context: 'Ergonomic lifting support - work efficiently', buff: { type: 'score', value: 0.30 } },
     { id: 'bump_cap', name: 'Bump Cap', cost: 900, icon: 'cap',
@@ -11962,10 +11969,24 @@ function updateProjectiles() {
                     // Apply Prime Guardian Armor damage buff
                     const damageBuffValue = getPPEBuffValue('damage');
                     if (damageBuffValue > 0) dmg = Math.ceil(dmg * damageBuffValue);
-                    GAME.boss.hp -= dmg; updateBossHud(); AudioSys.sfx.bossHit(); VibrationSystem.onBossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, p.color || '#ff0000', -2); GAME.projectiles.splice(i,1);
-                    spawnFloatingText(GAME.player.x, GAME.player.y - 24, "+50", "#22c55e"); // Score indicator
-                    const dmgText = p.isCrit ? `CRIT! -${dmg}` : (dmg > 1 ? `${attackMeta.text || 'Hit!'} x${dmg}` : (attackMeta.text || 'Hit!'));
-                    spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, dmgText, attackMeta.color || '#ff0000');
+                    GAME.boss.hp -= dmg; updateBossHud();
+                    // Use crit sound for critical hits, regular boss hit otherwise
+                    if (p.isCrit) {
+                        AudioSys.sfx.critHit();
+                        spawnParticleBurst(p.x, p.y, ['#ff0000', '#ff4444', '#ffff00'], 10);
+                    } else {
+                        AudioSys.sfx.bossHit();
+                        spawnParticle(p.x, p.y, p.color || '#ff0000', -2);
+                    }
+                    VibrationSystem.onBossHit(); GAME.shake = p.isCrit ? 8 : 5; GAME.projectiles.splice(i,1);
+                    spawnFloatingText(GAME.player.x, GAME.player.y - 24, p.isCrit ? "+100" : "+50", p.isCrit ? "#ffd700" : "#22c55e"); // Double score for crit
+                    if (p.isCrit) {
+                        spawnFloatingText(GAME.boss.x+16, GAME.boss.y-16, "CRIT!", "#ff0000");
+                        spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, `-${dmg}`, "#ffff00");
+                    } else {
+                        const dmgText = dmg > 1 ? `${attackMeta.text || 'Hit!'} x${dmg}` : (attackMeta.text || 'Hit!');
+                        spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, dmgText, attackMeta.color || '#ff0000');
+                    }
                     // Damage number above boss head
                     spawnFloatingText(GAME.boss.x+16, GAME.boss.y-8, `-${dmg}`, '#ffffff');
                     // Check for Mecha Mega Simon transformation at 0 HP with fake victory sequence
@@ -12008,32 +12029,44 @@ function updateProjectiles() {
                 const hitRadius = 12 * (p.sizeMod || 1.0);
                 GAME.entities.forEach(e => {
                     if (e.type === 'ops' && Math.hypot(p.x-e.x, p.y-e.y) < hitRadius) {
-                        const rng = Math.random();
-                        // 🔥 10% DEFLECT CHANCE FOR OPS ENEMIES - throws projectile back at player
-                        if (rng < 0.1) {
-                            spawnFloatingText(e.x, e.y, "DEFLECTED!", "#ff4444");
-                            spawnParticleBurst(e.x, e.y, ['#ff4444', '#ff0000'], 8);
-                            AudioSys.sfx.alert();
-                            // Reverse projectile direction toward player
-                            const angle = Math.atan2(GAME.player.y - e.y, GAME.player.x - e.x);
-                            p.vx = Math.cos(angle) * 3.0;
-                            p.vy = Math.sin(angle) * 3.0;
-                            p.type = 'req'; // Change to boss projectile type so it damages player
-                            p.boss = true;
-                            p.grace = 15; // Give player a moment to react
-                            hit = false; // Don't remove projectile
-                        }
-                        // 🔥 30% DODGE CHANCE FOR OPS ENEMIES
-                        else if (rng < 0.4) { // 0.1 to 0.4 = 30% chance
-                            spawnFloatingText(e.x, e.y, "DODGED!", "#ff9900");
-                            spawnParticleBurst(e.x, e.y, ['#ff9900', '#ffff00'], 6);
-                            AudioSys.sfx.alert();
+                        // 🔥 CRITICAL HITS BYPASS ALL DEFENSES!
+                        if (p.isCrit) {
+                            e.type = 'assoc';
+                            AudioSys.sfx.critHit(); // Special crit sound
+                            spawnParticleBurst(e.x, e.y, ['#ff0000', '#ff4444', '#ffff00'], 12); // Big burst
+                            GAME.opsPushed++;
+                            spawnFloatingText(e.x, e.y - 12, "CRIT!", "#ff0000"); // Red CRIT text
+                            spawnFloatingText(GAME.player.x, GAME.player.y - 24, "+200", "#ffd700"); // Double score for crit
+                            spawnFloatingText(e.x, e.y + 8, attackMeta.text || "My Rates!", "#ffff00");
                             hit = true;
                         } else {
-                            e.type = 'assoc'; AudioSys.sfx.hit(); spawnParticle(e.x, e.y, attackMeta.color || '#fff', -2); GAME.opsPushed++;
-                            spawnFloatingText(GAME.player.x, GAME.player.y - 24, "+100", "#22c55e"); // Score indicator
-                            spawnFloatingText(e.x, e.y, attackMeta.text || "My Rates!", attackMeta.color || "#ff0000");
-                            hit = true;
+                            const rng = Math.random();
+                            // 🔥 10% DEFLECT CHANCE FOR OPS ENEMIES - throws projectile back at player
+                            if (rng < 0.1) {
+                                spawnFloatingText(e.x, e.y, "DEFLECTED!", "#ff4444");
+                                spawnParticleBurst(e.x, e.y, ['#ff4444', '#ff0000'], 8);
+                                AudioSys.sfx.alert();
+                                // Reverse projectile direction toward player
+                                const angle = Math.atan2(GAME.player.y - e.y, GAME.player.x - e.x);
+                                p.vx = Math.cos(angle) * 3.0;
+                                p.vy = Math.sin(angle) * 3.0;
+                                p.type = 'req'; // Change to boss projectile type so it damages player
+                                p.boss = true;
+                                p.grace = 15; // Give player a moment to react
+                                hit = false; // Don't remove projectile
+                            }
+                            // 🔥 30% DODGE CHANCE FOR OPS ENEMIES
+                            else if (rng < 0.4) { // 0.1 to 0.4 = 30% chance
+                                spawnFloatingText(e.x, e.y, "DODGED!", "#ff9900");
+                                spawnParticleBurst(e.x, e.y, ['#ff9900', '#ffff00'], 6);
+                                AudioSys.sfx.alert();
+                                hit = true;
+                            } else {
+                                e.type = 'assoc'; AudioSys.sfx.hit(); spawnParticle(e.x, e.y, attackMeta.color || '#fff', -2); GAME.opsPushed++;
+                                spawnFloatingText(GAME.player.x, GAME.player.y - 24, "+100", "#22c55e"); // Score indicator
+                                spawnFloatingText(e.x, e.y, attackMeta.text || "My Rates!", attackMeta.color || "#ff0000");
+                                hit = true;
+                            }
                         }
                     }
                 });
