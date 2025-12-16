@@ -7256,9 +7256,9 @@ const PPE_ITEMS = [
     { id: 'cut_gloves', name: 'Cut-Resistant Gloves', cost: 1200, icon: 'glove',
       desc: '+20% Fire Rate', context: 'Hand protection EN 388', buff: { type: 'firerate', value: 0.20 } },
     { id: 'safety_goggles', name: 'Safety Goggles', cost: 750, icon: 'goggle',
-      desc: '+50% Projectile Size', context: 'Eye protection EN 166', buff: { type: 'projsize', value: 0.50 } },
+      desc: '+25% Critical Hit Chance', context: 'Eye protection EN 166 - spot hazards faster', buff: { type: 'crit', value: 0.25 } },
     { id: 'back_belt', name: 'Back Support Belt', cost: 600, icon: 'belt',
-      desc: '+50% Knockback Resist', context: 'Ergonomic lifting support', buff: { type: 'knockback', value: 0.50 } },
+      desc: '+30% Score Multiplier', context: 'Ergonomic lifting support - work efficiently', buff: { type: 'score', value: 0.30 } },
     { id: 'bump_cap', name: 'Bump Cap', cost: 900, icon: 'cap',
       desc: '+0.5s Invincibility', context: 'Head impact protection EN 812', buff: { type: 'iframe', value: 30 } },
     { id: 'hydration', name: 'Hydration Pouch', cost: 2000, icon: 'water',
@@ -7274,6 +7274,8 @@ const PPE_ITEMS = [
       desc: 'Auto-Tag Hazards, +1s Invuln', context: 'EN 812 with integrated HMI display', buff: { type: 'multi', effects: [{ type: 'hazard_reveal', value: 1 }, { type: 'iframe', value: 60 }] } },
     { id: 'quantum_vest', name: 'Quantum Shield Vest', cost: 10000, icon: 'quantum',
       desc: '25% Dmg Reflect, Regen 1HP/20s', context: 'Experimental OSHA-X prototype tech', buff: { type: 'multi', effects: [{ type: 'reflect', value: 0.25 }, { type: 'regen', value: 1200 }] } },
+    { id: 'bezos_armor', name: 'Prime Guardian Armor', cost: 15000, icon: 'primearmor',
+      desc: '2x Damage, 50% Block Chance', context: 'Ultimate safety gear - customer obsession incarnate', buff: { type: 'multi', effects: [{ type: 'damage', value: 2.0 }, { type: 'block', value: 0.50 }] } },
     // === SPECIAL ACTIONS ===
     { id: 'return_all', name: '>> RETURN ALL PPE <<', cost: 0, icon: 'return',
       desc: 'Return ALL items for full refund', context: 'Full PPE reset - get your Safety Points back!', buff: null, isAction: true },
@@ -7382,126 +7384,141 @@ const GAME = {
 };
 
 const HAZARD_POOL = [
-    // === POWERED INDUSTRIAL TRUCKS (PITs) ===
-    { name: "Speeding PIT Operator", type: "forklift" },
-    { name: "Forklift With Blocked View", type: "forklift" },
-    { name: "Reach Truck Cutting Corner", type: "forklift" },
-    { name: "Order Picker Too High", type: "forklift" },
-    { name: "Turret Truck Near Pedestrians", type: "forklift" },
-    { name: "Clamp Truck Overloaded", type: "forklift" },
-    { name: "PIT Operator Without Seatbelt", type: "forklift" },
+    // === ERGONOMIC HAZARDS - REPETITIVE MOTION (Stowing/Picking) ===
+    { name: "Repetitive Stow Motion (1000+ scans/shift)", type: "npc" },
+    { name: "Continuous Scanning/Twisting Pattern", type: "npc" },
+    { name: "Same-Motion Stowing Into Bags", type: "npc" },
+    { name: "High-Rate Pick Without Rotation", type: "npc" },
+    { name: "Carpal Tunnel Risk Station", type: "facility" },
 
-    // === PACK & SHIP HAZARDS ===
-    { name: "Overflowing SLAM Line", type: "conveyor" },
-    { name: "Jammed AFE Chute", type: "conveyor" },
-    { name: "SIOC Avalanche", type: "box" },
-    { name: "Crushed Jiffy Mailer Pile", type: "debris" },
-    { name: "Tape Gun Left Running", type: "blade" },
-    { name: "Poly Bag Explosion", type: "wrap" },
-    { name: "Gift Wrap Station Chaos", type: "debris" },
-    { name: "Dunnage Bag Mountain", type: "debris" },
+    // === ERGONOMIC HAZARDS - AWKWARD POSTURES ===
+    { name: "Top Shelf Overreach (Stow Bag)", type: "npc" },
+    { name: "Bottom Shelf Repeated Bending", type: "npc" },
+    { name: "Twisted Spine While Scanning", type: "npc" },
+    { name: "Shoulder-Height Stowing Station", type: "facility" },
+    { name: "Kneeling Without Knee Pads", type: "npc" },
+    { name: "Standing Mat Missing At Station", type: "facility" },
 
-    // === INBOUND & RECEIVE ===
-    { name: "Unbroken-Down Gaylord", type: "tall_pallet" },
-    { name: "Vendor Pallet Leaning", type: "tall_pallet" },
-    { name: "Receive Dock Gap", type: "dock" },
+    // === ERGONOMIC HAZARDS - HEAVY LIFTING ===
+    { name: "Non-Con Item (Dog Food 20kg+)", type: "box" },
+    { name: "Oversized Furniture Solo Lift", type: "box" },
+    { name: "Heavy Package Without Team Lift", type: "box" },
+    { name: "Water Cases Stacked High", type: "tall_pallet" },
+    { name: "Cat Litter Bucket Solo Carry", type: "box" },
+    { name: "Exercise Equipment Over 23kg", type: "box" },
+
+    // === ERGONOMIC HAZARDS - PUSHING/PULLING FORCE ===
+    { name: "Go-Cart With Bad Wheels (200kg+)", type: "cart" },
+    { name: "Heavy Cage High Rolling Resistance", type: "cage" },
+    { name: "Stuck Pallet Jack Wheels", type: "forklift" },
+    { name: "Overloaded Cart Exceeding Limit", type: "cart" },
+    { name: "Cage Door Jamming On Floor", type: "cage" },
+    { name: "Manual Pallet Movement No PPE", type: "cart" },
+
+    // === CONVEYOR & MACHINERY HAZARDS ===
+    { name: "Nip Point At Drive Roller", type: "conveyor" },
+    { name: "Pinch Point Belt Gap Exposed", type: "conveyor" },
+    { name: "Jam Breaking While Belt Running", type: "conveyor" },
+    { name: "LOTO Violation At Conveyor", type: "conveyor" },
+    { name: "Missing Safety Guard On Belt", type: "conveyor" },
+    { name: "Package Falling From Overhead Chute", type: "conveyor" },
+    { name: "Loose Clothing Near Moving Parts", type: "conveyor" },
+    { name: "Hair/Lanyard Entanglement Risk", type: "conveyor" },
+    { name: "E-Stop Out Of Reach", type: "conveyor" },
+    { name: "Sortation System Package Jam", type: "conveyor" },
+
+    // === SLIPS, TRIPS, AND FALLS ===
+    { name: "Loose Shrink Wrap In Walkway", type: "debris" },
+    { name: "Pallet Straps On Floor", type: "debris" },
+    { name: "Broken Pallet Wood Scattered", type: "debris" },
+    { name: "Damaged Concrete Surface", type: "spill" },
+    { name: "Floor Tape Peeling Up", type: "spill" },
+    { name: "Wet Floor From Winter Tracking", type: "spill" },
+    { name: "Ice/Snow Tracked Inside", type: "spill" },
+    { name: "Wet Floor No Warning Sign", type: "spill" },
+    { name: "Narrow Aisle Blocked By Carts", type: "cart" },
+    { name: "Staged Pallets Blocking Path", type: "tall_pallet" },
+    { name: "Totes Forcing Squeeze-Through", type: "tote" },
+    { name: "Step-Over Obstacle Hazard", type: "debris" },
+
+    // === POWERED INDUSTRIAL TRUCKS (PIT) ===
+    { name: "EPJ Running Over Toes", type: "forklift" },
+    { name: "Manual Pallet Jack Foot Injury Risk", type: "forklift" },
+    { name: "EPJ Collision With Racking", type: "forklift" },
+    { name: "Forklift Striking Infrastructure", type: "forklift" },
+    { name: "PIT-Cart Collision Zone", type: "forklift" },
+    { name: "Battery Handling Without PPE", type: "battery" },
+    { name: "Lead-Acid Battery Corrosive Exposure", type: "battery" },
+    { name: "Charging Station Acid Spill", type: "battery" },
+    { name: "PIT Operator Without Certification", type: "forklift" },
+    { name: "Forklift Exceeding Speed Limit", type: "forklift" },
+
+    // === PSYCHOSOCIAL & ENVIRONMENTAL ===
+    { name: "Noise >85dB Without Ear Protection", type: "facility" },
+    { name: "Constant Conveyor Alarm Noise", type: "conveyor" },
+    { name: "High Takt Time Pace Pressure", type: "npc" },
+    { name: "Peak Season Burnout Risk", type: "npc" },
+    { name: "Rushing Due To Rate Targets", type: "npc" },
+    { name: "Cold Stress Near Open Dock Door", type: "dock" },
+    { name: "Winter Temperature Extreme Zone", type: "dock" },
+    { name: "Summer Heatwave Non-AC Area", type: "facility" },
+    { name: "Mental Fatigue Station", type: "npc" },
+
+    // === HAZARDOUS MATERIALS (HazMat) ===
+    { name: "Leaking Package (Bleach)", type: "spill" },
+    { name: "Damaged Detergent Container", type: "spill" },
+    { name: "Lithium Battery Package Damage", type: "battery" },
+    { name: "Unknown Substance Spill", type: "spill" },
+    { name: "Unmarked Dangerous Goods Package", type: "box" },
+    { name: "Household Chemical Leak Trail", type: "spill" },
+    { name: "Battery Thermal Event Risk", type: "battery" },
+
+    // === RED FLAG VIOLATIONS ===
+    { name: "Daisy-Chained Extension Cords", type: "cord" },
+    { name: "Fire Exit Blocked By Carts", type: "door" },
+    { name: "Fire Extinguisher Hidden By Pallets", type: "door" },
+    { name: "Bent Racking Upright Not Offloaded", type: "tall_pallet" },
+    { name: "Damaged Rack Under Load", type: "tall_pallet" },
+    { name: "Missing Conveyor Safety Guard", type: "conveyor" },
+    { name: "Emergency Exit Blocked By Cage", type: "door" },
+    { name: "First Aid Kit Empty/Expired", type: "compliance" },
+    { name: "AED Access Obstructed", type: "facility" },
+    { name: "LOTO Padlock Missing", type: "compliance" },
+
+    // === STOW & STORAGE SPECIFIC ===
+    { name: "Overstuffed Stow Bag Capacity", type: "tote" },
+    { name: "Heavy Item Stowed Above Shoulder", type: "tall_pallet" },
+    { name: "Bin Weight Limit Exceeded", type: "box" },
+    { name: "Unstable Rack Section", type: "tall_pallet" },
+    { name: "Top Stock Unstable Stack", type: "tall_pallet" },
+
+    // === INBOUND/DOCK HAZARDS ===
     { name: "Trailer Without Wheel Chocks", type: "dock" },
     { name: "Dock Plate Not Secured", type: "dock" },
-    { name: "Mixed SKU Nightmare Pallet", type: "tall_pallet" },
-    { name: "Shrink Wrap Tornado", type: "wrap" },
-
-    // === PROBLEM SOLVE CHAOS ===
-    { name: "Problem Solve Cart Avalanche", type: "cart" },
-    { name: "ASIN Research Black Hole", type: "tote" },
-    { name: "Damaged Out Pile Growing", type: "box" },
-    { name: "Research Bin Overflow", type: "tote" },
-    { name: "Missing Label Saga", type: "compliance" },
-
-    // === FLOOR HAZARDS ===
-    { name: "Ice Pack Leak Trail", type: "spill" },
-    { name: "Crushed Fragile Item Spill", type: "spill" },
-    { name: "Leaking Liquid Hazmat", type: "spill" },
-    { name: "Sweeper Missed This Spot", type: "spill" },
-    { name: "Energy Drink Explosion", type: "spill" },
-    { name: "Smoothie Shrapnel Zone", type: "spill" },
-    { name: "Coffee Ring of Standup Past", type: "spill" },
-    { name: "Wet Floor No Sign", type: "spill" },
-
-    // === STOW & STORAGE ===
-    { name: "Overstuffed Prime Bin", type: "tote" },
-    { name: "Top Stock About to Fall", type: "tall_pallet" },
-    { name: "Heavy Item Stowed High", type: "tall_pallet" },
-    { name: "Bin Capacity Ignored", type: "box" },
-    { name: "Unstable Rack Section", type: "tall_pallet" },
-    { name: "Random Cage Contents", type: "cage" },
-
-    // === PICK & COUNT ===
-    { name: "Scanner Cord Trip Wire", type: "cord" },
-    { name: "Pick Cart Wheel Failure", type: "cart" },
-    { name: "Tote Stack Too Tall", type: "tote" },
-    { name: "Mystery SKU in Wrong Bin", type: "box" },
-    { name: "Cycle Count Chaos", type: "compliance" },
-
-    // === EQUIPMENT & TOOLS ===
-    { name: "Box Cutter Without Guard", type: "blade" },
-    { name: "Frayed Scanner Holster", type: "cord" },
-    { name: "Broken Safety Ladder", type: "facility" },
-    { name: "Missing Step Stool", type: "facility" },
-    { name: "Unsecured Extension Cord", type: "cord" },
-    { name: "Charging Station Overload", type: "battery" },
-    { name: "Dead Battery Pile", type: "battery" },
-
-    // === FIRE & EMERGENCY ===
-    { name: "Blocked Fire Exit", type: "door" },
-    { name: "Fire Extinguisher Hidden", type: "door" },
-    { name: "Emergency Shower Blocked", type: "facility" },
-    { name: "First Aid Kit Empty", type: "compliance" },
-    { name: "AED Signage Covered", type: "facility" },
-
-    // === ERGONOMIC HAZARDS ===
-    { name: "Overreaching Associate", type: "npc" },
-    { name: "Improper Lifting Technique", type: "npc" },
-    { name: "Continuous Repetitive Motion", type: "npc" },
-    { name: "Standing Mat Missing", type: "facility" },
-    { name: "Keyboard at Wrong Height", type: "facility" },
-
-    // === PEOPLE & BEHAVIOR ===
-    { name: "Phone Walker on Floor", type: "npc" },
-    { name: "Manager Speed Walk Mode", type: "npc" },
-    { name: "New Hire Wrong Way Traffic", type: "npc" },
-    { name: "Peak Season Burnout Zone", type: "npc" },
-    { name: "Ambassador Training Cluster", type: "npc" },
-    { name: "VTO Line Blocking Path", type: "npc" },
-
-    // === OUTBOUND & SHIPPING ===
+    { name: "Dock Gap Foot Hazard", type: "dock" },
     { name: "Trailer Loaded Unevenly", type: "dock" },
-    { name: "Smalls Bag Landslide", type: "debris" },
-    { name: "Rollers Not Locked", type: "cage" },
-    { name: "Cart Wall Collapse Risk", type: "cart" },
-    { name: "CPT Rush Hour Chaos", type: "conveyor" },
-    { name: "Sortation System Jam", type: "conveyor" },
+    { name: "Vendor Pallet Leaning Dangerously", type: "tall_pallet" },
 
     // === COMPLIANCE & DOCUMENTATION ===
-    { name: "Safety Audit Due Tomorrow", type: "compliance" },
-    { name: "Training Expired Badge", type: "compliance" },
-    { name: "PPE Checklist Skipped", type: "compliance" },
-    { name: "Incident Near-Miss Unreported", type: "compliance" },
-    { name: "OSHA Log Update Pending", type: "compliance" },
-    { name: "Lockout Tagout Forgotten", type: "compliance" },
+    { name: "LOTO Procedure Not Followed", type: "compliance" },
+    { name: "PPE Checklist Not Completed", type: "compliance" },
+    { name: "Near-Miss Incident Unreported", type: "compliance" },
+    { name: "Safety Training Expired", type: "compliance" },
+    { name: "Risk Assessment Overdue", type: "compliance" },
 
-    // === GERMANY (DE) - DGUV & ArbSchG Regulations ===
+    // === GERMANY (DE) - DGUV & ArbSchG ===
     { name: "Blocked Fluchtweg (Escape Route)", type: "door", region: "DE" },
-    { name: "Missing DGUV V3 Sticker", type: "battery", region: "DE" },
-    { name: "Unsecured Pallet (Ladungssicherung)", type: "tall_pallet", region: "DE" },
+    { name: "Missing DGUV V3 Prüfung Sticker", type: "battery", region: "DE" },
+    { name: "Ladungssicherung Violation", type: "tall_pallet", region: "DE" },
     { name: "Fehlende Gefährdungsbeurteilung", type: "compliance", region: "DE" },
     { name: "Sicherheitsbeauftragter Absent", type: "npc", region: "DE" },
     { name: "No Betriebsanweisung Posted", type: "compliance", region: "DE" },
-    { name: "BetrSichV Violation Notice", type: "compliance", region: "DE" },
+    { name: "BetrSichV Machine Safety Violation", type: "compliance", region: "DE" },
     { name: "Missing Erste-Hilfe-Kasten", type: "facility", region: "DE" },
-    { name: "Expired Prüfplakette on Forklift", type: "forklift", region: "DE" },
-    { name: "Feuerlöscher Access Blocked", type: "door", region: "DE" },
+    { name: "Expired Prüfplakette On Equipment", type: "forklift", region: "DE" },
+    { name: "Feuerlöscher Blocked Access", type: "door", region: "DE" },
 
-    // === AUSTRIA (AT) - ASchG & BauV Regulations ===
+    // === AUSTRIA (AT) - ASchG & BauV ===
     { name: "Unchecked PSA (PPE)", type: "compliance", region: "AT" },
     { name: "Missing Evaluierung (Risk Assessment)", type: "compliance", region: "AT" },
     { name: "SVP Not Informed", type: "npc", region: "AT" },
@@ -7513,10 +7530,10 @@ const HAZARD_POOL = [
     { name: "Arbeitsmittelverordnung Violation", type: "facility", region: "AT" },
     { name: "Notausgang Sign Obscured", type: "door", region: "AT" },
 
-    // === NETHERLANDS (NL) - Arbowet & RI&E Regulations ===
+    // === NETHERLANDS (NL) - Arbowet & RI&E ===
     { name: "Missing RI&E Assessment", type: "compliance", region: "NL" },
     { name: "Blocked Nooduitgang", type: "door", region: "NL" },
-    { name: "Prevention Officer Absent", type: "npc", region: "NL" },
+    { name: "Preventiemedewerker Absent", type: "npc", region: "NL" },
     { name: "Preventiemedewerker Not Trained", type: "npc", region: "NL" },
     { name: "Arbocatalogus Not Followed", type: "compliance", region: "NL" },
     { name: "Arbodeskundige Report Overdue", type: "compliance", region: "NL" },
@@ -11743,6 +11760,16 @@ function updateProjectiles() {
                     continue; // Don't take damage
                 }
 
+                // === PPE BUFF: Prime Guardian Armor - 50% Block Chance ===
+                const blockChance = getPPEBuffValue('block');
+                if (blockChance > 0 && Math.random() < blockChance) {
+                    spawnFloatingText(GAME.player.x, GAME.player.y - 16, "BLOCKED!", "#00ffff");
+                    spawnParticleBurst(GAME.player.x + 8, GAME.player.y + 8, ['#00ffff', '#ffffff'], 6);
+                    AudioSys.sfx.alert();
+                    GAME.projectiles.splice(i,1);
+                    continue; // Don't take damage
+                }
+
                 GAME.lives--; GAME.player.iframe = iframeBonus; GAME.shake = 10; GAME.flash = 10; AudioSys.sfx.hurt(); updateHud();
                 VibrationSystem.onDamage(); // Vibrate on damage
                 if (GAME.lives<=0 && !GAME.gameOverTriggered) triggerGameOver("OVERWHELMED!");
@@ -11781,12 +11808,17 @@ function updateProjectiles() {
                             continue;
                         }
                     }
-                    // Character ability damage multipliers
+                    // Character ability damage multipliers + PPE damage buffs
                     let dmg = 1;
                     if (GAME.selectedChar === 'Carrie') dmg = 2; // PRECISION FOCUS
-                    GAME.boss.hp -= dmg; updateBossHud(); AudioSys.sfx.bossHit(); VibrationSystem.onBossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, attackMeta.color || '#ff0000', -2); GAME.projectiles.splice(i,1);
+                    // Apply critical hit damage modifier from projectile
+                    if (p.damageMod) dmg = Math.ceil(dmg * p.damageMod);
+                    // Apply Prime Guardian Armor damage buff
+                    const damageBuffValue = getPPEBuffValue('damage');
+                    if (damageBuffValue > 0) dmg = Math.ceil(dmg * damageBuffValue);
+                    GAME.boss.hp -= dmg; updateBossHud(); AudioSys.sfx.bossHit(); VibrationSystem.onBossHit(); GAME.shake = 5; spawnParticle(p.x, p.y, p.color || '#ff0000', -2); GAME.projectiles.splice(i,1);
                     spawnFloatingText(GAME.player.x, GAME.player.y - 24, "+50", "#22c55e"); // Score indicator
-                    const dmgText = dmg > 1 ? `${attackMeta.text || 'Hit!'} x${dmg}` : (attackMeta.text || 'Hit!');
+                    const dmgText = p.isCrit ? `CRIT! -${dmg}` : (dmg > 1 ? `${attackMeta.text || 'Hit!'} x${dmg}` : (attackMeta.text || 'Hit!'));
                     spawnFloatingText(GAME.boss.x+16, GAME.boss.y+8, dmgText, attackMeta.color || '#ff0000');
                     // Damage number above boss head
                     spawnFloatingText(GAME.boss.x+16, GAME.boss.y-8, `-${dmg}`, '#ffffff');
@@ -12000,10 +12032,12 @@ function throwBook() {
         else { if (KEYS.up) vy=-speed; else if (KEYS.down) vy=speed; else if (KEYS.left) vx=-speed; else vx=speed; }
     }
 
-    // === PPE BUFF: Safety Goggles - 50% larger projectile collision ===
-    const projSizeMod = GAME.ppeUnlocked.includes('safety_goggles') ? 1.5 : 1.0;
+    // === PPE BUFF: Safety Goggles - 25% Critical Hit Chance (double damage) ===
+    const critChance = getPPEBuffValue('crit');
+    const isCrit = Math.random() < critChance;
+    const critMod = isCrit ? 2.0 : 1.0;
 
-    GAME.projectiles.push({ type:'attack', owner: GAME.selectedChar, sprite: attackMeta.sprite, color: attackMeta.color, x:p.x+8, y:p.y+8, vx, vy, life:attackMeta.life || 40, text: attackMeta.text, sizeMod: projSizeMod }); AudioSys.sfx.throw();
+    GAME.projectiles.push({ type:'attack', owner: GAME.selectedChar, sprite: attackMeta.sprite, color: isCrit ? '#ffff00' : (attackMeta.color || '#ff0000'), x:p.x+8, y:p.y+8, vx, vy, life:attackMeta.life || 40, text: attackMeta.text, sizeMod: 1.0, damageMod: critMod, isCrit: isCrit }); AudioSys.sfx.throw();
 }
 
 // === HELPER: Get total PPE buff value for a specific buff type (supports multi-effects) ===
@@ -12618,6 +12652,12 @@ function calculateCurrentScore() {
 
     // Bonus score from collectibles in yard level
     score += GAME.score || 0;
+
+    // === PPE BUFF: Back Support Belt - Score Multiplier ===
+    const scoreBuff = getPPEBuffValue('score');
+    if (scoreBuff > 0) {
+        score = Math.floor(score * (1 + scoreBuff));
+    }
 
     // Minimum score is 0
     return Math.max(0, Math.floor(score));
