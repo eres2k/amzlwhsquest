@@ -6,6 +6,7 @@
  * POST /.netlify/functions/highscores - Submit a new highscore
  *
  * Uses Netlify Blobs for persistent storage
+ * Requires NETLIFY_BLOBS_CONTEXT env var or manual siteID/token config
  */
 
 const { getStore } = require("@netlify/blobs");
@@ -13,6 +14,25 @@ const { getStore } = require("@netlify/blobs");
 const HIGHSCORE_STORE_NAME = "amzl-whs-highscores";
 const HIGHSCORE_KEY = "leaderboard";
 const MAX_HIGHSCORES = 10;
+
+// Helper to get properly configured store
+function getHighscoreStore() {
+    // Check if we have manual configuration via environment variables
+    const siteID = process.env.NETLIFY_SITE_ID || process.env.SITE_ID;
+    const token = process.env.NETLIFY_AUTH_TOKEN || process.env.BLOB_TOKEN;
+
+    if (siteID && token) {
+        // Use manual configuration
+        return getStore({
+            name: HIGHSCORE_STORE_NAME,
+            siteID: siteID,
+            token: token
+        });
+    }
+
+    // Try default (works when Netlify Blobs is enabled on the site)
+    return getStore(HIGHSCORE_STORE_NAME);
+}
 
 // Default highscores to populate an empty leaderboard
 const DEFAULT_HIGHSCORES = [
@@ -108,7 +128,7 @@ exports.handler = async (event, context) => {
     // GET - Retrieve highscores
     if (event.httpMethod === "GET") {
         try {
-            const store = getStore(HIGHSCORE_STORE_NAME);
+            const store = getHighscoreStore();
             const data = await store.get(HIGHSCORE_KEY, { type: "json" });
             let highscores = data || [];
 
@@ -196,7 +216,7 @@ exports.handler = async (event, context) => {
         let store = null;
         let storeAvailable = false;
         try {
-            store = getStore(HIGHSCORE_STORE_NAME);
+            store = getHighscoreStore();
             storeAvailable = true;
         } catch (e) {
             console.log("Blobs store not available:", e.message);
