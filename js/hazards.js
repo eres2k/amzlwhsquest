@@ -19,7 +19,7 @@ const PPE_ITEMS = [
       desc: '+30% Score Multiplier', context: 'Ergonomic lifting support - work efficiently', buff: { type: 'score', value: 0.30 } },
     { id: 'bump_cap', name: 'Bump Cap', cost: 900, icon: 'cap',
       desc: '+0.5s Invincibility', context: 'Head impact protection EN 812', buff: { type: 'iframe', value: 30 } },
-    { id: 'hydration', name: 'Hydration Pouch', cost: 2000, icon: 'water',
+    { id: 'hydration', name: 'Hydration Pouch', cost: 3500, icon: 'water',
       desc: 'Regen 1 HP / 30s', context: 'Heat stress prevention', buff: { type: 'regen', value: 1800 } },
     { id: 'knee_pads', name: 'Knee Pads', cost: 550, icon: 'knee',
       desc: '+50% Interact Range', context: 'Kneeling work EN 14404', buff: { type: 'interact', value: 0.50 } },

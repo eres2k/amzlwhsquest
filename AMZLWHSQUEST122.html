@@ -7505,7 +7505,14 @@ function handleAction() {
         // Allow skip after credits have been rolling for a while
         if (GAME.stateTimer > 600) {
             GAME.creditsStarted = false; // Reset for next time
-            GAME.state = 'TITLE'; updateMusicForState();
+            // After Mecha Jeff credits, go to highscore entry
+            if (GAME.creditsType === 'mecha' && GAME.pendingHighscore) {
+                GAME.state = 'NAME_ENTRY';
+                GAME.highscoreSubmitted = false;
+            } else {
+                GAME.state = 'TITLE';
+            }
+            updateMusicForState();
         }
     }
     else if (GAME.state === 'PLAY' || GAME.state === 'BOSS' || GAME.state === 'BEZOS_BOSS' || GAME.state === 'MECHA_BOSS') {
@@ -8345,14 +8352,24 @@ function startYardLevel() {
     GAME.powerUps = [];
     GAME.collectibles = [];
     // Spawn initial power-ups scattered in safe areas between lanes
-    const powerUpTypes = ['speed', 'shield', 'life'];
+    // Max 2 health pickups (for balance), rest are speed/shield
+    let healthCount = 0;
+    const maxHealth = 2;
     for (let i = 0; i < 5; i++) {
         const laneIndex = Math.floor(Math.random() * y.lanes.length);
         const lane = y.lanes[laneIndex];
+        // Determine power-up type: limit health to max 2
+        let type;
+        if (healthCount < maxHealth && Math.random() < 0.33) {
+            type = 'life';
+            healthCount++;
+        } else {
+            type = Math.random() < 0.5 ? 'speed' : 'shield';
+        }
         GAME.powerUps.push({
             x: 20 + Math.random() * (canvas.width - 40),
             y: lane.y + 15 + Math.random() * 20, // Between lanes for safety
-            type: powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)],
+            type: type,
             bobTimer: Math.random() * Math.PI * 2
         });
     }
@@ -8908,11 +8925,13 @@ function updateYardPowerUps() {
     }
 
     // Spawn new power-ups periodically (if less than 3 in yard)
+    // Note: Health pickups do not respawn (for balance)
     if (y && !y.inCastle && GAME.powerUps.length < 3) {
         y.powerUpSpawnTimer = (y.powerUpSpawnTimer || 0) + 1;
         if (y.powerUpSpawnTimer > 600) { // Every 10 seconds
             y.powerUpSpawnTimer = 0;
-            const powerUpTypes = ['speed', 'shield', 'life'];
+            // Only respawn speed and shield, not life (for balance)
+            const powerUpTypes = ['speed', 'shield'];
             const laneIndex = Math.floor(Math.random() * y.lanes.length);
             const lane = y.lanes[laneIndex];
             // Only spawn if within view
@@ -15836,7 +15855,14 @@ function drawBezosEscape() {
 
     // Draw throne room backdrop for phases 0-7 (keep throne room during dialogue)
     if (scene.phase <= 7) {
-        drawThroneRoomBackdrop(t);
+        // For phases 5-6 (rocket escape), fade the throne room to black
+        if (scene.phase === 5 || scene.phase === 6) {
+            // Draw solid black background instead of throne room
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        } else {
+            drawThroneRoomBackdrop(t);
+        }
     } else {
         // After dialogue, switch to victory scene for Simon joining
         drawVictoryBackdrop(t);
@@ -16028,16 +16054,12 @@ function drawBezosEscape() {
             ctx.fill();
         }
     }
-    // Phase 5: Jeff runs to rocket (throne room with rocket visible)
+    // Phase 5: Jeff runs to rocket (black background with rocket visible)
     else if (scene.phase === 5) {
         // Draw rocket on platform (bigger rocket now)
         ctx.drawImage(GFX.escapeRocket, scene.rocketX, scene.rocketY);
 
-        // "SECRET ESCAPE POD" label
-        ctx.fillStyle = '#ff9900';
-        ctx.font = '8px "Press Start 2P"';
-        ctx.textAlign = 'center';
-        ctx.fillText('BEZOS ESCAPE POD', scene.rocketX + 32, scene.rocketY - 12);
+        // Label removed for cleaner escape sequence
 
         // Jeff running animation
         const runFrame = Math.floor(pt / 8) % 2;
@@ -16056,14 +16078,7 @@ function drawBezosEscape() {
             ctx.fill();
         }
 
-        // Text
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = '10px "Press Start 2P"';
-        ctx.textAlign = 'center';
-        ctx.fillText('TACTICAL RETREAT!', canvas.width / 2, 30);
-        ctx.fillStyle = '#888';
-        ctx.font = '7px monospace';
-        ctx.fillText('"To the secret escape pod!"', canvas.width / 2, 45);
+        // Status text removed - cleaner escape sequence
     }
     // Phase 6: Epic rocket launch with camera follow
     else if (scene.phase === 6) {
@@ -16126,10 +16141,7 @@ function drawBezosEscape() {
         // Boarding phase - Jeff running to rocket
         if (pt <= 60 && !scene.rocketLaunched) {
             ctx.drawImage(GFX.jeffYard, scene.jeffX - 12, scene.jeffY - 12);
-            ctx.fillStyle = '#ff9900';
-            ctx.font = '8px "Press Start 2P"';
-            ctx.textAlign = 'center';
-            ctx.fillText('BOARDING...', canvas.width / 2, 30 + (scene.cameraY || 0));
+            // Status text removed - cleaner escape sequence
         }
         // Countdown phase
         else if (pt > 60 && pt <= 180 && !scene.rocketLaunched) {
@@ -16210,10 +16222,7 @@ function drawBezosEscape() {
         ctx.textAlign = 'center';
 
         if (scene.rocketLaunched) {
-            ctx.fillText('BEZOS ESCAPES!', canvas.width / 2, 25);
-            ctx.fillStyle = '#ff9900';
-            ctx.font = '8px monospace';
-            ctx.fillText('"To infinity and tax evasion!"', canvas.width / 2, 42);
+            // Status text removed - cleaner escape sequence
 
             // Altitude indicator
             const altitude = Math.max(0, Math.floor(-scene.rocketY / 10));
