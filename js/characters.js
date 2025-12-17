@@ -49,6 +49,18 @@ const CHAR_DATA = {
         lives: 1,
         ability: "TESLA RUSH",
         abilityDesc: "30% Faster, 1 Life"
+    },
+    // === SECRET DEV CHARACTER ===
+    "DevMode": {
+        role: "The Developer",
+        backstory: "A mysterious figure who exists outside the simulation. Reality bends to their will.",
+        attack: "Debug Beam",
+        speed: 3.5,
+        lives: 99,
+        ability: "GOD MODE",
+        abilityDesc: "Invincible, Instant Kill, No Cooldown",
+        isSecret: true,
+        isDevMode: true
     }
 };
 
@@ -59,6 +71,7 @@ const ATTACKS = {
     "Joao": { name: "Sonic Shout", sprite: "attack_joao", speed: 4.6, cooldown: 105, color: "#f97316", text: "Heard!" },
     "Roman": { name: "Stealth Audit Pulse", sprite: "attack_roman", speed: 4.0, cooldown: 115, color: "#94a3b8", text: "Noted." },
     "Erwin": { name: "Tesla Drift", sprite: "attack_erwin", speed: 5.0, cooldown: 140, color: "#22d3ee", text: "Zapped!" },
+    "DevMode": { name: "Debug Beam", sprite: "book", speed: 8.0, cooldown: 5, color: "#ff00ff", text: "DELETED!", damage: 999 },
     default: { name: "Rule Book", sprite: "book", speed: 4.0, cooldown: 120, color: "#00ffff", text: "Hit!" }
 };
 
@@ -106,5 +119,11 @@ const CHARACTER_DEFEAT_LINES = {
         "One life wasn't enough...",
         "Drifted right into disaster...",
         "The Manager has been managed... out."
+    ],
+    "DevMode": [
+        "How did this even happen?",
+        "That's not supposed to be possible...",
+        "Checking for bugs...",
+        "This must be a glitch in the matrix."
     ]
 };
