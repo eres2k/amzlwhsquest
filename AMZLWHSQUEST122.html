@@ -731,16 +731,16 @@ const WAREHOUSE_EVENTS = {
         id: 'FIRE_DRILL',
         duration: 600, // 10 seconds
         warning: {
-            EN: "FIRE DRILL",
-            AT: "FEUERALARM",
-            DE: "FEUERALARM",
-            NL: "BRANDOEFENING"
+            EN: "FIRE EVACUATION",
+            AT: "FEUEREVAKUIERUNG",
+            DE: "FEUEREVAKUIERUNG",
+            NL: "BRAND EVACUATIE"
         },
         subtitle: {
-            EN: "Evacuate! OPS are watching!",
-            AT: "Evakuieren! OPS beobachten!",
-            DE: "Evakuieren! OPS beobachten!",
-            NL: "Evacueren! OPS kijken toe!"
+            EN: "Avoid the flames! Watch for smoke!",
+            AT: "Meide die Flammen! Achtung Rauch!",
+            DE: "Meide die Flammen! Achtung Rauch!",
+            NL: "Vermijd de vlammen! Pas op voor rook!"
         }
     },
     PRIME_DAY: {
@@ -861,7 +861,10 @@ function startEventEffects(eventType) {
 
         case 'ENERGY_CUTOFF':
             GAME.flashlightMode = true;
-            GAME.flashlightRadius = 45;
+            GAME.flashlightRadius = 60;
+            GAME.flashlightBroken = false;
+            GAME.flashlightBreakTimer = 0;
+            GAME.flashlightNextBreak = 60 + Math.floor(Math.random() * 120); // Break every 1-3 seconds
             break;
 
         case 'TPH_RUSH':
@@ -880,6 +883,23 @@ function startEventEffects(eventType) {
             // Fire drill: OPS become hyper-vigilant, spawn extra patrol OPS
             GAME.fireDrillActive = true;
             GAME.shake = 15;
+
+            // === NEW: Spawn fire spots that hurt the player ===
+            GAME.fireSpots = [];
+            const numFires = 5 + Math.floor(Math.random() * 4); // 5-8 fire spots
+            for (let i = 0; i < numFires; i++) {
+                GAME.fireSpots.push({
+                    x: 60 + Math.random() * (MAP_W * TILE_SIZE - 120),
+                    y: 60 + Math.random() * (MAP_H * TILE_SIZE - 120),
+                    size: 12 + Math.random() * 8, // 12-20px radius
+                    intensity: 0.7 + Math.random() * 0.3,
+                    animOffset: Math.random() * Math.PI * 2
+                });
+            }
+
+            // === NEW: Smoke particles array ===
+            GAME.smokeParticles = [];
+
             // Spawn 4 extra aggressive OPS that patrol quickly
             for (let i = 0; i < 4; i++) {
                 const side = i % 4;
@@ -954,9 +974,36 @@ function updateEventEffects(eventType) {
             break;
 
         case 'ENERGY_CUTOFF':
-            // Flashlight flickers occasionally
-            if (Math.random() < 0.02) {
-                GAME.flashlightRadius = 30 + Math.random() * 30;
+            // Flashlight break mechanic - periodically goes out completely
+            GAME.flashlightBreakTimer++;
+
+            if (GAME.flashlightBroken) {
+                // Currently broken - count down to fix
+                if (GAME.flashlightBreakTimer >= GAME.flashlightBreakDuration) {
+                    GAME.flashlightBroken = false;
+                    GAME.flashlightBreakTimer = 0;
+                    GAME.flashlightNextBreak = 90 + Math.floor(Math.random() * 150); // 1.5-4 seconds until next break
+                    GAME.flashlightRadius = 60;
+                    AudioSys.sfx.fix(); // Click sound when it comes back
+                }
+            } else {
+                // Flashlight working - flicker and check for break
+                if (GAME.flashlightBreakTimer >= GAME.flashlightNextBreak) {
+                    // Time to break!
+                    GAME.flashlightBroken = true;
+                    GAME.flashlightBreakTimer = 0;
+                    GAME.flashlightBreakDuration = 30 + Math.floor(Math.random() * 45); // 0.5-1.25 seconds of darkness
+                    AudioSys.sfx.alert(); // Warning sound
+                } else {
+                    // Normal flickering
+                    if (Math.random() < 0.08) {
+                        GAME.flashlightRadius = 45 + Math.random() * 25; // Flicker between 45-70
+                    }
+                    // Occasional stronger flicker
+                    if (Math.random() < 0.02) {
+                        GAME.flashlightRadius = 30 + Math.random() * 20; // Brief dim
+                    }
+                }
             }
             break;
 
@@ -970,6 +1017,62 @@ function updateEventEffects(eventType) {
             if (GAME.warehouseEvent.timer % 45 === 0) {
                 AudioSys.sfx.alert();
             }
+
+            // === NEW: Fire spot damage check ===
+            // === DEV MODE: Immune to fire ===
+            if (GAME.fireSpots && GAME.player.iframe <= 0 && GAME.selectedChar !== 'DevMode') {
+                for (const fire of GAME.fireSpots) {
+                    const dist = Math.hypot(GAME.player.x + 8 - fire.x, GAME.player.y + 8 - fire.y);
+                    if (dist < fire.size + 6) { // Player touches fire
+                        GAME.lives--;
+                        GAME.player.iframe = 90; // Shorter iframe for fire damage
+                        GAME.shake = 8;
+                        GAME.flash = 8;
+                        AudioSys.sfx.hurt();
+                        spawnFloatingText(GAME.player.x, GAME.player.y - 16, "BURNED!", "#ff4400");
+                        spawnParticleBurst(GAME.player.x + 8, GAME.player.y + 8, ['#ff4400', '#ff8800', '#ffcc00'], 8);
+                        updateHud();
+                        if (GAME.lives <= 0 && !GAME.gameOverTriggered) triggerGameOver("BURNED!");
+                        break;
+                    }
+                }
+            }
+
+            // === NEW: Spawn smoke particles from fires ===
+            if (GAME.fireSpots && GAME.smokeParticles) {
+                // Spawn new smoke
+                if (Math.random() < 0.3) {
+                    const fire = GAME.fireSpots[Math.floor(Math.random() * GAME.fireSpots.length)];
+                    GAME.smokeParticles.push({
+                        x: fire.x + (Math.random() - 0.5) * fire.size,
+                        y: fire.y,
+                        vx: (Math.random() - 0.5) * 0.3,
+                        vy: -0.3 - Math.random() * 0.4,
+                        size: 8 + Math.random() * 12,
+                        life: 120 + Math.random() * 60,
+                        maxLife: 180,
+                        alpha: 0.4 + Math.random() * 0.3
+                    });
+                }
+
+                // Update smoke particles
+                for (let i = GAME.smokeParticles.length - 1; i >= 0; i--) {
+                    const s = GAME.smokeParticles[i];
+                    s.x += s.vx;
+                    s.y += s.vy;
+                    s.size += 0.1; // Expand as it rises
+                    s.life--;
+                    if (s.life <= 0) {
+                        GAME.smokeParticles.splice(i, 1);
+                    }
+                }
+
+                // Limit smoke particles
+                if (GAME.smokeParticles.length > 50) {
+                    GAME.smokeParticles.splice(0, GAME.smokeParticles.length - 50);
+                }
+            }
+
             // Fire drill OPS actively chase player
             GAME.entities.forEach(e => {
                 if (e.fireDrillOps || e.fireDrillAggro) {
@@ -1072,6 +1175,9 @@ function endEventEffects(eventType) {
             GAME.fireDrillActive = false;
             // Remove fire drill OPS
             GAME.entities = GAME.entities.filter(e => !e.fireDrillOps);
+            // Clean up fire and smoke
+            GAME.fireSpots = [];
+            GAME.smokeParticles = [];
             break;
 
         case 'PRIME_DAY':
@@ -5964,6 +6070,9 @@ const GAME = {
     selectedChar: "Carrie",
     charList: ["Carrie", "Nevena", "Joao", "Roman", "Erwin"],
     charIndex: 0,
+    // Secret dev mode unlock
+    secretCode: "",
+    devModeUnlocked: false,
     // Region-aware system
     region: 'EU',
     regionList: ['DE', 'AT', 'NL', 'MEU'],
@@ -6208,6 +6317,29 @@ window.addEventListener('keydown', e => {
         });
         e.preventDefault();
         return;
+    }
+
+    // === SECRET DEV MODE UNLOCK CODE ===
+    // Type "eres2k" at character SELECT screen to unlock DevMode character
+    if (GAME.state === 'SELECT' && e.key.length === 1) {
+        GAME.secretCode = (GAME.secretCode + e.key.toLowerCase()).slice(-6);
+        if (GAME.secretCode === 'eres2k' && !GAME.devModeUnlocked) {
+            GAME.devModeUnlocked = true;
+            // Add DevMode to character list if not already there
+            if (!GAME.charList.includes('DevMode')) {
+                GAME.charList.push('DevMode');
+            }
+            // Switch to DevMode character
+            GAME.charIndex = GAME.charList.indexOf('DevMode');
+            AudioSys.sfx.fix(); // Success sound
+            GAME.shake = 20;
+            spawnFloatingText(128, 100, "DEV MODE UNLOCKED!", "#ff00ff");
+            console.log('🎮 DEV MODE UNLOCKED! Invincibility, no cooldown, max damage.');
+        }
+    }
+    // Reset secret code when leaving SELECT screen
+    if (GAME.state !== 'SELECT') {
+        GAME.secretCode = "";
     }
 
     // Escape key to exit PPE dialog/shop
@@ -8049,6 +8181,11 @@ function updateMechaBezos() {
         if (GAME.player.iframe === 0 &&
             GAME.player.x < pkg.x + pkg.w && GAME.player.x + 16 > pkg.x &&
             GAME.player.y < pkg.y + pkg.h && GAME.player.y + 16 > pkg.y) {
+            // === DEV MODE: Immune to falling packages ===
+            if (GAME.selectedChar === 'DevMode') {
+                b.fallingPackages.splice(i, 1);
+                continue;
+            }
             GAME.lives--;
             GAME.player.iframe = 60;
             updateHud();
@@ -8198,6 +8335,11 @@ function updateMechaBezos() {
 
                 // Drone collision with player
                 if (GAME.player.iframe === 0 && Math.hypot(drone.x - GAME.player.x, drone.y - GAME.player.y) < 14) {
+                    // === DEV MODE: Immune to drone collision ===
+                    if (GAME.selectedChar === 'DevMode') {
+                        drone.hp = 0; // Just destroy drone
+                        continue;
+                    }
                     GAME.lives--;
                     GAME.player.iframe = 60;
                     updateHud();
@@ -8258,6 +8400,11 @@ function updateMechaBezos() {
         const proj = GAME.projectiles[i];
         if ((proj.type === 'bezos_missile' || proj.type === 'bezos_laser') && GAME.player.iframe === 0) {
             if (Math.hypot(proj.x - GAME.player.x, proj.y - GAME.player.y) < 16) {
+                // === DEV MODE: Immune to boss projectiles ===
+                if (GAME.selectedChar === 'DevMode') {
+                    GAME.projectiles.splice(i, 1);
+                    continue;
+                }
                 GAME.lives--;
                 GAME.player.iframe = 60;
                 updateHud();
@@ -8425,6 +8572,10 @@ function updateYardPowerUps() {
         if (p.iframe === 0 &&
             p.x < fl.x + fl.w && p.x + 16 > fl.x &&
             p.y < fl.y + fl.h && p.y + 16 > fl.y) {
+            // === DEV MODE: Immune to forklift ===
+            if (GAME.selectedChar === 'DevMode') {
+                continue;
+            }
             p.iframe = 90;
             GAME.lives--;
             updateHud();
@@ -10000,6 +10151,12 @@ function updateProjectiles() {
             p.rotation = (p.rotation || 0) + p.rotSpeed;
         }
         if ((p.type === 'req' || p.type === 'fallingPackage') && Math.hypot(p.x-GAME.player.x, p.y-GAME.player.y) < projectileRadius) {
+            // === DEV MODE: Complete invincibility ===
+            if (GAME.selectedChar === 'DevMode') {
+                spawnFloatingText(GAME.player.x, GAME.player.y - 16, "BLOCKED", "#ff00ff");
+                GAME.projectiles.splice(i,1);
+                continue;
+            }
             if (GAME.player.iframe<=0) {
                 // === PPE BUFF: High-Vis Vest - 15% dodge chance ===
                 if (GAME.ppeUnlocked.includes('hi_vis_vest') && Math.random() < 0.15) {
@@ -10078,6 +10235,8 @@ function updateProjectiles() {
                     // Character ability damage multipliers + PPE damage buffs
                     let dmg = 1;
                     if (GAME.selectedChar === 'Carrie') dmg = 2; // PRECISION FOCUS
+                    // === DEV MODE: Massive damage ===
+                    if (GAME.selectedChar === 'DevMode') dmg = 50; // One-shots most bosses
                     // Apply critical hit damage modifier from projectile
                     if (p.damageMod) dmg = Math.ceil(dmg * p.damageMod);
                     // Apply Prime Guardian Armor damage buff
@@ -10300,12 +10459,18 @@ function spawnSparkles(x, y, color) {
 }
 
 function throwBook() {
-    const p = GAME.player; if (p.cooldown > 0) return; const attackMeta = getAttackData(GAME.selectedChar);
+    const p = GAME.player;
+    // === DEV MODE: No cooldown check ===
+    if (p.cooldown > 0 && GAME.selectedChar !== 'DevMode') return;
+
+    const attackMeta = getAttackData(GAME.selectedChar);
     // Joao's CAFFEINE RUSH ability - faster cooldown (35% faster)
     // Carrie's PRECISION FOCUS penalty - slower reload (30% slower) but 2x damage
     let cooldownMod = 1.0;
     if (GAME.selectedChar === 'Joao') cooldownMod = 0.65; // 35% faster
     else if (GAME.selectedChar === 'Carrie') cooldownMod = 1.3; // 30% slower
+    // === DEV MODE: Minimal cooldown ===
+    else if (GAME.selectedChar === 'DevMode') cooldownMod = 0.05; // Nearly instant
 
     // === PPE BUFF: Cut-Resistant Gloves - 20% faster fire rate ===
     if (GAME.ppeUnlocked.includes('cut_gloves')) cooldownMod *= 0.80;
@@ -18689,6 +18854,65 @@ function draw() {
         ctx.fillRect(fpx + 1, fpy, 2, 3);
     }
 
+    // === FIRE DRILL: Draw fire spots (under entities) ===
+    if (GAME.fireDrillActive && GAME.fireSpots) {
+        for (const fire of GAME.fireSpots) {
+            const fx = fire.x - cx;
+            const fy = fire.y - cy;
+            if (fx < screenLeft - 20 || fx > screenRight + 20 || fy < screenTop - 20 || fy > screenBottom + 20) continue;
+
+            // Animated fire size
+            const animPulse = Math.sin(GAME.ticks * 0.15 + fire.animOffset) * 0.2 + 1;
+            const currentSize = fire.size * animPulse;
+
+            // Fire glow (outer)
+            const glowGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, currentSize * 1.5);
+            glowGrad.addColorStop(0, 'rgba(255, 100, 0, 0.4)');
+            glowGrad.addColorStop(0.5, 'rgba(255, 50, 0, 0.2)');
+            glowGrad.addColorStop(1, 'rgba(255, 0, 0, 0)');
+            ctx.fillStyle = glowGrad;
+            ctx.beginPath();
+            ctx.arc(fx, fy, currentSize * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Fire core (inner flames)
+            const coreGrad = ctx.createRadialGradient(fx, fy - 2, 0, fx, fy, currentSize);
+            coreGrad.addColorStop(0, 'rgba(255, 255, 100, 0.9)'); // Yellow center
+            coreGrad.addColorStop(0.3, 'rgba(255, 180, 0, 0.8)');  // Orange
+            coreGrad.addColorStop(0.6, 'rgba(255, 80, 0, 0.7)');   // Deep orange
+            coreGrad.addColorStop(1, 'rgba(200, 30, 0, 0)');       // Red edge
+            ctx.fillStyle = coreGrad;
+            ctx.beginPath();
+            ctx.arc(fx, fy, currentSize, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Flickering flame tips (draw multiple small flame shapes)
+            for (let i = 0; i < 3; i++) {
+                const flameOffset = Math.sin(GAME.ticks * 0.3 + i * 2 + fire.animOffset) * 4;
+                const flameX = fx + Math.cos(i * 2.1) * currentSize * 0.4;
+                const flameY = fy - currentSize * 0.5 + flameOffset;
+                const flameSize = currentSize * 0.3 + Math.random() * 2;
+
+                ctx.fillStyle = `rgba(255, ${150 + Math.floor(Math.random() * 100)}, 0, ${0.6 + Math.random() * 0.3})`;
+                ctx.beginPath();
+                ctx.moveTo(flameX, flameY - flameSize);
+                ctx.lineTo(flameX - flameSize * 0.5, flameY + flameSize * 0.5);
+                ctx.lineTo(flameX + flameSize * 0.5, flameY + flameSize * 0.5);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // Danger indicator circle
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.arc(fx, fy, fire.size + 6, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+    }
+
     renderList.forEach(e => {
         let dx = Math.floor(e.x - cx); let dy = Math.floor(e.y - cy);
         // Performance: Skip offscreen entities
@@ -18877,31 +19101,80 @@ function draw() {
     if (GAME.flashlightMode && GAME.state === 'PLAY') {
         const px = GAME.player.x - cx + 8;
         const py = GAME.player.y - cy + 8;
-        const radius = GAME.flashlightRadius || 45;
 
-        // Create dark overlay with circular cutout
         ctx.save();
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.92)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Cut out the flashlight circle using composite operation
-        ctx.globalCompositeOperation = 'destination-out';
-        const gradient = ctx.createRadialGradient(px, py, 0, px, py, radius);
-        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-        gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.8)');
-        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(px, py, radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.restore();
-
-        // Add flickering emergency light effect
-        if (Math.random() < 0.03) {
-            ctx.fillStyle = 'rgba(255, 50, 50, 0.1)';
+        if (GAME.flashlightBroken) {
+            // Flashlight is broken - complete darkness with slight red emergency glow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.97)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Pulsing emergency light effect during blackout
+            const pulse = Math.sin(GAME.ticks * 0.3) * 0.5 + 0.5;
+            ctx.fillStyle = `rgba(255, 30, 30, ${0.05 + pulse * 0.08})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // "FLASHLIGHT BROKEN" warning text
+            if (GAME.flashlightBreakTimer % 30 < 15) {
+                ctx.font = '8px "Press Start 2P"';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#ff4444';
+                ctx.fillText('FLASHLIGHT BROKEN!', canvas.width / 2, canvas.height / 2);
+                ctx.textAlign = 'left';
+            }
+        } else {
+            // Flashlight working - illuminate circular area
+            const radius = GAME.flashlightRadius || 60;
+
+            // Create dark overlay
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.95)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Cut out the flashlight cone using composite operation
+            ctx.globalCompositeOperation = 'destination-out';
+
+            // Create flashlight beam gradient - brighter center, soft edges
+            const gradient = ctx.createRadialGradient(px, py, 0, px, py, radius);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');      // Bright center
+            gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.95)'); // Still bright
+            gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.7)');  // Starting to fade
+            gradient.addColorStop(0.85, 'rgba(255, 255, 255, 0.3)'); // Dim edge
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');      // Complete darkness
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(px, py, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.globalCompositeOperation = 'source-over';
+
+            // Add warm flashlight tint to the illuminated area
+            const warmGradient = ctx.createRadialGradient(px, py, 0, px, py, radius * 0.8);
+            warmGradient.addColorStop(0, 'rgba(255, 240, 200, 0.1)');
+            warmGradient.addColorStop(1, 'rgba(255, 240, 200, 0)');
+            ctx.fillStyle = warmGradient;
+            ctx.beginPath();
+            ctx.arc(px, py, radius * 0.8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Occasional flicker effect (brief dimming)
+            if (Math.random() < 0.02) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
         }
+
+        // Distant red emergency lights in corners
+        if (Math.random() < 0.05) {
+            const corners = [[20, 20], [canvas.width - 20, 20], [20, canvas.height - 20], [canvas.width - 20, canvas.height - 20]];
+            const corner = corners[Math.floor(Math.random() * 4)];
+            ctx.fillStyle = 'rgba(255, 50, 50, 0.4)';
+            ctx.beginPath();
+            ctx.arc(corner[0], corner[1], 8, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.restore();
     }
 
     // === WAREHOUSE EVENT: Warning Overlay ===
@@ -18965,10 +19238,41 @@ function draw() {
         ctx.restore();
     }
 
-    // === FIRE DRILL: Screen flash effect ===
+    // === FIRE DRILL: Smoke overlay effect ===
     if (GAME.fireDrillActive && GAME.state === 'PLAY') {
-        if (GAME.warehouseEvent && GAME.warehouseEvent.timer % 15 < 8) {
-            ctx.fillStyle = 'rgba(255, 100, 50, 0.15)';
+        // Draw smoke particles
+        if (GAME.smokeParticles) {
+            for (const smoke of GAME.smokeParticles) {
+                const sx = smoke.x - cx;
+                const sy = smoke.y - cy;
+
+                // Fade out over lifetime
+                const lifeRatio = smoke.life / smoke.maxLife;
+                const alpha = smoke.alpha * lifeRatio * 0.6;
+
+                // Smoke gradient
+                const smokeGrad = ctx.createRadialGradient(sx, sy, 0, sx, sy, smoke.size);
+                smokeGrad.addColorStop(0, `rgba(60, 60, 60, ${alpha})`);
+                smokeGrad.addColorStop(0.5, `rgba(80, 80, 80, ${alpha * 0.7})`);
+                smokeGrad.addColorStop(1, `rgba(100, 100, 100, 0)`);
+
+                ctx.fillStyle = smokeGrad;
+                ctx.beginPath();
+                ctx.arc(sx, sy, smoke.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Overall smoke haze overlay (reduces visibility)
+        const hazeIntensity = Math.min(0.25, (GAME.smokeParticles ? GAME.smokeParticles.length : 0) * 0.005);
+        if (hazeIntensity > 0) {
+            ctx.fillStyle = `rgba(50, 40, 35, ${hazeIntensity})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Alarm flash effect (reduced)
+        if (GAME.warehouseEvent && GAME.warehouseEvent.timer % 30 < 8) {
+            ctx.fillStyle = 'rgba(255, 100, 50, 0.1)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
     }
