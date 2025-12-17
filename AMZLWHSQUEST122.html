@@ -8338,7 +8338,7 @@ function updateMechaBezos() {
                     // === DEV MODE: Immune to drone collision ===
                     if (GAME.selectedChar === 'DevMode') {
                         drone.hp = 0; // Just destroy drone
-                        continue;
+                        return; // Skip damage in forEach
                     }
                     GAME.lives--;
                     GAME.player.iframe = 60;
@@ -8574,7 +8574,7 @@ function updateYardPowerUps() {
             p.y < fl.y + fl.h && p.y + 16 > fl.y) {
             // === DEV MODE: Immune to forklift ===
             if (GAME.selectedChar === 'DevMode') {
-                continue;
+                return; // Skip damage in forEach
             }
             p.iframe = 90;
             GAME.lives--;
