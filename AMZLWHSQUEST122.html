@@ -757,6 +757,54 @@ const WAREHOUSE_EVENTS = {
             DE: "Weiche den fallenden Paketen aus!",
             NL: "Ontwijken de vallende pakketten!"
         }
+    },
+    SAFETY_AUDIT: {
+        id: 'SAFETY_AUDIT',
+        duration: 720, // 12 seconds
+        warning: {
+            EN: "SAFETY AUDIT",
+            AT: "SICHERHEITSAUDIT",
+            DE: "SICHERHEITSAUDIT",
+            NL: "VEILIGHEIDSAUDIT"
+        },
+        subtitle: {
+            EN: "Inspectors are watching! Stay hidden!",
+            AT: "Inspektoren beobachten! Versteck dich!",
+            DE: "Inspektoren beobachten! Versteck dich!",
+            NL: "Inspecteurs kijken! Blijf verborgen!"
+        }
+    },
+    FORKLIFT_FRENZY: {
+        id: 'FORKLIFT_FRENZY',
+        duration: 600, // 10 seconds
+        warning: {
+            EN: "FORKLIFT FRENZY",
+            AT: "GABELSTAPLER-WAHNSINN",
+            DE: "GABELSTAPLER-WAHNSINN",
+            NL: "HEFTRUCK HECTIEK"
+        },
+        subtitle: {
+            EN: "Watch out for forklifts!",
+            AT: "Vorsicht vor Gabelstaplern!",
+            DE: "Vorsicht vor Gabelstaplern!",
+            NL: "Pas op voor heftrucks!"
+        }
+    },
+    CONVEYOR_CHAOS: {
+        id: 'CONVEYOR_CHAOS',
+        duration: 540, // 9 seconds
+        warning: {
+            EN: "CONVEYOR CHAOS",
+            AT: "FÖRDERBANDCHAOS",
+            DE: "FÖRDERBANDCHAOS",
+            NL: "LOPENDE BAND CHAOS"
+        },
+        subtitle: {
+            EN: "The floor is moving! Stay balanced!",
+            AT: "Der Boden bewegt sich! Halt dich fest!",
+            DE: "Der Boden bewegt sich! Halt dich fest!",
+            NL: "De vloer beweegt! Blijf in balans!"
+        }
     }
 };
 
@@ -956,6 +1004,59 @@ function startEventEffects(eventType) {
             GAME.shake = 8;
             AudioSys.sfx.alert();
             spawnFloatingText(GAME.player.x, GAME.player.y - 30, "PRIME DAY!", "#ff9900");
+            break;
+
+        case 'SAFETY_AUDIT':
+            // Safety inspectors patrol with clipboards - if they spot you, you lose a life
+            GAME.safetyAuditActive = true;
+            GAME.safetyInspectors = [];
+            // Spawn 4 safety inspectors at random locations
+            for (let i = 0; i < 4; i++) {
+                const angle = (i / 4) * Math.PI * 2;
+                const dist = 100 + Math.random() * 50;
+                GAME.safetyInspectors.push({
+                    x: MAP_W * TILE_SIZE / 2 + Math.cos(angle) * dist,
+                    y: MAP_H * TILE_SIZE / 2 + Math.sin(angle) * dist,
+                    dir: Math.random() * Math.PI * 2,
+                    speed: 0.8 + Math.random() * 0.4,
+                    turnTimer: 0,
+                    spotting: false,
+                    spottingTimer: 0,
+                    clipboardWave: 0
+                });
+            }
+            GAME.shake = 5;
+            spawnFloatingText(GAME.player.x, GAME.player.y - 30, "STAY HIDDEN!", "#ffcc00");
+            break;
+
+        case 'FORKLIFT_FRENZY':
+            // Forklifts drive across the warehouse
+            GAME.forkliftFrenzyActive = true;
+            GAME.forklifts = [];
+            GAME.forkliftSpawnTimer = 0;
+            GAME.shake = 10;
+            AudioSys.sfx.alert();
+            spawnFloatingText(GAME.player.x, GAME.player.y - 30, "FORKLIFTS!", "#ff6600");
+            break;
+
+        case 'CONVEYOR_CHAOS':
+            // Conveyor belts push the player in random directions
+            GAME.conveyorChaosActive = true;
+            GAME.conveyorZones = [];
+            // Create 6 conveyor zones with random directions
+            for (let i = 0; i < 6; i++) {
+                GAME.conveyorZones.push({
+                    x: 40 + Math.random() * (MAP_W * TILE_SIZE - 80),
+                    y: 40 + Math.random() * (MAP_H * TILE_SIZE - 80),
+                    w: 60 + Math.random() * 40,
+                    h: 60 + Math.random() * 40,
+                    dir: Math.floor(Math.random() * 4), // 0=right, 1=down, 2=left, 3=up
+                    speed: 1.5 + Math.random() * 1,
+                    animOffset: Math.random() * Math.PI * 2
+                });
+            }
+            GAME.shake = 8;
+            spawnFloatingText(GAME.player.x, GAME.player.y - 30, "HOLD ON!", "#00ccff");
             break;
     }
 }
@@ -1230,6 +1331,189 @@ function updateEventEffects(eventType) {
                 });
             }
             break;
+
+        case 'SAFETY_AUDIT':
+            // Update safety inspectors - patrol and spot player
+            if (!GAME.safetyInspectors) break;
+
+            for (const inspector of GAME.safetyInspectors) {
+                // Movement
+                inspector.x += Math.cos(inspector.dir) * inspector.speed;
+                inspector.y += Math.sin(inspector.dir) * inspector.speed;
+                inspector.clipboardWave += 0.1;
+
+                // Bounce off walls
+                if (inspector.x < 30 || inspector.x > MAP_W * TILE_SIZE - 30) {
+                    inspector.dir = Math.PI - inspector.dir;
+                    inspector.x = Math.max(30, Math.min(MAP_W * TILE_SIZE - 30, inspector.x));
+                }
+                if (inspector.y < 30 || inspector.y > MAP_H * TILE_SIZE - 30) {
+                    inspector.dir = -inspector.dir;
+                    inspector.y = Math.max(30, Math.min(MAP_H * TILE_SIZE - 30, inspector.y));
+                }
+
+                // Random turn
+                inspector.turnTimer++;
+                if (inspector.turnTimer > 90 + Math.random() * 60) {
+                    inspector.dir += (Math.random() - 0.5) * Math.PI;
+                    inspector.turnTimer = 0;
+                }
+
+                // Check if spotting player (cone of vision)
+                const dx = GAME.player.x + 8 - inspector.x;
+                const dy = GAME.player.y + 8 - inspector.y;
+                const dist = Math.hypot(dx, dy);
+                const angleToPlayer = Math.atan2(dy, dx);
+                const angleDiff = Math.abs(((angleToPlayer - inspector.dir + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
+
+                if (dist < 80 && angleDiff < 0.6) { // Within vision cone
+                    inspector.spotting = true;
+                    inspector.spottingTimer++;
+
+                    // Spotted for too long - damage!
+                    if (inspector.spottingTimer >= 45 && GAME.player.iframe <= 0 && GAME.selectedChar !== 'DevMode') {
+                        GAME.lives--;
+                        GAME.player.iframe = 120;
+                        GAME.shake = 10;
+                        GAME.flash = 8;
+                        AudioSys.sfx.hurt();
+                        spawnFloatingText(GAME.player.x, GAME.player.y - 16, "VIOLATION!", "#ff0000");
+                        spawnParticleBurst(GAME.player.x + 8, GAME.player.y + 8, ['#ff0000', '#ffcc00'], 10);
+                        updateHud();
+                        inspector.spottingTimer = 0;
+                        if (GAME.lives <= 0 && !GAME.gameOverTriggered) {
+                            triggerGameOver("SAFETY VIOLATION!");
+                        }
+                    }
+                } else {
+                    inspector.spotting = false;
+                    inspector.spottingTimer = Math.max(0, inspector.spottingTimer - 2);
+                }
+            }
+            break;
+
+        case 'FORKLIFT_FRENZY':
+            // Spawn and update forklifts
+            if (!GAME.forklifts) GAME.forklifts = [];
+
+            GAME.forkliftSpawnTimer++;
+
+            // Spawn new forklift every ~1 second
+            if (GAME.forkliftSpawnTimer % 60 === 0) {
+                const side = Math.floor(Math.random() * 4);
+                let fx, fy, fvx, fvy;
+
+                if (side === 0) { // From left
+                    fx = -30;
+                    fy = 50 + Math.random() * (MAP_H * TILE_SIZE - 100);
+                    fvx = 2.5 + Math.random() * 1.5;
+                    fvy = 0;
+                } else if (side === 1) { // From right
+                    fx = MAP_W * TILE_SIZE + 30;
+                    fy = 50 + Math.random() * (MAP_H * TILE_SIZE - 100);
+                    fvx = -(2.5 + Math.random() * 1.5);
+                    fvy = 0;
+                } else if (side === 2) { // From top
+                    fx = 50 + Math.random() * (MAP_W * TILE_SIZE - 100);
+                    fy = -30;
+                    fvx = 0;
+                    fvy = 2.5 + Math.random() * 1.5;
+                } else { // From bottom
+                    fx = 50 + Math.random() * (MAP_W * TILE_SIZE - 100);
+                    fy = MAP_H * TILE_SIZE + 30;
+                    fvx = 0;
+                    fvy = -(2.5 + Math.random() * 1.5);
+                }
+
+                GAME.forklifts.push({
+                    x: fx, y: fy,
+                    vx: fvx, vy: fvy,
+                    w: 24, h: 20,
+                    honkTimer: 30 + Math.floor(Math.random() * 30)
+                });
+                AudioSys.sfx.alert();
+            }
+
+            // Update forklifts
+            for (let i = GAME.forklifts.length - 1; i >= 0; i--) {
+                const fl = GAME.forklifts[i];
+                fl.x += fl.vx;
+                fl.y += fl.vy;
+                fl.honkTimer--;
+
+                // Honk warning
+                if (fl.honkTimer <= 0) {
+                    fl.honkTimer = 60 + Math.floor(Math.random() * 60);
+                    // Only honk if near player
+                    const distToPlayer = Math.hypot(fl.x - GAME.player.x, fl.y - GAME.player.y);
+                    if (distToPlayer < 100) {
+                        AudioSys.sfx.throw();
+                    }
+                }
+
+                // Check collision with player
+                if (GAME.player.iframe <= 0 && GAME.selectedChar !== 'DevMode') {
+                    const cx = fl.x + fl.w / 2;
+                    const cy = fl.y + fl.h / 2;
+                    const px = GAME.player.x + 8;
+                    const py = GAME.player.y + 8;
+                    if (Math.abs(cx - px) < 18 && Math.abs(cy - py) < 16) {
+                        GAME.lives--;
+                        GAME.player.iframe = 120;
+                        GAME.shake = 15;
+                        GAME.flash = 10;
+                        AudioSys.sfx.hurt();
+                        spawnFloatingText(GAME.player.x, GAME.player.y - 16, "RUN OVER!", "#ff4400");
+                        spawnParticleBurst(GAME.player.x + 8, GAME.player.y + 8, ['#ff4400', '#ffcc00', '#888888'], 12);
+                        updateHud();
+                        VibrationSystem.onDamage();
+                        if (GAME.lives <= 0 && !GAME.gameOverTriggered) {
+                            triggerGameOver("FORKLIFT ACCIDENT!");
+                        }
+                    }
+                }
+
+                // Remove if off screen
+                if (fl.x < -60 || fl.x > MAP_W * TILE_SIZE + 60 ||
+                    fl.y < -60 || fl.y > MAP_H * TILE_SIZE + 60) {
+                    GAME.forklifts.splice(i, 1);
+                }
+            }
+            break;
+
+        case 'CONVEYOR_CHAOS':
+            // Conveyor belts push player
+            if (!GAME.conveyorZones) break;
+
+            const p = GAME.player;
+            for (const zone of GAME.conveyorZones) {
+                zone.animOffset += 0.15; // Animate conveyor arrows
+
+                // Check if player is on this conveyor
+                if (p.x + 16 > zone.x && p.x < zone.x + zone.w &&
+                    p.y + 16 > zone.y && p.y < zone.y + zone.h) {
+                    // Push player based on direction
+                    const pushStrength = zone.speed * 0.5;
+                    switch (zone.dir) {
+                        case 0: p.x += pushStrength; break; // Right
+                        case 1: p.y += pushStrength; break; // Down
+                        case 2: p.x -= pushStrength; break; // Left
+                        case 3: p.y -= pushStrength; break; // Up
+                    }
+
+                    // Clamp player position
+                    p.x = Math.max(16, Math.min(MAP_W * TILE_SIZE - 32, p.x));
+                    p.y = Math.max(16, Math.min(MAP_H * TILE_SIZE - 32, p.y));
+                }
+            }
+
+            // Occasional zone shuffle (makes it chaotic)
+            if (Math.random() < 0.005) {
+                const randomZone = GAME.conveyorZones[Math.floor(Math.random() * GAME.conveyorZones.length)];
+                randomZone.dir = (randomZone.dir + 1) % 4;
+                GAME.shake = 3;
+            }
+            break;
     }
 }
 
@@ -1274,6 +1558,24 @@ function endEventEffects(eventType) {
                 GAME.warehouseEvent.activePackages = [];
             }
             spawnFloatingText(GAME.player.x, GAME.player.y - 30, "SURVIVED!", "#22c55e");
+            break;
+
+        case 'SAFETY_AUDIT':
+            GAME.safetyAuditActive = false;
+            GAME.safetyInspectors = [];
+            spawnFloatingText(GAME.player.x, GAME.player.y - 30, "AUDIT PASSED!", "#22c55e");
+            break;
+
+        case 'FORKLIFT_FRENZY':
+            GAME.forkliftFrenzyActive = false;
+            GAME.forklifts = [];
+            spawnFloatingText(GAME.player.x, GAME.player.y - 30, "ALL CLEAR!", "#22c55e");
+            break;
+
+        case 'CONVEYOR_CHAOS':
+            GAME.conveyorChaosActive = false;
+            GAME.conveyorZones = [];
+            spawnFloatingText(GAME.player.x, GAME.player.y - 30, "STABLE GROUND!", "#22c55e");
             break;
     }
 
@@ -19058,6 +19360,207 @@ function draw() {
             ctx.arc(fx, fy, fire.size + 6, 0, Math.PI * 2);
             ctx.stroke();
             ctx.setLineDash([]);
+        }
+    }
+
+    // === SAFETY AUDIT: Draw inspectors with vision cones ===
+    if (GAME.safetyAuditActive && GAME.safetyInspectors) {
+        for (const inspector of GAME.safetyInspectors) {
+            const ix = inspector.x - cx;
+            const iy = inspector.y - cy;
+            if (ix < screenLeft - 40 || ix > screenRight + 40 || iy < screenTop - 40 || iy > screenBottom + 40) continue;
+
+            // Vision cone (draw first, under inspector)
+            ctx.save();
+            ctx.translate(ix, iy);
+            ctx.rotate(inspector.dir);
+
+            // Vision cone gradient
+            const coneLength = 80;
+            const coneWidth = 0.6; // radians
+            const spotColor = inspector.spotting ? 'rgba(255, 0, 0, 0.3)' : 'rgba(255, 200, 0, 0.15)';
+            const spotEdge = inspector.spotting ? 'rgba(255, 0, 0, 0)' : 'rgba(255, 200, 0, 0)';
+
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, coneLength, -coneWidth, coneWidth);
+            ctx.closePath();
+
+            const coneGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, coneLength);
+            coneGrad.addColorStop(0, spotColor);
+            coneGrad.addColorStop(1, spotEdge);
+            ctx.fillStyle = coneGrad;
+            ctx.fill();
+            ctx.restore();
+
+            // Inspector body (clipboard carrier)
+            ctx.fillStyle = '#1e3a5f'; // Dark blue uniform
+            ctx.fillRect(ix - 6, iy - 8, 12, 16);
+
+            // Head
+            ctx.fillStyle = '#fcd5b8';
+            ctx.beginPath();
+            ctx.arc(ix, iy - 10, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Hard hat
+            ctx.fillStyle = '#ffcc00';
+            ctx.fillRect(ix - 5, iy - 16, 10, 4);
+
+            // Clipboard (animated wave)
+            const clipX = ix + Math.cos(inspector.clipboardWave) * 2;
+            ctx.fillStyle = '#8b4513';
+            ctx.fillRect(clipX + 5, iy - 4, 6, 8);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(clipX + 6, iy - 3, 4, 6);
+
+            // Spotting indicator
+            if (inspector.spotting) {
+                const alertPulse = Math.sin(GAME.ticks * 0.3) * 0.5 + 0.5;
+                ctx.fillStyle = `rgba(255, 0, 0, ${alertPulse})`;
+                ctx.font = 'bold 10px monospace';
+                ctx.fillText('!', ix - 2, iy - 20);
+
+                // Spotting progress bar
+                const progress = inspector.spottingTimer / 45;
+                ctx.fillStyle = '#333';
+                ctx.fillRect(ix - 10, iy - 26, 20, 3);
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(ix - 10, iy - 26, 20 * progress, 3);
+            }
+        }
+    }
+
+    // === FORKLIFT FRENZY: Draw forklifts ===
+    if (GAME.forkliftFrenzyActive && GAME.forklifts) {
+        for (const fl of GAME.forklifts) {
+            const flx = fl.x - cx;
+            const fly = fl.y - cy;
+            if (flx < screenLeft - 30 || flx > screenRight + 30 || fly < screenTop - 30 || fly > screenBottom + 30) continue;
+
+            ctx.save();
+            ctx.translate(flx + fl.w / 2, fly + fl.h / 2);
+
+            // Rotate based on direction
+            if (fl.vx > 0) ctx.rotate(0);
+            else if (fl.vx < 0) ctx.rotate(Math.PI);
+            else if (fl.vy > 0) ctx.rotate(Math.PI / 2);
+            else ctx.rotate(-Math.PI / 2);
+
+            // Forklift shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillRect(-10, 8, 20, 6);
+
+            // Forklift body
+            ctx.fillStyle = '#ff6600'; // Orange forklift
+            ctx.fillRect(-10, -8, 16, 16);
+
+            // Cab
+            ctx.fillStyle = '#333';
+            ctx.fillRect(-8, -6, 8, 10);
+
+            // Forks
+            ctx.fillStyle = '#888';
+            ctx.fillRect(6, -6, 8, 2);
+            ctx.fillRect(6, 2, 8, 2);
+
+            // Wheels
+            ctx.fillStyle = '#222';
+            ctx.beginPath();
+            ctx.arc(-6, 10, 4, 0, Math.PI * 2);
+            ctx.arc(4, 10, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Warning light (blinking)
+            if (Math.floor(GAME.ticks / 10) % 2 === 0) {
+                ctx.fillStyle = '#ffff00';
+                ctx.beginPath();
+                ctx.arc(-2, -10, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.restore();
+
+            // Warning indicator for nearby player
+            const distToPlayer = Math.hypot(fl.x + fl.w/2 - GAME.player.x - 8, fl.y + fl.h/2 - GAME.player.y - 8);
+            if (distToPlayer < 60) {
+                ctx.fillStyle = `rgba(255, 100, 0, ${0.5 + Math.sin(GAME.ticks * 0.4) * 0.3})`;
+                ctx.font = 'bold 8px monospace';
+                ctx.fillText('!!', flx + fl.w / 2 - 4, fly - 8);
+            }
+        }
+    }
+
+    // === CONVEYOR CHAOS: Draw conveyor zones ===
+    if (GAME.conveyorChaosActive && GAME.conveyorZones) {
+        for (const zone of GAME.conveyorZones) {
+            const zx = zone.x - cx;
+            const zy = zone.y - cy;
+            if (zx + zone.w < screenLeft || zx > screenRight || zy + zone.h < screenTop || zy > screenBottom) continue;
+
+            // Conveyor belt base
+            ctx.fillStyle = 'rgba(60, 60, 80, 0.6)';
+            ctx.fillRect(zx, zy, zone.w, zone.h);
+
+            // Conveyor belt edge
+            ctx.strokeStyle = 'rgba(100, 100, 120, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(zx, zy, zone.w, zone.h);
+
+            // Direction arrows (animated)
+            ctx.fillStyle = 'rgba(0, 200, 255, 0.7)';
+            const arrowSpacing = 20;
+            const numArrowsX = Math.floor(zone.w / arrowSpacing);
+            const numArrowsY = Math.floor(zone.h / arrowSpacing);
+
+            for (let ax = 0; ax < numArrowsX; ax++) {
+                for (let ay = 0; ay < numArrowsY; ay++) {
+                    const baseX = zx + arrowSpacing / 2 + ax * arrowSpacing;
+                    const baseY = zy + arrowSpacing / 2 + ay * arrowSpacing;
+
+                    // Animate arrow position based on direction
+                    const animOffset = (zone.animOffset + ax * 0.5 + ay * 0.5) % (Math.PI * 2);
+                    const animShift = Math.sin(animOffset) * 3;
+
+                    ctx.save();
+                    ctx.translate(baseX, baseY);
+
+                    // Rotate based on direction
+                    ctx.rotate(zone.dir * Math.PI / 2);
+
+                    // Draw arrow
+                    ctx.beginPath();
+                    ctx.moveTo(animShift + 5, 0);
+                    ctx.lineTo(animShift - 3, -4);
+                    ctx.lineTo(animShift - 3, 4);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            }
+
+            // Speed indicator lines
+            ctx.strokeStyle = 'rgba(0, 200, 255, 0.4)';
+            ctx.lineWidth = 1;
+            const lineOffset = (GAME.ticks * zone.speed * 0.5) % 15;
+            if (zone.dir === 0 || zone.dir === 2) { // Horizontal
+                for (let ly = 0; ly < zone.h; ly += 15) {
+                    const lx = zone.dir === 0 ? lineOffset : zone.w - lineOffset;
+                    ctx.beginPath();
+                    ctx.moveTo(zx + lx, zy + ly);
+                    ctx.lineTo(zx + lx + (zone.dir === 0 ? 8 : -8), zy + ly);
+                    ctx.stroke();
+                }
+            } else { // Vertical
+                for (let lx = 0; lx < zone.w; lx += 15) {
+                    const ly = zone.dir === 1 ? lineOffset : zone.h - lineOffset;
+                    ctx.beginPath();
+                    ctx.moveTo(zx + lx, zy + ly);
+                    ctx.lineTo(zx + lx, zy + ly + (zone.dir === 1 ? 8 : -8));
+                    ctx.stroke();
+                }
+            }
         }
     }
 
