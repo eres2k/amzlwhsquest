@@ -56,9 +56,9 @@ const CHAR_DATA = {
         backstory: "A mysterious figure who exists outside the simulation. Reality bends to their will.",
         attack: "Debug Beam",
         speed: 3.5,
-        lives: 99,
+        lives: 5,
         ability: "GOD MODE",
-        abilityDesc: "Invincible, Instant Kill, No Cooldown",
+        abilityDesc: "Invincible, High Damage, No Cooldown",
         isSecret: true,
         isDevMode: true
     }

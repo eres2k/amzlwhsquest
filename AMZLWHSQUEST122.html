@@ -1914,6 +1914,39 @@ function generateAssets() {
             ctx.fillStyle = '#d4a574'; ctx.fillRect(1,13,2,1); ctx.fillRect(13,13,2,1); // Hands
             // Shoes
             ctx.fillStyle = '#000'; ctx.fillRect(3,14,4,2); ctx.fillRect(9,14,4,2);
+        }),
+        // SECRET DEV MODE CHARACTER - Glitchy purple figure
+        "DevMode": c(16,16, ctx => {
+            // Shadow with glitch effect
+            ctx.fillStyle = 'rgba(255,0,255,0.3)';
+            ctx.beginPath(); ctx.ellipse(8, 15, 5, 2, 0, 0, Math.PI*2); ctx.fill();
+            // Glitchy body silhouette
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(4,2,8,12);
+            // Matrix-style digital rain effect
+            ctx.fillStyle = '#ff00ff';
+            ctx.fillRect(5,3,2,1); ctx.fillRect(9,4,2,1);
+            ctx.fillRect(6,6,1,2); ctx.fillRect(10,7,1,1);
+            ctx.fillRect(5,9,1,1); ctx.fillRect(8,10,2,1);
+            // Glowing eyes
+            ctx.fillStyle = '#ff00ff';
+            ctx.fillRect(5,5,2,2); ctx.fillRect(9,5,2,2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(6,5,1,1); ctx.fillRect(10,5,1,1);
+            // Hoodie outline
+            ctx.fillStyle = '#2d1f4e';
+            ctx.fillRect(3,8,10,6);
+            ctx.fillStyle = '#3d2f5e';
+            ctx.fillRect(4,9,8,4);
+            // Glitch lines (static effect)
+            ctx.fillStyle = '#ff00ff';
+            ctx.fillRect(2,4,12,1);
+            ctx.fillRect(3,11,10,1);
+            // Hood
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(3,1,10,4);
+            ctx.fillStyle = '#2d1f4e';
+            ctx.fillRect(4,2,8,2);
         })
     };
 
@@ -10235,8 +10268,8 @@ function updateProjectiles() {
                     // Character ability damage multipliers + PPE damage buffs
                     let dmg = 1;
                     if (GAME.selectedChar === 'Carrie') dmg = 2; // PRECISION FOCUS
-                    // === DEV MODE: Massive damage ===
-                    if (GAME.selectedChar === 'DevMode') dmg = 50; // One-shots most bosses
+                    // === DEV MODE: High damage ===
+                    if (GAME.selectedChar === 'DevMode') dmg = 5;
                     // Apply critical hit damage modifier from projectile
                     if (p.damageMod) dmg = Math.ceil(dmg * p.damageMod);
                     // Apply Prime Guardian Armor damage buff
@@ -17986,7 +18019,27 @@ function draw() {
         const portraitX = frameX + 18, portraitY = frameY + 46;
         ctx.fillStyle = '#000'; ctx.fillRect(portraitX - 2, portraitY - 2, 56, 56);
         ctx.strokeStyle = '#333'; ctx.strokeRect(portraitX - 4, portraitY - 4, 60, 60);
-        ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(GFX.chars[name], portraitX, portraitY, 52, 52); ctx.restore();
+        ctx.save(); ctx.imageSmoothingEnabled = false;
+        // DevMode uses a special placeholder since no portrait exists
+        if (name === 'DevMode') {
+            // Draw a glitchy dev mode placeholder
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(portraitX, portraitY, 52, 52);
+            ctx.fillStyle = '#ff00ff';
+            ctx.font = '8px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText('DEV', portraitX + 26, portraitY + 22);
+            ctx.fillText('MODE', portraitX + 26, portraitY + 36);
+            ctx.textAlign = 'left';
+            // Add glitch lines
+            for (let i = 0; i < 5; i++) {
+                ctx.fillStyle = `rgba(255, 0, 255, ${0.3 + Math.random() * 0.4})`;
+                ctx.fillRect(portraitX, portraitY + Math.random() * 52, 52, 1);
+            }
+        } else {
+            ctx.drawImage(GFX.chars[name], portraitX, portraitY, 52, 52);
+        }
+        ctx.restore();
 
         ctx.fillStyle='#eab308'; ctx.font='12px monospace';
         ctx.fillText("< " + name + " >", frameX + frameW / 2, frameY + 54);
