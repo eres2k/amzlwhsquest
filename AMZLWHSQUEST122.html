@@ -923,24 +923,27 @@ function startEventEffects(eventType) {
             break;
 
         case 'PRIME_DAY':
-            // Prime Day chaos: Many runners, falling packages, OPS everywhere
+            // Prime Day chaos: Package storm with visual warning shadows
             GAME.primeDayActive = true;
-            // Initialize package storm shadows array (like Mecha Jeff Phase 2)
+            // Initialize package storm tracking
             GAME.warehouseEvent.primeDayShadows = [];
-            // Spawn 8 runners
-            for (let i = 0; i < 8; i++) {
+            GAME.warehouseEvent.activePackages = []; // Track falling packages separately
+            GAME.warehouseEvent.packageSpawnTimer = 0;
+
+            // Spawn 6 runners for chaos
+            for (let i = 0; i < 6; i++) {
                 const rx = 50 + Math.random() * (MAP_W * TILE_SIZE - 100);
                 const ry = 50 + Math.random() * (MAP_H * TILE_SIZE - 100);
                 GAME.entities.push({
                     type: 'runner',
                     x: rx, y: ry, w: 16, h: 16,
-                    vx: (Math.random() - 0.5) * 5,
-                    vy: (Math.random() - 0.5) * 5,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() - 0.5) * 4,
                     primeDay: true
                 });
             }
-            // Spawn 3 extra OPS
-            for (let i = 0; i < 3; i++) {
+            // Spawn 2 extra OPS
+            for (let i = 0; i < 2; i++) {
                 const ox = 100 + Math.random() * (MAP_W * TILE_SIZE - 200);
                 const oy = 100 + Math.random() * (MAP_H * TILE_SIZE - 200);
                 GAME.entities.push({
@@ -950,7 +953,9 @@ function startEventEffects(eventType) {
                     hp: 1
                 });
             }
-            GAME.shake = 10;
+            GAME.shake = 8;
+            AudioSys.sfx.alert();
+            spawnFloatingText(GAME.player.x, GAME.player.y - 30, "PRIME DAY!", "#ff9900");
             break;
     }
 }
@@ -1091,56 +1096,136 @@ function updateEventEffects(eventType) {
             break;
 
         case 'PRIME_DAY':
-            // PRIME PACKAGE STORM - Uses shadows like Mecha Jeff Phase 2
-            if (Math.random() < 0.1) {
-                GAME.shake = Math.max(GAME.shake, 5);
+            // === PRIME PACKAGE STORM - Completely reworked for reliability ===
+            // Periodic screen shake for chaos feel
+            if (GAME.ticks % 30 === 0) {
+                GAME.shake = Math.max(GAME.shake, 3);
             }
 
-            // Spawn shadow warnings (like Mecha Jeff) every 25 frames
-            if (GAME.warehouseEvent.timer % 25 === 0) {
-                const shadowsToSpawn = 2 + Math.floor(Math.random() * 2);
-                for (let i = 0; i < shadowsToSpawn; i++) {
-                    // Target near player with some randomness
-                    const targetX = GAME.player.x + (Math.random() - 0.5) * 120;
+            // Increment spawn timer
+            GAME.warehouseEvent.packageSpawnTimer++;
+
+            // Spawn new warning shadows every 40 frames (more manageable rate)
+            if (GAME.warehouseEvent.packageSpawnTimer % 40 === 0) {
+                const numPackages = 1 + Math.floor(Math.random() * 2); // 1-2 packages
+                for (let i = 0; i < numPackages; i++) {
+                    // Target area around player with randomness
+                    const offsetX = (Math.random() - 0.5) * 140;
+                    const offsetY = (Math.random() - 0.5) * 80;
+                    const targetX = Math.max(32, Math.min(MAP_W * TILE_SIZE - 32, GAME.player.x + offsetX));
+                    const targetY = Math.max(32, Math.min(MAP_H * TILE_SIZE - 32, GAME.player.y + offsetY));
+
+                    // Create shadow with target coordinates and warning timer
                     GAME.warehouseEvent.primeDayShadows.push({
-                        x: Math.max(20, Math.min(MAP_W * TILE_SIZE - 40, targetX)),
-                        timer: 45 // Warning time before package drops
+                        x: targetX,
+                        y: targetY,
+                        timer: 60, // 1 second warning (60 frames)
+                        maxTimer: 60,
+                        size: 16
                     });
                 }
             }
 
-            // Update shadows and spawn packages when timer expires (like Mecha Jeff)
+            // Update shadow warnings and spawn packages when timer expires
             for (let i = GAME.warehouseEvent.primeDayShadows.length - 1; i >= 0; i--) {
-                GAME.warehouseEvent.primeDayShadows[i].timer--;
-                if (GAME.warehouseEvent.primeDayShadows[i].timer <= 0) {
-                    const sx = GAME.warehouseEvent.primeDayShadows[i].x;
-                    // Spawn the actual falling package
-                    GAME.projectiles.push({
-                        type: 'fallingPackage',
-                        x: sx,
-                        y: -16,
-                        vx: (Math.random() - 0.5) * 0.5,
-                        vy: 1.8,
-                        life: 200,
-                        primePackage: true,
-                        rotation: 0
+                const shadow = GAME.warehouseEvent.primeDayShadows[i];
+                shadow.timer--;
+
+                if (shadow.timer <= 0) {
+                    // Shadow expired - spawn the falling package at this position
+                    GAME.warehouseEvent.activePackages.push({
+                        x: shadow.x,
+                        y: shadow.y - 150, // Start above target
+                        targetY: shadow.y,
+                        vx: 0,
+                        vy: 3.5, // Faster fall speed
+                        w: 14,
+                        h: 14,
+                        rotation: 0,
+                        rotSpeed: (Math.random() - 0.5) * 0.3,
+                        landed: false
                     });
                     GAME.warehouseEvent.primeDayShadows.splice(i, 1);
                     AudioSys.sfx.throw();
-                    GAME.shake = Math.max(GAME.shake, 3);
                 }
             }
 
-            // Respawn runners if too few (reduced count for shorter event)
+            // Update falling packages
+            for (let i = GAME.warehouseEvent.activePackages.length - 1; i >= 0; i--) {
+                const pkg = GAME.warehouseEvent.activePackages[i];
+
+                if (!pkg.landed) {
+                    // Package is falling
+                    pkg.y += pkg.vy;
+                    pkg.rotation += pkg.rotSpeed;
+
+                    // Check if package reached target (ground)
+                    if (pkg.y >= pkg.targetY) {
+                        pkg.y = pkg.targetY;
+                        pkg.landed = true;
+                        pkg.landTimer = 0;
+                        GAME.shake = Math.max(GAME.shake, 4);
+                        AudioSys.sfx.hit();
+                        spawnParticleBurst(pkg.x + 8, pkg.y + 8, ['#a16207', '#fbbf24', '#ff9900'], 6);
+
+                        // Check collision with player on landing
+                        if (GAME.player.iframe === 0 && GAME.selectedChar !== 'DevMode') {
+                            const dist = Math.hypot(GAME.player.x + 8 - pkg.x - 7, GAME.player.y + 8 - pkg.y - 7);
+                            if (dist < 18) {
+                                GAME.lives--;
+                                GAME.player.iframe = GAME_CONSTANTS.IFRAME_DURATION;
+                                updateHud();
+                                AudioSys.sfx.hurt();
+                                GAME.shake = 8;
+                                GAME.flash = 5;
+                                spawnFloatingText(GAME.player.x, GAME.player.y - 16, "PRIME DELIVERED!", "#ff4444");
+                                VibrationSystem.onDamage();
+                                if (GAME.lives <= 0 && !GAME.gameOverTriggered) {
+                                    triggerGameOver("CRUSHED BY PRIME!");
+                                }
+                            }
+                        }
+                    } else {
+                        // Check mid-air collision with player
+                        if (GAME.player.iframe === 0 && GAME.selectedChar !== 'DevMode') {
+                            const dist = Math.hypot(GAME.player.x + 8 - pkg.x - 7, GAME.player.y + 8 - pkg.y - 7);
+                            if (dist < 14) {
+                                GAME.lives--;
+                                GAME.player.iframe = GAME_CONSTANTS.IFRAME_DURATION;
+                                updateHud();
+                                AudioSys.sfx.hurt();
+                                GAME.shake = 8;
+                                GAME.flash = 5;
+                                spawnFloatingText(GAME.player.x, GAME.player.y - 16, "BONKED!", "#ff4444");
+                                VibrationSystem.onDamage();
+                                // Remove the package that hit player
+                                GAME.warehouseEvent.activePackages.splice(i, 1);
+                                if (GAME.lives <= 0 && !GAME.gameOverTriggered) {
+                                    triggerGameOver("PACKAGE IMPACT!");
+                                }
+                                continue;
+                            }
+                        }
+                    }
+                } else {
+                    // Package has landed - fade out after a short time
+                    pkg.landTimer++;
+                    if (pkg.landTimer > 90) { // Remove after 1.5 seconds
+                        GAME.warehouseEvent.activePackages.splice(i, 1);
+                    }
+                }
+            }
+
+            // Respawn runners if too few
             const primeDayRunners = GAME.entities.filter(e => e.primeDay && e.type === 'runner').length;
-            if (primeDayRunners < 3 && Math.random() < 0.03) {
+            if (primeDayRunners < 3 && Math.random() < 0.025) {
                 const rx = 50 + Math.random() * (MAP_W * TILE_SIZE - 100);
                 const ry = 50 + Math.random() * (MAP_H * TILE_SIZE - 100);
                 GAME.entities.push({
                     type: 'runner',
                     x: rx, y: ry, w: 16, h: 16,
-                    vx: (Math.random() - 0.5) * 5,
-                    vy: (Math.random() - 0.5) * 5,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() - 0.5) * 4,
                     primeDay: true
                 });
             }
@@ -1180,9 +1265,15 @@ function endEventEffects(eventType) {
             break;
 
         case 'PRIME_DAY':
-            // Remove prime day runners and packages
+            // Remove prime day runners, OPS, and all packages
             GAME.entities = GAME.entities.filter(e => !e.primeDay);
             GAME.primeDayActive = false;
+            // Clear any remaining shadows and packages
+            if (GAME.warehouseEvent) {
+                GAME.warehouseEvent.primeDayShadows = [];
+                GAME.warehouseEvent.activePackages = [];
+            }
+            spawnFloatingText(GAME.player.x, GAME.player.y - 30, "SURVIVED!", "#22c55e");
             break;
     }
 
@@ -6105,7 +6196,7 @@ const GAME = {
     secretCode: "",
     devModeUnlocked: false,
     // Region-aware system
-    region: 'EU',
+    region: 'DE', // Default to first region in list (Germany)
     regionList: ['DE', 'AT', 'NL', 'MEU'],
     regionIndex: 0,
     regionNames: {
@@ -8670,6 +8761,8 @@ function update() {
         if (changed) {
             if (GAME.regionIndex < 0) GAME.regionIndex = GAME.regionList.length - 1;
             if (GAME.regionIndex >= GAME.regionList.length) GAME.regionIndex = 0;
+            // Update GAME.region immediately so UI text updates in real-time
+            GAME.region = GAME.regionList[GAME.regionIndex];
         }
         return;
     }
@@ -19332,28 +19425,99 @@ function draw() {
         }
     }
 
-    // === PRIME DAY PACKAGE STORM: Draw shadow warnings (like Mecha Jeff) ===
-    if (GAME.primeDayActive && GAME.warehouseEvent && GAME.warehouseEvent.primeDayShadows && GAME.state === 'PLAY') {
-        GAME.warehouseEvent.primeDayShadows.forEach(s => {
-            const pulse = Math.sin(s.timer * 0.2) * 0.3 + 0.5;
-            ctx.fillStyle = `rgba(239, 68, 68, ${pulse})`;
-            ctx.beginPath();
-            // Draw shadow ellipse on ground (screen coords accounting for camera)
-            const screenX = s.x - GAME.camera.x;
-            const groundY = GAME.player.y + 12 - GAME.camera.y; // Near player ground level
-            ctx.ellipse(screenX + 8, Math.min(groundY + 8, canvas.height - 20), 12 - s.timer * 0.15, 4, 0, 0, Math.PI * 2);
-            ctx.fill();
-            // Warning X mark
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            const xY = Math.min(groundY, canvas.height - 28);
-            ctx.moveTo(screenX + 2, xY - 6);
-            ctx.lineTo(screenX + 14, xY + 6);
-            ctx.moveTo(screenX + 14, xY - 6);
-            ctx.lineTo(screenX + 2, xY + 6);
-            ctx.stroke();
-        });
+    // === PRIME DAY PACKAGE STORM: Draw shadow warnings and falling packages ===
+    if (GAME.primeDayActive && GAME.warehouseEvent && GAME.state === 'PLAY') {
+        const cx = GAME.camera.x;
+        const cy = GAME.camera.y;
+
+        // Draw warning shadows (pulsing red targets on ground)
+        if (GAME.warehouseEvent.primeDayShadows) {
+            GAME.warehouseEvent.primeDayShadows.forEach(s => {
+                const screenX = s.x - cx;
+                const screenY = s.y - cy;
+
+                // Skip offscreen shadows
+                if (screenX < -30 || screenX > canvas.width + 30 || screenY < -30 || screenY > canvas.height + 30) return;
+
+                // Calculate urgency based on remaining timer
+                const urgency = 1 - (s.timer / s.maxTimer);
+                const pulse = Math.sin(GAME.ticks * 0.3) * 0.3 + 0.5 + urgency * 0.3;
+                const size = 10 + urgency * 8; // Grows as timer decreases
+
+                // Draw pulsing red target circle
+                ctx.fillStyle = `rgba(239, 68, 68, ${pulse * 0.6})`;
+                ctx.beginPath();
+                ctx.arc(screenX + 8, screenY + 8, size, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw inner circle
+                ctx.fillStyle = `rgba(255, 100, 50, ${pulse * 0.8})`;
+                ctx.beginPath();
+                ctx.arc(screenX + 8, screenY + 8, size * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw warning X mark (more visible as timer decreases)
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 + urgency * 0.5})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(screenX + 8 - 6, screenY + 8 - 6);
+                ctx.lineTo(screenX + 8 + 6, screenY + 8 + 6);
+                ctx.moveTo(screenX + 8 + 6, screenY + 8 - 6);
+                ctx.lineTo(screenX + 8 - 6, screenY + 8 + 6);
+                ctx.stroke();
+            });
+        }
+
+        // Draw falling and landed packages
+        if (GAME.warehouseEvent.activePackages) {
+            GAME.warehouseEvent.activePackages.forEach(pkg => {
+                const screenX = pkg.x - cx;
+                const screenY = pkg.y - cy;
+
+                // Skip offscreen packages
+                if (screenX < -20 || screenX > canvas.width + 20 || screenY < -50 || screenY > canvas.height + 20) return;
+
+                // Calculate alpha for landed packages (fade out)
+                let alpha = 1.0;
+                if (pkg.landed && pkg.landTimer > 60) {
+                    alpha = 1 - ((pkg.landTimer - 60) / 30);
+                }
+
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.translate(screenX + 7, screenY + 7);
+                ctx.rotate(pkg.rotation);
+
+                // Package shadow on ground
+                if (!pkg.landed) {
+                    const shadowDist = (pkg.targetY - pkg.y) * 0.1;
+                    ctx.fillStyle = `rgba(0, 0, 0, ${0.3 - shadowDist * 0.01})`;
+                    ctx.fillRect(-5, pkg.targetY - pkg.y + 4, 10, 4);
+                }
+
+                // Package body (Prime orange/brown)
+                ctx.fillStyle = '#92400e';
+                ctx.fillRect(-7, -7, 14, 14);
+                ctx.fillStyle = '#c2410c';
+                ctx.fillRect(-6, -6, 12, 12);
+
+                // Prime tape stripe
+                ctx.fillStyle = '#ff9900';
+                ctx.fillRect(-4, -2, 8, 4);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(-3, -1, 6, 2);
+
+                // Warning glow effect for falling packages
+                if (!pkg.landed) {
+                    ctx.fillStyle = 'rgba(255, 153, 0, 0.4)';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 12, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            });
+        }
     }
 
     if (GAME.flash > 0) { ctx.globalAlpha = GAME.flash / 10; ctx.fillStyle = 'white'; ctx.fillRect(0,0,canvas.width, canvas.height); ctx.globalAlpha = 1.0; }
