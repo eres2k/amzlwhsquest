@@ -159,6 +159,8 @@
             position: relative;
             z-index: 10;
             padding-top: 40px;
+            perspective: 1500px;
+            transform-style: preserve-3d;
         }
 
         /* Section Base Styles */
@@ -171,6 +173,8 @@
             padding: 60px 20px;
             position: relative;
             overflow: hidden;
+            transform-style: preserve-3d;
+            perspective: 1000px;
         }
 
         /* Hero Section */
@@ -334,18 +338,6 @@
             margin: 10px 0;
             background: rgba(255, 0, 0, 0.2);
             border-left: 5px solid #ff0000;
-            opacity: 0;
-            transform: translateX(-50px);
-            animation: slide-in 0.5s forwards;
-        }
-
-        .boring-list li:nth-child(1) { animation-delay: 0.2s; }
-        .boring-list li:nth-child(2) { animation-delay: 0.4s; }
-        .boring-list li:nth-child(3) { animation-delay: 0.6s; }
-        .boring-list li:nth-child(4) { animation-delay: 0.8s; }
-
-        @keyframes slide-in {
-            to { opacity: 1; transform: translateX(0); }
         }
 
         /* Solution Section */
@@ -940,16 +932,253 @@
             .boss-card { width: 100%; max-width: 280px; }
         }
 
-        /* Entrance Animations for Scroll */
+        /* Entrance Animations for Scroll - Multi-dimensional Transitions */
+
+        /* Base reveal setup */
         .reveal {
             opacity: 0;
-            transform: translateY(50px);
-            transition: all 0.8s ease-out;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .reveal.active {
             opacity: 1;
-            transform: translateY(0);
+        }
+
+        /* 1. Flip In from Bottom (3D rotation) */
+        .reveal-flip-up {
+            transform: perspective(1000px) rotateX(-90deg) translateY(50px);
+            transform-origin: bottom center;
+        }
+
+        .reveal-flip-up.active {
+            transform: perspective(1000px) rotateX(0) translateY(0);
+        }
+
+        /* 2. Spiral Vortex In */
+        .reveal-spiral {
+            transform: rotate(-720deg) scale(0) translateY(100px);
+        }
+
+        .reveal-spiral.active {
+            transform: rotate(0deg) scale(1) translateY(0);
+        }
+
+        /* 3. 3D Cube Roll from Left */
+        .reveal-cube-left {
+            transform: perspective(1000px) rotateY(90deg) translateX(-100px);
+            transform-origin: left center;
+        }
+
+        .reveal-cube-left.active {
+            transform: perspective(1000px) rotateY(0) translateX(0);
+        }
+
+        /* 4. 3D Cube Roll from Right */
+        .reveal-cube-right {
+            transform: perspective(1000px) rotateY(-90deg) translateX(100px);
+            transform-origin: right center;
+        }
+
+        .reveal-cube-right.active {
+            transform: perspective(1000px) rotateY(0) translateX(0);
+        }
+
+        /* 5. Diagonal Slide with Rotation */
+        .reveal-diagonal {
+            transform: translateX(-100px) translateY(100px) rotate(-45deg) scale(0.5);
+        }
+
+        .reveal-diagonal.active {
+            transform: translateX(0) translateY(0) rotate(0) scale(1);
+        }
+
+        /* 6. Zoom Burst from Center */
+        .reveal-zoom-burst {
+            transform: scale(3) rotate(180deg);
+            filter: blur(20px);
+        }
+
+        .reveal-zoom-burst.active {
+            transform: scale(1) rotate(0);
+            filter: blur(0);
+        }
+
+        /* 7. Glitch Warp In */
+        .reveal-glitch {
+            transform: skewX(30deg) skewY(10deg) translateX(-50px) scale(0.8);
+            filter: hue-rotate(180deg);
+        }
+
+        .reveal-glitch.active {
+            transform: skewX(0) skewY(0) translateX(0) scale(1);
+            filter: hue-rotate(0);
+        }
+
+        /* 8. 3D Flip from Top */
+        .reveal-flip-down {
+            transform: perspective(1000px) rotateX(90deg) translateY(-50px);
+            transform-origin: top center;
+        }
+
+        .reveal-flip-down.active {
+            transform: perspective(1000px) rotateX(0) translateY(0);
+        }
+
+        /* 9. Elastic Bounce from Corner */
+        .reveal-corner-bounce {
+            transform: translateX(-100%) translateY(-100%) rotate(-45deg);
+            transition: all 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .reveal-corner-bounce.active {
+            transform: translateX(0) translateY(0) rotate(0);
+        }
+
+        /* 10. Dimension Shift (appears from another dimension) */
+        .reveal-dimension {
+            transform: perspective(800px) translateZ(-500px) rotateY(45deg) rotateX(25deg);
+            filter: brightness(0.3);
+        }
+
+        .reveal-dimension.active {
+            transform: perspective(800px) translateZ(0) rotateY(0) rotateX(0);
+            filter: brightness(1);
+        }
+
+        /* 11. Accordion Unfold */
+        .reveal-accordion {
+            transform: perspective(1000px) rotateX(-80deg) scaleY(0.1);
+            transform-origin: top center;
+        }
+
+        .reveal-accordion.active {
+            transform: perspective(1000px) rotateX(0) scaleY(1);
+        }
+
+        /* 12. Portal Swirl */
+        .reveal-portal {
+            transform: rotate(360deg) scale(0);
+            filter: blur(10px) saturate(3);
+            transition: all 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .reveal-portal.active {
+            transform: rotate(0) scale(1);
+            filter: blur(0) saturate(1);
+        }
+
+        /* 13. Origami Fold */
+        .reveal-origami {
+            transform: perspective(1000px) rotateY(-90deg) rotateZ(45deg) scale(0.5);
+            transform-origin: left center;
+        }
+
+        .reveal-origami.active {
+            transform: perspective(1000px) rotateY(0) rotateZ(0) scale(1);
+        }
+
+        /* 14. Shatter Reassemble (for grid items) */
+        .reveal-shatter {
+            transform: translateX(var(--shatter-x, 0)) translateY(var(--shatter-y, 0)) rotate(var(--shatter-rot, 0deg)) scale(0.5);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .reveal-shatter.active {
+            transform: translateX(0) translateY(0) rotate(0) scale(1);
+        }
+
+        /* 15. Matrix Fall */
+        .reveal-matrix {
+            transform: translateY(-100vh) rotateZ(180deg);
+            transition: all 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .reveal-matrix.active {
+            transform: translateY(0) rotateZ(0);
+        }
+
+        /* 16. Quantum Fluctuation */
+        .reveal-quantum {
+            transform: scale(0.1) translateY(50px);
+            filter: blur(20px) brightness(2);
+            animation: quantum-flicker 0.1s infinite;
+        }
+
+        .reveal-quantum.active {
+            transform: scale(1) translateY(0);
+            filter: blur(0) brightness(1);
+            animation: none;
+        }
+
+        @keyframes quantum-flicker {
+            0% { opacity: 0.3; transform: scale(0.1) translateX(-10px); }
+            50% { opacity: 0.7; transform: scale(0.15) translateX(10px); }
+            100% { opacity: 0.3; transform: scale(0.1) translateX(-10px); }
+        }
+
+        /* Staggered animations for grid children */
+        .reveal-stagger > *:nth-child(1) { transition-delay: 0s; }
+        .reveal-stagger > *:nth-child(2) { transition-delay: 0.08s; }
+        .reveal-stagger > *:nth-child(3) { transition-delay: 0.16s; }
+        .reveal-stagger > *:nth-child(4) { transition-delay: 0.24s; }
+        .reveal-stagger > *:nth-child(5) { transition-delay: 0.32s; }
+        .reveal-stagger > *:nth-child(6) { transition-delay: 0.4s; }
+        .reveal-stagger > *:nth-child(7) { transition-delay: 0.48s; }
+        .reveal-stagger > *:nth-child(8) { transition-delay: 0.56s; }
+        .reveal-stagger > *:nth-child(9) { transition-delay: 0.64s; }
+        .reveal-stagger > *:nth-child(10) { transition-delay: 0.72s; }
+        .reveal-stagger > *:nth-child(11) { transition-delay: 0.8s; }
+        .reveal-stagger > *:nth-child(12) { transition-delay: 0.88s; }
+
+        /* Child reveal states */
+        .reveal-stagger > * {
+            opacity: 0;
+            transform: perspective(800px) translateZ(-200px) rotateY(45deg);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .reveal-stagger.active > * {
+            opacity: 1;
+            transform: perspective(800px) translateZ(0) rotateY(0);
+        }
+
+        /* Special grid explosion effect */
+        .reveal-explode > *:nth-child(1) { --shatter-x: -100px; --shatter-y: -100px; --shatter-rot: -45deg; }
+        .reveal-explode > *:nth-child(2) { --shatter-x: 0; --shatter-y: -120px; --shatter-rot: 15deg; }
+        .reveal-explode > *:nth-child(3) { --shatter-x: 100px; --shatter-y: -100px; --shatter-rot: 45deg; }
+        .reveal-explode > *:nth-child(4) { --shatter-x: -120px; --shatter-y: 0; --shatter-rot: -30deg; }
+        .reveal-explode > *:nth-child(5) { --shatter-x: 120px; --shatter-y: 0; --shatter-rot: 30deg; }
+        .reveal-explode > *:nth-child(6) { --shatter-x: -100px; --shatter-y: 100px; --shatter-rot: -60deg; }
+        .reveal-explode > *:nth-child(7) { --shatter-x: 0; --shatter-y: 120px; --shatter-rot: 180deg; }
+        .reveal-explode > *:nth-child(8) { --shatter-x: 100px; --shatter-y: 100px; --shatter-rot: 60deg; }
+
+        .reveal-explode > * {
+            opacity: 0;
+            transform: translateX(var(--shatter-x, 0)) translateY(var(--shatter-y, 0)) rotate(var(--shatter-rot, 0deg)) scale(0);
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .reveal-explode.active > * {
+            opacity: 1;
+            transform: translateX(0) translateY(0) rotate(0) scale(1);
+        }
+
+        /* Cascade wave effect for lists */
+        .reveal-cascade > *:nth-child(1) { transition-delay: 0s; transform: translateX(-200px) rotate(-10deg); }
+        .reveal-cascade > *:nth-child(2) { transition-delay: 0.15s; transform: translateX(200px) rotate(10deg); }
+        .reveal-cascade > *:nth-child(3) { transition-delay: 0.3s; transform: translateX(-200px) rotate(-10deg); }
+        .reveal-cascade > *:nth-child(4) { transition-delay: 0.45s; transform: translateX(200px) rotate(10deg); }
+        .reveal-cascade > *:nth-child(5) { transition-delay: 0.6s; transform: translateX(-200px) rotate(-10deg); }
+        .reveal-cascade > *:nth-child(6) { transition-delay: 0.75s; transform: translateX(200px) rotate(10deg); }
+
+        .reveal-cascade > * {
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .reveal-cascade.active > * {
+            opacity: 1;
+            transform: translateX(0) rotate(0);
         }
 
         /* Retro TV Border */
@@ -1054,34 +1283,32 @@
 
         <!-- PROBLEM SECTION -->
         <section class="problem-section" id="problem">
-            <div class="reveal">
+            <div class="reveal reveal-flip-up">
                 <h2 class="fire-text">SAFETY TRAINING IS BORING!</h2>
-                <ul class="boring-list">
-                    <li>Endless PowerPoint presentations</li>
-                    <li>Forgettable compliance videos</li>
-                    <li>Dry regulation documents</li>
-                    <li>Zero engagement or fun</li>
-                </ul>
             </div>
+            <ul class="boring-list reveal reveal-cascade">
+                <li>Endless PowerPoint presentations</li>
+                <li>Forgettable compliance videos</li>
+                <li>Dry regulation documents</li>
+                <li>Zero engagement or fun</li>
+            </ul>
         </section>
 
         <!-- SOLUTION SECTION -->
         <section class="solution-section" id="solution">
-            <div class="reveal">
-                <h2 class="section-title neon-cyan">BUT WHAT IF...</h2>
-                <div class="explosion">
-                    <div class="explosion-ring"></div>
-                    <div class="explosion-ring"></div>
-                    <div class="explosion-ring"></div>
-                </div>
-                <p class="solution-reveal">SAFETY COULD BE AN EPIC ADVENTURE?</p>
+            <h2 class="section-title neon-cyan reveal reveal-spiral">BUT WHAT IF...</h2>
+            <div class="explosion reveal reveal-zoom-burst">
+                <div class="explosion-ring"></div>
+                <div class="explosion-ring"></div>
+                <div class="explosion-ring"></div>
             </div>
+            <p class="solution-reveal reveal reveal-portal">SAFETY COULD BE AN EPIC ADVENTURE?</p>
         </section>
 
         <!-- CHARACTERS SECTION -->
         <section class="characters-section" id="characters">
-            <h2 class="section-title neon-pink reveal">CHOOSE YOUR HERO</h2>
-            <div class="character-grid reveal">
+            <h2 class="section-title neon-pink reveal reveal-glitch">CHOOSE YOUR HERO</h2>
+            <div class="character-grid reveal reveal-explode">
                 <div class="character-card">
                     <canvas class="character-sprite" id="carrie-sprite" width="96" height="96"></canvas>
                     <h3 class="character-name">CARRIE</h3>
@@ -1147,29 +1374,27 @@
 
         <!-- HAZARDS SECTION -->
         <section class="hazards-section" id="hazards">
-            <div class="reveal">
-                <h2 class="section-title neon-yellow">FACE THE DANGERS</h2>
-                <div class="hazard-counter" id="hazardCounter">150+</div>
-                <p class="hazard-subtitle">REAL WAREHOUSE HAZARDS TO BATTLE</p>
-                <div class="hazard-categories">
-                    <span class="hazard-tag">Ergonomic Risks</span>
-                    <span class="hazard-tag">Trip Hazards</span>
-                    <span class="hazard-tag">Chemical Spills</span>
-                    <span class="hazard-tag">Fire Dangers</span>
-                    <span class="hazard-tag">Falling Objects</span>
-                    <span class="hazard-tag">Vehicle Hazards</span>
-                    <span class="hazard-tag">Electrical Risks</span>
-                    <span class="hazard-tag">PPE Violations</span>
-                    <span class="hazard-tag">Emergency Blocks</span>
-                    <span class="hazard-tag">Conveyor Dangers</span>
-                </div>
+            <h2 class="section-title neon-yellow reveal reveal-cube-left">FACE THE DANGERS</h2>
+            <div class="hazard-counter reveal reveal-quantum" id="hazardCounter">150+</div>
+            <p class="hazard-subtitle reveal reveal-dimension">REAL WAREHOUSE HAZARDS TO BATTLE</p>
+            <div class="hazard-categories reveal reveal-stagger">
+                <span class="hazard-tag">Ergonomic Risks</span>
+                <span class="hazard-tag">Trip Hazards</span>
+                <span class="hazard-tag">Chemical Spills</span>
+                <span class="hazard-tag">Fire Dangers</span>
+                <span class="hazard-tag">Falling Objects</span>
+                <span class="hazard-tag">Vehicle Hazards</span>
+                <span class="hazard-tag">Electrical Risks</span>
+                <span class="hazard-tag">PPE Violations</span>
+                <span class="hazard-tag">Emergency Blocks</span>
+                <span class="hazard-tag">Conveyor Dangers</span>
             </div>
         </section>
 
         <!-- BOSSES SECTION -->
         <section class="bosses-section" id="bosses">
-            <h2 class="section-title neon-pink reveal">EPIC BOSS BATTLES</h2>
-            <div class="boss-showcase reveal">
+            <h2 class="section-title neon-pink reveal reveal-matrix">EPIC BOSS BATTLES</h2>
+            <div class="boss-showcase reveal reveal-stagger">
                 <div class="boss-card">
                     <canvas class="boss-sprite" id="boss-inspector" width="64" height="64"></canvas>
                     <h3 class="boss-name">LABOUR INSPECTOR</h3>
@@ -1223,9 +1448,9 @@
 
         <!-- PPE SECTION -->
         <section class="ppe-section" id="ppe">
-            <h2 class="section-title neon-cyan reveal">QUARTERMASTER'S SAFETY LOCKER</h2>
-            <p class="reveal" style="font-size: 24px; color: #ccc; margin-bottom: 30px;">Upgrade your gear with Safety Points!</p>
-            <div class="ppe-grid reveal">
+            <h2 class="section-title neon-cyan reveal reveal-origami">QUARTERMASTER'S SAFETY LOCKER</h2>
+            <p class="reveal reveal-diagonal" style="font-size: 24px; color: #ccc; margin-bottom: 30px;">Upgrade your gear with Safety Points!</p>
+            <div class="ppe-grid reveal reveal-explode">
                 <div class="ppe-item">
                     <div class="ppe-icon">👟</div>
                     <p class="ppe-name">SAFETY SHOES</p>
@@ -1271,8 +1496,8 @@
 
         <!-- FEATURES SECTION -->
         <section class="features-section" id="features">
-            <h2 class="section-title neon-yellow reveal">LOADED WITH FEATURES</h2>
-            <div class="feature-list reveal">
+            <h2 class="section-title neon-yellow reveal reveal-accordion">LOADED WITH FEATURES</h2>
+            <div class="feature-list reveal reveal-cascade">
                 <div class="feature-item">
                     <div class="feature-icon">🤖</div>
                     <h3 class="feature-title">AI-POWERED TIPS</h3>
@@ -1308,14 +1533,12 @@
 
         <!-- CTA SECTION -->
         <section class="cta-section" id="cta">
-            <div class="reveal">
-                <h2 class="final-title">READY TO BECOME A SAFETY HERO?</h2>
-                <a href="LandingPage.html" class="play-button">
-                    ▶ PLAY NOW ◀
-                </a>
-                <div class="visitor-counter">
-                    YOU ARE VISITOR #<span id="visitorCount">000001</span>
-                </div>
+            <h2 class="final-title reveal reveal-flip-down">READY TO BECOME A SAFETY HERO?</h2>
+            <a href="LandingPage.html" class="play-button reveal reveal-corner-bounce">
+                ▶ PLAY NOW ◀
+            </a>
+            <div class="visitor-counter reveal reveal-cube-right">
+                YOU ARE VISITOR #<span id="visitorCount">000001</span>
             </div>
         </section>
     </main>
