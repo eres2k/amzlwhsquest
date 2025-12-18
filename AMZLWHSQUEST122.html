@@ -6518,7 +6518,7 @@ function generateAssets() {
 // --- GAME STATE ---
 // Note: PPE_ITEMS loaded from js/hazards.js
 const GAME = {
-    state: 'PRESS_START',
+    state: 'PASSWORD',
     stateTimer: 0,
     nextState: 'PLAY',
     ticks: 0,
@@ -6526,6 +6526,10 @@ const GAME = {
     selectedChar: "Carrie",
     charList: ["Carrie", "Nevena", "Joao", "Roman", "Erwin"],
     charIndex: 0,
+    // Password protection
+    passwordInput: "",
+    passwordError: false,
+    passwordCorrect: "whsaustria",
     // Secret dev mode unlock
     secretCode: "",
     devModeUnlocked: false,
@@ -6753,6 +6757,32 @@ window.addEventListener('keydown', e => {
     if(e.key==='d'||e.key==='ArrowRight') KEYS.right=true;
     if(e.code==='Space') { if(!KEYS.action) handleAction(); KEYS.action=true; }
     if(e.key==='Enter') { handleAction(); }
+
+    // Password entry state input handling
+    if (GAME.state === 'PASSWORD') {
+        if (e.key === 'Backspace') {
+            GAME.passwordInput = GAME.passwordInput.slice(0, -1);
+            GAME.passwordError = false;
+            e.preventDefault();
+        } else if (e.key === 'Enter') {
+            if (GAME.passwordInput.toLowerCase() === GAME.passwordCorrect) {
+                GAME.state = 'PRESS_START';
+                GAME.stateTimer = 0;
+                GAME.passwordError = false;
+                AudioSys.sfx.fix(); // Success sound
+            } else {
+                GAME.passwordError = true;
+                GAME.shake = 10;
+                AudioSys.sfx.hurt(); // Error sound
+            }
+            e.preventDefault();
+        } else if (e.key.length === 1 && GAME.passwordInput.length < 20) {
+            GAME.passwordInput += e.key;
+            GAME.passwordError = false;
+            e.preventDefault();
+        }
+        return;
+    }
 
     // Name entry state input handling
     if (GAME.state === 'NAME_ENTRY') {
@@ -7585,7 +7615,7 @@ function init() {
     generateAssets();
     loadGameProgress(); // Load saved PPE and safety points
     fetchHighscores(); // Load highscores from server
-    GAME.state = 'PRESS_START';
+    GAME.state = 'PASSWORD';
     // DON'T call updateMusicForState() here - it will fail due to autoplay policy
     // Music will start on first user interaction in handleAction()
     requestAnimationFrame(loop);
@@ -17199,6 +17229,99 @@ function draw() {
     let dxShake = 0, dyShake = 0;
     if (GAME.shake > 0) { dxShake = (Math.random() - 0.5) * GAME.shake; dyShake = (Math.random() - 0.5) * GAME.shake; }
     ctx.save(); ctx.translate(dxShake, dyShake);
+
+    // === PASSWORD ENTRY SCREEN ===
+    if (GAME.state === 'PASSWORD') {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Animated starfield background (same as PRESS_START)
+        for (let i = 0; i < 30; i++) {
+            let seed = i * 234.567;
+            let x = ((seed * 9301 + 49297) % 233280) / 910;
+            let y = ((seed * 1234 + 8765) % 233280) / 1040;
+            let speed = (i % 3) + 1;
+            let starY = (y + GAME.stateTimer * speed * 0.15) % 224;
+            let brightness = Math.sin(GAME.stateTimer * 0.06 + i) * 0.25 + 0.4;
+            ctx.fillStyle = `rgba(100, 180, 255, ${brightness})`;
+            ctx.fillRect(x, starY, 1, 1);
+        }
+
+        // Background gradient glow
+        let hue = (GAME.stateTimer * 0.3) % 360;
+        let gradient = ctx.createRadialGradient(128, 100, 0, 128, 100, 100);
+        gradient.addColorStop(0, `hsla(${hue}, 50%, 20%, 0.25)`);
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.textAlign = 'center';
+
+        // Lock icon (ASCII art style)
+        ctx.font = 'bold 24px monospace';
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText('🔒', canvas.width / 2, 50);
+
+        // Title
+        ctx.font = 'bold 12px monospace';
+        ctx.fillStyle = '#88ccff';
+        ctx.fillText('AMZL WHS QUEST', canvas.width / 2, 75);
+
+        ctx.font = '9px monospace';
+        ctx.fillStyle = '#666666';
+        ctx.fillText('ACCESS RESTRICTED', canvas.width / 2, 90);
+
+        // Password prompt
+        ctx.font = 'bold 10px monospace';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('Enter Password:', canvas.width / 2, 115);
+
+        // Password input box
+        const boxWidth = 140;
+        const boxX = (canvas.width - boxWidth) / 2;
+        const boxY = 125;
+
+        // Box background
+        ctx.fillStyle = GAME.passwordError ? 'rgba(255, 50, 50, 0.2)' : 'rgba(0, 100, 200, 0.2)';
+        ctx.fillRect(boxX, boxY, boxWidth, 22);
+
+        // Box border
+        ctx.strokeStyle = GAME.passwordError ? '#ff3333' : '#4488ff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(boxX, boxY, boxWidth, 22);
+
+        // Password text (masked with asterisks)
+        ctx.font = '12px monospace';
+        ctx.fillStyle = '#ffffff';
+        const maskedPassword = '●'.repeat(GAME.passwordInput.length);
+        const cursorBlink = Math.floor(GAME.stateTimer / 20) % 2 === 0;
+        const displayText = maskedPassword + (cursorBlink ? '|' : '');
+        ctx.fillText(displayText, canvas.width / 2, boxY + 15);
+
+        // Error message
+        if (GAME.passwordError) {
+            ctx.font = 'bold 9px monospace';
+            ctx.fillStyle = '#ff3333';
+            ctx.fillText('ACCESS DENIED', canvas.width / 2, 165);
+            ctx.font = '7px monospace';
+            ctx.fillStyle = '#ff6666';
+            ctx.fillText('Invalid password. Try again.', canvas.width / 2, 178);
+        } else {
+            // Instructions
+            ctx.font = '8px monospace';
+            ctx.fillStyle = '#888888';
+            ctx.fillText('Press ENTER to submit', canvas.width / 2, 165);
+        }
+
+        // Footer
+        ctx.font = '6px monospace';
+        ctx.fillStyle = 'rgba(136, 204, 255, 0.5)';
+        ctx.fillText('© 2024 ERWIN ESENER PRODUCTIONS', canvas.width / 2, 210);
+
+        ctx.textAlign = 'start';
+        ctx.restore();
+        return;
+    }
 
     if (GAME.state === 'PRESS_START') {
         ctx.fillStyle = '#000';
