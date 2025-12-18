@@ -125,6 +125,18 @@ Characters: Simon Unglaube (deadpan WHS manager), Jeff Bezos/Mecha Jeff (boss), 
 Style: Dry humor, corporate satire, safety regulation references. Keep responses concise and in-character.
 Never break character or mention being an AI. Match the requested language/dialect exactly.`;
 
+// --- UI COLOR PALETTE (Avoid duplicate color codes) ---
+const UI_COLORS = {
+    LIFE: '#ff4444',
+    HAZARDS: '#44ff44',
+    SCORE: '#ffd700',
+    SAFETY_POINTS: '#22d3ee',
+    REGION: '#66aaff',
+    PPE_BUFFS: '#a855f7',
+    CRIT_HIT: '#ffff00',
+    HEAL: '#22c55e'
+};
+
 // --- GAME CONSTANTS (Performance: Avoid magic numbers) ---
 const GAME_CONSTANTS = {
     // Timing
@@ -149,7 +161,57 @@ const GAME_CONSTANTS = {
     // Rendering
     VIEWPORT_PADDING: 16,
     SCREEN_WIDTH: 256,
-    SCREEN_HEIGHT: 224
+    SCREEN_HEIGHT: 224,
+
+    // Collision radii (for Math.hypot distance checks)
+    COLLISION: {
+        DRONE_PLAYER: 14,       // Drone hitting player
+        PROJECTILE_DRONE: 12,   // Projectile hitting drone
+        PROJECTILE_PLAYER: 16,  // Projectile hitting player
+        PICKUP_PLAYER: 20,      // Pickup collection radius
+        COLLECTIBLE_PLAYER: 16, // Collectible collection radius
+        PROJECTILE_SIMON: 12,   // Projectile hitting Simon
+        FIRE_EXIT_DOOR: 20,     // Fire exit interaction
+        QUARTERMASTER_DOOR: 32, // Shop door interaction
+        RUNNER_PLAYER: 20,      // Runner collision
+        ENTITY_PLAYER: 18       // Generic entity collision
+    },
+
+    // Spawn probabilities (for Math.random() < X checks)
+    SPAWN_RATES: {
+        COIN_FLIP: 0.5,              // 50% chance (left/right, type A/B, etc.)
+        OPS_SHOOT: 0.08,             // OPS shooting chance per tick
+        OPS_TAUNT: 0.02,             // OPS taunt chance
+        INSPECTOR_REPORT: 0.3,       // Safety inspector report chance
+        INSPECTOR_PROJECTILE: 0.02,  // Inspector shooting at nearby player
+        PRIME_DAY_RUNNER: 0.025,     // Prime Day runner spawn
+        YARD_BIRD_SPAWN: 0.02,       // Bird spawn in yard mode
+        YARD_ITEM_SPAWN: 0.005,      // Random item spawn in yard
+        DRONE_ATTACK: 0.05,          // Drone attack chance
+        BOSS_SPAWN_ITEM: 0.6,        // Boss spawning items
+        BOSS_SUMMON_DRONE: 0.15,     // Boss summoning drones
+        BOSS_LASER: 0.2,             // Boss laser attack
+        BOSS_PRIME_PACKAGE: 0.25,    // Prime package type (vs standard)
+        HEALTH_PICKUP: 0.33,         // Health pickup spawn chance
+        AI_BANTER_CHANCE: 0.3,       // AI-generated banter probability
+        WORKER_BANTER: 0.003,        // Worker random banter
+        WORKER_PAUSE: 0.01,          // Worker pause chance
+        ENTITY_BANTER: 0.002,        // Random entity banter trigger
+        ENTITY_SHOOT: 0.01           // Entity shooting at player
+    },
+
+    // Movement speeds
+    MOVEMENT: {
+        ENEMY_CHASE: 0.6,            // Basic enemy chase speed
+        PROJECTILE_MIN: 2.5,         // Minimum projectile velocity
+        PROJECTILE_MAX: 4.0          // Maximum projectile velocity
+    },
+
+    // Vision/detection
+    VISION: {
+        INSPECTOR_DISTANCE: 80,      // How far inspectors can see
+        INSPECTOR_CONE_ANGLE: 0.6    // Vision cone half-angle (radians)
+    }
 };
 
 // --- OBJECT POOL SYSTEM (Performance: Reduce GC pressure) ---
@@ -9308,13 +9370,10 @@ function updatePlayer() {
     if (hasPPEBuff('regen')) {
         let fastestRegen = Infinity;
         PPE_ITEMS.forEach(item => {
-            if (!GAME.ppeUnlocked.includes(item.id) || !item.buff) return;
-            if (item.buff.type === 'regen') fastestRegen = Math.min(fastestRegen, item.buff.value);
-            if (item.buff.type === 'multi' && item.buff.effects) {
-                item.buff.effects.forEach(e => {
-                    if (e.type === 'regen') fastestRegen = Math.min(fastestRegen, e.value);
-                });
-            }
+            if (!GAME.ppeUnlocked.includes(item.id) || !item.buff || !item.buff.effects) return;
+            item.buff.effects.forEach(e => {
+                if (e.type === 'regen') fastestRegen = Math.min(fastestRegen, e.value);
+            });
         });
 
         GAME.regenTimer = (GAME.regenTimer || 0) + 1;
@@ -9325,7 +9384,7 @@ function updatePlayer() {
             if (GAME.lives < maxHp) {
                 GAME.lives++;
                 updateHud();
-                spawnFloatingText(p.x, p.y - 20, "+1 HP", "#22c55e");
+                spawnFloatingText(p.x, p.y - 20, "+1 HP", UI_COLORS.HEAL);
                 AudioSys.sfx.fix();
             }
         }
@@ -10986,22 +11045,17 @@ function throwBook() {
     GAME.projectiles.push({ type:'attack', owner: GAME.selectedChar, sprite: attackMeta.sprite, color: isCrit ? '#ffff00' : (attackMeta.color || '#ff0000'), x:p.x+8, y:p.y+8, vx, vy, life:attackMeta.life || 40, text: attackMeta.text, sizeMod: 1.0, damageMod: critMod, isCrit: isCrit }); AudioSys.sfx.throw();
 }
 
-// === HELPER: Get total PPE buff value for a specific buff type (supports multi-effects) ===
+// === HELPER: Get total PPE buff value for a specific buff type ===
+// All PPE items now use normalized { effects: [...] } structure
 function getPPEBuffValue(buffType) {
     let totalValue = 0;
     PPE_ITEMS.forEach(item => {
-        if (!GAME.ppeUnlocked.includes(item.id) || !item.buff) return;
-
-        if (item.buff.type === buffType) {
-            totalValue += item.buff.value;
-        } else if (item.buff.type === 'multi' && item.buff.effects) {
-            // Handle multi-effect items
-            item.buff.effects.forEach(effect => {
-                if (effect.type === buffType) {
-                    totalValue += effect.value;
-                }
-            });
-        }
+        if (!GAME.ppeUnlocked.includes(item.id) || !item.buff || !item.buff.effects) return;
+        item.buff.effects.forEach(effect => {
+            if (effect.type === buffType) {
+                totalValue += effect.value;
+            }
+        });
     });
     return totalValue;
 }

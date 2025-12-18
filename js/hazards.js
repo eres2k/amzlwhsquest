@@ -4,41 +4,60 @@
 // ============================================================================
 
 // === PPE ITEMS FOR QUARTERMASTER'S SAFETY LOCKER ===
+// All buff properties use normalized { effects: [...] } structure for consistency
+// Use getBuffEffects(item.buff) from utils.js to access effects uniformly
 const PPE_ITEMS = [
+    // === STANDARD TIER PPE ===
     { id: 'safety_shoes', name: 'S3 Safety Shoes', cost: 500, icon: 'shoe',
-      desc: '+15% Move Speed', context: 'Slip resistance EN ISO 20345', buff: { type: 'speed', value: 0.15 } },
+      desc: '+15% Move Speed', context: 'Slip resistance EN ISO 20345',
+      buff: { effects: [{ type: 'speed', value: 0.15 }] } },
     { id: 'hi_vis_vest', name: 'High-Vis Vest', cost: 1000, icon: 'vest',
-      desc: '15% Dodge Chance', context: 'Visibility EN ISO 20471', buff: { type: 'dodge', value: 0.15 } },
+      desc: '15% Dodge Chance', context: 'Visibility EN ISO 20471',
+      buff: { effects: [{ type: 'dodge', value: 0.15 }] } },
     { id: 'ear_defenders', name: 'Ear Defenders', cost: 800, icon: 'ear',
-      desc: '+1 Max HP', context: 'Noise protection >85dB', buff: { type: 'maxhp', value: 1 } },
+      desc: '+1 Max HP', context: 'Noise protection >85dB',
+      buff: { effects: [{ type: 'maxhp', value: 1 }] } },
     { id: 'cut_gloves', name: 'Cut-Resistant Gloves', cost: 1200, icon: 'glove',
-      desc: '+20% Fire Rate', context: 'Hand protection EN 388', buff: { type: 'firerate', value: 0.20 } },
+      desc: '+20% Fire Rate', context: 'Hand protection EN 388',
+      buff: { effects: [{ type: 'firerate', value: 0.20 }] } },
     { id: 'safety_goggles', name: 'Safety Goggles', cost: 750, icon: 'goggle',
-      desc: '25% Crit (2x Dmg, Bypass)', context: 'EN 166 - Crits bypass dodge/deflect!', buff: { type: 'crit', value: 0.25 } },
+      desc: '25% Crit (2x Dmg, Bypass)', context: 'EN 166 - Crits bypass dodge/deflect!',
+      buff: { effects: [{ type: 'crit', value: 0.25 }] } },
     { id: 'back_belt', name: 'Back Support Belt', cost: 600, icon: 'belt',
-      desc: '+30% Score Multiplier', context: 'Ergonomic lifting support - work efficiently', buff: { type: 'score', value: 0.30 } },
+      desc: '+30% Score Multiplier', context: 'Ergonomic lifting support - work efficiently',
+      buff: { effects: [{ type: 'score', value: 0.30 }] } },
     { id: 'bump_cap', name: 'Bump Cap', cost: 900, icon: 'cap',
-      desc: '+0.5s Invincibility', context: 'Head impact protection EN 812', buff: { type: 'iframe', value: 30 } },
+      desc: '+0.5s Invincibility', context: 'Head impact protection EN 812',
+      buff: { effects: [{ type: 'iframe', value: 30 }] } },
     { id: 'hydration', name: 'Hydration Pouch', cost: 3500, icon: 'water',
-      desc: 'Regen 1 HP / 30s', context: 'Heat stress prevention', buff: { type: 'regen', value: 1800 } },
+      desc: 'Regen 1 HP / 30s', context: 'Heat stress prevention',
+      buff: { effects: [{ type: 'regen', value: 1800 }] } },
     { id: 'knee_pads', name: 'Knee Pads', cost: 550, icon: 'knee',
-      desc: '+50% Interact Range', context: 'Kneeling work EN 14404', buff: { type: 'interact', value: 0.50 } },
+      desc: '+50% Interact Range', context: 'Kneeling work EN 14404',
+      buff: { effects: [{ type: 'interact', value: 0.50 }] } },
     { id: 'walkie_talkie', name: 'Walkie-Talkie', cost: 1100, icon: 'radio',
-      desc: '-30% Ops Aggro', context: 'Clear communication channels', buff: { type: 'stealth', value: 0.30 } },
+      desc: '-30% Ops Aggro', context: 'Clear communication channels',
+      buff: { effects: [{ type: 'stealth', value: 0.30 }] } },
     // === PREMIUM TIER PPE - Expensive but powerful for long-term playability ===
     { id: 'exoskeleton', name: 'Exoskeleton Suit', cost: 5000, icon: 'exo',
-      desc: '+40% Speed, +2 Max HP', context: 'EN ISO 13482 Personal care robot safety', buff: { type: 'multi', effects: [{ type: 'speed', value: 0.40 }, { type: 'maxhp', value: 2 }] } },
+      desc: '+40% Speed, +2 Max HP', context: 'EN ISO 13482 Personal care robot safety',
+      buff: { effects: [{ type: 'speed', value: 0.40 }, { type: 'maxhp', value: 2 }] } },
     { id: 'ar_helmet', name: 'AR Safety Helmet', cost: 7500, icon: 'arhelm',
-      desc: 'Tag Hazards/Runners/OPS, +1s Invuln', context: 'EN 812 with integrated HMI display - highlights threats', buff: { type: 'multi', effects: [{ type: 'hazard_reveal', value: 1 }, { type: 'iframe', value: 60 }] } },
+      desc: 'Tag Hazards/Runners/OPS, +1s Invuln', context: 'EN 812 with integrated HMI display - highlights threats',
+      buff: { effects: [{ type: 'hazard_reveal', value: 1 }, { type: 'iframe', value: 60 }] } },
     { id: 'quantum_vest', name: 'Quantum Shield Vest', cost: 10000, icon: 'quantum',
-      desc: '25% Dmg Reflect, Regen 1HP/20s', context: 'Experimental OSHA-X prototype tech', buff: { type: 'multi', effects: [{ type: 'reflect', value: 0.25 }, { type: 'regen', value: 1200 }] } },
+      desc: '25% Dmg Reflect, Regen 1HP/20s', context: 'Experimental OSHA-X prototype tech',
+      buff: { effects: [{ type: 'reflect', value: 0.25 }, { type: 'regen', value: 1200 }] } },
     { id: 'bezos_armor', name: 'Prime Guardian Armor', cost: 15000, icon: 'primearmor',
-      desc: '2x Damage, 50% Block Chance', context: 'Ultimate safety gear - customer obsession incarnate', buff: { type: 'multi', effects: [{ type: 'damage', value: 2.0 }, { type: 'block', value: 0.50 }] } },
-    // === SPECIAL ACTIONS ===
+      desc: '2x Damage, 50% Block Chance', context: 'Ultimate safety gear - customer obsession incarnate',
+      buff: { effects: [{ type: 'damage', value: 2.0 }, { type: 'block', value: 0.50 }] } },
+    // === SPECIAL ACTIONS (no buffs) ===
     { id: 'return_all', name: '>> RETURN ALL PPE <<', cost: 0, icon: 'return',
-      desc: 'Return ALL items for full refund', context: 'Full PPE reset - get your Safety Points back!', buff: null, isAction: true },
+      desc: 'Return ALL items for full refund', context: 'Full PPE reset - get your Safety Points back!',
+      buff: null, isAction: true },
     { id: 'exit_shop', name: '>> EXIT SHOP <<', cost: 0, icon: 'exit',
-      desc: 'Leave the Safety Locker', context: 'Return to the warehouse floor', buff: null, isAction: true, isExit: true }
+      desc: 'Leave the Safety Locker', context: 'Return to the warehouse floor',
+      buff: null, isAction: true, isExit: true }
 ];
 
 // === HAZARD POOL ===
