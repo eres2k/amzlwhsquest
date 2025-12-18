@@ -11092,7 +11092,12 @@ function checkCol(x, y) {
 }
 
 function updateHud() {
-    document.getElementById('life-val').innerText = "❤️".repeat(Math.max(0, GAME.lives));
+    // DevMode shows compact "Nx❤️" format instead of many hearts
+    if (GAME.selectedChar === 'DevMode') {
+        document.getElementById('life-val').innerText = GAME.lives + "x❤️";
+    } else {
+        document.getElementById('life-val').innerText = "❤️".repeat(Math.max(0, GAME.lives));
+    }
     document.getElementById('score-val').innerText = GAME.issuesFixed + "/5";
     // Update safety points display
     const spEl = document.getElementById('sp-val');
