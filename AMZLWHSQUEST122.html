@@ -1635,11 +1635,11 @@ function getRandomFallback(prompt, category = 'generic', context = {}) {
     }
     if (is("bezos_transform")) {
         const lines = BEZOS_TRANSFORM_LINES[region] || BEZOS_TRANSFORM_LINES.EN;
-        return pick(lines);
+        return pickRandom(lines);
     }
     if (is("player_response")) {
         const lines = PLAYER_RESPONSE_LINES[region] || PLAYER_RESPONSE_LINES.EN;
-        return pick(lines);
+        return pickRandom(lines);
     }
     if (is("taunt")) {
          if(prompt.includes("Simon")) return getLocalizedSimonDialogue('simon_taunts');
