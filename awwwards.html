@@ -154,12 +154,34 @@
             100% { transform: translateX(-50%); }
         }
 
+        /* 3D Camera System */
+        .camera-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            perspective: 1200px;
+            perspective-origin: 50% 50%;
+            overflow: hidden;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .camera-rig {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+        }
+
         /* Main Content */
         main {
             position: relative;
             z-index: 10;
             padding-top: 40px;
-            perspective: 1500px;
+            perspective: 2000px;
             transform-style: preserve-3d;
         }
 
@@ -172,9 +194,181 @@
             align-items: center;
             padding: 60px 20px;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
             transform-style: preserve-3d;
-            perspective: 1000px;
+            perspective: 1500px;
+            transition: transform 0.3s ease-out;
+        }
+
+        /* 3D Depth Layers for sections */
+        section:nth-child(odd) {
+            --section-depth: 0px;
+        }
+
+        section:nth-child(even) {
+            --section-depth: 100px;
+        }
+
+        /* Camera zoom effect on sections */
+        .camera-zoom-in {
+            animation: cameraZoomIn 1s ease-out forwards;
+        }
+
+        .camera-zoom-out {
+            animation: cameraZoomOut 1s ease-out forwards;
+        }
+
+        @keyframes cameraZoomIn {
+            from { transform: translateZ(-500px) scale(0.5); opacity: 0; }
+            to { transform: translateZ(0) scale(1); opacity: 1; }
+        }
+
+        @keyframes cameraZoomOut {
+            from { transform: translateZ(200px) scale(1.5); opacity: 0; }
+            to { transform: translateZ(0) scale(1); opacity: 1; }
+        }
+
+        /* 3D Tunnel effect */
+        .tunnel-layer {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 200vmax;
+            height: 200vmax;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .tunnel-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border: 2px solid rgba(0, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .tunnel-ring:nth-child(1) { width: 20%; height: 20%; animation: tunnelPulse 4s ease-in-out infinite; }
+        .tunnel-ring:nth-child(2) { width: 40%; height: 40%; animation: tunnelPulse 4s ease-in-out infinite 0.5s; }
+        .tunnel-ring:nth-child(3) { width: 60%; height: 60%; animation: tunnelPulse 4s ease-in-out infinite 1s; }
+        .tunnel-ring:nth-child(4) { width: 80%; height: 80%; animation: tunnelPulse 4s ease-in-out infinite 1.5s; }
+        .tunnel-ring:nth-child(5) { width: 100%; height: 100%; animation: tunnelPulse 4s ease-in-out infinite 2s; }
+
+        @keyframes tunnelPulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1) translateZ(0);
+                border-color: rgba(0, 255, 255, 0.1);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1) translateZ(50px);
+                border-color: rgba(255, 0, 255, 0.2);
+            }
+        }
+
+        /* Warp speed lines */
+        .warp-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3;
+            opacity: 0;
+            transition: opacity 0.3s;
+            perspective: 500px;
+            overflow: hidden;
+        }
+
+        .warp-container.active {
+            opacity: 1;
+        }
+
+        .warp-line {
+            position: absolute;
+            background: linear-gradient(to bottom, transparent, var(--neon-cyan), transparent);
+            width: 2px;
+            height: 0;
+            transform-origin: center bottom;
+            animation: warpSpeed 0.5s ease-out forwards;
+        }
+
+        @keyframes warpSpeed {
+            0% { height: 0; opacity: 0; }
+            50% { opacity: 1; }
+            100% { height: 100vh; opacity: 0; transform: translateZ(200px); }
+        }
+
+        /* Section-specific 3D camera movements */
+        .section-3d-enter {
+            transform: translateZ(-800px) rotateX(15deg);
+            opacity: 0;
+        }
+
+        .section-3d-active {
+            transform: translateZ(0) rotateX(0);
+            opacity: 1;
+        }
+
+        .section-3d-exit {
+            transform: translateZ(500px) rotateX(-10deg);
+            opacity: 0;
+        }
+
+        /* Barrel roll section transition */
+        .barrel-roll {
+            animation: barrelRoll 1.5s ease-in-out;
+        }
+
+        @keyframes barrelRoll {
+            0% { transform: rotateZ(0) translateZ(0); }
+            50% { transform: rotateZ(180deg) translateZ(-300px); }
+            100% { transform: rotateZ(360deg) translateZ(0); }
+        }
+
+        /* Dive effect */
+        .camera-dive {
+            animation: cameraDive 1s ease-in-out;
+        }
+
+        @keyframes cameraDive {
+            0% { transform: translateZ(0) rotateX(0); }
+            50% { transform: translateZ(-400px) rotateX(30deg); }
+            100% { transform: translateZ(0) rotateX(0); }
+        }
+
+        /* Strafe effect */
+        .camera-strafe-left {
+            animation: cameraStafeLeft 0.8s ease-out;
+        }
+
+        .camera-strafe-right {
+            animation: cameraStafeRight 0.8s ease-out;
+        }
+
+        @keyframes cameraStafeLeft {
+            0% { transform: translateX(0) rotateY(0); }
+            50% { transform: translateX(-100px) rotateY(10deg); }
+            100% { transform: translateX(0) rotateY(0); }
+        }
+
+        @keyframes cameraStafeRight {
+            0% { transform: translateX(0) rotateY(0); }
+            50% { transform: translateX(100px) rotateY(-10deg); }
+            100% { transform: translateX(0) rotateY(0); }
+        }
+
+        /* Floating depth particles */
+        .depth-particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 4;
+            box-shadow: 0 0 10px var(--neon-cyan);
         }
 
         /* Hero Section */
@@ -1218,8 +1412,20 @@
     </style>
 </head>
 <body>
+    <!-- 3D Tunnel Effect Layer -->
+    <div class="tunnel-layer" id="tunnelLayer">
+        <div class="tunnel-ring"></div>
+        <div class="tunnel-ring"></div>
+        <div class="tunnel-ring"></div>
+        <div class="tunnel-ring"></div>
+        <div class="tunnel-ring"></div>
+    </div>
+
+    <!-- Warp Speed Lines Container -->
+    <div class="warp-container" id="warpContainer"></div>
+
     <!-- Starfield Background -->
-    <div class="starfield">
+    <div class="starfield" id="starfield">
         <div class="stars"></div>
         <div class="stars"></div>
         <div class="stars"></div>
@@ -1785,8 +1991,288 @@
         `;
         document.head.appendChild(style);
 
+        // ===== 3D CAMERA SYSTEM =====
+
+        // Camera state
+        const camera = {
+            x: 0,
+            y: 0,
+            z: 0,
+            rotX: 0,
+            rotY: 0,
+            rotZ: 0,
+            lastScrollY: 0,
+            scrollVelocity: 0,
+            targetZ: 0,
+            targetRotX: 0,
+            targetRotY: 0
+        };
+
+        // Section camera effects configuration
+        const sectionEffects = {
+            'hero': { z: 0, rotX: 0, rotY: 0, effect: 'none' },
+            'problem': { z: -200, rotX: 5, rotY: -3, effect: 'dive' },
+            'solution': { z: 100, rotX: -5, rotY: 5, effect: 'zoom-out' },
+            'characters': { z: -100, rotX: 0, rotY: -8, effect: 'strafe-left' },
+            'hazards': { z: 200, rotX: 8, rotY: 0, effect: 'tilt-up' },
+            'bosses': { z: -300, rotX: -10, rotY: 10, effect: 'barrel' },
+            'ppe': { z: 50, rotX: 5, rotY: -5, effect: 'strafe-right' },
+            'features': { z: -150, rotX: -8, rotY: 0, effect: 'dive' },
+            'cta': { z: 300, rotX: 0, rotY: 0, effect: 'zoom-in' }
+        };
+
+        // Get all sections
+        const sections = document.querySelectorAll('section');
+        const starfield = document.getElementById('starfield');
+        const tunnelLayer = document.getElementById('tunnelLayer');
+        const warpContainer = document.getElementById('warpContainer');
+
+        // Current section tracking
+        let currentSection = 'hero';
+        let lastSection = 'hero';
+        let isTransitioning = false;
+
+        // Create floating depth particles
+        function createDepthParticles() {
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'depth-particle';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.top = Math.random() * 100 + 'vh';
+                particle.style.transform = `translateZ(${Math.random() * 500 - 250}px)`;
+                particle.style.opacity = Math.random() * 0.5 + 0.2;
+                particle.style.animation = `floatParticle ${3 + Math.random() * 4}s ease-in-out infinite`;
+                particle.style.animationDelay = `${Math.random() * 2}s`;
+                document.body.appendChild(particle);
+            }
+        }
+
+        // Add particle animation
+        const particleStyle = document.createElement('style');
+        particleStyle.textContent = `
+            @keyframes floatParticle {
+                0%, 100% { transform: translateZ(var(--z, 0)) translateY(0); }
+                50% { transform: translateZ(calc(var(--z, 0) + 100px)) translateY(-30px); }
+            }
+        `;
+        document.head.appendChild(particleStyle);
+        createDepthParticles();
+
+        // Create warp speed lines
+        function triggerWarpEffect() {
+            warpContainer.classList.add('active');
+            warpContainer.innerHTML = '';
+
+            for (let i = 0; i < 50; i++) {
+                const line = document.createElement('div');
+                line.className = 'warp-line';
+                line.style.left = Math.random() * 100 + '%';
+                line.style.top = '50%';
+                line.style.transform = `rotate(${Math.random() * 360}deg)`;
+                line.style.animationDelay = Math.random() * 0.3 + 's';
+                line.style.background = `linear-gradient(to bottom, transparent, ${
+                    ['#00ffff', '#ff00ff', '#ffff00', '#00ff00'][Math.floor(Math.random() * 4)]
+                }, transparent)`;
+                warpContainer.appendChild(line);
+            }
+
+            setTimeout(() => {
+                warpContainer.classList.remove('active');
+            }, 800);
+        }
+
+        // Apply 3D camera transform to main content
+        function updateCamera() {
+            const main = document.querySelector('main');
+
+            // Smooth camera movement
+            camera.z += (camera.targetZ - camera.z) * 0.08;
+            camera.rotX += (camera.targetRotX - camera.rotX) * 0.06;
+            camera.rotY += (camera.targetRotY - camera.rotY) * 0.06;
+
+            // Apply scroll velocity for momentum effect
+            const velocityZ = camera.scrollVelocity * 0.5;
+            const velocityRotX = camera.scrollVelocity * 0.02;
+
+            main.style.transform = `
+                perspective(2000px)
+                translateZ(${camera.z + velocityZ}px)
+                rotateX(${camera.rotX + velocityRotX}deg)
+                rotateY(${camera.rotY}deg)
+                rotateZ(${camera.rotZ}deg)
+            `;
+
+            // Parallax starfield
+            if (starfield) {
+                starfield.style.transform = `translateZ(${camera.z * -0.3}px) scale(${1 + camera.z * 0.0005})`;
+            }
+
+            // Tunnel depth effect
+            if (tunnelLayer) {
+                tunnelLayer.style.transform = `translate(-50%, -50%) translateZ(${camera.z * 0.2}px) rotateZ(${camera.rotY * 0.5}deg)`;
+            }
+
+            requestAnimationFrame(updateCamera);
+        }
+
+        // Detect current section and apply effects
+        function detectCurrentSection() {
+            const scrollY = window.scrollY;
+            const windowHeight = window.innerHeight;
+
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                const sectionMiddle = rect.top + rect.height / 2;
+
+                if (sectionMiddle > 0 && sectionMiddle < windowHeight) {
+                    const sectionId = section.id;
+                    if (sectionId && sectionId !== currentSection) {
+                        lastSection = currentSection;
+                        currentSection = sectionId;
+                        onSectionChange(sectionId, lastSection);
+                    }
+                }
+            });
+        }
+
+        // Handle section transitions
+        function onSectionChange(newSection, oldSection) {
+            const effect = sectionEffects[newSection];
+            if (!effect) return;
+
+            // Set target camera position
+            camera.targetZ = effect.z;
+            camera.targetRotX = effect.rotX;
+            camera.targetRotY = effect.rotY;
+
+            // Trigger special effects
+            if (!isTransitioning) {
+                isTransitioning = true;
+
+                switch (effect.effect) {
+                    case 'barrel':
+                        triggerWarpEffect();
+                        document.querySelector('main').classList.add('barrel-roll');
+                        setTimeout(() => {
+                            document.querySelector('main').classList.remove('barrel-roll');
+                        }, 1500);
+                        break;
+                    case 'dive':
+                        document.querySelector('main').classList.add('camera-dive');
+                        setTimeout(() => {
+                            document.querySelector('main').classList.remove('camera-dive');
+                        }, 1000);
+                        break;
+                    case 'strafe-left':
+                        document.querySelector('main').classList.add('camera-strafe-left');
+                        setTimeout(() => {
+                            document.querySelector('main').classList.remove('camera-strafe-left');
+                        }, 800);
+                        break;
+                    case 'strafe-right':
+                        document.querySelector('main').classList.add('camera-strafe-right');
+                        setTimeout(() => {
+                            document.querySelector('main').classList.remove('camera-strafe-right');
+                        }, 800);
+                        break;
+                    case 'zoom-in':
+                    case 'zoom-out':
+                        triggerWarpEffect();
+                        break;
+                }
+
+                setTimeout(() => {
+                    isTransitioning = false;
+                }, 500);
+            }
+        }
+
+        // Scroll handler for 3D camera
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            camera.scrollVelocity = scrollY - camera.lastScrollY;
+            camera.lastScrollY = scrollY;
+
+            detectCurrentSection();
+
+            // Decay scroll velocity
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                camera.scrollVelocity *= 0.9;
+                if (Math.abs(camera.scrollVelocity) < 0.1) camera.scrollVelocity = 0;
+            }, 50);
+        });
+
+        // Mouse movement for subtle camera tilt
+        document.addEventListener('mousemove', (e) => {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const mouseX = e.clientX - centerX;
+            const mouseY = e.clientY - centerY;
+
+            // Subtle tilt based on mouse position
+            camera.targetRotY += (mouseX * 0.002 - camera.rotY) * 0.1;
+            camera.targetRotX += (mouseY * -0.002 - camera.rotX) * 0.1;
+        });
+
+        // Initialize camera system
+        updateCamera();
+
+        // Add section-specific 3D depth to each section
+        sections.forEach((section, index) => {
+            const depth = (index % 2 === 0) ? -50 : 50;
+            section.style.setProperty('--section-depth', `${depth}px`);
+
+            // Apply initial 3D transform
+            section.addEventListener('transitionend', () => {
+                if (section.classList.contains('active')) {
+                    section.style.transform = 'translateZ(0)';
+                }
+            });
+        });
+
+        // Intersection observer for section 3D effects
+        const sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const section = entry.target;
+                const sectionId = section.id;
+                const effect = sectionEffects[sectionId];
+
+                if (entry.isIntersecting) {
+                    // Section entering view - zoom in effect
+                    section.classList.remove('section-3d-enter', 'section-3d-exit');
+                    section.classList.add('section-3d-active');
+
+                    // Apply unique Z-depth animation
+                    if (effect) {
+                        section.style.transition = 'transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                        section.style.transform = `translateZ(${effect.z * 0.1}px) rotateX(${effect.rotX * 0.2}deg)`;
+                    }
+                } else {
+                    // Section leaving view
+                    const rect = entry.boundingClientRect;
+                    if (rect.top > 0) {
+                        // Below viewport - waiting to enter
+                        section.classList.add('section-3d-enter');
+                        section.classList.remove('section-3d-active', 'section-3d-exit');
+                    } else {
+                        // Above viewport - already passed
+                        section.classList.add('section-3d-exit');
+                        section.classList.remove('section-3d-active', 'section-3d-enter');
+                    }
+                }
+            });
+        }, {
+            threshold: [0, 0.25, 0.5, 0.75, 1],
+            rootMargin: '-10% 0px -10% 0px'
+        });
+
+        sections.forEach(section => sectionObserver.observe(section));
+
         console.log('%c AMZL WHS QUEST ', 'background: linear-gradient(90deg, #ff00ff, #00ffff); color: black; font-size: 24px; font-weight: bold; padding: 10px;');
         console.log('%c The Ultimate Safety Adventure! ', 'color: #00ff00; font-size: 14px;');
+        console.log('%c 3D Camera System Active! ', 'color: #ff00ff; font-size: 12px;');
     </script>
 </body>
 </html>
