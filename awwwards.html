@@ -154,35 +154,14 @@
             100% { transform: translateX(-50%); }
         }
 
-        /* 3D Camera System */
-        .camera-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            perspective: 1200px;
-            perspective-origin: 50% 50%;
-            overflow: hidden;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        .camera-rig {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-            transition: transform 0.1s ease-out;
-        }
-
-        /* Main Content */
+        /* Simple 3D Camera System */
         main {
             position: relative;
             z-index: 10;
             padding-top: 40px;
-            perspective: 2000px;
+            perspective: 1000px;
             transform-style: preserve-3d;
+            transition: transform 0.6s ease-out;
         }
 
         /* Section Base Styles */
@@ -194,181 +173,232 @@
             align-items: center;
             padding: 60px 20px;
             position: relative;
-            overflow: visible;
+            overflow: hidden;
             transform-style: preserve-3d;
-            perspective: 1500px;
-            transition: transform 0.3s ease-out;
+            transition: transform 0.8s ease-out, opacity 0.6s ease-out;
         }
 
-        /* 3D Depth Layers for sections */
-        section:nth-child(odd) {
-            --section-depth: 0px;
+        /* Smooth camera depth on scroll */
+        .camera-pull-in {
+            transform: translateZ(50px);
         }
 
-        section:nth-child(even) {
-            --section-depth: 100px;
+        .camera-push-out {
+            transform: translateZ(-50px);
         }
 
-        /* Camera zoom effect on sections */
-        .camera-zoom-in {
-            animation: cameraZoomIn 1s ease-out forwards;
-        }
-
-        .camera-zoom-out {
-            animation: cameraZoomOut 1s ease-out forwards;
-        }
-
-        @keyframes cameraZoomIn {
-            from { transform: translateZ(-500px) scale(0.5); opacity: 0; }
-            to { transform: translateZ(0) scale(1); opacity: 1; }
-        }
-
-        @keyframes cameraZoomOut {
-            from { transform: translateZ(200px) scale(1.5); opacity: 0; }
-            to { transform: translateZ(0) scale(1); opacity: 1; }
-        }
-
-        /* 3D Tunnel effect */
-        .tunnel-layer {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 200vmax;
-            height: 200vmax;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        .tunnel-ring {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            border: 2px solid rgba(0, 255, 255, 0.1);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .tunnel-ring:nth-child(1) { width: 20%; height: 20%; animation: tunnelPulse 4s ease-in-out infinite; }
-        .tunnel-ring:nth-child(2) { width: 40%; height: 40%; animation: tunnelPulse 4s ease-in-out infinite 0.5s; }
-        .tunnel-ring:nth-child(3) { width: 60%; height: 60%; animation: tunnelPulse 4s ease-in-out infinite 1s; }
-        .tunnel-ring:nth-child(4) { width: 80%; height: 80%; animation: tunnelPulse 4s ease-in-out infinite 1.5s; }
-        .tunnel-ring:nth-child(5) { width: 100%; height: 100%; animation: tunnelPulse 4s ease-in-out infinite 2s; }
-
-        @keyframes tunnelPulse {
-            0%, 100% {
-                transform: translate(-50%, -50%) scale(1) translateZ(0);
-                border-color: rgba(0, 255, 255, 0.1);
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(1.1) translateZ(50px);
-                border-color: rgba(255, 0, 255, 0.2);
-            }
-        }
-
-        /* Warp speed lines */
-        .warp-container {
+        /* Warehouse Retro Graphics Layer */
+        .warehouse-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 3;
-            opacity: 0;
-            transition: opacity 0.3s;
-            perspective: 500px;
+            z-index: 1;
             overflow: hidden;
         }
 
-        .warp-container.active {
-            opacity: 1;
-        }
-
-        .warp-line {
+        /* Pixel art shelving units */
+        .shelf-unit {
             position: absolute;
-            background: linear-gradient(to bottom, transparent, var(--neon-cyan), transparent);
-            width: 2px;
-            height: 0;
-            transform-origin: center bottom;
-            animation: warpSpeed 0.5s ease-out forwards;
+            width: 60px;
+            height: 120px;
+            opacity: 0.15;
         }
 
-        @keyframes warpSpeed {
-            0% { height: 0; opacity: 0; }
-            50% { opacity: 1; }
-            100% { height: 100vh; opacity: 0; transform: translateZ(200px); }
-        }
-
-        /* Section-specific 3D camera movements */
-        .section-3d-enter {
-            transform: translateZ(-800px) rotateX(15deg);
-            opacity: 0;
-        }
-
-        .section-3d-active {
-            transform: translateZ(0) rotateX(0);
-            opacity: 1;
-        }
-
-        .section-3d-exit {
-            transform: translateZ(500px) rotateX(-10deg);
-            opacity: 0;
-        }
-
-        /* Barrel roll section transition */
-        .barrel-roll {
-            animation: barrelRoll 1.5s ease-in-out;
-        }
-
-        @keyframes barrelRoll {
-            0% { transform: rotateZ(0) translateZ(0); }
-            50% { transform: rotateZ(180deg) translateZ(-300px); }
-            100% { transform: rotateZ(360deg) translateZ(0); }
-        }
-
-        /* Dive effect */
-        .camera-dive {
-            animation: cameraDive 1s ease-in-out;
-        }
-
-        @keyframes cameraDive {
-            0% { transform: translateZ(0) rotateX(0); }
-            50% { transform: translateZ(-400px) rotateX(30deg); }
-            100% { transform: translateZ(0) rotateX(0); }
-        }
-
-        /* Strafe effect */
-        .camera-strafe-left {
-            animation: cameraStafeLeft 0.8s ease-out;
-        }
-
-        .camera-strafe-right {
-            animation: cameraStafeRight 0.8s ease-out;
-        }
-
-        @keyframes cameraStafeLeft {
-            0% { transform: translateX(0) rotateY(0); }
-            50% { transform: translateX(-100px) rotateY(10deg); }
-            100% { transform: translateX(0) rotateY(0); }
-        }
-
-        @keyframes cameraStafeRight {
-            0% { transform: translateX(0) rotateY(0); }
-            50% { transform: translateX(100px) rotateY(-10deg); }
-            100% { transform: translateX(0) rotateY(0); }
-        }
-
-        /* Floating depth particles */
-        .depth-particle {
-            position: fixed;
-            width: 4px;
+        .shelf-unit::before {
+            content: '';
+            position: absolute;
+            width: 100%;
             height: 4px;
-            background: var(--neon-cyan);
-            border-radius: 50%;
+            background: var(--neon-orange);
+            box-shadow:
+                0 30px 0 var(--neon-orange),
+                0 60px 0 var(--neon-orange),
+                0 90px 0 var(--neon-orange);
+        }
+
+        .shelf-unit::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 120px;
+            background: var(--neon-orange);
+            left: 0;
+            box-shadow: 56px 0 0 var(--neon-orange);
+        }
+
+        /* Forklift pixel art */
+        .forklift {
+            position: absolute;
+            width: 48px;
+            height: 32px;
+            opacity: 0.2;
+            image-rendering: pixelated;
+        }
+
+        .forklift::before {
+            content: '';
+            position: absolute;
+            width: 32px;
+            height: 20px;
+            background: var(--neon-yellow);
+            bottom: 8px;
+            left: 8px;
+            box-shadow:
+                -8px 12px 0 4px #333,
+                24px 12px 0 4px #333;
+        }
+
+        .forklift::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 24px;
+            background: var(--neon-yellow);
+            left: 0;
+            bottom: 8px;
+            box-shadow:
+                0 -20px 0 var(--neon-yellow),
+                4px -20px 0 var(--neon-yellow);
+        }
+
+        /* Box pixel art */
+        .pixel-box {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #8B4513 50%, #654321 50%);
+            border: 2px solid #333;
+            opacity: 0.25;
+            image-rendering: pixelated;
+        }
+
+        .pixel-box::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 2px;
+            background: #333;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .pixel-box::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 16px;
+            background: #333;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Conveyor belt */
+        .conveyor {
+            position: absolute;
+            height: 16px;
+            background: repeating-linear-gradient(
+                90deg,
+                #333 0px,
+                #333 8px,
+                #555 8px,
+                #555 16px
+            );
+            opacity: 0.2;
+            animation: conveyorMove 2s linear infinite;
+        }
+
+        @keyframes conveyorMove {
+            from { background-position: 0 0; }
+            to { background-position: 16px 0; }
+        }
+
+        /* Safety cone pixel art */
+        .safety-cone {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 24px solid var(--neon-orange);
+            opacity: 0.3;
+        }
+
+        .safety-cone::after {
+            content: '';
+            position: absolute;
+            width: 28px;
+            height: 4px;
+            background: #333;
+            bottom: -28px;
+            left: -14px;
+        }
+
+        /* Pallet pixel art */
+        .pallet {
+            position: absolute;
+            width: 40px;
+            height: 8px;
+            background: repeating-linear-gradient(
+                90deg,
+                #8B4513 0px,
+                #8B4513 6px,
+                transparent 6px,
+                transparent 8px
+            );
+            opacity: 0.2;
+        }
+
+        .pallet::before {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 4px;
+            background: #654321;
+            top: -4px;
+        }
+
+        /* Floating warehouse elements animation */
+        .warehouse-element {
+            animation: warehouseFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes warehouseFloat {
+            0%, 100% { transform: translateY(0) translateZ(0); }
+            50% { transform: translateY(-10px) translateZ(20px); }
+        }
+
+        /* Grid floor effect */
+        .warehouse-floor {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background:
+                linear-gradient(to top, rgba(255, 102, 0, 0.1), transparent),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent 0px,
+                    transparent 48px,
+                    rgba(255, 102, 0, 0.05) 48px,
+                    rgba(255, 102, 0, 0.05) 50px
+                ),
+                repeating-linear-gradient(
+                    0deg,
+                    transparent 0px,
+                    transparent 48px,
+                    rgba(255, 102, 0, 0.05) 48px,
+                    rgba(255, 102, 0, 0.05) 50px
+                );
             pointer-events: none;
-            z-index: 4;
-            box-shadow: 0 0 10px var(--neon-cyan);
+            z-index: 2;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: bottom center;
         }
 
         /* Hero Section */
@@ -1412,17 +1442,11 @@
     </style>
 </head>
 <body>
-    <!-- 3D Tunnel Effect Layer -->
-    <div class="tunnel-layer" id="tunnelLayer">
-        <div class="tunnel-ring"></div>
-        <div class="tunnel-ring"></div>
-        <div class="tunnel-ring"></div>
-        <div class="tunnel-ring"></div>
-        <div class="tunnel-ring"></div>
-    </div>
+    <!-- Warehouse Retro Graphics Background -->
+    <div class="warehouse-bg" id="warehouseBg"></div>
 
-    <!-- Warp Speed Lines Container -->
-    <div class="warp-container" id="warpContainer"></div>
+    <!-- Warehouse Grid Floor -->
+    <div class="warehouse-floor"></div>
 
     <!-- Starfield Background -->
     <div class="starfield" id="starfield">
@@ -1991,133 +2015,125 @@
         `;
         document.head.appendChild(style);
 
-        // ===== 3D CAMERA SYSTEM =====
+        // ===== SIMPLE 3D CAMERA & WAREHOUSE GRAPHICS =====
 
-        // Camera state
+        // Camera state - simplified
         const camera = {
-            x: 0,
-            y: 0,
             z: 0,
-            rotX: 0,
-            rotY: 0,
-            rotZ: 0,
-            lastScrollY: 0,
-            scrollVelocity: 0,
             targetZ: 0,
-            targetRotX: 0,
-            targetRotY: 0
+            lastScrollY: 0
         };
 
-        // Section camera effects configuration
-        const sectionEffects = {
-            'hero': { z: 0, rotX: 0, rotY: 0, effect: 'none' },
-            'problem': { z: -200, rotX: 5, rotY: -3, effect: 'dive' },
-            'solution': { z: 100, rotX: -5, rotY: 5, effect: 'zoom-out' },
-            'characters': { z: -100, rotX: 0, rotY: -8, effect: 'strafe-left' },
-            'hazards': { z: 200, rotX: 8, rotY: 0, effect: 'tilt-up' },
-            'bosses': { z: -300, rotX: -10, rotY: 10, effect: 'barrel' },
-            'ppe': { z: 50, rotX: 5, rotY: -5, effect: 'strafe-right' },
-            'features': { z: -150, rotX: -8, rotY: 0, effect: 'dive' },
-            'cta': { z: 300, rotX: 0, rotY: 0, effect: 'zoom-in' }
+        // Section depth configuration - simple zoom in/out
+        const sectionDepths = {
+            'hero': 0,
+            'problem': -30,
+            'solution': 40,
+            'characters': -20,
+            'hazards': 30,
+            'bosses': -40,
+            'ppe': 20,
+            'features': -25,
+            'cta': 50
         };
 
-        // Get all sections
         const sections = document.querySelectorAll('section');
         const starfield = document.getElementById('starfield');
-        const tunnelLayer = document.getElementById('tunnelLayer');
-        const warpContainer = document.getElementById('warpContainer');
-
-        // Current section tracking
+        const warehouseBg = document.getElementById('warehouseBg');
         let currentSection = 'hero';
-        let lastSection = 'hero';
-        let isTransitioning = false;
 
-        // Create floating depth particles
-        function createDepthParticles() {
-            for (let i = 0; i < 30; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'depth-particle';
-                particle.style.left = Math.random() * 100 + 'vw';
-                particle.style.top = Math.random() * 100 + 'vh';
-                particle.style.transform = `translateZ(${Math.random() * 500 - 250}px)`;
-                particle.style.opacity = Math.random() * 0.5 + 0.2;
-                particle.style.animation = `floatParticle ${3 + Math.random() * 4}s ease-in-out infinite`;
-                particle.style.animationDelay = `${Math.random() * 2}s`;
-                document.body.appendChild(particle);
+        // Create warehouse retro graphics
+        function createWarehouseGraphics() {
+            const container = warehouseBg;
+            if (!container) return;
+
+            // Add shelf units
+            for (let i = 0; i < 6; i++) {
+                const shelf = document.createElement('div');
+                shelf.className = 'shelf-unit warehouse-element';
+                shelf.style.left = (5 + i * 18) + '%';
+                shelf.style.top = (10 + (i % 3) * 30) + '%';
+                shelf.style.animationDelay = (i * 0.5) + 's';
+                container.appendChild(shelf);
+            }
+
+            // Add pixel boxes scattered around
+            for (let i = 0; i < 15; i++) {
+                const box = document.createElement('div');
+                box.className = 'pixel-box warehouse-element';
+                box.style.left = (Math.random() * 90 + 5) + '%';
+                box.style.top = (Math.random() * 80 + 10) + '%';
+                box.style.animationDelay = (Math.random() * 3) + 's';
+                box.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+                container.appendChild(box);
+            }
+
+            // Add safety cones
+            for (let i = 0; i < 4; i++) {
+                const cone = document.createElement('div');
+                cone.className = 'safety-cone warehouse-element';
+                cone.style.left = (15 + i * 25) + '%';
+                cone.style.bottom = (5 + (i % 2) * 10) + '%';
+                cone.style.animationDelay = (i * 0.8) + 's';
+                container.appendChild(cone);
+            }
+
+            // Add conveyors
+            for (let i = 0; i < 3; i++) {
+                const conveyor = document.createElement('div');
+                conveyor.className = 'conveyor';
+                conveyor.style.left = '0';
+                conveyor.style.width = '100%';
+                conveyor.style.top = (25 + i * 30) + '%';
+                container.appendChild(conveyor);
+            }
+
+            // Add pallets
+            for (let i = 0; i < 8; i++) {
+                const pallet = document.createElement('div');
+                pallet.className = 'pallet warehouse-element';
+                pallet.style.left = (Math.random() * 85 + 5) + '%';
+                pallet.style.top = (Math.random() * 70 + 15) + '%';
+                pallet.style.animationDelay = (Math.random() * 4) + 's';
+                container.appendChild(pallet);
+            }
+
+            // Add forklifts
+            for (let i = 0; i < 2; i++) {
+                const forklift = document.createElement('div');
+                forklift.className = 'forklift warehouse-element';
+                forklift.style.left = (20 + i * 50) + '%';
+                forklift.style.bottom = '15%';
+                forklift.style.animationDelay = (i * 2) + 's';
+                container.appendChild(forklift);
             }
         }
 
-        // Add particle animation
-        const particleStyle = document.createElement('style');
-        particleStyle.textContent = `
-            @keyframes floatParticle {
-                0%, 100% { transform: translateZ(var(--z, 0)) translateY(0); }
-                50% { transform: translateZ(calc(var(--z, 0) + 100px)) translateY(-30px); }
-            }
-        `;
-        document.head.appendChild(particleStyle);
-        createDepthParticles();
-
-        // Create warp speed lines
-        function triggerWarpEffect() {
-            warpContainer.classList.add('active');
-            warpContainer.innerHTML = '';
-
-            for (let i = 0; i < 50; i++) {
-                const line = document.createElement('div');
-                line.className = 'warp-line';
-                line.style.left = Math.random() * 100 + '%';
-                line.style.top = '50%';
-                line.style.transform = `rotate(${Math.random() * 360}deg)`;
-                line.style.animationDelay = Math.random() * 0.3 + 's';
-                line.style.background = `linear-gradient(to bottom, transparent, ${
-                    ['#00ffff', '#ff00ff', '#ffff00', '#00ff00'][Math.floor(Math.random() * 4)]
-                }, transparent)`;
-                warpContainer.appendChild(line);
-            }
-
-            setTimeout(() => {
-                warpContainer.classList.remove('active');
-            }, 800);
-        }
-
-        // Apply 3D camera transform to main content
+        // Simple smooth camera update
         function updateCamera() {
             const main = document.querySelector('main');
 
-            // Smooth camera movement
-            camera.z += (camera.targetZ - camera.z) * 0.08;
-            camera.rotX += (camera.targetRotX - camera.rotX) * 0.06;
-            camera.rotY += (camera.targetRotY - camera.rotY) * 0.06;
+            // Smooth interpolation to target
+            camera.z += (camera.targetZ - camera.z) * 0.1;
 
-            // Apply scroll velocity for momentum effect
-            const velocityZ = camera.scrollVelocity * 0.5;
-            const velocityRotX = camera.scrollVelocity * 0.02;
+            // Apply simple translateZ
+            main.style.transform = `translateZ(${camera.z}px)`;
 
-            main.style.transform = `
-                perspective(2000px)
-                translateZ(${camera.z + velocityZ}px)
-                rotateX(${camera.rotX + velocityRotX}deg)
-                rotateY(${camera.rotY}deg)
-                rotateZ(${camera.rotZ}deg)
-            `;
-
-            // Parallax starfield
+            // Subtle parallax on starfield
             if (starfield) {
-                starfield.style.transform = `translateZ(${camera.z * -0.3}px) scale(${1 + camera.z * 0.0005})`;
+                starfield.style.transform = `translateZ(${camera.z * -0.2}px)`;
             }
 
-            // Tunnel depth effect
-            if (tunnelLayer) {
-                tunnelLayer.style.transform = `translate(-50%, -50%) translateZ(${camera.z * 0.2}px) rotateZ(${camera.rotY * 0.5}deg)`;
+            // Parallax on warehouse elements
+            if (warehouseBg) {
+                warehouseBg.style.transform = `translateZ(${camera.z * 0.1}px)`;
             }
 
             requestAnimationFrame(updateCamera);
         }
 
-        // Detect current section and apply effects
-        function detectCurrentSection() {
-            const scrollY = window.scrollY;
+        // Detect section and set camera depth
+        function detectSection() {
             const windowHeight = window.innerHeight;
 
             sections.forEach(section => {
@@ -2127,152 +2143,23 @@
                 if (sectionMiddle > 0 && sectionMiddle < windowHeight) {
                     const sectionId = section.id;
                     if (sectionId && sectionId !== currentSection) {
-                        lastSection = currentSection;
                         currentSection = sectionId;
-                        onSectionChange(sectionId, lastSection);
+                        camera.targetZ = sectionDepths[sectionId] || 0;
                     }
                 }
             });
         }
 
-        // Handle section transitions
-        function onSectionChange(newSection, oldSection) {
-            const effect = sectionEffects[newSection];
-            if (!effect) return;
+        // Simple scroll handler
+        window.addEventListener('scroll', detectSection);
 
-            // Set target camera position
-            camera.targetZ = effect.z;
-            camera.targetRotX = effect.rotX;
-            camera.targetRotY = effect.rotY;
-
-            // Trigger special effects
-            if (!isTransitioning) {
-                isTransitioning = true;
-
-                switch (effect.effect) {
-                    case 'barrel':
-                        triggerWarpEffect();
-                        document.querySelector('main').classList.add('barrel-roll');
-                        setTimeout(() => {
-                            document.querySelector('main').classList.remove('barrel-roll');
-                        }, 1500);
-                        break;
-                    case 'dive':
-                        document.querySelector('main').classList.add('camera-dive');
-                        setTimeout(() => {
-                            document.querySelector('main').classList.remove('camera-dive');
-                        }, 1000);
-                        break;
-                    case 'strafe-left':
-                        document.querySelector('main').classList.add('camera-strafe-left');
-                        setTimeout(() => {
-                            document.querySelector('main').classList.remove('camera-strafe-left');
-                        }, 800);
-                        break;
-                    case 'strafe-right':
-                        document.querySelector('main').classList.add('camera-strafe-right');
-                        setTimeout(() => {
-                            document.querySelector('main').classList.remove('camera-strafe-right');
-                        }, 800);
-                        break;
-                    case 'zoom-in':
-                    case 'zoom-out':
-                        triggerWarpEffect();
-                        break;
-                }
-
-                setTimeout(() => {
-                    isTransitioning = false;
-                }, 500);
-            }
-        }
-
-        // Scroll handler for 3D camera
-        let scrollTimeout;
-        window.addEventListener('scroll', () => {
-            const scrollY = window.scrollY;
-            camera.scrollVelocity = scrollY - camera.lastScrollY;
-            camera.lastScrollY = scrollY;
-
-            detectCurrentSection();
-
-            // Decay scroll velocity
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                camera.scrollVelocity *= 0.9;
-                if (Math.abs(camera.scrollVelocity) < 0.1) camera.scrollVelocity = 0;
-            }, 50);
-        });
-
-        // Mouse movement for subtle camera tilt
-        document.addEventListener('mousemove', (e) => {
-            const centerX = window.innerWidth / 2;
-            const centerY = window.innerHeight / 2;
-            const mouseX = e.clientX - centerX;
-            const mouseY = e.clientY - centerY;
-
-            // Subtle tilt based on mouse position
-            camera.targetRotY += (mouseX * 0.002 - camera.rotY) * 0.1;
-            camera.targetRotX += (mouseY * -0.002 - camera.rotX) * 0.1;
-        });
-
-        // Initialize camera system
+        // Initialize
+        createWarehouseGraphics();
         updateCamera();
-
-        // Add section-specific 3D depth to each section
-        sections.forEach((section, index) => {
-            const depth = (index % 2 === 0) ? -50 : 50;
-            section.style.setProperty('--section-depth', `${depth}px`);
-
-            // Apply initial 3D transform
-            section.addEventListener('transitionend', () => {
-                if (section.classList.contains('active')) {
-                    section.style.transform = 'translateZ(0)';
-                }
-            });
-        });
-
-        // Intersection observer for section 3D effects
-        const sectionObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                const section = entry.target;
-                const sectionId = section.id;
-                const effect = sectionEffects[sectionId];
-
-                if (entry.isIntersecting) {
-                    // Section entering view - zoom in effect
-                    section.classList.remove('section-3d-enter', 'section-3d-exit');
-                    section.classList.add('section-3d-active');
-
-                    // Apply unique Z-depth animation
-                    if (effect) {
-                        section.style.transition = 'transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                        section.style.transform = `translateZ(${effect.z * 0.1}px) rotateX(${effect.rotX * 0.2}deg)`;
-                    }
-                } else {
-                    // Section leaving view
-                    const rect = entry.boundingClientRect;
-                    if (rect.top > 0) {
-                        // Below viewport - waiting to enter
-                        section.classList.add('section-3d-enter');
-                        section.classList.remove('section-3d-active', 'section-3d-exit');
-                    } else {
-                        // Above viewport - already passed
-                        section.classList.add('section-3d-exit');
-                        section.classList.remove('section-3d-active', 'section-3d-enter');
-                    }
-                }
-            });
-        }, {
-            threshold: [0, 0.25, 0.5, 0.75, 1],
-            rootMargin: '-10% 0px -10% 0px'
-        });
-
-        sections.forEach(section => sectionObserver.observe(section));
 
         console.log('%c AMZL WHS QUEST ', 'background: linear-gradient(90deg, #ff00ff, #00ffff); color: black; font-size: 24px; font-weight: bold; padding: 10px;');
         console.log('%c The Ultimate Safety Adventure! ', 'color: #00ff00; font-size: 14px;');
-        console.log('%c 3D Camera System Active! ', 'color: #ff00ff; font-size: 12px;');
+        console.log('%c Warehouse Theme Active! ', 'color: #ff6600; font-size: 12px;');
     </script>
 </body>
 </html>
