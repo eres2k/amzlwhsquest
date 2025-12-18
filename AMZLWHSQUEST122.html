@@ -370,37 +370,37 @@ const SIMULATED_AI = {
         },
         NL: {
             runners: [
-                "Stop, godver! Kinetische energie is niet je vriend. Langzamer!",
-                "Je bent geen foton, eikel. Je hebt massa. Loop!",
-                "Rennen? Verdomme, ik heb gletsjers gezien die doelgerichter waren.",
-                "We vechten tegen entropie, niet tegen de klok. Loop, verdorie!"
+                "Stop, potjandriedubbeltjes! Kinetische energie is niet je vriend. Langzamer!",
+                "Je bent geen foton, kaaskop. Je hebt massa. Loop! Dat staat in mijn spreadsheet.",
+                "Rennen? Sjongejonge, ik heb gletsjers gezien die doelgerichter waren. En georganiseerder.",
+                "We vechten tegen entropie, niet tegen de klok. Loop, stroopwafel!"
             ],
             taunts: [
-                "Mijn spreadsheet voorspelt je falen, klojo!",
-                "Je kunt de audit niet ontsnappen, sukkel!",
-                "Ik ben de finale regelgeving, godverdomme!",
-                "Compliance daalt... Ontslag dreigt, eikel!",
-                "Weerstand is een veiligheidsovertreding, dombo!"
+                "Mijn spreadsheet voorspelt je falen, droeftoeter! In kleur gecodeerd!",
+                "Je kunt de audit niet ontsnappen, held op sokken! Niemand ontsnapt.",
+                "Ik ben de finale regelgeving, allemachtig! En ik heb back-ups.",
+                "Compliance daalt... Ontslag dreigt, slaapkop! Mijn formulieren zijn al klaar.",
+                "Weerstand is een veiligheidsovertreding, banaan! Staat in sectie 4.2.1."
             ],
             simon_taunts: [
-                "IK BEN DE VEILIGHEIDSSTANDAARD! ...Godver, wat vermoeiend.",
-                "JE KUNT DE AUDIT NIET ONTSNAPPEN! Geloof me, ik heb het geprobeerd, verdomme.",
-                "ENTROPIE KOMT VOOR ONS ALLEMAAL! Maar ik documenteer het eerst, klote.",
-                "JE PBM IS ONVOLDOENDE! Net als mijn vertrouwen in de mensheid, godver."
+                "IK BEN DE VEILIGHEIDSSTANDAARD! ...Potverdorie, wat vermoeiend om zo goed te zijn.",
+                "JE KUNT DE AUDIT NIET ONTSNAPPEN! Geloof me, ik heb het geprobeerd. In 2019. Slechte herinneringen.",
+                "ENTROPIE KOMT VOOR ONS ALLEMAAL! Maar ik documenteer het eerst. In drievoud.",
+                "JE PBM IS ONVOLDOENDE! Net als mijn vertrouwen in de mensheid. Maar dat staat niet in het rapport."
             ],
             simon_warnings: [
-                "Eerste waarschuwing: Stop met die handboeken gooien, godver. Compliance is geen contactsport. Al zou ik daar geld voor betalen.",
-                "Laatste waarschuwing: Berg die regelboeken op of ik escaleer deze audit naar een baasgevecht. Mijn spreadsheets staan klaar, verdomme."
+                "Eerste waarschuwing: Stop met die handboeken gooien, held op sokken. Compliance is geen contactsport. Al zou ik daar geld voor betalen om te kijken.",
+                "Laatste waarschuwing: Berg die regelboeken op of ik escaleer deze audit naar een baasgevecht. Mijn spreadsheets staan klaar. Ze zijn prachtig."
             ],
             reviews_win: [
-                "Prestatie: ONWAARSCHIJNLIJK. Je hebt overleefd, godver. Ik ben... voldoende tevreden. Laat het niet naar je hoofd stijgen.",
-                "Je hebt tegen de chaos gewonnen. Voor vandaag, verdomme. Morgen probeert entropie het opnieuw.",
-                "Voldoende. Niets op te schrijven. Voelt vreemd, godver. Bijna teleurstellend."
+                "Prestatie: ONWAARSCHIJNLIJK. Je hebt overleefd, sjongejonge. Ik ben... voldoende tevreden. Laat het niet naar je hoofd stijgen.",
+                "Je hebt tegen de chaos gewonnen. Voor vandaag, allemachtig. Morgen probeert entropie het opnieuw. Het probeert het altijd opnieuw.",
+                "Voldoende. Niets op te schrijven. Voelt vreemd, potjandriedubbeltjes. Bijna teleurstellend voor mijn formulieren."
             ],
             reviews_loss: [
-                "Prestatie: CATASTROFAAL. Entropie heeft gewonnen, verdomme. Ik ga het incidentrapport invullen. In drievoud.",
-                "Je hebt gefaald, klojo. Zwaartekracht en domheid hebben ons vernietigd. Natuurkunde blijft onverslagen.",
-                "Veiligheid is binair. Jij bent een nul, godver. Wiskundig gezien, natuurlijk."
+                "Prestatie: CATASTROFAAL. Entropie heeft gewonnen, jeetje. Ik ga het incidentrapport invullen. In drievoud. Met kleurcodering.",
+                "Je hebt gefaald, droeftoeter. Zwaartekracht en enthousiasme hebben ons vernietigd. Natuurkunde blijft onverslagen.",
+                "Veiligheid is binair. Jij bent een nul, kaaskop. Wiskundig gezien, natuurlijk. Mijn spreadsheet liegt nooit."
             ]
         }
     }
@@ -6518,7 +6518,7 @@ function generateAssets() {
 // --- GAME STATE ---
 // Note: PPE_ITEMS loaded from js/hazards.js
 const GAME = {
-    state: 'PRESS_START',
+    state: 'PASSWORD',
     stateTimer: 0,
     nextState: 'PLAY',
     ticks: 0,
@@ -6526,6 +6526,10 @@ const GAME = {
     selectedChar: "Carrie",
     charList: ["Carrie", "Nevena", "Joao", "Roman", "Erwin"],
     charIndex: 0,
+    // Password protection
+    passwordInput: "",
+    passwordError: false,
+    passwordCorrect: "whsaustria",
     // Secret dev mode unlock
     secretCode: "",
     devModeUnlocked: false,
@@ -6753,6 +6757,32 @@ window.addEventListener('keydown', e => {
     if(e.key==='d'||e.key==='ArrowRight') KEYS.right=true;
     if(e.code==='Space') { if(!KEYS.action) handleAction(); KEYS.action=true; }
     if(e.key==='Enter') { handleAction(); }
+
+    // Password entry state input handling
+    if (GAME.state === 'PASSWORD') {
+        if (e.key === 'Backspace') {
+            GAME.passwordInput = GAME.passwordInput.slice(0, -1);
+            GAME.passwordError = false;
+            e.preventDefault();
+        } else if (e.key === 'Enter') {
+            if (GAME.passwordInput.toLowerCase() === GAME.passwordCorrect) {
+                GAME.state = 'PRESS_START';
+                GAME.stateTimer = 0;
+                GAME.passwordError = false;
+                AudioSys.sfx.fix(); // Success sound
+            } else {
+                GAME.passwordError = true;
+                GAME.shake = 10;
+                AudioSys.sfx.hurt(); // Error sound
+            }
+            e.preventDefault();
+        } else if (e.key.length === 1 && GAME.passwordInput.length < 20) {
+            GAME.passwordInput += e.key;
+            GAME.passwordError = false;
+            e.preventDefault();
+        }
+        return;
+    }
 
     // Name entry state input handling
     if (GAME.state === 'NAME_ENTRY') {
@@ -7585,7 +7615,7 @@ function init() {
     generateAssets();
     loadGameProgress(); // Load saved PPE and safety points
     fetchHighscores(); // Load highscores from server
-    GAME.state = 'PRESS_START';
+    GAME.state = 'PASSWORD';
     // DON'T call updateMusicForState() here - it will fail due to autoplay policy
     // Music will start on first user interaction in handleAction()
     requestAnimationFrame(loop);
@@ -11307,7 +11337,7 @@ function getLanguageInstruction() {
     const instructions = {
         'AT': 'WICHTIG: Antworte auf DEUTSCH mit österreichischem Dialekt (Wienerisch). Verwende Ausdrücke wie "oida", "herst", "ned", "is", "san", "a" statt "ein". (Respond in Austrian German dialect)',
         'DE': 'WICHTIG: Antworte auf DEUTSCH in Hochdeutsch. (Respond in standard German)',
-        'NL': 'BELANGRIJK: Antwoord in het NEDERLANDS. Gebruik licht vulgaire uitdrukkingen zoals "godver", "verdomme", "klojo", "eikel" om frustratie te uiten. Wees direct en een beetje grof maar professioneel. (Respond in Dutch with mild vulgar expressions)',
+        'NL': 'BELANGRIJK: Antwoord in het NEDERLANDS. Gebruik grappige, niet-vulgaire uitdrukkingen zoals "potjandriedubbeltjes", "sjongejonge", "allemachtig", "potverdorie", "held op sokken", "kaaskop", "droeftoeter", "stroopwafel" om frustratie en humor te uiten. Wees direct en droogkomisch maar familievriendelijk. Maak spreadsheet-grappen. (Respond in Dutch with funny non-vulgar expressions, dry humor, spreadsheet jokes)',
         'MEU': 'Respond in English. This is a multi-country EU perspective covering Germany, Austria, and Netherlands.'
     };
     return instructions[region] || '';
@@ -17199,6 +17229,99 @@ function draw() {
     let dxShake = 0, dyShake = 0;
     if (GAME.shake > 0) { dxShake = (Math.random() - 0.5) * GAME.shake; dyShake = (Math.random() - 0.5) * GAME.shake; }
     ctx.save(); ctx.translate(dxShake, dyShake);
+
+    // === PASSWORD ENTRY SCREEN ===
+    if (GAME.state === 'PASSWORD') {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Animated starfield background (same as PRESS_START)
+        for (let i = 0; i < 30; i++) {
+            let seed = i * 234.567;
+            let x = ((seed * 9301 + 49297) % 233280) / 910;
+            let y = ((seed * 1234 + 8765) % 233280) / 1040;
+            let speed = (i % 3) + 1;
+            let starY = (y + GAME.stateTimer * speed * 0.15) % 224;
+            let brightness = Math.sin(GAME.stateTimer * 0.06 + i) * 0.25 + 0.4;
+            ctx.fillStyle = `rgba(100, 180, 255, ${brightness})`;
+            ctx.fillRect(x, starY, 1, 1);
+        }
+
+        // Background gradient glow
+        let hue = (GAME.stateTimer * 0.3) % 360;
+        let gradient = ctx.createRadialGradient(128, 100, 0, 128, 100, 100);
+        gradient.addColorStop(0, `hsla(${hue}, 50%, 20%, 0.25)`);
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.textAlign = 'center';
+
+        // Lock icon (ASCII art style)
+        ctx.font = 'bold 24px monospace';
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText('🔒', canvas.width / 2, 50);
+
+        // Title
+        ctx.font = 'bold 12px monospace';
+        ctx.fillStyle = '#88ccff';
+        ctx.fillText('AMZL WHS QUEST', canvas.width / 2, 75);
+
+        ctx.font = '9px monospace';
+        ctx.fillStyle = '#666666';
+        ctx.fillText('ACCESS RESTRICTED', canvas.width / 2, 90);
+
+        // Password prompt
+        ctx.font = 'bold 10px monospace';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('Enter Password:', canvas.width / 2, 115);
+
+        // Password input box
+        const boxWidth = 140;
+        const boxX = (canvas.width - boxWidth) / 2;
+        const boxY = 125;
+
+        // Box background
+        ctx.fillStyle = GAME.passwordError ? 'rgba(255, 50, 50, 0.2)' : 'rgba(0, 100, 200, 0.2)';
+        ctx.fillRect(boxX, boxY, boxWidth, 22);
+
+        // Box border
+        ctx.strokeStyle = GAME.passwordError ? '#ff3333' : '#4488ff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(boxX, boxY, boxWidth, 22);
+
+        // Password text (masked with asterisks)
+        ctx.font = '12px monospace';
+        ctx.fillStyle = '#ffffff';
+        const maskedPassword = '●'.repeat(GAME.passwordInput.length);
+        const cursorBlink = Math.floor(GAME.stateTimer / 20) % 2 === 0;
+        const displayText = maskedPassword + (cursorBlink ? '|' : '');
+        ctx.fillText(displayText, canvas.width / 2, boxY + 15);
+
+        // Error message
+        if (GAME.passwordError) {
+            ctx.font = 'bold 9px monospace';
+            ctx.fillStyle = '#ff3333';
+            ctx.fillText('ACCESS DENIED', canvas.width / 2, 165);
+            ctx.font = '7px monospace';
+            ctx.fillStyle = '#ff6666';
+            ctx.fillText('Invalid password. Try again.', canvas.width / 2, 178);
+        } else {
+            // Instructions
+            ctx.font = '8px monospace';
+            ctx.fillStyle = '#888888';
+            ctx.fillText('Press ENTER to submit', canvas.width / 2, 165);
+        }
+
+        // Footer
+        ctx.font = '6px monospace';
+        ctx.fillStyle = 'rgba(136, 204, 255, 0.5)';
+        ctx.fillText('© 2024 ERWIN ESENER PRODUCTIONS', canvas.width / 2, 210);
+
+        ctx.textAlign = 'start';
+        ctx.restore();
+        return;
+    }
 
     if (GAME.state === 'PRESS_START') {
         ctx.fillStyle = '#000';
