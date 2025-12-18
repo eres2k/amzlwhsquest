@@ -131,14 +131,14 @@ const SIMON_YARD_TIPS = {
         "AUDIT-NOTIZ: Der Hof hat mehr Beinahe-Unfälle als ich Geduld habe. Bleib wachsam, bleib am Leben."
     ],
     NL: [
-        "TERREIN-VEILIGHEID: Gebruik altijd de zebrapaden, godver. DSP-busjes hebben grotere dode hoeken dan ambitie. Ik heb beide gemeten.",
-        "LET OP: Het terrein is GEEN afkorting, eikel. Eén medewerker tegen een Prime-bus betekent papierwerk dat ik verdomme niet wil doen.",
-        "HERINNERING: Kijk links en rechts. Dan nog een keer, klojo. Die DSP-chauffeurs draaien op cafeïne en onmogelijke deadlines.",
-        "TERREIN-PROTOCOL: Veiligheidsvesten bestaan met een reden, sukkel. Gezien worden of statistiek worden. Jouw keuze, godver.",
-        "KRITIEK: Voertuigen hebben voorrang. Je skelet weegt verdomme niet meer dan een leveringsquota. Geloof me, ik heb gerekend.",
-        "VEILIGHEID EERST: Als je een claxon hoort, BEWEEG, idioot. Sta niet stil na te denken over de zin van het leven. Spoiler: het is compliance.",
-        "PRO TIP: Koptelefoon af op het terrein, dombo. Muziek dempt de klap van een achteruitrijdende vrachtwagen niet. Je Spotify premium ook niet.",
-        "AUDIT NOTITIE: Het terrein heeft meer bijna-ongelukken dan ik geduld heb, godver. Blijf alert, blijf in leven. Of niet. Jouw keuze beïnvloedt MIJN metrics."
+        "TERREIN-VEILIGHEID: Gebruik altijd de zebrapaden, held op sokken. DSP-busjes hebben grotere dode hoeken dan ambitie. Ik heb beide gemeten met mijn spreadsheet.",
+        "LET OP: Het terrein is GEEN afkorting, droeftoeter. Eén medewerker tegen een Prime-bus betekent papierwerk dat ik absoluut niet wil invullen. In drievoud.",
+        "HERINNERING: Kijk links en rechts. Dan nog een keer, kaaskop. Die DSP-chauffeurs draaien op cafeïne en onmogelijke deadlines. Net als ik eigenlijk.",
+        "TERREIN-PROTOCOL: Veiligheidsvesten bestaan met een reden, slaapkop. Gezien worden of statistiek worden. Jouw keuze. Mijn spreadsheet is klaar voor beide.",
+        "KRITIEK: Voertuigen hebben voorrang. Je skelet weegt potjandriedubbeltjes niet meer dan een leveringsquota. Geloof me, ik heb gerekend. Twee keer.",
+        "VEILIGHEID EERST: Als je een claxon hoort, BEWEEG, slome duikelaar. Sta niet stil na te denken over de zin van het leven. Spoiler: het is compliance.",
+        "PRO TIP: Koptelefoon af op het terrein, snotneus. Muziek dempt de klap van een achteruitrijdende vrachtwagen niet. Je Spotify premium ook niet. Dat heb ik uitgerekend.",
+        "AUDIT NOTITIE: Het terrein heeft meer bijna-ongelukken dan ik geduld heb, potverdorie. Blijf alert, blijf in leven. Of niet. Jouw keuze beïnvloedt MIJN metrics."
     ]
 };
 
