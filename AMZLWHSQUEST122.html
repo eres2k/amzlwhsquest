@@ -11420,7 +11420,7 @@ function tryInteract() {
     if (GAME.issuesFixed >= 4 && GAME.fireExitDoor && Math.hypot(p.x - GAME.fireExitDoor.x, p.y - GAME.fireExitDoor.y) < 20) {
         AudioSys.sfx.secret(); // Zelda-style secret discovery tune
         VibrationSystem.onSecretFound(); // Vibrate on secret discovery
-        showDialog("You found a hidden exit!\n\nYou step through the fire door into the Amazon yard...", "SECRET", GFX.secretIcon, false);
+        showDialog(getLocalizedText('secret_exit_found'), getLocalizedText('secret_label'), GFX.secretIcon, false);
         GAME.nextState = 'YARD_INTRO';
         return true;
     }
@@ -18107,10 +18107,10 @@ function draw() {
         ctx.fillStyle = '#fbbf24';
         ctx.font = '6px monospace';
         const tips = [
-            '> Walk into hazards to fix',
-            '> Throw books at ops mgrs',
-            '> Avoid ops manager requests',
-            '> Find secret fire exit!'
+            getLocalizedText('tip_walk_hazards'),
+            getLocalizedText('tip_throw_books'),
+            getLocalizedText('tip_avoid_ops'),
+            getLocalizedText('tip_secret_exit')
         ];
         tips.forEach((tip, i) => {
             ctx.fillText(tip, rightCol + 2, 56 + i * 11);

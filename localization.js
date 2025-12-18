@@ -564,6 +564,46 @@ const LOCALIZATION = {
         'NL': '[SPATIE OM DOOR TE GAAN]'
     },
 
+    // === SECRET EXIT ===
+    'secret_exit_found': {
+        'EN': 'You found a hidden exit!\n\nYou step through the fire door into the Amazon yard...',
+        'DE': 'Du hast einen geheimen Ausgang gefunden!\n\nDu gehst durch die Brandschutztür auf den Amazon Hof...',
+        'AT': 'Du host an geheimen Ausgang gfunden!\n\nDu gehst durch die Brandschutztür auf den Amazon Hof...',
+        'NL': 'Je hebt een geheime uitgang gevonden!\n\nJe stapt door de branddeur het Amazon terrein op...'
+    },
+    'secret_label': {
+        'EN': 'SECRET',
+        'DE': 'GEHEIM',
+        'AT': 'GEHEIM',
+        'NL': 'GEHEIM'
+    },
+
+    // === HOW TO PLAY TIPS ===
+    'tip_walk_hazards': {
+        'EN': '> Walk into hazards to fix',
+        'DE': '> Lauf in Gefahren um zu beheben',
+        'AT': '> Lauf in Gefahren um zu beheben',
+        'NL': '> Loop naar gevaren om op te lossen'
+    },
+    'tip_throw_books': {
+        'EN': '> Throw books at ops mgrs',
+        'DE': '> Wirf Bücher auf Ops Manager',
+        'AT': '> Wirf Bücher auf Ops Manager',
+        'NL': '> Gooi boeken naar ops managers'
+    },
+    'tip_avoid_ops': {
+        'EN': '> Avoid ops manager requests',
+        'DE': '> Weiche Ops Manager Anfragen aus',
+        'AT': '> Weich Ops Manager Anfragen aus',
+        'NL': '> Vermijd ops manager verzoeken'
+    },
+    'tip_secret_exit': {
+        'EN': '> Find secret fire exit!',
+        'DE': '> Finde den geheimen Notausgang!',
+        'AT': '> Find den geheimen Notausgang!',
+        'NL': '> Vind de geheime nooduitgang!'
+    },
+
     // === GAME OVER ===
     'game_over': {
         'EN': 'GAME OVER',
