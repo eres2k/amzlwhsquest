@@ -74,15 +74,14 @@ const BANTER_DB = {
 
 // Helper to get region-appropriate banter
 function getRegionalBanter(type) {
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : null;
+    const region = getGameRegion(null);
     // Try region-specific banter first
     if (region && BANTER_DB.regional[region] && BANTER_DB.regional[region][type]) {
         // 70% chance to use regional banter, 30% to use generic English
-        if (Math.random() < 0.7) {
-            const regionalLines = BANTER_DB.regional[region][type];
-            return regionalLines[Math.floor(Math.random() * regionalLines.length)];
+        if (Math.random() < GAME_CONFIG.PROBABILITIES.REGIONAL_BANTER) {
+            return pickRandom(BANTER_DB.regional[region][type]);
         }
     }
     // Fall back to generic English banter
-    return BANTER_DB[type][Math.floor(Math.random() * BANTER_DB[type].length)];
+    return pickRandom(BANTER_DB[type]);
 }
