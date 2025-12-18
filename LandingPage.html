@@ -405,6 +405,10 @@
             50% { box-shadow: 0 0 25px rgba(20, 184, 166, 0.5), 0 0 0 8px rgba(20, 184, 166, 0.1); }
             100% { box-shadow: 0 0 15px rgba(20, 184, 166, 0.3); }
         }
+        @keyframes neonPulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 0, 255, 0.5), 0 0 10px rgba(255, 0, 255, 0.3); }
+            50% { box-shadow: 0 0 10px rgba(255, 0, 255, 0.8), 0 0 20px rgba(255, 0, 255, 0.5), 0 0 30px rgba(0, 255, 255, 0.3); }
+        }
 
         .modal-overlay {
             display: none;
@@ -845,6 +849,7 @@
     <footer>
         <p>© 2025 ERWIN ESENER PRODUCTIONS // WHS MEU // DVI1 VIENNA //</p>
         <a href="index-modular.html" style="display: inline-block; margin-top: 10px; padding: 6px 12px; font-size: 0.6rem; font-family: 'Press Start 2P'; color: #64748b; text-decoration: none; border: 1px solid #334155; border-radius: 3px; background: rgba(15, 23, 42, 0.5); transition: all 0.2s;" onmouseover="this.style.color='#94a3b8'; this.style.borderColor='#475569';" onmouseout="this.style.color='#64748b'; this.style.borderColor='#334155';">MODULAR BUILD <span style="background: #854d0e; color: #fbbf24; font-size: 0.4rem; padding: 2px 5px; border-radius: 2px; margin-left: 5px;">WIP</span></a>
+        <a href="awwwards.html" style="display: inline-block; margin-top: 10px; margin-left: 10px; padding: 6px 12px; font-size: 0.6rem; font-family: 'Press Start 2P'; color: #ff00ff; text-decoration: none; border: 1px solid #ff00ff; border-radius: 3px; background: rgba(255, 0, 255, 0.1); transition: all 0.2s; animation: neonPulse 2s infinite;" onmouseover="this.style.color='#00ffff'; this.style.borderColor='#00ffff'; this.style.background='rgba(0, 255, 255, 0.2)';" onmouseout="this.style.color='#ff00ff'; this.style.borderColor='#ff00ff'; this.style.background='rgba(255, 0, 255, 0.1)';">90s SHOWCASE <span style="background: linear-gradient(90deg, #ff00ff, #00ffff); color: #000; font-size: 0.4rem; padding: 2px 5px; border-radius: 2px; margin-left: 5px;">NEW</span></a>
     </footer>
 </div>
 
