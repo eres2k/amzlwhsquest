@@ -82,7 +82,7 @@ const BOSS_DEFEAT_DIALOGUES = {
 
 // Get localized boss defeat line
 function getBossDefeatLine(bossName) {
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'MEU';
+    const region = getGameRegion('MEU');
     const lines = BOSS_DEFEAT_DIALOGUES.bossLines[bossName];
     if (lines && lines[region]) return lines[region];
     if (lines && lines.MEU) return lines.MEU;
@@ -91,7 +91,7 @@ function getBossDefeatLine(bossName) {
 
 // Get localized player victory response
 function getPlayerVictoryLine(charName) {
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'MEU';
+    const region = getGameRegion('MEU');
     const lines = BOSS_DEFEAT_DIALOGUES.playerLines[charName];
     if (lines && lines[region]) return lines[region];
     if (lines && lines.MEU) return lines.MEU;
@@ -144,10 +144,9 @@ const SIMON_YARD_TIPS = {
 
 // Helper to get localized yard tip
 function getLocalizedYardTip() {
-    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    const region = getGameRegion('EN');
     const tips = SIMON_YARD_TIPS[region] || SIMON_YARD_TIPS.EN;
-    return pick(tips);
+    return pickRandom(tips);
 }
 
 // --- JEFF YARD TAUNTS (Localized) ---
@@ -332,18 +331,17 @@ const BEZOS_TAUNTS = {
 
 // Helper to get localized Jeff taunt
 function getLocalizedJeffTaunt(type) {
-    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    const region = getGameRegion('EN');
 
     if (type === 'yard') {
         const taunts = JEFF_YARD_TAUNTS[region] || JEFF_YARD_TAUNTS.EN;
-        return pick(taunts);
+        return pickRandom(taunts);
     } else if (type === 'castle') {
         const taunts = JEFF_CASTLE_TAUNTS[region] || JEFF_CASTLE_TAUNTS.EN;
-        return pick(taunts);
+        return pickRandom(taunts);
     } else {
         const taunts = BEZOS_TAUNTS[region] || BEZOS_TAUNTS.EN;
-        return pick(taunts);
+        return pickRandom(taunts);
     }
 }
 

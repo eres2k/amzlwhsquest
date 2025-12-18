@@ -84,6 +84,8 @@
 
 <!-- Load localization before main game script -->
 <script src="localization.js"></script>
+<!-- Load utility functions (used by all other modules) -->
+<script src="js/utils.js"></script>
 <!-- Load hazard data (PPE_ITEMS, HAZARD_POOL, HAZARD_DETAILS) -->
 <script src="js/hazards.js"></script>
 <!-- Load character data (CHAR_DATA, ATTACKS, CHARACTER_DEFEAT_LINES) -->
@@ -382,23 +384,22 @@ const SIMULATED_AI = {
 
 // Helper function to get localized Simon dialogue
 function getLocalizedSimonDialogue(category) {
-    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : null;
+    const region = getGameRegion(null);
 
     // Try region-specific dialogue first (80% chance if available)
     if (region && SIMULATED_AI.regional[region] && SIMULATED_AI.regional[region][category]) {
-        if (Math.random() < 0.8) {
-            return pick(SIMULATED_AI.regional[region][category]);
+        if (Math.random() < GAME_CONFIG.PROBABILITIES.REGIONAL_DIALOGUE) {
+            return pickRandom(SIMULATED_AI.regional[region][category]);
         }
     }
 
     // Fall back to English
-    return pick(SIMULATED_AI[category] || []);
+    return pickRandom(SIMULATED_AI[category] || []);
 }
 
 // Helper function to get localized dialogue by index (for warnings)
 function getLocalizedSimonWarning(index) {
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : null;
+    const region = getGameRegion(null);
 
     // Try region-specific warning first
     if (region && SIMULATED_AI.regional[region] && SIMULATED_AI.regional[region].simon_warnings) {
@@ -413,10 +414,8 @@ function getLocalizedSimonWarning(index) {
 
 // Helper function to pick region-specific tips when offline
 function pickRegionTip() {
-    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
     // Get current region (may not be set during early load)
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EU';
+    const region = getGameRegion('EU');
 
     // Filter tips for current region (tips start with [DE], [AT], or [NL])
     const regionPrefix = `[${region}]`;
@@ -424,12 +423,12 @@ function pickRegionTip() {
     const genericTips = SIMULATED_AI.tips.filter(tip => !tip.startsWith('['));
 
     // 60% chance to show region-specific tip if available
-    if (regionTips.length > 0 && Math.random() < 0.6) {
-        return pick(regionTips);
+    if (regionTips.length > 0 && Math.random() < GAME_CONFIG.PROBABILITIES.REGIONAL_TIP) {
+        return pickRandom(regionTips);
     }
 
     // Otherwise return a generic tip
-    return pick(genericTips.length > 0 ? genericTips : SIMULATED_AI.tips);
+    return pickRandom(genericTips.length > 0 ? genericTips : SIMULATED_AI.tips);
 }
 
 // --- AI TEXT HELPERS ---
@@ -652,13 +651,13 @@ const MECHA_JEFF_PHASE_TAUNTS = {
 
 // Helper to get localized Mecha Jeff phase names
 function getLocalizedMechaJeffPhaseNames() {
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    const region = getGameRegion('EN');
     return MECHA_JEFF_PHASE_NAMES[region] || MECHA_JEFF_PHASE_NAMES.EN;
 }
 
 // Helper to get localized Mecha Jeff phase taunts
 function getLocalizedMechaJeffPhaseTaunts() {
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    const region = getGameRegion('EN');
     return MECHA_JEFF_PHASE_TAUNTS[region] || MECHA_JEFF_PHASE_TAUNTS.EN;
 }
 
@@ -672,7 +671,7 @@ const SECURITY_ACTIVATION_TEXTS = {
 
 // Helper to get localized security activation text
 function getLocalizedSecurityActivation() {
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    const region = getGameRegion('EN');
     return SECURITY_ACTIVATION_TEXTS[region] || SECURITY_ACTIVATION_TEXTS.EN;
 }
 
@@ -763,7 +762,7 @@ const WAREHOUSE_EVENTS = {
 
 // Get localized event text
 function getLocalizedEventText(event, field) {
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    const region = getGameRegion('EN');
     return event[field][region] || event[field].EN;
 }
 
@@ -1197,9 +1196,8 @@ function endEventEffects(eventType) {
 function getRandomFallback(prompt, category = 'generic', context = {}) {
     const hazardName = context.hazardName;
     const stats = context.stats;
-    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const is = (key) => category === key || prompt.includes(key);
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    const region = getGameRegion('EN');
 
     // Use localized Simon dialogue
     if (is("runners")) return getLocalizedSimonDialogue('runners');
@@ -4682,7 +4680,7 @@ function generateAssets() {
 
     // Helper to get current region's warehouse info
     GFX.getWarehouseInfo = function() {
-        const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'AT';
+        const region = getGameRegion('AT');
         return WAREHOUSE_SIGNS[region] || WAREHOUSE_SIGNS.AT;
     };
 
@@ -11017,8 +11015,7 @@ function tryInteract() {
     return false;
 }
 
-// Helper to get random item from array
-function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+// pickRandom is now provided by js/utils.js
 
 function triggerGameOver(reason) {
     GAME.gameOverTriggered = true; GAME.nextState = 'TITLE'; GAME.state = 'LOSE_SPLASH'; GAME.splashTimer = 320; GAME.aiResultText = null; GAME.stateTimer = 0;
@@ -15213,7 +15210,7 @@ const MECHA_JEFF_DEFEAT_LINES = {
 };
 
 function getMechaJeffDefeatLine() {
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    const region = getGameRegion('EN');
     return {
         speaker: "Mecha Jeff",
         portrait: "mechaJeff",
@@ -15230,7 +15227,7 @@ const JEFF_TRANSFORM_LINES = {
 };
 
 function getJeffTransformLine() {
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    const region = getGameRegion('EN');
     return {
         speaker: "Jeff Bezos",
         portrait: "jeffYard",
@@ -15271,7 +15268,7 @@ const BEZOS_ESCAPE_TEXTS = {
 };
 
 function getBezosEscapeDialogues() {
-    const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+    const region = getGameRegion('EN');
     const texts = BEZOS_ESCAPE_TEXTS[region] || BEZOS_ESCAPE_TEXTS.EN;
     // Replace "player" speaker with actual selected character
     return texts.map(d => ({
@@ -15512,7 +15509,7 @@ function showBezosEscapeDialogue(index) {
         GAME.escapeScene.phase = 8;
         GAME.escapeScene.phaseTimer = 0;
         // Show Simon's congratulations (localized)
-        const region = (typeof GAME !== 'undefined' && GAME.region) ? GAME.region : 'EN';
+        const region = getGameRegion('EN');
         const congratsText = SIMON_BEZOS_CONGRATS[region] || SIMON_BEZOS_CONGRATS.EN;
         GAME.dialogBackgroundState = 'BEZOS_ESCAPE';
         showDialog(congratsText, 'Simon', GFX.simonFaceLarge, false);
