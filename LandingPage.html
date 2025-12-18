@@ -930,6 +930,26 @@
     // --- 2. KEY FETCHING (NEW) ---
     let apiKey = null;
 
+    // --- GEMINI 3 OPTIMIZED CONFIGURATION ---
+    const GEMINI_CONFIG = {
+        generationConfig: {
+            temperature: 0.9,       // Slightly higher for creative announcements
+            topP: 0.92,
+            topK: 40,
+            candidateCount: 1
+        },
+        safetySettings: [
+            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+        ]
+    };
+
+    const LANDING_SYSTEM_INSTRUCTION = `You are an AI for a satirical Amazon warehouse game landing page.
+Generate cynical, dystopian, humorous content about warehouse work culture.
+Keep responses short, punchy, and darkly comedic. Never break character.`;
+
     async function fetchApiKeyFromNetlify() {
         try {
             // This endpoint must exist in your Netlify functions folder
@@ -967,16 +987,31 @@
         track.style.setProperty('--scroll-duration', `${duration}s`);
     }
 
+    // --- GEMINI API (Optimized for Gemini 3) ---
     async function callGemini(prompt) {
         if (!apiKey) await fetchApiKeyFromNetlify();
         if (!apiKey) return null;
 
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${apiKey}`;
+
+        // Gemini 3 optimized payload with system instruction and generation config
+        const payload = {
+            systemInstruction: {
+                parts: [{ text: LANDING_SYSTEM_INSTRUCTION }]
+            },
+            contents: [{
+                role: "user",
+                parts: [{ text: prompt }]
+            }],
+            generationConfig: GEMINI_CONFIG.generationConfig,
+            safetySettings: GEMINI_CONFIG.safetySettings
+        };
+
         try {
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                body: JSON.stringify(payload)
             });
             const data = await response.json();
             return data.candidates?.[0]?.content?.parts?.[0]?.text;
