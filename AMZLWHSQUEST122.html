@@ -101,6 +101,30 @@ let apiKey = null;
 let apiKeyPromise = null;
 const MODEL_NAME = "gemini-3-flash";
 
+// --- GEMINI 3 OPTIMIZED CONFIGURATION ---
+const GEMINI_CONFIG = {
+    // Generation parameters optimized for Gemini 3
+    generationConfig: {
+        temperature: 0.85,      // Balanced creativity for game dialogue
+        topP: 0.92,             // Nucleus sampling for diverse responses
+        topK: 40,               // Top-k sampling for focused output
+        candidateCount: 1       // Single response for speed
+    },
+    // Safety settings - allow game-appropriate content
+    safetySettings: [
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+    ]
+};
+
+// System instruction for Gemini 3's enhanced context understanding
+const GAME_SYSTEM_INSTRUCTION = `You are an AI generating dialogue for "AMZL WHS Quest", a satirical warehouse safety training game.
+Characters: Simon Unglaube (deadpan WHS manager), Jeff Bezos/Mecha Jeff (boss), various WHS coordinators.
+Style: Dry humor, corporate satire, safety regulation references. Keep responses concise and in-character.
+Never break character or mention being an AI. Match the requested language/dialect exactly.`;
+
 // --- GAME CONSTANTS (Performance: Avoid magic numbers) ---
 const GAME_CONSTANTS = {
     // Timing
@@ -469,7 +493,7 @@ async function ensureApiKey() {
     return apiKeyPromise;
 }
 
-// --- GEMINI API ---
+// --- GEMINI API (Optimized for Gemini 3) ---
 async function callGemini(prompt, category = 'generic', context = {}) {
     const activeKey = await ensureApiKey();
     if (!activeKey) {
@@ -477,24 +501,32 @@ async function callGemini(prompt, category = 'generic', context = {}) {
     }
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${activeKey}`;
-    const payload = { 
-        contents: [{ 
-            parts: [{ text: prompt }] 
-        }] 
+
+    // Gemini 3 optimized payload with system instruction and generation config
+    const payload = {
+        systemInstruction: {
+            parts: [{ text: GAME_SYSTEM_INSTRUCTION }]
+        },
+        contents: [{
+            role: "user",
+            parts: [{ text: prompt }]
+        }],
+        generationConfig: GEMINI_CONFIG.generationConfig,
+        safetySettings: GEMINI_CONFIG.safetySettings
     };
     const timeout = new Promise((r) => setTimeout(() => r("TIMEOUT"), 10000));
 
     try {
-        const fetchPromise = fetch(url, { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify(payload) 
+        const fetchPromise = fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         });
         const response = await Promise.race([fetchPromise, timeout]);
-        
+
         if (response === "TIMEOUT") return personalizeAIText(getRandomFallback(prompt, category, context));
         if (!response.ok) return personalizeAIText(getRandomFallback(prompt, category, context));
-        
+
         const data = await response.json();
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
         if (text) return personalizeAIText(text.trim());
